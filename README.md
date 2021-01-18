@@ -20,7 +20,11 @@ To uninstall (this will also remove the repository folder):
 
 ```shell
 cd lightfetch
+<<<<<<< HEAD
 make uninstall
+=======
+sudo make uninstall
+>>>>>>> 85bfc1b7abe49545a7ee173a5ea02f9ea1494629
 ```
 
 ## License
