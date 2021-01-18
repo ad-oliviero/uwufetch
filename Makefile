@@ -30,6 +30,6 @@ install:
 uninstall:
 	@echo Uninstalling lightfetch...
 	sudo rm -f $(install_dir)$(name)
-	rm ../lightfetch
+	rm -rf ../lightfetch
 	@echo Uninstall completed!
 	@exit

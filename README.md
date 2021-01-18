@@ -16,13 +16,11 @@ cd lightfetch
 make install
 ```
 
-To uninstall:
+To uninstall (this will also remove the repository folder):
 
 ```shell
 cd lightfetch
-sudo make uninstall
-cd ..
-rm -rf lightfetch
+make uninstall
 ```
 
 ## License
