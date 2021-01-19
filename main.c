@@ -33,7 +33,6 @@ int main() {
 	if (uname(&sys_var) == -1) printf("Ah sh-t, an error\n");
     if (sysinfo(&sys) == -1) printf("Ah sh-t, an error\n");
     
-
 	char version_name[64];
 	FILE *fos_rel = popen("lsb_release -a | grep Description", "r");
 	fscanf(fos_rel,"%[^\n]", version_name);
@@ -46,11 +45,7 @@ int main() {
     fclose(fcpu);
 	memmove(&cpu_model[0], &cpu_model[33], 128);
 
-    int ram_max;
-    FILE *framm = popen("head -n1 /proc/meminfo | awk '{print $2}'", "r");
-    fscanf(framm, "%i", &ram_max);
-    fclose(framm);
-    ram_max = ram_max / 1024;
+    int ram_max = sys.totalram * sys.mem_unit / 1048576;
 
     int ram_used;
     FILE *framu = popen("grep -i MemAvailable /proc/meminfo  | awk '{print $2}' ", "r");
@@ -63,13 +58,13 @@ int main() {
     if (strcmp(version_name, "Arch Linux")) {
         printf("%s                 %s@%s\n", BOLD, user, host);
         printf("%s        /\\       %s%sOS %s%s\n", BLUE, NORMAL, BOLD, NORMAL, version_name);
-        printf("%s       /  \\      %s%sKERNEL %s%s%s\n", BLUE, NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine);
+        printf("%s       /  \\      %s%sKERNEL %s%s %s\n", BLUE, NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine);
         printf("%s      /\\   \\     %s%sCPU    %s%s\n", BLUE, NORMAL, BOLD, NORMAL, cpu_model);
         printf("%s     /      \\    %s%sRAM    %s%iM/%iM\n", BLUE, NORMAL, BOLD, NORMAL, ram_used, ram_max);
         printf("%s    /   __   \\   %s%sSHELL  %s%s\n", BLUE, NORMAL, BOLD, NORMAL, shell);
         printf("%s   / __|  |__-\\  %s%sPKGS   %s%s", BLUE, NORMAL, BOLD, NORMAL, NORMAL); pkgman();
         printf("%s  /_-''    ''-_\\ %s%sUPTIME %s%lid, %lih, %lim\n", BLUE, NORMAL, BOLD, NORMAL, sys.uptime/60/60/24, sys.uptime/60/60%24, sys.uptime/60%60);
-        printf("                 %s%s██%s██%s██%s██%s██%s██%s██%s██%s\n", BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN,  WHITE, NORMAL);
+        printf("                 %s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n", BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN,  WHITE, NORMAL);
     }
     
 
@@ -110,57 +105,57 @@ void pkgman() {
     fclose(fxbps);
     fclose(fyay);
 
-    int comma = 0;
+    int pipe = 0;
 
     if (apt > 0) {
-        if (comma == 1) printf(", ");
-        printf("apt: %d", apt);
-        comma = 1;
+        if (pipe == 1) printf(" | ");
+        printf("apt %d", apt);
+        pipe = 1;
     }
     if (dnf > 0) {
-        if(comma == 1) printf(", ");
-        printf("dnf: %d", dnf);
-        comma = 1;
+        if(pipe == 1) printf(" | ");
+        printf("dnf %d", dnf);
+        pipe = 1;
     }
     if (emerge > 0) {
-        if (comma == 1) printf(", ");
-        printf("emerge: %d", emerge);
-        comma = 1;
+        if (pipe == 1) printf(" | ");
+        printf("emerge %d", emerge);
+        pipe = 1;
     }
     if (flatpak > 0) {
-        if (comma == 1) printf(", ");
-        printf("flatpak: %d", flatpak);
-        comma = 1;
+        if (pipe == 1) printf(" | ");
+        printf("flatpak %d", flatpak);
+        pipe = 1;
     }
     if (nix > 0) {
-        if (comma == 1) printf(", ");
-        printf("nix: %d", nix);
-        comma = 1;
+        if (pipe == 1) printf(" | ");
+        printf("nix %d", nix);
+        pipe = 1;
     }
     if (pacman > 0) {
-        if (comma == 1) printf(", ");
-        printf("pacman: %d", pacman);
-        comma = 1;
+        if (pipe == 1) printf(" | ");
+        printf("pacman %d", pacman);
+        pipe = 1;
     }
     if (rpm > 0) {
-        if (comma == 1) printf(", ");
-        printf("rpm: %d", rpm);
-        comma = 1;
+        if (pipe == 1) printf(" | ");
+        printf("rpm %d", rpm);
+        pipe = 1;
     }
     if (snap > 0) {
-        if (comma == 1) printf(", ");
-        printf("snap: %d", snap);
-        comma = 1;
+        if (pipe == 1) printf(" | ");
+        printf("snap %d", snap);
+        pipe = 1;
     }
     if (xbps > 0) {
-        if (comma == 1) printf(", ");
-        printf("xbps: %d", xbps);
-        comma = 1;
+        if (pipe == 1) printf(" | ");
+        printf("xbps %d", xbps);
+        pipe = 1;
     }
     if (yay > 0) {
-        if (comma == 1) printf(", ");
-        printf("yay: %d", yay);
-        comma = 1;
+        if (pipe == 1) printf(" | ");
+        printf("yay %d", yay);
+        pipe = 1;
     }
     printf("\n");
 }
