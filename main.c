@@ -29,22 +29,44 @@ int main() {
 	if (uname(&sys) == -1) {
 		printf("Ah sh-t, an error\n");
 	}
+
 	char version_name[64];
-	FILE *fosr  = fopen("/etc/os-release", "r");
-	fscanf(fosr,"%[^\n]", version_name);
-	fclose(fosr);
+	FILE *fos_rel  = fopen("/etc/os-release", "r");
+	fscanf(fos_rel,"%[^\n]", version_name);
+	fclose(fos_rel);
 	memmove(&version_name[0], &version_name[5], 64);
+
+    char cpu_model[128];
+	system("lscpu | grep 'Model name:' > /tmp/lightfetch.cpu");
+    FILE *fcpu = fopen("/tmp/lightfetch.cpu", "r");
+    fscanf(fcpu, "%[^\n]", cpu_model);
+    fclose(fcpu);
+	memmove(&cpu_model[0], &cpu_model[33], 128);
+
+    int ram_max;
+    FILE *framm = popen("head -n1 /proc/meminfo | awk '{print $2}'", "r");
+    fscanf(framm, "%i", &ram_max);
+    fclose(framm);
+    ram_max = ram_max / 1024;
+    
+    int ram_used;
+    FILE *framu = popen("grep -i MemAvailable /proc/meminfo  | awk '{print $2}' ", "r");
+    fscanf(framu, "%i", &ram_used);
+    fclose(framu);
+    ram_used = ram_used / 1024;
     
     // Now we print the info and exit the program.
+    //NORMAL, BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN,  WHITE 
     if (strcmp(version_name, "Arch Linux")) {
-        printf("%s                  %s@%s\n", BOLD, user, host);
-        printf("%s        /\\        %s%sOS     \n", BLUE, NORMAL, BOLD);
-        printf("%s       /  \\       %s%sKERNEL     \n", BLUE, NORMAL, BOLD);
-        printf("%s      /\\   \\      %s%s     \n", BLUE, NORMAL, BOLD);
-        printf("%s     /      \\     %s%sOS     \n", BLUE, NORMAL, BOLD);
-        printf("%s    /   __   \\    %s%sRAM     \n", BLUE, NORMAL, BOLD);
-        printf("%s   / __|  |__-\\   %s%sSHELL    \n", BLUE, NORMAL, BOLD);
-        printf("%s  /_-''    ''-_\\   %s%sOS     \n\n\n", BLUE, NORMAL, BOLD);
+        printf("%s                 %s@%s\n", BOLD, user, host);
+        printf("%s        /\\       %s%sOS %s%s\n", BLUE, NORMAL, BOLD, NORMAL, version_name);
+        printf("%s       /  \\      %s%sKERNEL %s%s%s\n", BLUE, NORMAL, BOLD, NORMAL, sys.release, sys.machine);
+        printf("%s      /\\   \\     %s%sCPU %s%s\n", BLUE, NORMAL, BOLD, NORMAL, cpu_model);
+        printf("%s     /      \\    %s%sRAM %s%iM/%iM\n", BLUE, NORMAL, BOLD, NORMAL, ram_used, ram_max);
+        printf("%s    /   __   \\   %s%sSHELL%s\n", BLUE, NORMAL, BOLD, NORMAL);
+        printf("%s   / __|  |__-\\  %s%sPKGS %s%s", BLUE, NORMAL, BOLD, NORMAL, NORMAL); pkgman();
+        printf("%s  /_-''    ''-_\\ %s%sUPTIME%s\n", BLUE, NORMAL, BOLD, NORMAL);
+        printf("                 %s%s██%s██%s██%s██%s██%s██%s██%s██%s\n", BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN,  WHITE, NORMAL);
     }
     
 
