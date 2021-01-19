@@ -1,4 +1,4 @@
-name = lightfetch
+name = litefetch
 files = main.c
 install_dir = /usr/bin/
 debug:
@@ -28,8 +28,8 @@ install:
 	@exit
 
 uninstall:
-	@echo Uninstalling lightfetch...
+	@echo Uninstalling $(name)...
 	sudo rm -f $(install_dir)$(name)
-	rm -rf ../lightfetch
+	rm -rf ../$(name)
 	@echo Uninstall completed!
 	@exit

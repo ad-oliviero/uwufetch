@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/utsname.h>
+#include <sys/sysinfo.h>
 // COLORS
 #define NORMAL "\x1b[0m"
 #define BOLD "\x1b[1m"
@@ -19,26 +20,28 @@ void pkgman();
 
 int main() {
 	// init variables and other useful things
-	char user[32], host[253];
-	struct utsname sys;
+	char user[32], host[253], shell[16];
+	struct utsname sys_var;
+    struct sysinfo sys;
 
 	// get user and host names
 	snprintf(user, 32, "%s", getenv("USER"));
 	gethostname(host, 253);
+    snprintf(shell, 16, "%s", getenv("SHELL"));
+    memmove(&shell[0], &shell[5], 16);
 
-	if (uname(&sys) == -1) {
-		printf("Ah sh-t, an error\n");
-	}
+	if (uname(&sys_var) == -1) printf("Ah sh-t, an error\n");
+    if (sysinfo(&sys) == -1) printf("Ah sh-t, an error\n");
+    
 
 	char version_name[64];
-	FILE *fos_rel  = fopen("/etc/os-release", "r");
+	FILE *fos_rel = popen("lsb_release -a | grep Description", "r");
 	fscanf(fos_rel,"%[^\n]", version_name);
 	fclose(fos_rel);
-	memmove(&version_name[0], &version_name[5], 64);
+	memmove(&version_name[0], &version_name[12], 64);
 
     char cpu_model[128];
-	system("lscpu | grep 'Model name:' > /tmp/lightfetch.cpu");
-    FILE *fcpu = fopen("/tmp/lightfetch.cpu", "r");
+    FILE *fcpu = popen("lscpu | grep 'Model name:'", "r");
     fscanf(fcpu, "%[^\n]", cpu_model);
     fclose(fcpu);
 	memmove(&cpu_model[0], &cpu_model[33], 128);
@@ -48,7 +51,7 @@ int main() {
     fscanf(framm, "%i", &ram_max);
     fclose(framm);
     ram_max = ram_max / 1024;
-    
+
     int ram_used;
     FILE *framu = popen("grep -i MemAvailable /proc/meminfo  | awk '{print $2}' ", "r");
     fscanf(framu, "%i", &ram_used);
@@ -60,12 +63,12 @@ int main() {
     if (strcmp(version_name, "Arch Linux")) {
         printf("%s                 %s@%s\n", BOLD, user, host);
         printf("%s        /\\       %s%sOS %s%s\n", BLUE, NORMAL, BOLD, NORMAL, version_name);
-        printf("%s       /  \\      %s%sKERNEL %s%s%s\n", BLUE, NORMAL, BOLD, NORMAL, sys.release, sys.machine);
-        printf("%s      /\\   \\     %s%sCPU %s%s\n", BLUE, NORMAL, BOLD, NORMAL, cpu_model);
-        printf("%s     /      \\    %s%sRAM %s%iM/%iM\n", BLUE, NORMAL, BOLD, NORMAL, ram_used, ram_max);
-        printf("%s    /   __   \\   %s%sSHELL%s\n", BLUE, NORMAL, BOLD, NORMAL);
-        printf("%s   / __|  |__-\\  %s%sPKGS %s%s", BLUE, NORMAL, BOLD, NORMAL, NORMAL); pkgman();
-        printf("%s  /_-''    ''-_\\ %s%sUPTIME%s\n", BLUE, NORMAL, BOLD, NORMAL);
+        printf("%s       /  \\      %s%sKERNEL %s%s%s\n", BLUE, NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine);
+        printf("%s      /\\   \\     %s%sCPU    %s%s\n", BLUE, NORMAL, BOLD, NORMAL, cpu_model);
+        printf("%s     /      \\    %s%sRAM    %s%iM/%iM\n", BLUE, NORMAL, BOLD, NORMAL, ram_used, ram_max);
+        printf("%s    /   __   \\   %s%sSHELL  %s%s\n", BLUE, NORMAL, BOLD, NORMAL, shell);
+        printf("%s   / __|  |__-\\  %s%sPKGS   %s%s", BLUE, NORMAL, BOLD, NORMAL, NORMAL); pkgman();
+        printf("%s  /_-''    ''-_\\ %s%sUPTIME %s%lid, %lih, %lim\n", BLUE, NORMAL, BOLD, NORMAL, sys.uptime/60/60/24, sys.uptime/60/60%24, sys.uptime/60%60);
         printf("                 %s%s██%s██%s██%s██%s██%s██%s██%s██%s\n", BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN,  WHITE, NORMAL);
     }
     
@@ -80,7 +83,7 @@ void pkgman() {
     FILE *fdnf = popen("dnf list installed 2>/dev/null | wc -l", "r");
     FILE *femerge = popen("qlist -I 2>/dev/null | wc -l", "r");
     FILE *fflatpak = popen("flatpak list 2>/dev/null | wc -l", "r");
-    FILE *fnix = popen("nix-store -q --requisites /run/current-system/sw 2>/dev/null | wc -l", "r");
+    FILE *fnix = popen("nix-store -q --requisites /run/current-sys_vartem/sw 2>/dev/null | wc -l", "r");
     FILE *fpacman = popen("pacman -Q 2>/dev/null | wc -l", "r");
     FILE *frpm = popen("rpm -qa --last 2>/dev/null | wc -l", "r");
     FILE *fsnap = popen("snap list 2>/dev/null | wc -l", "r");
