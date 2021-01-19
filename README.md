@@ -1,6 +1,6 @@
-# lightfetch
+# LiteFetch
 
-A light system info tool for Linux.
+A lite system info tool for Linux.
 
 ## Currently supported distros
 
@@ -11,25 +11,21 @@ Arch Linux.
 To install you can type this commands in the terminal:
 
 ```shell
-git clone https://github.com/TheDarkBug/lightfetch.git
-cd lightfetch
+git clone https://github.com/TheDarkBug/litefetch.git
+cd litefetch
 make install
 ```
 
 To uninstall (this will also remove the repository folder):
 
 ```shell
-cd lightfetch
-<<<<<<< HEAD
+cd litefetch
 make uninstall
-=======
-sudo make uninstall
->>>>>>> 85bfc1b7abe49545a7ee173a5ea02f9ea1494629
 ```
 
 ## License
 
-This program is provided under the [GPL-3.0 License](https://github.com/TheDarkBug/LICENSE).
+This program is provided under the [GPL-3.0 License](https://github.com/TheDarkBug/litefetch/LICENSE).
 
 ## Credits
 
