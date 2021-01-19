@@ -2,8 +2,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <sys/utsname.h>
-#include <sys/sysinfo.h>
+#ifdef __linux__
+    #include <sys/utsname.h>
+    #include <sys/sysinfo.h>
+#elif __ANDROID__
+    #include <sys/utsname.h>
+    #include <sys/sysinfo.h>
+#elif _WIN32
+
+#endif
 // COLORS
 #define NORMAL "\x1b[0m"
 #define BOLD "\x1b[1m"
@@ -20,25 +27,37 @@ void pkgman();
 
 int main() {
 	// init variables and other useful things
-	char user[32], host[253], shell[16];
-	struct utsname sys_var;
-    struct sysinfo sys;
+	char user[32], host[253], shell[64], version_name[64];
 
 	// get user and host names
-	snprintf(user, 32, "%s", getenv("USER"));
-	gethostname(host, 253);
-    snprintf(shell, 16, "%s", getenv("SHELL"));
-    memmove(&shell[0], &shell[5], 16);
+    #ifdef __linux__
+        struct utsname sys_var;
+        struct sysinfo sys;
+
+        snprintf(user, 32, "%s", getenv("USER"));
+        gethostname(host, 253);
+        snprintf(shell, 16, "%s", getenv("SHELL"));
+        memmove(&shell[0], &shell[5], 16);
+
+        FILE *fos_rel = popen("lsb_release -a | grep Description", "r");
+        fscanf(fos_rel,"%[^\n]", version_name);
+        fclose(fos_rel);
+        memmove(&version_name[0], &version_name[12], 64);
+    #elif __ANDROID__
+        FILE *fwhoami = popen("whoami", "r");
+        fscanf(fwhoami,"%[^\n]", user);
+        fclose(fwhoami);
+
+        FILE *fos_rel = popen("getprop ro.system.build.version.release", "r");
+        fscanf(fos_rel,"%[^\n]", version_name);
+        fclose(fos_rel);
+        snprintf(shell, 16, "%s", getenv("SHELL"));
+        memmove(&shell[0], &shell[36], 64);
+    #endif
 
 	if (uname(&sys_var) == -1) printf("Ah sh-t, an error\n");
     if (sysinfo(&sys) == -1) printf("Ah sh-t, an error\n");
     
-	char version_name[64];
-	FILE *fos_rel = popen("lsb_release -a | grep Description", "r");
-	fscanf(fos_rel,"%[^\n]", version_name);
-	fclose(fos_rel);
-	memmove(&version_name[0], &version_name[12], 64);
-
     char cpu_model[128];
     FILE *fcpu = popen("lscpu | grep 'Model name:'", "r");
     fscanf(fcpu, "%[^\n]", cpu_model);
