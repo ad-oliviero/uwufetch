@@ -1,35 +1,11 @@
-name = litefetch
-files = main.c
-install_dir = /usr/bin/
-debug:
-	@echo Building debug...
-	gcc -Wall -Wextra -o $(name) $(files)
-	@echo Build completed! Running...
-	@echo
-	./$(name)
-	@echo
-	@exit
+NAME = litefetch
+FILES = main.c
+FLAGS = -O3 -Wall -Wextra
+INSTALL_DIR = /usr/bin/
+all: build install
 
-clean:
-	@echo Building debug...
-	gcc -Wall -Wextra -o $(name) $(files)
-	@echo Build completed! Running...
-	@echo
-	./$(name)
-	@echo
-	rm -f $(name)
-	@echo Removed output file.
-	@exit
+build: main.c
+	gcc $(FLAGS) -o $(NAME) $(FILES)
 
 install:
-	@echo Building release...
-	sudo gcc -o $(install_dir)$(name) $(files)
-	@echo Building and installation completed!
-	@exit
-
-uninstall:
-	@echo Uninstalling $(name)...
-	sudo rm -f $(install_dir)$(name)
-	rm -rf ../$(name)
-	@echo Uninstall completed!
-	@exit
+	sudo cp $(NAME) $(INSTALL_DIR)$(NAME)
