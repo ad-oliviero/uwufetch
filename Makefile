@@ -9,3 +9,6 @@ build: main.c
 
 install:
 	sudo cp $(NAME) $(INSTALL_DIR)$(NAME)
+
+uninstall:
+	sudo rm $(INSTALL_DIR)$(NAME)
