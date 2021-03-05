@@ -60,7 +60,7 @@ int main() {
 		printf("%s        /\\       %s%sOS %s%s\n", BLUE, NORMAL, BOLD, NORMAL, version_name);
 		printf("%s       /  \\      %s%sKERNEL %s%s %s\n", BLUE, NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine);
 		printf("%s      /\\   \\     %s%sCPU    %s%s\n", BLUE, NORMAL, BOLD, NORMAL, cpu_model);
-		printf("%s     /      \\    %s%sRAM    %s%iM/%iM\n", BLUE, NORMAL, BOLD, NORMAL, ram_used, ram_max);
+		printf("%s     / ~owo~\\    %s%sRAM    %s%iM/%iM\n", BLUE, NORMAL, BOLD, NORMAL, ram_used, ram_max);
 		printf("%s    /   __   \\   %s%sSHELL  %s%s\n", BLUE, NORMAL, BOLD, NORMAL, shell);
 		printf("%s   / __|  |__-\\  %s%sPKGS   %s%s%d\n", BLUE, NORMAL, BOLD, NORMAL, NORMAL, pkgman());
 		printf("%s  /_-''    ''-_\\ %s%sUPTIME %s%lid, %lih, %lim\n", BLUE, NORMAL, BOLD, NORMAL, sys.uptime/60/60/24, sys.uptime/60/60%24, sys.uptime/60%60);

@@ -1,4 +1,4 @@
-NAME = litefetch
+NAME = owofetch
 FILES = main.c
 FLAGS = -O3 -Wall -Wextra
 INSTALL_DIR = /usr/bin/

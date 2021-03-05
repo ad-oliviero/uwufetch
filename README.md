@@ -1,6 +1,6 @@
-# LiteFetch
+# OwoFetch
 
-A lite system info tool for Linux.
+A meme system info tool for Linux, based on nyan/uwu trend on r/linuxmasterrace.
 
 ## Currently supported distros
 
@@ -11,15 +11,15 @@ Arch Linux.
 To install you can type this commands in the terminal:
 
 ```shell
-git clone https://github.com/TheDarkBug/litefetch.git
-cd litefetch
+git clone https://github.com/TheDarkBug/owofetch.git
+cd owofetch
 make install
 ```
 
 To uninstall (this will also remove the repository folder):
 
 ```shell
-cd litefetch
+cd owofetch
 make uninstall
 ```
 
@@ -27,6 +27,4 @@ make uninstall
 
 This program is provided under the [GPL-3.0 License](https://github.com/TheDarkBug/litefetch/LICENSE).
 
-## Credits
-
-[ufetch](https://gitlab.com/jschx/ufetch/): ASCII Distro logos (with some edits by me)
+# 
