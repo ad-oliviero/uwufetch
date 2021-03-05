@@ -3,8 +3,6 @@ FILES = uwufetch.c
 FLAGS = -O3 -Wall -Wextra
 INSTALL_DIR = /usr/bin/
 all: build install
-	clear
-	uwufetch
 
 build: uwufetch.c
 	gcc $(FLAGS) -o $(NAME) $(FILES)
