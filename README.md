@@ -13,7 +13,7 @@ To install you can type this commands in the terminal:
 ```shell
 git clone https://github.com/TheDarkBug/uwufetch.git
 cd uwufetch
-make install
+make
 ```
 
 To uninstall (this will also remove the repository folder):
