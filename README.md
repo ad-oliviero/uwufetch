@@ -4,7 +4,7 @@ A meme system info tool for Linux, based on nyan/UwU trend on r/linuxmasterrace.
 
 ## Currently supported distros
 
-Arch Linux.
+NyArch Linuwu, Myanjaro Linuwu
 
 ## Building and installation
 
@@ -24,7 +24,4 @@ make uninstall
 ```
 
 ## License
-
 This program is provided under the [GPL-3.0 License](https://github.com/TheDarkBug/uwufetch/LICENSE).
-
-# 

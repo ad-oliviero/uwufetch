@@ -1,10 +1,12 @@
 NAME = uwufetch
-FILES = main.c
+FILES = uwufetch.c
 FLAGS = -O3 -Wall -Wextra
 INSTALL_DIR = /usr/bin/
 all: build install
+	clear
+	uwufetch
 
-build: main.c
+build: uwufetch.c
 	gcc $(FLAGS) -o $(NAME) $(FILES)
 
 install:
