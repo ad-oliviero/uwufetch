@@ -57,7 +57,7 @@ int main() {
 		printf("%s        /\\       %s%sOWOS     %sNyArch Linuwu\n", BLUE, NORMAL, BOLD, NORMAL);
 		printf("%s       /  \\      %s%sKERNEL   %s%s %s\n", BLUE, NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine);
 		printf("%s      /\\   \\     %s%sCPUWU    %s%s\n", BLUE, NORMAL, BOLD, NORMAL, cpu_model);
-		printf("%s     / > w <\\    %s%sRAM      %s%ldM/%iM\n", BLUE, NORMAL, BOLD, NORMAL, r_usage.ru_maxrss, ram_max);
+		printf("%s     / > w <\\    %s%sWAM      %s%ldM/%iM\n", BLUE, NORMAL, BOLD, NORMAL, r_usage.ru_maxrss, ram_max);
 		printf("%s    /   __   \\   %s%sSHELL    %s%s\n", BLUE, NORMAL, BOLD, NORMAL, shell);
 		printf("%s   / __|  |__-\\  %s%sPKGS     %s%s%d\n", BLUE, NORMAL, BOLD, NORMAL, NORMAL, pkgs);
 		printf("%s  /_-''    ''-_\\ %s%sUWUPTIME %s%lid, %lih, %lim\n", BLUE, NORMAL, BOLD, NORMAL, sys.uptime/60/60/24, sys.uptime/60/60%24, sys.uptime/60%60);
