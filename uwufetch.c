@@ -68,7 +68,7 @@ int main() {
 		printf("%s  \e[0;42m          \e[0m  \e[0;42m    \e[0m    %s%sOWOS     %sMyanjaro Linuwu\n", BLUE, NORMAL, BOLD, NORMAL);
 		printf("%s  \e[0;42m \e[0m\e[0;42m\e[1;30m > w < \e[0m%s\e[0;42m  \e[0m  \e[0;42m    \e[0m    %s%sKERNEL   %s%s %s\n", BLUE, BLUE, NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine);
 		printf("%s  \e[0;42m    \e[0m        \e[0;42m    \e[0m    %s%sCPUWU    %s%s\n", BLUE, NORMAL, BOLD, NORMAL, cpu_model);
-		printf("%s  \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m    %s%sRAM      %s%ldM/%iM\n", BLUE, NORMAL, BOLD, NORMAL, r_usage.ru_maxrss, ram_max);
+		printf("%s  \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m    %s%sWAM      %s%ldM/%iM\n", BLUE, NORMAL, BOLD, NORMAL, r_usage.ru_maxrss, ram_max);
 		printf("%s  \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m    %s%sSHELL    %s%s\n", BLUE, NORMAL, BOLD, NORMAL, shell);
 		printf("%s  \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m    %s%sPKGS     %s%s%d\n", BLUE, NORMAL, BOLD, NORMAL, NORMAL, pkgs);
 		printf("%s  \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m    %s%sUWUPTIME %s%lid, %lih, %lim\n", BLUE, NORMAL, BOLD, NORMAL, sys.uptime/60/60/24, sys.uptime/60/60%24, sys.uptime/60%60);
