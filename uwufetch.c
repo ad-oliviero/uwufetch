@@ -22,8 +22,7 @@ struct rusage r_usage;
 struct utsname sys_var;
 struct sysinfo sys;
 int ram_max, pkgs;
-char user[32], host[253], shell[64], version_name[64], cpu_model[256];
-
+char user[32], host[253], shell[64], version_name[64], cpu_model[256], pkgman_name[64];
 int pkgman();
 void get_info();
 void print_ascii();
@@ -31,13 +30,12 @@ void print_info();
 void print_image();
 
 int main(int argc, char *argv[]) {
-
 	get_info();
 	//sprintf(version_name, "%s", "manjaro"); // a debug thing
 	//char c = getopt(argc, argv, "adhi"); // things for the future
 	print_ascii();
 	//system("viu -t -w 18 -h 8 $HOME/.config/uwufetch/arch.png"); // other things for the future
-	print_info(user, host, version_name, sys_var.release, sys_var.machine, cpu_model, &r_usage.ru_maxrss, &ram_max, shell, &sys.uptime);
+  print_info();
 }
 
 int pkgman() { // this is just a function that returns the total of installed packages
@@ -62,17 +60,17 @@ int pkgman() { // this is just a function that returns the total of installed pa
 	fscanf(file[6], "%d", &rpm);
 	fscanf(file[7], "%d", &xbps);
 	for (int i = 0; i < 8; i++) fclose(file[i]);
+    
+    if (apt > 0) { total += apt; snprintf(pkgman_name, 64, "(%s)", "apt"); }
+	if (dnf > 0) { total += dnf; snprintf(pkgman_name, 64, "(%s)", "dnf"); }
+	if (emerge > 0) { total += emerge; snprintf(pkgman_name, 64, "(%s)", "emerge"); }
+	if (flatpak > 0) { total += flatpak; snprintf(pkgman_name, 64, "(%s)", "flatpak"); }
+	if (nix > 0) { total += nix; snprintf(pkgman_name, 64, "(%s)", "nix"); }
+	if (pacman > 0) { total += pacman; snprintf(pkgman_name, 64, "(%s)", "pacman"); }
+	if (rpm > 0) { total += rpm; snprintf(pkgman_name, 64, "(%s)", "rpm"); }
+	if (xbps > 0) { total += xbps; snprintf(pkgman_name, 64, "(%s)", "xbps"); }
 
-	if (apt > 0) total += apt;
-	if (dnf > 0) total += dnf;
-	if (emerge > 0) total += emerge;
-	if (flatpak > 0) total += flatpak;
-	if (nix > 0) total += nix;
-	if (pacman > 0) total += pacman;
-	if (rpm > 0) total += rpm;
-	if (xbps > 0) total += xbps;
-
-	return total;	
+    return total;	
 }
 
 void print_info() {	// print collected info
@@ -82,7 +80,7 @@ void print_info() {	// print collected info
 	printf("\033[5;18H %s%sCPUWU    %s%s\n", NORMAL, BOLD, NORMAL, cpu_model);
 	printf("\033[6;18H %s%sWAM      %s%ldM/%iM\n", NORMAL, BOLD, NORMAL, r_usage.ru_maxrss, ram_max);
 	printf("\033[7;18H %s%sSHELL    %s%s\n", NORMAL, BOLD, NORMAL, shell);
-	printf("\033[8;18H %s%sPKGS     %s%s%d\n", NORMAL, BOLD, NORMAL, NORMAL, pkgs);
+	printf("\033[8;18H %s%sPKGS     %s%s%d %s\n", NORMAL, BOLD, NORMAL, NORMAL, pkgs, pkgman_name);
 	printf("\033[9;18H %s%sUWUPTIME %s%lid, %lih, %lim\n", NORMAL, BOLD, NORMAL, sys.uptime/60/60/24, sys.uptime/60/60%24, sys.uptime/60%60);
 	printf("\033[10;18H %s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n", BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN,  WHITE, NORMAL);
 }
