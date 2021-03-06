@@ -32,7 +32,7 @@ int main() {
 	memmove(&shell[0], &shell[5], 16);
 
 	// get os version
-	FILE *fos_rel = popen("cut -d '=' -f2 <<< $(cat /etc/lsb-release | grep ID)", "r");
+	FILE *fos_rel = popen("cut -d '=' -f2 <<< $(cat /etc/os-release | grep ID=) 2> /dev/null", "r");
 	fscanf(fos_rel,"%[^\n]", version_name);
 	fclose(fos_rel);
 
@@ -52,7 +52,7 @@ int main() {
 
 	int pkgs = pkgman();
 	// print collected info
-	if (strcmp(version_name, "Arch") == 0) {
+	if (strcmp(version_name, "arch") == 0) {
 		printf("%s                 %s@%s\n", BOLD, user, host);
 		printf("%s        /\\       %s%sOWOS     %sNyArch Linuwu\n", BLUE, NORMAL, BOLD, NORMAL);
 		printf("%s       /  \\      %s%sKERNEL   %s%s %s\n", BLUE, NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine);
@@ -63,7 +63,29 @@ int main() {
 		printf("%s  /_-''    ''-_\\ %s%sUWUPTIME %s%lid, %lih, %lim\n", BLUE, NORMAL, BOLD, NORMAL, sys.uptime/60/60/24, sys.uptime/60/60%24, sys.uptime/60%60);
 		printf("                 %s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n", BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN,  WHITE, NORMAL);
 	}
-	else if (strcmp(version_name, "ManjaroLinux") == 0) {
+	else if (strcmp(version_name, "artix") == 0) {
+		printf("%s                 %s@%s\n", BOLD, user, host);
+		printf("%s        /\\       %s%sOS	%sNyArtix Linuwu\n", BLUE, NORMAL, BOLD, NORMAL);
+		printf("%s       /  \\      %s%sKERNEL %s%s %s\n", BLUE, NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine);
+		printf("%s      /`'.,\\     %s%sCPUWU    %s%s\n", BLUE, NORMAL, BOLD, NORMAL, cpu_model);
+		printf("%s     /\u2022 w \u2022 \\    %s%sWAM    %s%ldM/%iM\n", BLUE, NORMAL, BOLD, NORMAL, r_usage.ru_maxrss, ram_max);
+		printf("%s    /      ,`\\   %s%sSHELL  %s%s\n", BLUE, NORMAL, BOLD, NORMAL, shell);
+		printf("%s   /   ,.'`.  \\  %s%sPKGS   %s%s%d\n", BLUE, NORMAL, BOLD, NORMAL, NORMAL, pkgs);
+		printf("%s  /.,'`     `'.\\ %s%sUWUPTIME %s%lid, %lih, %lim\n", BLUE, NORMAL, BOLD, NORMAL, sys.uptime/60/60/24, sys.uptime/60/60%24, sys.uptime/60%60);
+		printf("                 %s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n", BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN,  WHITE, NORMAL);
+	}
+	else if (strcmp(version_name, "fedora") == 0) {
+		printf("%s        _____%s%s    %s@%s\n", BLUE, NORMAL, BOLD, user, host);
+		printf("%s       /   __)%s\\  %s%sOS	%sFedowa\n", BLUE, CYAN, NORMAL, BOLD, NORMAL);
+		printf("%s     > %s|  / %s<%s\\ \\ %s%sKERNEL %s%s %s\n", WHITE, BLUE, WHITE, CYAN, NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine);
+		printf("%s    __%s_| %sw%s|_%s_/ / %s%sCPUWU    %s%s\n", CYAN, BLUE, WHITE, BLUE, CYAN, NORMAL, BOLD, NORMAL, cpu_model);
+		printf("%s   / %s(_    _)%s_/  %s%sWAM    %s%ldM/%iM\n", CYAN, BLUE, CYAN, NORMAL, BOLD, NORMAL, r_usage.ru_maxrss, ram_max);
+		printf("%s  / /  %s|  |      %s%sSHELL  %s%s\n", CYAN, BLUE, NORMAL, BOLD, NORMAL, shell);
+		printf("%s  \\ \\%s__/  |      %s%sPKGS   %s%s%d\n", CYAN, BLUE, NORMAL, BOLD, NORMAL, NORMAL, pkgs);
+		printf("%s   \\%s(_____/      %s%sUWUPTIME %s%lid, %lih, %lim\n", CYAN, BLUE, NORMAL, BOLD, NORMAL, sys.uptime/60/60/24, sys.uptime/60/60%24, sys.uptime/60%60);
+		printf("                 %s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n", BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN,  WHITE, NORMAL);
+	}
+	else if (strcmp(version_name, "manjaro") == 0) {
 		printf("%s  \u25b3       \u25b3   \u25e0\u25e0\u25e0\u25e0    %s@%s\n", BOLD, user, host);
 		printf("%s  \e[0;42m          \e[0m  \e[0;42m    \e[0m    %s%sOWOS     %sMyanjaro Linuwu\n", BLUE, NORMAL, BOLD, NORMAL);
 		printf("%s  \e[0;42m \e[0m\e[0;42m\e[1;30m > w < \e[0m%s\e[0;42m  \e[0m  \e[0;42m    \e[0m    %s%sKERNEL   %s%s %s\n", BLUE, BLUE, NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine);
@@ -74,18 +96,6 @@ int main() {
 		printf("%s  \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m    %s%sUWUPTIME %s%lid, %lih, %lim\n", BLUE, NORMAL, BOLD, NORMAL, sys.uptime/60/60/24, sys.uptime/60/60%24, sys.uptime/60%60);
 		printf("                      %s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n", BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN,  WHITE, NORMAL);
 	}
-
-	else if ((strcmp(version_name, "Artix")==0)) {
-		printf("%s                 %s@%s\n", BOLD, user, host);
-		printf("%s        /\\       %s%sOS	%sNyArtix Linuwu\n", BLUE, NORMAL, BOLD, NORMAL);
-		printf("%s       /  \\      %s%sKERNEL %s%s %s\n", BLUE, NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine);
-		printf("%s      /`'.,\\     %s%sCPUWU    %s%s\n", BLUE, NORMAL, BOLD, NORMAL, cpu_model);
-		printf("%s     / > w <\\    %s%sWAM    %s%ldM/%iM\n", BLUE, NORMAL, BOLD, NORMAL, r_usage.ru_maxrss, ram_max);
-		printf("%s    /      ,`\\   %s%sSHELL  %s%s\n", BLUE, NORMAL, BOLD, NORMAL, shell);
-		printf("%s   /   ,.'`.  \\  %s%sPKGS   %s%s%d\n", BLUE, NORMAL, BOLD, NORMAL, NORMAL, pkgs);
-		printf("%s  /.,'`     `'.\\ %s%sUWUPTIME %s%lid, %lih, %lim\n", BLUE, NORMAL, BOLD, NORMAL, sys.uptime/60/60/24, sys.uptime/60/60%24, sys.uptime/60%60);
-		printf("                 %s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n", BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN,  WHITE, NORMAL);
-}
 }
 
 int pkgman() { // this is just a function that returns the total of installed packages
