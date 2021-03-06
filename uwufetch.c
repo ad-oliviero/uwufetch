@@ -151,11 +151,11 @@ void print_ascii() {	// prints logo of the given system. distributions listed al
 		sprintf(version_name, "%s", "GentOwO");
 		printf(	"\033[3;9H%s   _-----_\n"
 				"  (       \\n"
-				"  \   OwO   \\n"
-				"%s   \         )\n"
+				"  \\   OwO   \\n"
+				"%s   \\         )\n"
 				"   /       _/\n"
 				"  (      _-\n"
-				"  \____-\n", MAGENTA, WHITE);
+				"  \\____-\n", MAGENTA, WHITE);
 	} else if (strcmp(version_name, "manjaro") == 0) {
 		sprintf(version_name, "%s", "Myanjaro");
 		printf(	" \u25b3       \u25b3   \u25e0\u25e0\u25e0\u25e0\n"
