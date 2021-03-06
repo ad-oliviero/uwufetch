@@ -127,7 +127,7 @@ void get_info() {	// get all necessary info
 	pkgs = pkgman();
 }
 
-void print_ascii() {
+void print_ascii() {	// prints logo of the given system. distributions listed alphabetically. 
 	if (strcmp(version_name, "arch") == 0) {
 		sprintf(version_name, "%s", "Nyarch Linuwu");
 		printf(	"\033[3;9H%s/\\\n"
@@ -164,6 +164,15 @@ void print_ascii() {
 				"  / /  %s|  |\n"
 				"  %s\\ \\%s__/  |\n"
 				"   %s\\%s(_____/\n", BLUE, CYAN, WHITE, BLUE, WHITE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE);
+	} else if (strcmp(version_name, "gentoo") == 0) {
+		sprintf(version_name, "%s", "GentOwO");
+		printf(	"\033[3;9H%s   _-----_\n"
+				"  (       \\n"
+				"  \\   OwO   \\n"
+				"%s   \\         )\n"
+				"   /       _/\n"
+				"  (      _-\n"
+				"  \\____-\n", MAGENTA, WHITE);
 	} else if (strcmp(version_name, "manjaro") == 0) {
 		sprintf(version_name, "%s", "Myanjawo");
 		printf(	" \u25b3       \u25b3   \u25e0\u25e0\u25e0\u25e0\n"
@@ -176,13 +185,13 @@ void print_ascii() {
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n");
 	}
 }
-
 void print_image() {
 	//printf("e[1;1H\e[2J");
 	char command[256];
 	sprintf(command, "viu -t -w 18 -h 8 $HOME/.config/uwufetch/%s.png", version_name);
 	system(command);
 }
+
 void usage(char* arg) {
 	printf("Usage: %s <args>\n"
 			"    -a, --ascii     prints logo as ascii text (default)\n"
