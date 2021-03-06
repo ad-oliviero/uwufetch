@@ -15,3 +15,7 @@ install:
 uninstall:
 	sudo rm $(INSTALL_DIR)$(NAME)
 	rm -rf ~/.config/uwufetch
+
+debug: build
+	clear
+	./uwufetch

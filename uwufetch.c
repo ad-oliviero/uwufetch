@@ -28,14 +28,31 @@ void get_info();
 void print_ascii();
 void print_info();
 void print_image();
+void usage(char*);
 
 int main(int argc, char *argv[]) {
+	int opt = getopt(argc, argv, "adhi");
 	get_info();
-	//sprintf(version_name, "%s", "manjaro"); // a debug thing
-	//char c = getopt(argc, argv, "adhi"); // things for the future
-	print_ascii();
-	//system("viu -t -w 18 -h 8 $HOME/.config/uwufetch/arch.png"); // other things for the future
-  print_info();
+	//sprintf(version_name, "%s", "artix"); // a debug thing
+	switch (opt) {
+		case 'd':
+			usage(argv[0]);
+			return 1;
+		case 'h':
+			usage(argv[0]);
+			return 0;
+		case 'a':
+			print_ascii();
+			break;
+		case 'i':
+			print_image();
+			break;
+		default:
+			print_ascii();
+			break;
+	}
+	print_info();
+	printf("%i\n", opt);
 }
 
 int pkgman() { // this is just a function that returns the total of installed packages
@@ -60,17 +77,17 @@ int pkgman() { // this is just a function that returns the total of installed pa
 	fscanf(file[6], "%d", &rpm);
 	fscanf(file[7], "%d", &xbps);
 	for (int i = 0; i < 8; i++) fclose(file[i]);
-    
-    if (apt > 0) { total += apt; snprintf(pkgman_name, 64, "(%s)", "apt"); }
-	if (dnf > 0) { total += dnf; snprintf(pkgman_name, 64, "(%s)", "dnf"); }
-	if (emerge > 0) { total += emerge; snprintf(pkgman_name, 64, "(%s)", "emerge"); }
-	if (flatpak > 0) { total += flatpak; snprintf(pkgman_name, 64, "(%s)", "flatpak"); }
-	if (nix > 0) { total += nix; snprintf(pkgman_name, 64, "(%s)", "nix"); }
-	if (pacman > 0) { total += pacman; snprintf(pkgman_name, 64, "(%s)", "pacman"); }
-	if (rpm > 0) { total += rpm; snprintf(pkgman_name, 64, "(%s)", "rpm"); }
-	if (xbps > 0) { total += xbps; snprintf(pkgman_name, 64, "(%s)", "xbps"); }
+	
+	if (apt > 0) { total += apt; strcat(pkgman_name, "(apt)"); }
+	if (dnf > 0) { total += dnf; strcat(pkgman_name, "(dnf)"); }
+	if (emerge > 0) { total += emerge; strcat(pkgman_name, "(emerge)"); }
+	if (flatpak > 0) { total += flatpak; strcat(pkgman_name, "(flatpak)"); }
+	if (nix > 0) { total += nix; strcat(pkgman_name, "(nix)"); }
+	if (pacman > 0) { total += pacman; strcat(pkgman_name, "(pacman)"); }
+	if (rpm > 0) { total += rpm; strcat(pkgman_name, "(rpm)"); }
+	if (xbps > 0) { total += xbps; strcat(pkgman_name, "(xbps)"); }
 
-    return total;	
+	return total;	
 }
 
 void print_info() {	// print collected info
@@ -138,7 +155,7 @@ void print_ascii() {
 				"    -_\n"
 				"      --_\n", RED);
 	} else if (strcmp(version_name, "fedora") == 0) {
-		sprintf(version_name, "%s", "Fedowora");
+		sprintf(version_name, "%s", "Fedowoa");
 		printf(	"\033[2;9H%s_____\n"
 				"       /   __)%s\\\n"
 				"     %s> %s|  / %s<%s\\ \\\n"
@@ -148,7 +165,7 @@ void print_ascii() {
 				"  %s\\ \\%s__/  |\n"
 				"   %s\\%s(_____/\n", BLUE, CYAN, WHITE, BLUE, WHITE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE);
 	} else if (strcmp(version_name, "manjaro") == 0) {
-		sprintf(version_name, "%s", "Myanjaro");
+		sprintf(version_name, "%s", "Myanjawo");
 		printf(	" \u25b3       \u25b3   \u25e0\u25e0\u25e0\u25e0\n"
 				" \e[0;42m          \e[0m  \e[0;42m    \e[0m\n"
 				" \e[0;42m \e[0m\e[0;42m\e[1;30m > w < \e[0m\e[0;42m  \e[0m  \e[0;42m    \e[0m\n"
@@ -158,4 +175,21 @@ void print_ascii() {
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n"
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n");
 	}
+}
+
+void print_image() {
+	//printf("e[1;1H\e[2J");
+	char command[256];
+	sprintf(command, "viu -t -w 18 -h 8 $HOME/.config/uwufetch/%s.png", version_name);
+	system(command);
+}
+void usage(char* arg) {
+	printf("Usage: %s <args>\n"
+			"    -a, --ascii     prints logo as ascii text (default)\n"
+			"    -d, --distro    %slets you choose the logo to print%s\n"
+			"    -h, --help      prints this help page\n"
+			"    -i, --image     prints logo as image\n"
+			"                    %sworks in few terminals\n"
+			"                    <cat README.md> for more info%s\n",
+			arg, YELLOW, NORMAL, BLUE, NORMAL);
 }
