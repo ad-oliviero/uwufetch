@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
 	//char c = getopt(argc, argv, "adhi"); // things for the future
 	print_ascii();
 	//system("viu -t -w 18 -h 8 $HOME/.config/uwufetch/arch.png"); // other things for the future
-  print_info();
+	print_info();
 }
 
 int pkgman() { // this is just a function that returns the total of installed packages
@@ -110,7 +110,7 @@ void get_info() {	// get all necessary info
 	pkgs = pkgman();
 }
 
-void print_ascii() {
+void print_ascii() {	// prints logo of the given system. distributions listed alphabetically. 
 	if (strcmp(version_name, "arch") == 0) {
 		sprintf(version_name, "%s", "Nyarch Linuwu");
 		printf(	"\033[3;9H%s/\\\n"
@@ -147,6 +147,15 @@ void print_ascii() {
 				"  / /  %s|  |\n"
 				"  %s\\ \\%s__/  |\n"
 				"   %s\\%s(_____/\n", BLUE, CYAN, WHITE, BLUE, WHITE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE);
+	} else if (strcmp(version_name, "gentoo") == 0) {
+		sprintf(version_name, "%s", "GentOwO");
+		printf(	"\033[3;9H%s   _-----_\n"
+				"  (       \\n"
+				"  \   OwO   \\n"
+				"%s   \         )\n"
+				"   /       _/\n"
+				"  (      _-\n"
+				"  \____-\n", MAGENTA, WHITE);
 	} else if (strcmp(version_name, "manjaro") == 0) {
 		sprintf(version_name, "%s", "Myanjaro");
 		printf(	" \u25b3       \u25b3   \u25e0\u25e0\u25e0\u25e0\n"
