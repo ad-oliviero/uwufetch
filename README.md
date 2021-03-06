@@ -4,7 +4,7 @@ A meme system info tool for Linux, based on nyan/UwU trend on r/linuxmasterrace.
 
 ## Currently supported distros
 
-Nyarch Linuwu, Nyartix Linuwu, Debinyan, Fedowa, Myanjaro.
+Nyarch Linuwu, Nyartix Linuwu, Debinyan, Fedowa, Myanjawo.
 
 ## Building and installation
 
