@@ -77,7 +77,7 @@ int main() {
 
 	else if ((strcmp(version_name, "Artix")==0)) {
 		printf("%s                 %s@%s\n", BOLD, user, host);
-		printf("%s        /\\       %s%sOS	%sMyArtix Linuwu\n", BLUE, NORMAL, BOLD, NORMAL);
+		printf("%s        /\\       %s%sOS	%sNyArtix Linuwu\n", BLUE, NORMAL, BOLD, NORMAL);
 		printf("%s       /  \\      %s%sKERNEL %s%s %s\n", BLUE, NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine);
 		printf("%s      /`'.,\\     %s%sCPUWU    %s%s\n", BLUE, NORMAL, BOLD, NORMAL, cpu_model);
 		printf("%s     / > w <\\    %s%sWAM    %s%ldM/%iM\n", BLUE, NORMAL, BOLD, NORMAL, r_usage.ru_maxrss, ram_max);
