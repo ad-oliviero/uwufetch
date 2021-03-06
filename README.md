@@ -4,20 +4,18 @@ A meme system info tool for Linux, based on nyan/UwU trend on r/linuxmasterrace.
 
 ## Currently supported distros
 
-NyArch Linuwu, Nyartix Linuwu, Fedowa, Myanjaro.
+Nyarch Linuwu, Nyartix Linuwu, Debinyan, Fedowa, Myanjaro.
 
 ## Building and installation
 
 To install you can type this commands in the terminal:
-
 ```shell
 git clone https://github.com/TheDarkBug/uwufetch.git
 cd uwufetch
 make
 ```
 
-To uninstall (this will also remove the repository folder):
-
+To uninstall:
 ```shell
 cd uwufetch
 make uninstall
