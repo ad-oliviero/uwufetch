@@ -52,7 +52,6 @@ int main(int argc, char *argv[]) {
 			break;
 	}
 	print_info();
-	printf("%i\n", opt);
 }
 
 int pkgman() { // this is just a function that returns the total of installed packages
