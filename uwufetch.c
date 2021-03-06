@@ -74,6 +74,18 @@ int main() {
 		printf("%s  \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m    %s%sUWUPTIME %s%lid, %lih, %lim\n", BLUE, NORMAL, BOLD, NORMAL, sys.uptime/60/60/24, sys.uptime/60/60%24, sys.uptime/60%60);
 		printf("                      %s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n", BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN,  WHITE, NORMAL);
 	}
+
+	else if ((strcmp(version_name, "Artix")==0)) {
+		printf("%s                 %s@%s\n", BOLD, user, host);
+		printf("%s        /\\       %s%sOS	%sNyArtix Linuwu\n", BLUE, NORMAL, BOLD, NORMAL);
+		printf("%s       /  \\      %s%sKERNEL %s%s %s\n", BLUE, NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine);
+		printf("%s      /`'.,\\     %s%sCPUWU    %s%s\n", BLUE, NORMAL, BOLD, NORMAL, cpu_model);
+		printf("%s     / > w <\\    %s%sWAM    %s%ldM/%iM\n", BLUE, NORMAL, BOLD, NORMAL, r_usage.ru_maxrss, ram_max);
+		printf("%s    /      ,`\\   %s%sSHELL  %s%s\n", BLUE, NORMAL, BOLD, NORMAL, shell);
+		printf("%s   /   ,.'`.  \\  %s%sPKGS   %s%s%d\n", BLUE, NORMAL, BOLD, NORMAL, NORMAL, pkgs);
+		printf("%s  /.,'`     `'.\\ %s%sUWUPTIME %s%lid, %lih, %lim\n", BLUE, NORMAL, BOLD, NORMAL, sys.uptime/60/60/24, sys.uptime/60/60%24, sys.uptime/60%60);
+		printf("                 %s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n", BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN,  WHITE, NORMAL);
+}
 }
 
 int pkgman() { // this is just a function that returns the total of installed packages
