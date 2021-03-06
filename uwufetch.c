@@ -74,6 +74,19 @@ int main() {
 		printf("%s  /.,'`     `'.\\ %s%sUWUPTIME %s%lid, %lih, %lim\n", BLUE, NORMAL, BOLD, NORMAL, sys.uptime/60/60/24, sys.uptime/60/60%24, sys.uptime/60%60);
 		printf("                 %s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n", BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN,  WHITE, NORMAL);
 	}
+
+	else if (strcmp(version_name, "debian") == 0) {
+		printf("%s           %s@%s\n", BOLD, user, host);
+		printf("%s   _____    %s%sOWOS     %sdebiNyan gnUwU/linuwu\n", RED, NORMAL, BOLD, NORMAL);
+		printf("%s  /  ___ \\ %s%sKERNEL   %s%s %s\n", RED, NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine);
+		printf("%s |  / OwO | %s%sCPUWU    %s%s\n", RED, NORMAL, BOLD, NORMAL, cpu_model);
+		printf("%s |  \\____- %s%sWAM      %s%ldM/%iM\n", RED, NORMAL, BOLD, NORMAL, r_usage.ru_maxrss, ram_max);
+		printf("%s -_         %s%sSHELL    %s%s\n", RED, NORMAL, BOLD, NORMAL, shell);
+		printf("%s   --_      %s%sPKGS     %s%s%d\n", RED, NORMAL, BOLD, NORMAL, NORMAL, pkgs);
+		printf("%s            %s%sUWUPTIME %s%lid, %lih, %lim\n", RED, NORMAL, BOLD, NORMAL, sys.uptime/60/60/24, sys.uptime/60/60%24, sys.uptime/60%60);
+		printf("              %s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n", BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN,  WHITE, NORMAL);
+	}
+
 	else if (strcmp(version_name, "fedora") == 0) {
 		printf("%s        _____%s%s    %s@%s\n", BLUE, NORMAL, BOLD, user, host);
 		printf("%s       /   __)%s\\  %s%sOS	%sFedowa\n", BLUE, CYAN, NORMAL, BOLD, NORMAL);
