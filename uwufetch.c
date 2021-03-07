@@ -114,7 +114,7 @@ void get_info() {	// get all necessary info
 	memmove(&shell[0], &shell[5], 16);
 
 	// os version
-	FILE *fos_rel = popen("cat /etc/os-release | grep ID= | cut -d '=' -f2 2> /dev/null", "r");
+	FILE *fos_rel = popen("cat /etc/os-release | awk '/^ID=/' | awk -F  '=' '{print $2}'  2> /dev/null", "r");
 	fscanf(fos_rel,"%[^\n]", version_name);
 	fclose(fos_rel);
 
