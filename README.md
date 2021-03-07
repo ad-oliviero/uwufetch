@@ -10,7 +10,7 @@ Nyarch Linuwu, Nyartix Linuwu, Debinyan, Fedowa, GentOwO, Myanjawo.
 
 ##### Via package manager
 
-Right now the package is only available on the AUR.
+Right now the package is only available on the [AUR](https://aur.archlinux.org/packages/uwufetch-git/).
 
 ##### Via git clone
 
