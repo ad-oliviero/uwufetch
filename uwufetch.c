@@ -226,27 +226,28 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 		printf(	"\n\n\nascii icon\n  nedds to be\n     added\n\n\n\n\n");
 	}
 
-	// BSD
 
+
+	// BSD
 	else if (strcmp(version_name, "openbsd") == 0) {
 		sprintf(version_name, "%s", "OwOpenBSD");
 		printf(	"\033[1E\033[3C%s  ______  \n"
-					"   \\-      -/  %s\u2665  \n"
-					"%s\\_/          \\  \n"
-					"|        %s>  < %s|   \n"
-					"|_  <  %s//  %sW %s//   \n"
-					"%s/ \\          /   \n"
-					"  /-________-\\   \n\n", YELLOW, RED, YELLOW, WHITE, YELLOW, RED, WHITE, RED, YELLOW);
+			"   \\-      -/  %s\u2665  \n"
+			"%s\\_/          \\  \n"
+			"|        %s>  < %s|   \n"
+			"|_  <  %s//  %sW %s//   \n"
+			"%s/ \\          /   \n"
+			"  /-________-\\   \n\n", YELLOW, RED, YELLOW, WHITE, YELLOW, RED, WHITE, RED, YELLOW);
 
  	} else if (strcmp(version_name, "freebsd") == 0) {
 		sprintf(version_name, "%s", "FweeBSD");
 		printf(	"\033[1E\033[3C%s\n"
-				" /\\,-'''''-,/\\\n"
-				" \\_)       (_/\n"
-				" |   \\   /   |\n"
-				" |   O w O   |\n"
-				"  ;         ;\n"
-				"   '-_____-'\n", RED);
+			" /\\,-'''''-,/\\\n"
+			" \\_)       (_/\n"
+			" |   \\   /   |\n"
+			" |   O w O   |\n"
+			"  ;         ;\n"
+			"   '-_____-'\n", RED);
 	 }
 }
 
@@ -255,7 +256,8 @@ void print_image() {	// prints logo (as an image) of the given system. distribut
 	sprintf(command, "viu -t -w 18 -h 8 /usr/lib/uwufetch/%s.png", version_name);
 	system(command);
 	printf("\033[1E\033[0C\b");
-
+	
+	// linux
 	if (strcmp(version_name, "arch") == 0) sprintf(version_name, "%s", "Nyarch Linuwu");
 	else if (strcmp(version_name, "artix") == 0) sprintf(version_name, "%s", "Nyartix Linuwu");
 	else if (strcmp(version_name, "debian") == 0) sprintf(version_name, "%s", "Debinyan");
@@ -264,6 +266,10 @@ void print_image() {	// prints logo (as an image) of the given system. distribut
 	else if (strcmp(version_name, "manjaro") == 0) sprintf(version_name, "%s", "Myanjawo");
 	else if (strcmp(version_name, "\"manjaro-arm\"") == 0) sprintf(version_name, "%s", "Myanjawo AWM");
 	else if (strcmp(version_name, "android") == 0) sprintf(version_name, "%s", "Nyandroid");	// android at the end because it could be not considered as an actual distribution of gnu/linux
+	
+	// BSD
+	if (strcmp(version_name, "openbsd") == 0) sprintf(version_name, "%s", "OwOpenBSD");
+	else if (strcmp(version_name, "freebsd") == 0) sprintf(version_name, "%s", "FweeBSD");
 }
 
 void usage(char* arg) {
