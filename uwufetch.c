@@ -1,3 +1,4 @@
+#include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,7 +22,7 @@
 struct rusage r_usage;
 struct utsname sys_var;
 struct sysinfo sys;
-int ram_max, pkgs;
+int ram_max, pkgs, a_i_flag = 0;
 char user[32], host[253], shell[64], version_name[64], cpu_model[256], pkgman_name[64];
 int pkgman();
 void get_info();
@@ -31,10 +32,8 @@ void print_image();
 void usage(char*);
 
 int main(int argc, char *argv[]) {
-	int opt = 0, a_i_flag = 0;
+	int opt = 0;
 	get_info();
-	//sprintf(version_name, "%s", "debian"); // a debug thing
-
 	while((opt = getopt(argc, argv, "ad:hi")) != -1) {
 		switch(opt) {
 			case 'a':
@@ -94,7 +93,10 @@ int pkgman() { // this is just a function that returns the total of installed pa
 }
 
 void print_info() {	// print collected info
-	printf("\033[9A\033[17C %s%s%s@%s\n", NORMAL, BOLD, user, host);
+	char *start_cursor_position = "\033[9A\033[18C";
+	//if (a_i_flag) start_cursor_position = "\033[8A\033[18C"; // this if - else is for a little bug 
+	//else start_cursor_position = "\033[9A\033[18C";
+	printf("%s%s%s%s@%s\n", start_cursor_position, NORMAL, BOLD, user, host);
 	printf("\033[17C %s%sOWOS     %s%s\n", NORMAL, BOLD, NORMAL, version_name);
 	printf("\033[17C %s%sKERNEL   %s%s %s\n", NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine);
 	printf("\033[17C %s%sCPUWU    %s%s\n", NORMAL, BOLD, NORMAL, cpu_model);
@@ -106,26 +108,45 @@ void print_info() {	// print collected info
 }
 
 void get_info() {	// get all necessary info
+	// os version
+	FILE *fos_rel = popen("cat /etc/os-release 2> /dev/null | awk '/^ID=/' | awk -F  '=' '{print $2}'", "r");
+	fscanf(fos_rel,"%[^\n]", version_name);
+	fclose(fos_rel);
 
+	if (strlen(version_name) < 1) {	// handling unknown distribution
+		DIR *system_app = opendir("/system/app/");
+		DIR *system_priv_app = opendir("/system/priv-app/");
+		if (system_app && system_priv_app) {	// android
+			closedir(system_app);
+			closedir(system_priv_app);
+			sprintf(version_name, "android");
+		} else sprintf(version_name, "generic");
+	}
 	// user name, host name and shell
-	snprintf(user, 32, "%s", getenv("USER"));
+	if (strcmp(version_name, "android") != 0) {
+		snprintf(user, 32, "%s", getenv("USER"));
+		// cpu (this is here and not near the ram for efficiency)
+		FILE *fcpu = popen("lscpu | grep 'Model name:' | cut -d ':' -f2 | sed 's/  //g' 2> /dev/null", "r");
+		fscanf(fcpu, "%[^\n]", cpu_model);
+		fclose(fcpu);
+	}
+	else if (strcmp(version_name, "android") == 0) {	// android vars
+		FILE *whoami = popen("whoami", "r");
+		fscanf(whoami, "%s", user);
+		fclose(whoami);
+		FILE *fcpu = popen("cat /proc/cpuinfo | grep 'Hardware' | cut -d ':' -f2 | sed 's/  //g' 2> /dev/null", "r");
+		fscanf(fcpu, "%[^\n]", cpu_model);
+		fclose(fcpu);
+	}
 	gethostname(host, 253);
 	snprintf(shell, 16, "%s", getenv("SHELL"));
 	memmove(&shell[0], &shell[5], 16);
-
-	// os version
-	FILE *fos_rel = popen("cat /etc/os-release | awk '/^ID=/' | awk -F  '=' '{print $2}'  2> /dev/null", "r");
-	fscanf(fos_rel,"%[^\n]", version_name);
-	fclose(fos_rel);
 
 	// system info
 	if (uname(&sys_var) == -1) printf("There was some kind of error while getting the username\n");
 	if (sysinfo(&sys) == -1) printf("There was some kind of error while getting system info\n");
 	
-	// cpu and ram
-	FILE *fcpu = popen("lscpu | grep 'Model name:' | cut -d ':' -f2 | sed 's/  //g' 2> /dev/null", "r");
-	fscanf(fcpu, "%[^\n]", cpu_model);
-	fclose(fcpu);
+	// ram
 	ram_max = sys.totalram * sys.mem_unit / 1048576;
 	getrusage(RUSAGE_SELF, &r_usage);
 	pkgs = pkgman();
@@ -187,7 +208,7 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n"
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n"
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n");
-	} else if (strcmp(version_name, "\"manjaro-arm\"") == 0) { // we use \ to include the " as the ID on manjaro-arm returns "manjaro-arm" not just manjaro-arm.
+	} else if (strcmp(version_name, "\"manjaro-arm\"") == 0) {
 		sprintf(version_name, "%s", "Myanjawo AWM");
 		printf(	"\033[0E\033[1C\u25b3       \u25b3   \u25e0\u25e0\u25e0\u25e0\n"
 				" \e[0;42m          \e[0m  \e[0;42m    \e[0m\n"
@@ -197,19 +218,25 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n"
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n"
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n");
+	} else if (strcmp(version_name, "android") == 0) {	// android at the end because it could be not considered as an actual distribution of gnu/linux
+		sprintf(version_name, "%s", "Nyandroid");
+		printf(	"\033[2E\033[1C ascii icon\n  nedds to be\n     added\n\n\n\n");
 	}
 }
 void print_image() {	// prints logo (as an image) of the given system. distributions listed alphabetically.
 	char command[256];
 	sprintf(command, "viu -t -w 18 -h 8 /usr/lib/uwufetch/%s.png", version_name);
 	system(command);
+	printf("\033[1E\033[0C\b");
 
 	if (strcmp(version_name, "arch") == 0) sprintf(version_name, "%s", "Nyarch Linuwu");
-	if (strcmp(version_name, "artix") == 0) sprintf(version_name, "%s", "Nyartix Linuwu");
-	if (strcmp(version_name, "debian") == 0) sprintf(version_name, "%s", "Debinyan");
-	if (strcmp(version_name, "fedora") == 0) sprintf(version_name, "%s", "Fedowa");
-	if (strcmp(version_name, "gentoo") == 0) sprintf(version_name, "%s", "GentOwO");
-	if (strcmp(version_name, "manjaro") == 0) sprintf(version_name, "%s", "Myanjawo");
+	else if (strcmp(version_name, "artix") == 0) sprintf(version_name, "%s", "Nyartix Linuwu");
+	else if (strcmp(version_name, "debian") == 0) sprintf(version_name, "%s", "Debinyan");
+	else if (strcmp(version_name, "fedora") == 0) sprintf(version_name, "%s", "Fedowa");
+	else if (strcmp(version_name, "gentoo") == 0) sprintf(version_name, "%s", "GentOwO");
+	else if (strcmp(version_name, "manjaro") == 0) sprintf(version_name, "%s", "Myanjawo");
+	else if (strcmp(version_name, "\"manjaro-arm\"") == 0) sprintf(version_name, "%s", "Myanjawo AWM");
+	else if (strcmp(version_name, "android") == 0) sprintf(version_name, "%s", "Nyandroid");	// android at the end because it could be not considered as an actual distribution of gnu/linux
 }
 
 void usage(char* arg) {
