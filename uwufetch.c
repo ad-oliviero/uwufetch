@@ -31,26 +31,28 @@ void print_image();
 void usage(char*);
 
 int main(int argc, char *argv[]) {
-	int opt = getopt(argc, argv, "adhi");
+	int opt = 0;
 	get_info();
-	//sprintf(version_name, "%s", "artix"); // a debug thing
-	switch (opt) {
-		case 'd':
-			usage(argv[0]);
-			return 1;
-		case 'h':
-			usage(argv[0]);
-			return 0;
-		case 'a':
-			print_ascii();
-			break;
-		case 'i':
-			print_image();
-			break;
-		default:
-			print_ascii();
-			break;
+	//sprintf(version_name, "%s", "debian"); // a debug thing
+
+	while((opt = getopt(argc, argv, "a:hi")) != -1) {
+		switch(opt) {
+			case 'a':
+				if (optarg) sprintf(version_name, "%s", optarg);
+				if (opt != 'i') print_ascii();
+				break;
+			case 'i':
+				if (optarg) sprintf(version_name, "%s", optarg);
+				if (opt != 'a') print_image();
+				break;
+			case 'h':
+				usage(argv[0]);
+				return 0;
+			default:
+				break;
+		}
 	}
+	if (argc == 1) print_ascii();
 	print_info();
 }
 
@@ -114,6 +116,7 @@ void get_info() {	// get all necessary info
 	fscanf(fos_rel,"%[^\n]", version_name);
 	fclose(fos_rel);
 
+	// system info
 	if (uname(&sys_var) == -1) printf("There was some kind of error while getting the username\n");
 	if (sysinfo(&sys) == -1) printf("There was some kind of error while getting system info\n");
 	
@@ -126,7 +129,7 @@ void get_info() {	// get all necessary info
 	pkgs = pkgman();
 }
 
-void print_ascii() {	// prints logo of the given system. distributions listed alphabetically. 
+void print_ascii() {	// prints logo (as ascii art) of the given system. distributions listed alphabetically.
 	if (strcmp(version_name, "arch") == 0) {
 		sprintf(version_name, "%s", "Nyarch Linuwu");
 		printf(	"\033[3;9H%s/\\\n"
@@ -184,11 +187,18 @@ void print_ascii() {	// prints logo of the given system. distributions listed al
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n");
 	}
 }
-void print_image() {
+void print_image() {	// prints logo (as an image) of the given system. distributions listed alphabetically.
 	//printf("e[1;1H\e[2J");
 	char command[256];
 	sprintf(command, "viu -t -w 18 -h 8 $HOME/.config/uwufetch/%s.png", version_name);
 	system(command);
+
+	if (strcmp(version_name, "arch") == 0) sprintf(version_name, "%s", "Nyarch Linuwu");
+	if (strcmp(version_name, "artix") == 0) sprintf(version_name, "%s", "Nyartix Linuwu");
+	if (strcmp(version_name, "debian") == 0) sprintf(version_name, "%s", "Debinyan");
+	if (strcmp(version_name, "fedora") == 0) sprintf(version_name, "%s", "Fedowa");
+	if (strcmp(version_name, "gentoo") == 0) sprintf(version_name, "%s", "GentOwO");
+	if (strcmp(version_name, "manjaro") == 0) sprintf(version_name, "%s", "Myanjawo");
 }
 
 void usage(char* arg) {

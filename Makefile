@@ -9,13 +9,13 @@ build: uwufetch.c
 
 install:
 	sudo cp $(NAME) $(INSTALL_DIR)$(NAME)
-	mkdir ~/.config/uwufetch/
+	ls ~/.config/uwufetch 1> /dev/null || mkdir ~/.config/uwufetch/
 	cp res/* ~/.config/uwufetch/
 
 uninstall:
 	sudo rm $(INSTALL_DIR)$(NAME)
 	rm -rf ~/.config/uwufetch
 
-debug: build
+debug: build install
 	clear
 	./uwufetch
