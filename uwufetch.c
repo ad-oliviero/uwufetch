@@ -209,6 +209,6 @@ void usage(char* arg) {
 			"    -h, --help      prints this help page\n"
 			"    -i, --image     prints logo as image\n"
 			"                    %sworks in few terminals\n"
-			"                    <cat README.md> for more info%s\n",
+			"                    <cat res/IMAGES.md> for more info%s\n",
 			arg, YELLOW, NORMAL, BLUE, NORMAL);
 }
