@@ -110,7 +110,7 @@ void get_info() {	// get all necessary info
 	memmove(&shell[0], &shell[5], 16);
 
 	// os version
-	FILE *fos_rel = popen("cut -d '=' -f2 <<< $(cat /etc/os-release | grep ID=) 2> /dev/null", "r");
+	FILE *fos_rel = popen("cat /etc/os-release | grep ID= | cut -d '=' -f2 2> /dev/null", "r");
 	fscanf(fos_rel,"%[^\n]", version_name);
 	fclose(fos_rel);
 
@@ -118,7 +118,7 @@ void get_info() {	// get all necessary info
 	if (sysinfo(&sys) == -1) printf("There was some kind of error while getting system info\n");
 	
 	// cpu and ram
-	FILE *fcpu = popen("sed 's/  //g' <<< $(cut -d ':' -f2 <<< $(lscpu | grep 'Model name:')) 2> /dev/null", "r");
+	FILE *fcpu = popen("lscpu | grep 'Model name:' | cut -d ':' -f2 | sed 's/  //g' 2> /dev/null", "r");
 	fscanf(fcpu, "%[^\n]", cpu_model);
 	fclose(fcpu);
 	ram_max = sys.totalram * sys.mem_unit / 1048576;
