@@ -220,7 +220,7 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n");
 	} else if (strcmp(version_name, "android") == 0) {	// android at the end because it could be not considered as an actual distribution of gnu/linux
 		sprintf(version_name, "%s", "Nyandroid");
-		printf(	"\033[2E\033[1C ascii icon\n  nedds to be\n     added\n\n\n\n\n");
+		printf(	"\n\n\nascii icon\n  nedds to be\n     added\n\n\n\n\n");
 	}
 }
 void print_image() {	// prints logo (as an image) of the given system. distributions listed alphabetically.
