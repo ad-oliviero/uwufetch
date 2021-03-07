@@ -31,28 +31,30 @@ void print_image();
 void usage(char*);
 
 int main(int argc, char *argv[]) {
-	int opt = 0;
+	int opt = 0, a_i_flag = 0;
 	get_info();
 	//sprintf(version_name, "%s", "debian"); // a debug thing
 
-	while((opt = getopt(argc, argv, "a:hi")) != -1) {
+	while((opt = getopt(argc, argv, "ad:hi")) != -1) {
 		switch(opt) {
 			case 'a':
-				if (optarg) sprintf(version_name, "%s", optarg);
-				if (opt != 'i') print_ascii();
+				a_i_flag = 0;
 				break;
-			case 'i':
+			case 'd':
 				if (optarg) sprintf(version_name, "%s", optarg);
-				if (opt != 'a') print_image();
 				break;
 			case 'h':
 				usage(argv[0]);
 				return 0;
+			case 'i':
+				a_i_flag = 1;
+				break;
 			default:
 				break;
 		}
 	}
-	if (argc == 1) print_ascii();
+	if (argc == 1 || a_i_flag == 0) print_ascii();
+	else if (a_i_flag) print_image();
 	print_info();
 }
 
@@ -92,7 +94,7 @@ int pkgman() { // this is just a function that returns the total of installed pa
 }
 
 void print_info() {	// print collected info
-	printf("\033[8A\033[17C %s%s%s@%s\n", NORMAL, BOLD, user, host);
+	printf("\033[9A\033[17C %s%s%s@%s\n", NORMAL, BOLD, user, host);
 	printf("\033[17C %s%sOWOS     %s%s\n", NORMAL, BOLD, NORMAL, version_name);
 	printf("\033[17C %s%sKERNEL   %s%s %s\n", NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine);
 	printf("\033[17C %s%sCPUWU    %s%s\n", NORMAL, BOLD, NORMAL, cpu_model);
@@ -132,7 +134,7 @@ void get_info() {	// get all necessary info
 void print_ascii() {	// prints logo (as ascii art) of the given system. distributions listed alphabetically.
 	if (strcmp(version_name, "arch") == 0) {
 		sprintf(version_name, "%s", "Nyarch Linuwu");
-		printf(	"\033[8C%s/\\\n"
+		printf(	"\033[1E\033[8C%s/\\\n"
 				"       /  \\\n"
 				"      /\\   \\\n"
 				"     / > w <\\\n"
@@ -141,7 +143,7 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				"  /_-''    ''-_\\\n\n", BLUE);
 	} else if (strcmp(version_name, "artix") == 0) {
 		sprintf(version_name, "%s", "Nyartix Linuwu");
-		printf(	"\033[8C%s/\\\n"
+		printf(	"\033[1E\033[8C%s/\\\n"
 				"       /  \\\n"
 				"      /`'.,\\\n"
 				"     /\u2022 w \u2022 \\\n"
@@ -150,7 +152,7 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				"  /.,'`     `'.\\\n\n", BLUE);
 	} else if (strcmp(version_name, "debian") == 0) {
 		sprintf(version_name, "%s", "Debinyan");
-		printf(	"\033[6C%s______\n"
+		printf(	"\033[1E\033[6C%s______\n"
 				"     /  ___ \\\n"
 				"    |  / OwO |\n"
 				"    |  \\____-\n"
@@ -158,7 +160,7 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				"      --_\n\n\n", RED);
 	} else if (strcmp(version_name, "fedora") == 0) {
 		sprintf(version_name, "%s", "Fedowoa");
-		printf(	"\033[8C%s_____\n"
+		printf(	"\033[1E\033[8C%s_____\n"
 				"       /   __)%s\\\n"
 				"     %s> %s|  / %s<%s\\ \\\n"
 				"    __%s_| %sw%s|_%s_/ /\n"
@@ -168,7 +170,7 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				"   %s\\%s(_____/\n", BLUE, CYAN, WHITE, BLUE, WHITE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE);
 	} else if (strcmp(version_name, "gentoo") == 0) {
 		sprintf(version_name, "%s", "GentOwO");
-		printf(	"%s   _-----_\n"
+		printf(	"\033[1E\033[3C%s_-----_\n"
 				"  (       \\\n"
 				"  \\   OwO   \\\n"
 				"%s   \\         )\n"
@@ -177,7 +179,7 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				"  \\____-\n\n", MAGENTA, WHITE);
 	} else if (strcmp(version_name, "manjaro") == 0) {
 		sprintf(version_name, "%s", "Myanjawo");
-		printf(	" \u25b3       \u25b3   \u25e0\u25e0\u25e0\u25e0\n"
+		printf(	"\033[0E\033[1C\u25b3       \u25b3   \u25e0\u25e0\u25e0\u25e0\n"
 				" \e[0;42m          \e[0m  \e[0;42m    \e[0m\n"
 				" \e[0;42m \e[0m\e[0;42m\e[1;30m > w < \e[0m\e[0;42m  \e[0m  \e[0;42m    \e[0m\n"
 				" \e[0;42m    \e[0m        \e[0;42m    \e[0m\n"

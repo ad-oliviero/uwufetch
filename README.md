@@ -20,6 +20,9 @@ To uninstall:
 cd uwufetch
 make uninstall
 ```
+## Images
+
+[IMAGES.md](https://github.com/TheDarkBug/uwufetch/tree/main/res/IMAGES.md)
 
 ## License
 This program is provided under the [GPL-3.0 License](https://github.com/TheDarkBug/uwufetch/LICENSE).
