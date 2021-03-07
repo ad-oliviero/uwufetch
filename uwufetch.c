@@ -187,6 +187,16 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n"
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n"
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n");
+	} else if (strcmp(version_name, "\"manjaro-arm\"") == 0) { // we use \ to include the " as the ID on manjaro-arm returns "manjaro-arm" not just manjaro-arm.
+		sprintf(version_name, "%s", "Myanjawo AWM");
+		printf(	"\033[0E\033[1C\u25b3       \u25b3   \u25e0\u25e0\u25e0\u25e0\n"
+				" \e[0;42m          \e[0m  \e[0;42m    \e[0m\n"
+				" \e[0;42m \e[0m\e[0;42m\e[1;30m > w < \e[0m\e[0;42m  \e[0m  \e[0;42m    \e[0m\n"
+				" \e[0;42m    \e[0m        \e[0;42m    \e[0m\n"
+				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n"
+				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n"
+				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n"
+				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n");
 	}
 }
 void print_image() {	// prints logo (as an image) of the given system. distributions listed alphabetically.
