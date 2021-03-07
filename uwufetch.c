@@ -236,7 +236,7 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 					"|        %s>  < %s|   \n"
 					"|_  <  %s//  %sW %s//   \n"
 					"%s/ \\          /   \n"
-					"  /-________-\\   \n\n", YELLOW, RED, YELLOW, WHITE, YELLOW, MAGENTA, WHITE, MAGENTA, YELLOW);
+					"  /-________-\\   \n\n", YELLOW, RED, YELLOW, WHITE, YELLOW, RED, WHITE, RED, YELLOW);
 
  	} else if (strcmp(version_name, "freebsd") == 0) {
 		sprintf(version_name, "%s", "FweeBSD");
