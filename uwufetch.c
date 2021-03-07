@@ -28,14 +28,34 @@ void get_info();
 void print_ascii();
 void print_info();
 void print_image();
+void usage(char*);
 
 int main(int argc, char *argv[]) {
+	int opt = 0, a_i_flag = 0;
 	get_info();
-	//sprintf(version_name, "%s", "manjaro"); // a debug thing
-	//char c = getopt(argc, argv, "adhi"); // things for the future
-	print_ascii();
-	//system("viu -t -w 18 -h 8 $HOME/.config/uwufetch/arch.png"); // other things for the future
-  print_info();
+	//sprintf(version_name, "%s", "debian"); // a debug thing
+
+	while((opt = getopt(argc, argv, "ad:hi")) != -1) {
+		switch(opt) {
+			case 'a':
+				a_i_flag = 0;
+				break;
+			case 'd':
+				if (optarg) sprintf(version_name, "%s", optarg);
+				break;
+			case 'h':
+				usage(argv[0]);
+				return 0;
+			case 'i':
+				a_i_flag = 1;
+				break;
+			default:
+				break;
+		}
+	}
+	if (argc == 1 || a_i_flag == 0) print_ascii();
+	else if (a_i_flag) print_image();
+	print_info();
 }
 
 int pkgman() { // this is just a function that returns the total of installed packages
@@ -60,29 +80,29 @@ int pkgman() { // this is just a function that returns the total of installed pa
 	fscanf(file[6], "%d", &rpm);
 	fscanf(file[7], "%d", &xbps);
 	for (int i = 0; i < 8; i++) fclose(file[i]);
-    
-    if (apt > 0) { total += apt; snprintf(pkgman_name, 64, "(%s)", "apt"); }
-	if (dnf > 0) { total += dnf; snprintf(pkgman_name, 64, "(%s)", "dnf"); }
-	if (emerge > 0) { total += emerge; snprintf(pkgman_name, 64, "(%s)", "emerge"); }
-	if (flatpak > 0) { total += flatpak; snprintf(pkgman_name, 64, "(%s)", "flatpak"); }
-	if (nix > 0) { total += nix; snprintf(pkgman_name, 64, "(%s)", "nix"); }
-	if (pacman > 0) { total += pacman; snprintf(pkgman_name, 64, "(%s)", "pacman"); }
-	if (rpm > 0) { total += rpm; snprintf(pkgman_name, 64, "(%s)", "rpm"); }
-	if (xbps > 0) { total += xbps; snprintf(pkgman_name, 64, "(%s)", "xbps"); }
+	
+	if (apt > 0) { total += apt; strcat(pkgman_name, "(apt)"); }
+	if (dnf > 0) { total += dnf; strcat(pkgman_name, "(dnf)"); }
+	if (emerge > 0) { total += emerge; strcat(pkgman_name, "(emerge)"); }
+	if (flatpak > 0) { total += flatpak; strcat(pkgman_name, "(flatpak)"); }
+	if (nix > 0) { total += nix; strcat(pkgman_name, "(nix)"); }
+	if (pacman > 0) { total += pacman; strcat(pkgman_name, "(pacman)"); }
+	if (rpm > 0) { total += rpm; strcat(pkgman_name, "(rpm)"); }
+	if (xbps > 0) { total += xbps; strcat(pkgman_name, "(xbps)"); }
 
-    return total;	
+	return total;	
 }
 
 void print_info() {	// print collected info
-	printf("\033[2;18H %s%s%s@%s\n", NORMAL, BOLD, user, host);
-	printf("\033[3;18H %s%sOWOS     %s%s\n", NORMAL, BOLD, NORMAL, version_name);
-	printf("\033[4;18H %s%sKERNEL   %s%s %s\n", NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine);
-	printf("\033[5;18H %s%sCPUWU    %s%s\n", NORMAL, BOLD, NORMAL, cpu_model);
-	printf("\033[6;18H %s%sWAM      %s%ldM/%iM\n", NORMAL, BOLD, NORMAL, r_usage.ru_maxrss, ram_max);
-	printf("\033[7;18H %s%sSHELL    %s%s\n", NORMAL, BOLD, NORMAL, shell);
-	printf("\033[8;18H %s%sPKGS     %s%s%d %s\n", NORMAL, BOLD, NORMAL, NORMAL, pkgs, pkgman_name);
-	printf("\033[9;18H %s%sUWUPTIME %s%lid, %lih, %lim\n", NORMAL, BOLD, NORMAL, sys.uptime/60/60/24, sys.uptime/60/60%24, sys.uptime/60%60);
-	printf("\033[10;18H %s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n", BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN,  WHITE, NORMAL);
+	printf("\033[9A\033[17C %s%s%s@%s\n", NORMAL, BOLD, user, host);
+	printf("\033[17C %s%sOWOS     %s%s\n", NORMAL, BOLD, NORMAL, version_name);
+	printf("\033[17C %s%sKERNEL   %s%s %s\n", NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine);
+	printf("\033[17C %s%sCPUWU    %s%s\n", NORMAL, BOLD, NORMAL, cpu_model);
+	printf("\033[17C %s%sWAM      %s%ldM/%iM\n", NORMAL, BOLD, NORMAL, r_usage.ru_maxrss, ram_max);
+	printf("\033[17C %s%sSHELL    %s%s\n", NORMAL, BOLD, NORMAL, shell);
+	printf("\033[17C %s%sPKGS     %s%s%d %s\n", NORMAL, BOLD, NORMAL, NORMAL, pkgs, pkgman_name);
+	printf("\033[17C %s%sUWUPTIME %s%lid, %lih, %lim\n", NORMAL, BOLD, NORMAL, sys.uptime/60/60/24, sys.uptime/60/60%24, sys.uptime/60%60);
+	printf("\033[17C %s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n", BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN,  WHITE, NORMAL);
 }
 
 void get_info() {	// get all necessary info
@@ -94,15 +114,16 @@ void get_info() {	// get all necessary info
 	memmove(&shell[0], &shell[5], 16);
 
 	// os version
-	FILE *fos_rel = popen("cut -d '=' -f2 <<< $(cat /etc/os-release | grep ID=) 2> /dev/null", "r");
+	FILE *fos_rel = popen("cat /etc/os-release | awk '/^ID=/' | awk -F  '=' '{print $2}'  2> /dev/null", "r");
 	fscanf(fos_rel,"%[^\n]", version_name);
 	fclose(fos_rel);
 
+	// system info
 	if (uname(&sys_var) == -1) printf("There was some kind of error while getting the username\n");
 	if (sysinfo(&sys) == -1) printf("There was some kind of error while getting system info\n");
 	
 	// cpu and ram
-	FILE *fcpu = popen("sed 's/  //g' <<< $(cut -d ':' -f2 <<< $(lscpu | grep 'Model name:')) 2> /dev/null", "r");
+	FILE *fcpu = popen("lscpu | grep 'Model name:' | cut -d ':' -f2 | sed 's/  //g' 2> /dev/null", "r");
 	fscanf(fcpu, "%[^\n]", cpu_model);
 	fclose(fcpu);
 	ram_max = sys.totalram * sys.mem_unit / 1048576;
@@ -110,36 +131,36 @@ void get_info() {	// get all necessary info
 	pkgs = pkgman();
 }
 
-void print_ascii() {
+void print_ascii() {	// prints logo (as ascii art) of the given system. distributions listed alphabetically.
 	if (strcmp(version_name, "arch") == 0) {
 		sprintf(version_name, "%s", "Nyarch Linuwu");
-		printf(	"\033[3;9H%s/\\\n"
+		printf(	"\033[1E\033[8C%s/\\\n"
 				"       /  \\\n"
 				"      /\\   \\\n"
 				"     / > w <\\\n"
 				"    /   __   \\\n"
 				"   / __|  |__-\\\n"
-				"  /_-''    ''-_\\\n", BLUE);
+				"  /_-''    ''-_\\\n\n", BLUE);
 	} else if (strcmp(version_name, "artix") == 0) {
 		sprintf(version_name, "%s", "Nyartix Linuwu");
-		printf(	"\033[3;9H%s/\\\n"
+		printf(	"\033[1E\033[8C%s/\\\n"
 				"       /  \\\n"
 				"      /`'.,\\\n"
 				"     /\u2022 w \u2022 \\\n"
 				"    /      ,`\\\n"
 				"   /   ,.'`.  \\\n"
-				"  /.,'`     `'.\\\n", BLUE);
+				"  /.,'`     `'.\\\n\n", BLUE);
 	} else if (strcmp(version_name, "debian") == 0) {
 		sprintf(version_name, "%s", "Debinyan");
-		printf(	"\033[3;7H%s______\n"
+		printf(	"\033[1E\033[6C%s______\n"
 				"     /  ___ \\\n"
 				"    |  / OwO |\n"
 				"    |  \\____-\n"
 				"    -_\n"
-				"      --_\n", RED);
+				"      --_\n\n\n", RED);
 	} else if (strcmp(version_name, "fedora") == 0) {
-		sprintf(version_name, "%s", "Fedowora");
-		printf(	"\033[2;9H%s_____\n"
+		sprintf(version_name, "%s", "Fedowoa");
+		printf(	"\033[1E\033[8C%s_____\n"
 				"       /   __)%s\\\n"
 				"     %s> %s|  / %s<%s\\ \\\n"
 				"    __%s_| %sw%s|_%s_/ /\n"
@@ -147,9 +168,18 @@ void print_ascii() {
 				"  / /  %s|  |\n"
 				"  %s\\ \\%s__/  |\n"
 				"   %s\\%s(_____/\n", BLUE, CYAN, WHITE, BLUE, WHITE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE);
+	} else if (strcmp(version_name, "gentoo") == 0) {
+		sprintf(version_name, "%s", "GentOwO");
+		printf(	"\033[1E\033[3C%s_-----_\n"
+				"  (       \\\n"
+				"  \\   OwO   \\\n"
+				"%s   \\         )\n"
+				"   /       _/\n"
+				"  (      _-\n"
+				"  \\____-\n\n", MAGENTA, WHITE);
 	} else if (strcmp(version_name, "manjaro") == 0) {
-		sprintf(version_name, "%s", "Myanjaro");
-		printf(	" \u25b3       \u25b3   \u25e0\u25e0\u25e0\u25e0\n"
+		sprintf(version_name, "%s", "Myanjawo");
+		printf(	"\033[0E\033[1C\u25b3       \u25b3   \u25e0\u25e0\u25e0\u25e0\n"
 				" \e[0;42m          \e[0m  \e[0;42m    \e[0m\n"
 				" \e[0;42m \e[0m\e[0;42m\e[1;30m > w < \e[0m\e[0;42m  \e[0m  \e[0;42m    \e[0m\n"
 				" \e[0;42m    \e[0m        \e[0;42m    \e[0m\n"
@@ -158,4 +188,27 @@ void print_ascii() {
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n"
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n");
 	}
+}
+void print_image() {	// prints logo (as an image) of the given system. distributions listed alphabetically.
+	char command[256];
+	sprintf(command, "viu -t -w 18 -h 8 /usr/lib/uwufetch/%s.png", version_name);
+	system(command);
+
+	if (strcmp(version_name, "arch") == 0) sprintf(version_name, "%s", "Nyarch Linuwu");
+	if (strcmp(version_name, "artix") == 0) sprintf(version_name, "%s", "Nyartix Linuwu");
+	if (strcmp(version_name, "debian") == 0) sprintf(version_name, "%s", "Debinyan");
+	if (strcmp(version_name, "fedora") == 0) sprintf(version_name, "%s", "Fedowa");
+	if (strcmp(version_name, "gentoo") == 0) sprintf(version_name, "%s", "GentOwO");
+	if (strcmp(version_name, "manjaro") == 0) sprintf(version_name, "%s", "Myanjawo");
+}
+
+void usage(char* arg) {
+	printf("Usage: %s <args>\n"
+			"    -a, --ascii     prints logo as ascii text (default)\n"
+			"    -d, --distro    %slets you choose the logo to print%s\n"
+			"    -h, --help      prints this help page\n"
+			"    -i, --image     prints logo as image\n"
+			"                    %sworks in few terminals\n"
+			"                    <cat res/IMAGES.md> for more info%s\n",
+			arg, YELLOW, NORMAL, BLUE, NORMAL);
 }
