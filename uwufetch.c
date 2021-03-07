@@ -14,9 +14,10 @@
 #define GREEN "\x1b[32m"
 #define YELLOW "\x1b[33m"
 #define BLUE "\x1b[34m"
-#define MAGENTA "\x1b[35m"
+#define MAGENTA "\x1b[0;35m"
 #define CYAN "\x1b[36m"
 #define WHITE "\x1b[37m"
+#define PINK "\x1b[1;35m"
 
 struct rusage r_usage;
 struct utsname sys_var;
@@ -132,6 +133,9 @@ void get_info() {	// get all necessary info
 }
 
 void print_ascii() {	// prints logo (as ascii art) of the given system. distributions listed alphabetically.
+	
+	// linux
+
 	if (strcmp(version_name, "arch") == 0) {
 		sprintf(version_name, "%s", "Nyarch Linuwu");
 		printf(	"\033[1E\033[8C%s/\\\n"
@@ -198,7 +202,31 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n"
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n");
 	}
+
+	// BSD
+
+	else if (strcmp(version_name, "openbsd") == 0) {
+		sprintf(version_name, "%s", "OwOpenBSD");
+		printf(	"\033[1E\033[3C%s  ______  \n"
+					"   \\-      -/  %s\u2665  \n"
+					"%s\\_/          \\  \n"
+					"|        %s>  < %s|   \n"
+					"|_  <  %s//  %sW %s//   \n"
+					"%s/ \\          /   \n"
+					"  /-________-\\   \n\n", YELLOW, RED, YELLOW, WHITE, YELLOW, PINK, WHITE, PINK, YELLOW);
+
+ 	} else if (strcmp(version_name, "freebsd") == 0) {
+		sprintf(version_name, "%s", "FweeBSD");
+		printf(	"\033[1E\033[3C%s\n"
+				" /\\,-'''''-,/\\\n"
+				" \\_)       (_/\n"
+				" |   \\   /   |\n"
+				" |   O w O   |\n"
+				"  ;         ;\n"
+				"   '-_____-'\n", RED);
+	 }
 }
+
 void print_image() {	// prints logo (as an image) of the given system. distributions listed alphabetically.
 	char command[256];
 	sprintf(command, "viu -t -w 18 -h 8 /usr/lib/uwufetch/%s.png", version_name);
