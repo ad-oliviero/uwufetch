@@ -90,15 +90,15 @@ int pkgman() { // this is just a function that returns the total of installed pa
 }
 
 void print_info() {	// print collected info
-	printf("\033[2;18H %s%s%s@%s\n", NORMAL, BOLD, user, host);
-	printf("\033[3;18H %s%sOWOS     %s%s\n", NORMAL, BOLD, NORMAL, version_name);
-	printf("\033[4;18H %s%sKERNEL   %s%s %s\n", NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine);
-	printf("\033[5;18H %s%sCPUWU    %s%s\n", NORMAL, BOLD, NORMAL, cpu_model);
-	printf("\033[6;18H %s%sWAM      %s%ldM/%iM\n", NORMAL, BOLD, NORMAL, r_usage.ru_maxrss, ram_max);
-	printf("\033[7;18H %s%sSHELL    %s%s\n", NORMAL, BOLD, NORMAL, shell);
-	printf("\033[8;18H %s%sPKGS     %s%s%d %s\n", NORMAL, BOLD, NORMAL, NORMAL, pkgs, pkgman_name);
-	printf("\033[9;18H %s%sUWUPTIME %s%lid, %lih, %lim\n", NORMAL, BOLD, NORMAL, sys.uptime/60/60/24, sys.uptime/60/60%24, sys.uptime/60%60);
-	printf("\033[10;18H %s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n", BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN,  WHITE, NORMAL);
+	printf("\033[8A\033[17C %s%s%s@%s\n", NORMAL, BOLD, user, host);
+	printf("\033[17C %s%sOWOS     %s%s\n", NORMAL, BOLD, NORMAL, version_name);
+	printf("\033[17C %s%sKERNEL   %s%s %s\n", NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine);
+	printf("\033[17C %s%sCPUWU    %s%s\n", NORMAL, BOLD, NORMAL, cpu_model);
+	printf("\033[17C %s%sWAM      %s%ldM/%iM\n", NORMAL, BOLD, NORMAL, r_usage.ru_maxrss, ram_max);
+	printf("\033[17C %s%sSHELL    %s%s\n", NORMAL, BOLD, NORMAL, shell);
+	printf("\033[17C %s%sPKGS     %s%s%d %s\n", NORMAL, BOLD, NORMAL, NORMAL, pkgs, pkgman_name);
+	printf("\033[17C %s%sUWUPTIME %s%lid, %lih, %lim\n", NORMAL, BOLD, NORMAL, sys.uptime/60/60/24, sys.uptime/60/60%24, sys.uptime/60%60);
+	printf("\033[17C %s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n", BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN,  WHITE, NORMAL);
 }
 
 void get_info() {	// get all necessary info
@@ -129,33 +129,33 @@ void get_info() {	// get all necessary info
 void print_ascii() {	// prints logo of the given system. distributions listed alphabetically. 
 	if (strcmp(version_name, "arch") == 0) {
 		sprintf(version_name, "%s", "Nyarch Linuwu");
-		printf(	"\033[3;9H%s/\\\n"
+		printf(	"\033[8C%s/\\\n"
 				"       /  \\\n"
 				"      /\\   \\\n"
 				"     / > w <\\\n"
 				"    /   __   \\\n"
 				"   / __|  |__-\\\n"
-				"  /_-''    ''-_\\\n", BLUE);
+				"  /_-''    ''-_\\\n\n", BLUE);
 	} else if (strcmp(version_name, "artix") == 0) {
 		sprintf(version_name, "%s", "Nyartix Linuwu");
-		printf(	"\033[3;9H%s/\\\n"
+		printf(	"\033[8C%s/\\\n"
 				"       /  \\\n"
 				"      /`'.,\\\n"
 				"     /\u2022 w \u2022 \\\n"
 				"    /      ,`\\\n"
 				"   /   ,.'`.  \\\n"
-				"  /.,'`     `'.\\\n", BLUE);
+				"  /.,'`     `'.\\\n\n", BLUE);
 	} else if (strcmp(version_name, "debian") == 0) {
 		sprintf(version_name, "%s", "Debinyan");
-		printf(	"\033[3;7H%s______\n"
+		printf(	"\033[6C%s______\n"
 				"     /  ___ \\\n"
 				"    |  / OwO |\n"
 				"    |  \\____-\n"
 				"    -_\n"
-				"      --_\n", RED);
+				"      --_\n\n\n", RED);
 	} else if (strcmp(version_name, "fedora") == 0) {
 		sprintf(version_name, "%s", "Fedowoa");
-		printf(	"\033[2;9H%s_____\n"
+		printf(	"\033[8C%s_____\n"
 				"       /   __)%s\\\n"
 				"     %s> %s|  / %s<%s\\ \\\n"
 				"    __%s_| %sw%s|_%s_/ /\n"
@@ -165,13 +165,13 @@ void print_ascii() {	// prints logo of the given system. distributions listed al
 				"   %s\\%s(_____/\n", BLUE, CYAN, WHITE, BLUE, WHITE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE);
 	} else if (strcmp(version_name, "gentoo") == 0) {
 		sprintf(version_name, "%s", "GentOwO");
-		printf(	"\033[3;9H%s   _-----_\n"
-				"  (       \\n"
-				"  \\   OwO   \\n"
+		printf(	"%s   _-----_\n"
+				"  (       \\\n"
+				"  \\   OwO   \\\n"
 				"%s   \\         )\n"
 				"   /       _/\n"
 				"  (      _-\n"
-				"  \\____-\n", MAGENTA, WHITE);
+				"  \\____-\n\n", MAGENTA, WHITE);
 	} else if (strcmp(version_name, "manjaro") == 0) {
 		sprintf(version_name, "%s", "Myanjawo");
 		printf(	" \u25b3       \u25b3   \u25e0\u25e0\u25e0\u25e0\n"
