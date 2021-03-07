@@ -18,7 +18,6 @@
 #define MAGENTA "\x1b[0;35m"
 #define CYAN "\x1b[36m"
 #define WHITE "\x1b[37m"
-#define PINK "\x1b[1;35m"
 
 struct rusage r_usage;
 struct utsname sys_var;
@@ -237,7 +236,7 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 					"|        %s>  < %s|   \n"
 					"|_  <  %s//  %sW %s//   \n"
 					"%s/ \\          /   \n"
-					"  /-________-\\   \n\n", YELLOW, RED, YELLOW, WHITE, YELLOW, PINK, WHITE, PINK, YELLOW);
+					"  /-________-\\   \n\n", YELLOW, RED, YELLOW, WHITE, YELLOW, MAGENTA, WHITE, MAGENTA, YELLOW);
 
  	} else if (strcmp(version_name, "freebsd") == 0) {
 		sprintf(version_name, "%s", "FweeBSD");
