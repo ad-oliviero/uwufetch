@@ -190,9 +190,8 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 	}
 }
 void print_image() {	// prints logo (as an image) of the given system. distributions listed alphabetically.
-	//printf("e[1;1H\e[2J");
 	char command[256];
-	sprintf(command, "viu -t -w 18 -h 8 $HOME/.config/uwufetch/%s.png", version_name);
+	sprintf(command, "viu -t -w 18 -h 8 /usr/lib/uwufetch/%s.png", version_name);
 	system(command);
 
 	if (strcmp(version_name, "arch") == 0) sprintf(version_name, "%s", "Nyarch Linuwu");
