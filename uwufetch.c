@@ -26,6 +26,7 @@ int ram_max, pkgs, a_i_flag = 0;
 char user[32], host[253], shell[64], version_name[64], cpu_model[256], pkgman_name[64];
 int pkgman();
 void get_info();
+void list();
 void print_ascii();
 void print_info();
 void print_image();
@@ -34,7 +35,7 @@ void usage(char*);
 int main(int argc, char *argv[]) {
 	int opt = 0;
 	get_info();
-	while((opt = getopt(argc, argv, "ad:hi")) != -1) {
+	while((opt = getopt(argc, argv, "ad:hil")) != -1) {
 		switch(opt) {
 			case 'a':
 				a_i_flag = 0;
@@ -48,6 +49,9 @@ int main(int argc, char *argv[]) {
 			case 'i':
 				a_i_flag = 1;
 				break;
+			case 'l':
+				list(argv[0]);
+				return 0;
 			default:
 				break;
 		}
@@ -152,10 +156,16 @@ void get_info() {	// get all necessary info
 	pkgs = pkgman();
 }
 
+void list(char* arg) {	// prints distribution list
+	printf("%s -d <options>\n"
+			"Available distributions:\n"
+			"%s%sarch, artix, %sdebian, %sfedora, %sgentoo, %smanjaro, \"manjaro-arm\", android, %sopenbsd, %sfreebsd%s\n",
+			arg, BOLD, BLUE, RED, CYAN, MAGENTA, GREEN, YELLOW, RED, NORMAL);
+}
+
 void print_ascii() {	// prints logo (as ascii art) of the given system. distributions listed alphabetically.
 	
 	// linux
-
 	if (strcmp(version_name, "arch") == 0) {
 		sprintf(version_name, "%s", "Nyarch Linuwu");
 		printf(	"\033[1E\033[8C%s/\\\n"
@@ -225,8 +235,6 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 		sprintf(version_name, "%s", "Nyandroid");
 		printf(	"\n\n\nascii icon\n  nedds to be\n     added\n\n\n\n\n");
 	}
-
-
 
 	// BSD
 	else if (strcmp(version_name, "openbsd") == 0) {
