@@ -18,6 +18,8 @@
 #define MAGENTA "\x1b[0;35m"
 #define CYAN "\x1b[36m"
 #define WHITE "\x1b[37m"
+#define PINK "\x1b[38;5;201m"
+#define LPINK "\x1b[38;5;213m"
 
 struct rusage r_usage;
 struct utsname sys_var;
@@ -159,8 +161,8 @@ void get_info() {	// get all necessary info
 void list(char* arg) {	// prints distribution list
 	printf("%s -d <options>\n"
 			"Available distributions:\n"
-			"%s%sarch, artix, %sdebian, %sfedora, %sgentoo, %smanjaro, \"manjaro-arm\", android, %sopenbsd, %sfreebsd%s\n",
-			arg, BOLD, BLUE, RED, CYAN, MAGENTA, GREEN, YELLOW, RED, NORMAL);
+			"%s%sarch, artix, %sdebian, %subuntu, %sfedora, %sgentoo, %smanjaro, \"manjaro-arm\", android, %sopenbsd, %sfreebsd%s\n",
+			arg, BOLD, BLUE, RED, PINK, CYAN, MAGENTA, GREEN, YELLOW, RED, NORMAL);
 }
 
 void print_ascii() {	// prints logo (as ascii art) of the given system. distributions listed alphabetically.
@@ -186,7 +188,7 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				"  /.,'`     `'.\\\n\n", BLUE);
 	} else if (strcmp(version_name, "debian") == 0) {
 		sprintf(version_name, "%s", "Debinyan");
-		printf(	"\033[1E\033[6C%s______\n"
+		printf(	"\033[1E\033[6C%s______\n"  
 				"     /  ___ \\\n"
 				"    |  / OwO |\n"
 				"    |  \\____-\n"
@@ -231,6 +233,14 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n"
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n"
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n");
+	} else if (strcmp(version_name, "ubuntu") == 0) {
+		sprintf(version_name, "%s", "Uwuntu");
+		printf(	"\033[1E\033[2C%s|\\ %s_ _ _O%s/|\n"
+				"   %s/       \\\n"
+				" O|  > w <  |\n"
+				"  |         |\n"
+				"   \\ _ _ _ /\n"
+				" %sC_/     %sO\n\n\n", PINK, LPINK, PINK, LPINK, PINK, LPINK);
 	} else if (strcmp(version_name, "android") == 0) {	// android at the end because it could be not considered as an actual distribution of gnu/linux
 		sprintf(version_name, "%s", "Nyandroid");
 		printf(	"\n\n\nascii icon\n  nedds to be\n     added\n\n\n\n\n");
@@ -273,6 +283,7 @@ void print_image() {	// prints logo (as an image) of the given system. distribut
 	else if (strcmp(version_name, "gentoo") == 0) sprintf(version_name, "%s", "GentOwO");
 	else if (strcmp(version_name, "manjaro") == 0) sprintf(version_name, "%s", "Myanjawo");
 	else if (strcmp(version_name, "\"manjaro-arm\"") == 0) sprintf(version_name, "%s", "Myanjawo AWM");
+	else if (strcmp(version_name, "ubuntu") == 0) sprintf(version_name, "%s", "Uwuntu");
 	else if (strcmp(version_name, "android") == 0) sprintf(version_name, "%s", "Nyandroid");	// android at the end because it could be not considered as an actual distribution of gnu/linux
 	
 	// BSD
