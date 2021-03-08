@@ -18,6 +18,8 @@
 #define MAGENTA "\x1b[0;35m"
 #define CYAN "\x1b[36m"
 #define WHITE "\x1b[37m"
+#define PINK "\x1b[38;5;201m"
+#define LPINK "\x1b[38;5;213m"
 
 struct rusage r_usage;
 struct utsname sys_var;
@@ -159,8 +161,8 @@ void get_info() {	// get all necessary info
 void list(char* arg) {	// prints distribution list
 	printf("%s -d <options>\n"
 			"Available distributions:\n"
-			"%s%sarch, artix, %sdebian, %sfedora, %sgentoo, %smanjaro, \"manjaro-arm\", android, %sopenbsd, %sfreebsd%s\n",
-			arg, BOLD, BLUE, RED, CYAN, MAGENTA, GREEN, YELLOW, RED, NORMAL);
+			"%s%sarch, artix, %sdebian, %subuntu, %sfedora, %sgentoo, %smanjaro, \"manjaro-arm\", android, %sopenbsd, %sfreebsd%s\n",
+			arg, BOLD, BLUE, RED, PINK, CYAN, MAGENTA, GREEN, YELLOW, RED, NORMAL);
 }
 
 void print_ascii() {	// prints logo (as ascii art) of the given system. distributions listed alphabetically.
@@ -186,12 +188,20 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				"  /.,'`     `'.\\\n\n", BLUE);
 	} else if (strcmp(version_name, "debian") == 0) {
 		sprintf(version_name, "%s", "Debinyan");
-		printf(	"\033[1E\033[6C%s______\n"
+		printf(	"\033[1E\033[6C%s______\n"  
 				"     /  ___ \\\n"
 				"    |  / OwO |\n"
 				"    |  \\____-\n"
 				"    -_\n"
 				"      --_\n\n\n", RED);
+	} else if (strcmp(version_name, "ubuntu") == 0) {
+		sprintf(version_name, "%s", "Uwuntu");
+		printf(	"\033[1E\033[2C%s|\\ %s_ _ _O%s/|\n"
+				"   %s/       \\\n"
+				" O|  > w <  |\n"
+				"  |         |\n"
+				"   \\ _ _ _ /\n"
+				" %sC_/     %sO\n\n\n", PINK, LPINK, PINK, LPINK, PINK, LPINK);
 	} else if (strcmp(version_name, "fedora") == 0) {
 		sprintf(version_name, "%s", "Fedowoa");
 		printf(	"\033[1E\033[8C%s_____\n"
@@ -269,6 +279,7 @@ void print_image() {	// prints logo (as an image) of the given system. distribut
 	if (strcmp(version_name, "arch") == 0) sprintf(version_name, "%s", "Nyarch Linuwu");
 	else if (strcmp(version_name, "artix") == 0) sprintf(version_name, "%s", "Nyartix Linuwu");
 	else if (strcmp(version_name, "debian") == 0) sprintf(version_name, "%s", "Debinyan");
+	else if (strcmp(version_name, "ubuntu") == 0) sprintf(version_name, "%s", "Uwuntu");
 	else if (strcmp(version_name, "fedora") == 0) sprintf(version_name, "%s", "Fedowa");
 	else if (strcmp(version_name, "gentoo") == 0) sprintf(version_name, "%s", "GentOwO");
 	else if (strcmp(version_name, "manjaro") == 0) sprintf(version_name, "%s", "Myanjawo");
