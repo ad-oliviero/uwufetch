@@ -194,14 +194,6 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				"    |  \\____-\n"
 				"    -_\n"
 				"      --_\n\n\n", RED);
-	} else if (strcmp(version_name, "ubuntu") == 0) {
-		sprintf(version_name, "%s", "Uwuntu");
-		printf(	"\033[1E\033[2C%s|\\ %s_ _ _O%s/|\n"
-				"   %s/       \\\n"
-				" O|  > w <  |\n"
-				"  |         |\n"
-				"   \\ _ _ _ /\n"
-				" %sC_/     %sO\n\n\n", PINK, LPINK, PINK, LPINK, PINK, LPINK);
 	} else if (strcmp(version_name, "fedora") == 0) {
 		sprintf(version_name, "%s", "Fedowoa");
 		printf(	"\033[1E\033[8C%s_____\n"
@@ -241,6 +233,14 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n"
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n"
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n");
+	} else if (strcmp(version_name, "ubuntu") == 0) {
+		sprintf(version_name, "%s", "Uwuntu");
+		printf(	"\033[1E\033[2C%s|\\ %s_ _ _O%s/|\n"
+				"   %s/       \\\n"
+				" O|  > w <  |\n"
+				"  |         |\n"
+				"   \\ _ _ _ /\n"
+				" %sC_/     %sO\n\n\n", PINK, LPINK, PINK, LPINK, PINK, LPINK);
 	} else if (strcmp(version_name, "android") == 0) {	// android at the end because it could be not considered as an actual distribution of gnu/linux
 		sprintf(version_name, "%s", "Nyandroid");
 		printf(	"\n\n\nascii icon\n  nedds to be\n     added\n\n\n\n\n");
@@ -279,11 +279,11 @@ void print_image() {	// prints logo (as an image) of the given system. distribut
 	if (strcmp(version_name, "arch") == 0) sprintf(version_name, "%s", "Nyarch Linuwu");
 	else if (strcmp(version_name, "artix") == 0) sprintf(version_name, "%s", "Nyartix Linuwu");
 	else if (strcmp(version_name, "debian") == 0) sprintf(version_name, "%s", "Debinyan");
-	else if (strcmp(version_name, "ubuntu") == 0) sprintf(version_name, "%s", "Uwuntu");
 	else if (strcmp(version_name, "fedora") == 0) sprintf(version_name, "%s", "Fedowa");
 	else if (strcmp(version_name, "gentoo") == 0) sprintf(version_name, "%s", "GentOwO");
 	else if (strcmp(version_name, "manjaro") == 0) sprintf(version_name, "%s", "Myanjawo");
 	else if (strcmp(version_name, "\"manjaro-arm\"") == 0) sprintf(version_name, "%s", "Myanjawo AWM");
+	else if (strcmp(version_name, "ubuntu") == 0) sprintf(version_name, "%s", "Uwuntu");
 	else if (strcmp(version_name, "android") == 0) sprintf(version_name, "%s", "Nyandroid");	// android at the end because it could be not considered as an actual distribution of gnu/linux
 	
 	// BSD
