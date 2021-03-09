@@ -1,20 +1,20 @@
 # UwUFetch
 
-A meme system info tool for Linux, based on nyan/UwU trend on r/linuxmasterrace.
+A meme system info tool for (almost) all your Linux/Unix-based systems, based on nyan/UwU trend on r/linuxmasterrace.
 
 ## Currently supported distros
 
-Nyarch Linuwu, Nyartix Linuwu, Debinyan, Fedowa, GentOwO, Myanjawo.
+Nyarch Linuwu, Nyartix Linuwu, Debinyan, Fedowa, GentOwO, Myanjawo, and UwUntu; Plus Nyandroid; and FweeBSD, and OwOpenBSD.
 
 ## Building and installation
 
 ##### Via package manager
 
-Right now the package is only available on the [AUR](https://aur.archlinux.org/packages/uwufetch-git/).
+Right now, the package is only available on the [AUR](https://aur.archlinux.org/packages/uwufetch-git/).
 
-##### Via git clone
+##### Via source
 
-To install you can type this commands in the terminal:
+To install UwUfetch from the source, type these commands in the terminal:
 
 ```shell
 git clone https://github.com/TheDarkBug/uwufetch.git
