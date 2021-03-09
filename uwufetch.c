@@ -79,7 +79,6 @@ int main(int argc, char *argv[]) {
 	fclose(check);
 	if (argc == 1 || a_i_flag == 0) print_ascii();
 	else if (a_i_flag && depcheck > 1){
-	printf("Yes");
 	print_image();
 	}
 	else {
