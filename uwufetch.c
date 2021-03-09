@@ -249,13 +249,13 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n"
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n");
 	} else if (strcmp(version_name, "ubuntu") == 0) {
-		sprintf(version_name, "%s", "Uwuntu");
-		printf(	"\033[1E\033[2C%s|\\ %s_ _ _O%s/|\n"
-				"   %s/       \\\n"
-				" O|  > w <  |\n"
-				"  |         |\n"
-				"   \\ _ _ _ /\n"
-				" %sC_/     %sO\n\n\n", PINK, LPINK, PINK, LPINK, PINK, LPINK);
+		sprintf(version_name, "%s", "UwUntu");
+		printf(	"\033[1E\033[9C%s_\n"
+				"     %s\u25E3%s__(_)%s\u25E2%s\n"
+				"   _/  ---  \\\n"
+				"  (_) |>w<| |\n"
+				"    \\  --- _/\n"
+				"  %sC__/%s---(_)\n\n\n", LPINK, PINK, LPINK, PINK, LPINK, PINK, LPINK);
 	} else if (strcmp(version_name, "android") == 0) {	// android at the end because it could be not considered as an actual distribution of gnu/linux
 		sprintf(version_name, "%s", "Nyandroid");
 		printf(	"%s \n\\ _------_ /\n"
