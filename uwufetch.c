@@ -78,9 +78,7 @@ int main(int argc, char *argv[]) {
 	fscanf(check, "%d", &depcheck);
 	fclose(check);
 	if (argc == 1 || a_i_flag == 0) print_ascii();
-	else if (a_i_flag && depcheck > 1){
-	print_image();
-	}
+	else if (a_i_flag && depcheck > 1) print_image();
 	else {
 		printf("viu is not installed, falling back to ascii...\n");
 		print_ascii();
