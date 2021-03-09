@@ -48,6 +48,7 @@ void print_ascii();
 void print_info();
 void print_image();
 void usage(char*);
+void uwu_name();
 
 int main(int argc, char *argv[]) {
 	int opt = 0;
@@ -75,6 +76,7 @@ int main(int argc, char *argv[]) {
 	}
 	if (argc == 1 || a_i_flag == 0) print_ascii();
 	else if (a_i_flag) print_image();
+	uwu_name();
 	print_info();
 }
 
@@ -114,10 +116,7 @@ int pkgman() { // this is just a function that returns the total of installed pa
 }
 
 void print_info() {	// print collected info
-	char *start_cursor_position = "\033[9A\033[18C";
-	//if (a_i_flag) start_cursor_position = "\033[8A\033[18C"; // this if - else is for a little bug 
-	//else start_cursor_position = "\033[9A\033[18C";
-	printf("%s%s%s%s@%s\n", start_cursor_position, NORMAL, BOLD, user, host);
+	printf("\033[9A\033[18C%s%s%s@%s\n", NORMAL, BOLD, user, host);
 	printf("\033[17C %s%sOWOS     %s%s\n", NORMAL, BOLD, NORMAL, version_name);
 	printf("\033[17C %s%sKERNEL   %s%s %s\n", NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine);
 	printf("\033[17C %s%sCPUWU    %s%s\n", NORMAL, BOLD, NORMAL, cpu_model);
@@ -184,7 +183,6 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 	
 	// linux
 	if (strcmp(version_name, "arch") == 0) {
-		sprintf(version_name, "%s", "Nyarch Linuwu");
 		printf(	"\033[1E\033[8C%s/\\\n"
 				"       /  \\\n"
 				"      /\\   \\\n"
@@ -193,7 +191,6 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				"   / __|  |__-\\\n"
 				"  /_-''    ''-_\\\n\n", BLUE);
 	} else if (strcmp(version_name, "artix") == 0) {
-		sprintf(version_name, "%s", "Nyartix Linuwu");
 		printf(	"\033[1E\033[8C%s/\\\n"
 				"       /  \\\n"
 				"      /`'.,\\\n"
@@ -202,7 +199,6 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				"   /   ,.'`.  \\\n"
 				"  /.,'`     `'.\\\n\n", BLUE);
 	} else if (strcmp(version_name, "debian") == 0) {
-		sprintf(version_name, "%s", "Debinyan");
 		printf(	"\033[1E\033[6C%s______\n"  
 				"     /  ___ \\\n"
 				"    |  / OwO |\n"
@@ -210,7 +206,6 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				"    -_\n"
 				"      --_\n\n\n", RED);
 	} else if (strcmp(version_name, "fedora") == 0) {
-		sprintf(version_name, "%s", "Fedowoa");
 		printf(	"\033[1E\033[8C%s_____\n"
 				"       /   __)%s\\\n"
 				"     %s> %s|  / %s<%s\\ \\\n"
@@ -220,7 +215,6 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				"  %s\\ \\%s__/  |\n"
 				"   %s\\%s(_____/\n", BLUE, CYAN, WHITE, BLUE, WHITE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE);
 	} else if (strcmp(version_name, "gentoo") == 0) {
-		sprintf(version_name, "%s", "GentOwO");
 		printf(	"\033[1E\033[3C%s_-----_\n"
 				"  (       \\\n"
 				"  \\   OwO   \\\n"
@@ -229,7 +223,6 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				"  (      _-\n"
 				"  \\____-\n\n", MAGENTA, WHITE);
 	} else if (strcmp(version_name, "manjaro") == 0) {
-		sprintf(version_name, "%s", "Myanjawo");
 		printf(	"\033[0E\033[1C\u25b3       \u25b3   \u25e0\u25e0\u25e0\u25e0\n"
 				" \e[0;42m          \e[0m  \e[0;42m    \e[0m\n"
 				" \e[0;42m \e[0m\e[0;42m\e[1;30m > w < \e[0m\e[0;42m  \e[0m  \e[0;42m    \e[0m\n"
@@ -239,7 +232,6 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n"
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n");
 	} else if (strcmp(version_name, "\"manjaro-arm\"") == 0) {
-		sprintf(version_name, "%s", "Myanjawo AWM");
 		printf(	"\033[0E\033[1C\u25b3       \u25b3   \u25e0\u25e0\u25e0\u25e0\n"
 				" \e[0;42m          \e[0m  \e[0;42m    \e[0m\n"
 				" \e[0;42m \e[0m\e[0;42m\e[1;30m > w < \e[0m\e[0;42m  \e[0m  \e[0;42m    \e[0m\n"
@@ -249,7 +241,6 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n"
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n");
 	} else if (strcmp(version_name, "ubuntu") == 0) {
-		sprintf(version_name, "%s", "UwUntu");
 		printf(	"\033[1E\033[9C%s_\n"
 				"     %s\u25E3%s__(_)%s\u25E2%s\n"
 				"   _/  ---  \\\n"
@@ -257,11 +248,10 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				"    \\  --- _/\n"
 				"  %sC__/%s---(_)\n\n\n", LPINK, PINK, LPINK, PINK, LPINK, PINK, LPINK);
 	} else if (strcmp(version_name, "android") == 0) {	// android at the end because it could be not considered as an actual distribution of gnu/linux
-		sprintf(version_name, "%s", "Nyandroid");
-		printf(	"%s \n\\ _------_ /\n"
-			" /          \\\n"
-			"| %s~ %s> w < %s~  %s|\n"
-			" ------------\n", GREEN, RED, GREEN, RED, GREEN);
+		printf(	"\033[2E\033[3C%s\\ _------_ /\n"
+			"   /          \\\n"
+			"  | %s~ %s> w < %s~  %s|\n"
+			"   ------------\n\n\n\n", GREEN, RED, GREEN, RED, GREEN);
 
 	}
 
@@ -269,31 +259,51 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 	else if (strcmp(version_name, "openbsd") == 0) {
 		sprintf(version_name, "%s", "OwOpenBSD");
 		printf(	"\033[1E\033[3C%s  ______  \n"
-			"   \\-      -/  %s\u2665  \n"
-			"%s\\_/          \\  \n"
-			"|        %s>  < %s|   \n"
-			"|_  <  %s//  %sW %s//   \n"
-			"%s/ \\          /   \n"
-			"  /-________-\\   \n\n", YELLOW, RED, YELLOW, WHITE, YELLOW, RED, WHITE, RED, YELLOW);
+				"   \\-      -/  %s\u2665  \n"
+				"%s\\_/          \\  \n"
+				"|        %s>  < %s|   \n"
+				"|_  <  %s//  %sW %s//   \n"
+				"%s/ \\          /   \n"
+				"  /-________-\\   \n\n", YELLOW, RED, YELLOW, WHITE, YELLOW, RED, WHITE, RED, YELLOW);
 
  	} else if (strcmp(version_name, "freebsd") == 0) {
 		sprintf(version_name, "%s", "FweeBSD");
 		printf(	"\033[1E\033[3C%s\n"
-			" /\\,-'''''-,/\\\n"
-			" \\_)       (_/\n"
-			" |   \\   /   |\n"
-			" |   O w O   |\n"
-			"  ;         ;\n"
-			"   '-_____-'\n", RED);
-	 }
+				" /\\,-'''''-,/\\\n"
+				" \\_)       (_/\n"
+				" |   \\   /   |\n"
+				" |   O w O   |\n"
+				"  ;         ;\n"
+				"   '-_____-'\n", RED);
+	}
 }
 
 void print_image() {	// prints logo (as an image) of the given system. distributions listed alphabetically.
 	char command[256];
-	sprintf(command, "viu -t -w 18 -h 8 /usr/lib/uwufetch/%s.png", version_name);
-	system(command);
+	sprintf(command, "viu -t -w 18 -h 8 /usr/lib/uwufetch/%s.png 2> /dev/null", version_name);
+	if (system(command) != 0) {	// if viu is not installed
+		printf(	"\033[1E\033[3C%s\n"
+				"   There was an\n"
+				" error, maybe viu\n"
+				" is not installed.\n"
+				" Read IMAGES.md\n"
+				"  for more info.\n\n", RED);
+	}
 	printf("\033[1E\033[0C\b");
-	
+}
+
+void usage(char* arg) {
+	printf("Usage: %s <args>\n"
+			"    -a, --ascii     prints logo as ascii text (default)\n"
+			"    -d, --distro    %slets you choose the logo to print%s\n"
+			"    -h, --help      prints this help page\n"
+			"    -i, --image     prints logo as image\n"
+			"                    %sworks in few terminals\n"
+			"                    <cat res/IMAGES.md> for more info%s\n",
+			arg, YELLOW, NORMAL, BLUE, NORMAL);
+}
+
+void uwu_name() {	// changes distro name to uwufied(?) name
 	// linux
 	if (strcmp(version_name, "arch") == 0) sprintf(version_name, "%s", "Nyarch Linuwu");
 	else if (strcmp(version_name, "artix") == 0) sprintf(version_name, "%s", "Nyartix Linuwu");
@@ -306,17 +316,7 @@ void print_image() {	// prints logo (as an image) of the given system. distribut
 	else if (strcmp(version_name, "android") == 0) sprintf(version_name, "%s", "Nyandroid");	// android at the end because it could be not considered as an actual distribution of gnu/linux
 	
 	// BSD
-	if (strcmp(version_name, "openbsd") == 0) sprintf(version_name, "%s", "OwOpenBSD");
+	else if (strcmp(version_name, "openbsd") == 0) sprintf(version_name, "%s", "OwOpenBSD");
 	else if (strcmp(version_name, "freebsd") == 0) sprintf(version_name, "%s", "FweeBSD");
-}
 
-void usage(char* arg) {
-	printf("Usage: %s <args>\n"
-			"    -a, --ascii     prints logo as ascii text (default)\n"
-			"    -d, --distro    %slets you choose the logo to print%s\n"
-			"    -h, --help      prints this help page\n"
-			"    -i, --image     prints logo as image\n"
-			"                    %sworks in few terminals\n"
-			"                    <cat res/IMAGES.md> for more info%s\n",
-			arg, YELLOW, NORMAL, BLUE, NORMAL);
 }

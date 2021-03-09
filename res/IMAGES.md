@@ -3,6 +3,11 @@
 Int this directory, all the images for the logos, are stored.
 If you want to remove *your* image from this repository contact me on [reddit](https://www.reddit.com/user/TheDarkBug).
 
+## How to use images
+
+First at all you need `viu`, to install it follow the [guide](https://github.com/atanunq/viu#installation).
+Images are working in almost every terminal, for a better experience i recommend [kitty](https://github.com/kovidgoyal/kitty)
+
 ## Credits
 
 <img src="https://raw.githubusercontent.com/TheDarkBug/uwufetch/main/res/arch.png" title="" alt="image" width="200"> Nyarch Linuwu by u/Ishaan_P ([here](https://www.reddit.com/r/linuxmasterrace/comments/lxfg9j/someone_posted_uwuntu_so_i_made_nyarch/))
