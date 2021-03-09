@@ -1,3 +1,18 @@
+/*
+ *  UwUfetch is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -243,7 +258,11 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				" %sC_/     %sO\n\n\n", PINK, LPINK, PINK, LPINK, PINK, LPINK);
 	} else if (strcmp(version_name, "android") == 0) {	// android at the end because it could be not considered as an actual distribution of gnu/linux
 		sprintf(version_name, "%s", "Nyandroid");
-		printf(	"\n\n\nascii icon\n  nedds to be\n     added\n\n\n\n\n");
+		printf(	"%s \n\\ _------_ /\n"
+			" /          \\\n"
+			"| %s~ %s> w < %s~  %s|\n"
+			" ------------\n", GREEN, RED, GREEN, RED, GREEN);
+
 	}
 
 	// BSD
