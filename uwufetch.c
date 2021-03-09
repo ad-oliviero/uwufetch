@@ -73,8 +73,19 @@ int main(int argc, char *argv[]) {
 				break;
 		}
 	}
+	FILE *check = popen("whereis viu 2> /dev/null | wc -w", "r");
+	int depcheck;
+	fscanf(check, "%d", &depcheck);
+	fclose(check);
 	if (argc == 1 || a_i_flag == 0) print_ascii();
-	else if (a_i_flag) print_image();
+	else if (a_i_flag && depcheck > 1){
+	printf("Yes");
+	print_image();
+	}
+	else {
+		printf("viu is not installed, falling back to ascii...\n");
+		print_ascii();
+	}
 	print_info();
 }
 
