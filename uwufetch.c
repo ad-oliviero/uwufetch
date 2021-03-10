@@ -356,21 +356,23 @@ void usage(char* arg) {
 
 void uwu_name() {	// changes distro name to uwufied(?) name
 
+#define VERSION_TO_UWU(original, uwufied) if (strcmp(version_name, original) == 0) sprintf(version_name, "%s", uwufied)
 	// linux
-	if (strcmp(version_name, "arch") == 0) sprintf(version_name, "%s", "Nyarch Linuwu");
-	else if (strcmp(version_name, "artix") == 0) sprintf(version_name, "%s", "Nyartix Linuwu");
-	else if (strcmp(version_name, "debian") == 0) sprintf(version_name, "%s", "Debinyan");
-	else if (strcmp(version_name, "fedora") == 0) sprintf(version_name, "%s", "Fedowa");
-	else if (strcmp(version_name, "gentoo") == 0) sprintf(version_name, "%s", "GentOwO");
-	else if (strcmp(version_name, "linuxmint") == 0) sprintf(version_name, "%s", "LinUWU Miwint");
-	else if (strcmp(version_name, "manjaro") == 0) sprintf(version_name, "%s", "Myanjawo");
-	else if (strcmp(version_name, "\"manjaro-arm\"") == 0) sprintf(version_name, "%s", "Myanjawo AWM");
-	else if (strcmp(version_name, "popos") == 0) sprintf(version_name, "%s", "PopOwOS");
-	else if (strcmp(version_name, "ubuntu") == 0) sprintf(version_name, "%s", "Uwuntu");
-	else if (strcmp(version_name, "void") == 0) sprintf(version_name, "%s", "OwOid");
-	else if (strcmp(version_name, "android") == 0) sprintf(version_name, "%s", "Nyandroid");	// android at the end because it could be not considered as an actual distribution of gnu/linux
+	VERSION_TO_UWU("arch", "Nyarch Linuwu");
+	VERSION_TO_UWU("artix", "Nyartix Linuwu");
+	VERSION_TO_UWU("debian", "Debinyan");
+	VERSION_TO_UWU("fedora", "Fedowa");
+	VERSION_TO_UWU("gentoo", "GentOwO");
+	VERSION_TO_UWU("linuxmint", "LinUWU Miwint");
+	VERSION_TO_UWU("manjaro", "Myanjawo");
+	VERSION_TO_UWU("manjaro-arm", "Myanjawo AWM");
+	VERSION_TO_UWU("popos", "PopOwOS");
+	VERSION_TO_UWU("ubuntu", "Uwuntu");
+	VERSION_TO_UWU("void", "OwOid");
+	VERSION_TO_UWU("android", "Nyandroid");	// android at the end because it could be not considered as an actual distribution of gnu/linux
 	
 	// BSD
-	else if (strcmp(version_name, "freebsd") == 0) sprintf(version_name, "%s", "FweeBSD");
-	else if (strcmp(version_name, "openbsd") == 0) sprintf(version_name, "%s", "OwOpenBSD");
+	VERSION_TO_UWU("freebsd", "FweeBSD");
+	VERSION_TO_UWU("openbsd", "OwOpenBSD");
+#undef VERSION_TO_UWU
 }
