@@ -120,15 +120,24 @@ int pkgman() { // this is just a function that returns the total of installed pa
 }
 
 void print_info() {	// print collected info
-	printf("\033[9A\033[18C%s%s%s@%s\n", NORMAL, BOLD, user, host);
-	printf("\033[17C %s%sOWOS     %s%s\n", NORMAL, BOLD, NORMAL, version_name);
-	printf("\033[17C %s%sKERNEL   %s%s %s\n", NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine);
-	printf("\033[17C %s%sCPUWU    %s%s\n", NORMAL, BOLD, NORMAL, cpu_model);
-	printf("\033[17C %s%sWAM      %s%ldM/%iM\n", NORMAL, BOLD, NORMAL, r_usage.ru_maxrss, ram_max);
-	printf("\033[17C %s%sSHELL    %s%s\n", NORMAL, BOLD, NORMAL, shell);
-	printf("\033[17C %s%sPKGS     %s%s%d %s\n", NORMAL, BOLD, NORMAL, NORMAL, pkgs, pkgman_name);
-	printf("\033[17C %s%sUWUPTIME %s%lid, %lih, %lim\n", NORMAL, BOLD, NORMAL, sys.uptime/60/60/24, sys.uptime/60/60%24, sys.uptime/60%60);
-	printf("\033[17C %s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n", BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN,  WHITE, NORMAL);
+	printf(	"\033[9A\033[18C%s%s%s@%s\n"
+			"\033[17C %s%sOWOS     %s%s\n"
+			"\033[17C %s%sKERNEL   %s%s %s\n"
+			"\033[17C %s%sCPUWU    %s%s\n"
+			"\033[17C %s%sWAM      %s%ldM/%iM\n"
+			"\033[17C %s%sSHELL    %s%s\n"
+			"\033[17C %s%sPKGS     %s%s%d %s\n"
+			"\033[17C %s%sUWUPTIME %s%lid, %lih, %lim\n"
+			"\033[17C %s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n",
+			NORMAL, BOLD, user, host,
+			NORMAL, BOLD, NORMAL, version_name,
+			NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine,
+			NORMAL, BOLD, NORMAL, cpu_model,
+			NORMAL, BOLD, NORMAL, r_usage.ru_maxrss, ram_max,
+			NORMAL, BOLD, NORMAL, shell,
+			NORMAL, BOLD, NORMAL, NORMAL, pkgs, pkgman_name,
+			NORMAL, BOLD, NORMAL, sys.uptime/60/60/24, sys.uptime/60/60%24, sys.uptime/60%60,
+			BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN,  WHITE, NORMAL);
 }
 
 void get_info() {	// get all necessary info
@@ -193,8 +202,7 @@ void list(char* arg) {	// prints distribution list
 			arg, BLUE, NORMAL, BLUE, GREEN,			// Arch based colors
 			RED, YELLOW, NORMAL, RED, GREEN, BLUE,	// Debian based colors
 			NORMAL, BLUE, PINK, GREEN, WHITE,				// Other/spare distributions colors
-			RED, YELLOW								// BSD colors
-			);
+			RED, YELLOW);								// BSD colors
 }
 
 void print_ascii() {	// prints logo (as ascii art) of the given system. distributions listed alphabetically.
