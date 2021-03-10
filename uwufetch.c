@@ -347,8 +347,8 @@ void usage(char* arg) {
 void uwu_name() {	// changes distro name to uwufied(?) name
 
 #define VERSION_TO_UWU(original, uwufied) if (strcmp(version_name, original) == 0) sprintf(version_name, "%s", uwufied)
-	VERSION_TO_UWU("arch", "Nyarch Linuwu");
 	// linux
+	VERSION_TO_UWU("arch", "Nyarch Linuwu");
 	VERSION_TO_UWU("artix", "Nyartix Linuwu");
 	VERSION_TO_UWU("debian", "Debinyan");
 	VERSION_TO_UWU("fedora", "Fedowa");
