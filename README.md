@@ -4,7 +4,7 @@ A meme system info tool for (almost) all your Linux/Unix-based systems, based on
 
 ## Currently supported distros
 
-Nyarch Linuwu, Nyartix Linuwu, Debinyan, Fedowa, GentOwO, Miwint, Myanjawo, Pop OwOs, UwUntu, and Void; Plus Nyandroid; and FweeBSD, and OwOpenBSD.
+Nyarch Linuwu, Nyartix Linuwu, Debinyan, Fedowa, GentOwO, Miwint, Myanjawo, Pop OwOs, UwUntu, and OwOid; Plus Nyandroid; and FweeBSD, and OwOpenBSD.
 
 ## Building and installation
 

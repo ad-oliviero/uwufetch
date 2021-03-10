@@ -106,29 +106,40 @@ int pkgman() { // this is just a function that returns the total of installed pa
 	fscanf(file[6], "%d", &rpm);
 	fscanf(file[7], "%d", &xbps);
 	for (int i = 0; i < 8; i++) fclose(file[i]);
-	
-	if (apt > 0) { total += apt; strcat(pkgman_name, "(apt)"); }
-	if (dnf > 0) { total += dnf; strcat(pkgman_name, "(dnf)"); }
-	if (emerge > 0) { total += emerge; strcat(pkgman_name, "(emerge)"); }
-	if (flatpak > 0) { total += flatpak; strcat(pkgman_name, "(flatpak)"); }
-	if (nix > 0) { total += nix; strcat(pkgman_name, "(nix)"); }
-	if (pacman > 0) { total += pacman; strcat(pkgman_name, "(pacman)"); }
-	if (rpm > 0) { total += rpm; strcat(pkgman_name, "(rpm)"); }
-	if (xbps > 0) { total += xbps; strcat(pkgman_name, "(xbps)"); }
+
+#define ADD_PACKAGES(package_count, pkgman_to_add) if (package_count > 0) { total += package_count; strcat(pkgman_name, pkgman_to_add); }
+	ADD_PACKAGES(apt,    "(apt)")
+	ADD_PACKAGES(dnf,    "(dnf)")
+	ADD_PACKAGES(emerge, "(emerge)")
+	ADD_PACKAGES(flatpak,"(flatpak)")
+	ADD_PACKAGES(nix,    "(nix)")
+	ADD_PACKAGES(pacman, "(pacman)")
+	ADD_PACKAGES(rpm,    "(rpm)")
+	ADD_PACKAGES(xbps,   "(xbps)")
+#undef ADD_PACKAGES
 
 	return total;	
 }
 
 void print_info() {	// print collected info
-	printf("\033[9A\033[18C%s%s%s@%s\n", NORMAL, BOLD, user, host);
-	printf("\033[17C %s%sOWOS     %s%s\n", NORMAL, BOLD, NORMAL, version_name);
-	printf("\033[17C %s%sKERNEL   %s%s %s\n", NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine);
-	printf("\033[17C %s%sCPUWU    %s%s\n", NORMAL, BOLD, NORMAL, cpu_model);
-	printf("\033[17C %s%sWAM      %s%ldM/%iM\n", NORMAL, BOLD, NORMAL, r_usage.ru_maxrss, ram_max);
-	printf("\033[17C %s%sSHELL    %s%s\n", NORMAL, BOLD, NORMAL, shell);
-	printf("\033[17C %s%sPKGS     %s%s%d %s\n", NORMAL, BOLD, NORMAL, NORMAL, pkgs, pkgman_name);
-	printf("\033[17C %s%sUWUPTIME %s%lid, %lih, %lim\n", NORMAL, BOLD, NORMAL, sys.uptime/60/60/24, sys.uptime/60/60%24, sys.uptime/60%60);
-	printf("\033[17C %s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n", BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN,  WHITE, NORMAL);
+	printf(	"\033[9A\033[18C%s%s%s@%s\n"
+			"\033[17C %s%sOWOS     %s%s\n"
+			"\033[17C %s%sKERNEL   %s%s %s\n"
+			"\033[17C %s%sCPUWU    %s%s\n"
+			"\033[17C %s%sWAM      %s%ldM/%iM\n"
+			"\033[17C %s%sSHELL    %s%s\n"
+			"\033[17C %s%sPKGS     %s%s%d %s\n"
+			"\033[17C %s%sUWUPTIME %s%lid, %lih, %lim\n"
+			"\033[17C %s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n",
+			NORMAL, BOLD, user, host,
+			NORMAL, BOLD, NORMAL, version_name,
+			NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine,
+			NORMAL, BOLD, NORMAL, cpu_model,
+			NORMAL, BOLD, NORMAL, r_usage.ru_maxrss, ram_max,
+			NORMAL, BOLD, NORMAL, shell,
+			NORMAL, BOLD, NORMAL, NORMAL, pkgs, pkgman_name,
+			NORMAL, BOLD, NORMAL, sys.uptime/60/60/24, sys.uptime/60/60%24, sys.uptime/60%60,
+			BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN,  WHITE, NORMAL);
 }
 
 void get_info() {	// get all necessary info
@@ -193,8 +204,7 @@ void list(char* arg) {	// prints distribution list
 			arg, BLUE, NORMAL, BLUE, GREEN,			// Arch based colors
 			RED, YELLOW, NORMAL, RED, GREEN, BLUE,	// Debian based colors
 			NORMAL, BLUE, PINK, GREEN, WHITE,				// Other/spare distributions colors
-			RED, YELLOW								// BSD colors
-			);
+			RED, YELLOW);								// BSD colors
 }
 
 void print_ascii() {	// prints logo (as ascii art) of the given system. distributions listed alphabetically.
