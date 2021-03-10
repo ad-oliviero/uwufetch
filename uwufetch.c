@@ -106,15 +106,17 @@ int pkgman() { // this is just a function that returns the total of installed pa
 	fscanf(file[6], "%d", &rpm);
 	fscanf(file[7], "%d", &xbps);
 	for (int i = 0; i < 8; i++) fclose(file[i]);
-	
-	if (apt > 0) { total += apt; strcat(pkgman_name, "(apt)"); }
-	if (dnf > 0) { total += dnf; strcat(pkgman_name, "(dnf)"); }
-	if (emerge > 0) { total += emerge; strcat(pkgman_name, "(emerge)"); }
-	if (flatpak > 0) { total += flatpak; strcat(pkgman_name, "(flatpak)"); }
-	if (nix > 0) { total += nix; strcat(pkgman_name, "(nix)"); }
-	if (pacman > 0) { total += pacman; strcat(pkgman_name, "(pacman)"); }
-	if (rpm > 0) { total += rpm; strcat(pkgman_name, "(rpm)"); }
-	if (xbps > 0) { total += xbps; strcat(pkgman_name, "(xbps)"); }
+
+#define ADD_PACKAGES(package_count, pkgman_to_add) if (package_count > 0) { total += package_count; strcat(pkgman_name, pkgman_to_add); }
+	ADD_PACKAGES(apt,    "(apt)")
+	ADD_PACKAGES(dnf,    "(dnf)")
+	ADD_PACKAGES(emerge, "(emerge)")
+	ADD_PACKAGES(flatpak,"(flatpak)")
+	ADD_PACKAGES(nix,    "(nix)")
+	ADD_PACKAGES(pacman, "(pacman)")
+	ADD_PACKAGES(rpm,    "(rpm)")
+	ADD_PACKAGES(xbps,   "(xbps)")
+#undef ADD_PACKAGES
 
 	return total;	
 }
