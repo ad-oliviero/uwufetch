@@ -40,7 +40,7 @@ struct rusage r_usage;
 struct utsname sys_var;
 struct sysinfo sys;
 int ram_max, pkgs, a_i_flag = 0;
-char user[32], host[253], shell[64], version_name[64], cpu_model[256], pkgman_name[64];
+char user[32], host[253], shell[64], version_name[64], cpu_model[256], pkgman_name[64], image_name[32];
 int pkgman();
 void get_info();
 void list();
@@ -53,10 +53,14 @@ void uwu_name();
 int main(int argc, char *argv[]) {
 	int opt = 0;
 	get_info();
-	while((opt = getopt(argc, argv, "ad:hil")) != -1) {
+	while((opt = getopt(argc, argv, "ad:hilc:")) != -1) {
 		switch(opt) {
 			case 'a':
 				a_i_flag = 0;
+				break;
+			case 'c':
+				a_i_flag = 1;
+				sprintf(image_name, "%s", optarg);
 				break;
 			case 'd':
 				if (optarg) sprintf(version_name, "%s", optarg);
@@ -140,7 +144,7 @@ void get_info() {	// get all necessary info
 			closedir(system_app);
 			closedir(system_priv_app);
 			sprintf(version_name, "android");
-		} else sprintf(version_name, "generic");
+		} else sprintf(version_name, "unknown");
 	}
 	// user name, host name and shell
 	if (strcmp(version_name, "android") != 0) {
@@ -163,8 +167,8 @@ void get_info() {	// get all necessary info
 	memmove(&shell[0], &shell[5], 16);
 
 	// system info
-	if (uname(&sys_var) == -1) printf("There was some kind of error while getting the username\n");
-	if (sysinfo(&sys) == -1) printf("There was some kind of error while getting system info\n");
+	uname(&sys_var);
+	sysinfo(&sys);
 	
 	// ram
 	ram_max = sys.totalram * sys.mem_unit / 1048576;
@@ -173,10 +177,24 @@ void get_info() {	// get all necessary info
 }
 
 void list(char* arg) {	// prints distribution list
-	printf("%s -d <options>\n"
-			"Available distributions:\n"
-			"%s%sarch, artix, %sdebian, %subuntu, %sfedora, %sgentoo, %smanjaro, \"manjaro-arm\", android, %sopenbsd, %sfreebsd%s\n",
-			arg, BOLD, BLUE, RED, PINK, CYAN, MAGENTA, GREEN, YELLOW, RED, NORMAL);
+	/*	distributions are listed by distribution branch
+		to make the output easier to understand by the user,
+		also i didn't like the previous listing.*/
+	printf(	"%s -d <options>\n"
+			"  Available distributions:\n"
+			"    %sArch linux %sbased:\n"
+			"      %sarch, artix, %smanjaro, \"manjaro-arm\"\n\n"
+			"    %sDebian/%sUbuntu %sbased:\n"
+			"      %sdebian, %slinuxmint, %spopos\n\n"
+			"    %sOther/spare distributions:\n"
+			"      %sfedora, %sgentoo, %svoid, android, %sunknown\n\n"
+			"    %sBSD:\n"
+			"      freebsd, %sopenbsd\n",
+			arg, BLUE, NORMAL, BLUE, GREEN,			// Arch based colors
+			RED, YELLOW, NORMAL, RED, GREEN, BLUE,	// Debian based colors
+			NORMAL, BLUE, PINK, GREEN, WHITE,				// Other/spare distributions colors
+			RED, YELLOW								// BSD colors
+			);
 }
 
 void print_ascii() {	// prints logo (as ascii art) of the given system. distributions listed alphabetically.
@@ -278,7 +296,7 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 
 	// BSD
 
-	else if (strcmp(version_name, "freebsd") == -1) {
+	else if (strcmp(version_name, "freebsd") == 0) {
 		printf(	"\032[1E\033[3C%s\n"
 				" /\\,-'''''-,/\\\n"
 				" \\_)       (_/\n"
@@ -301,7 +319,8 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 
 void print_image() {	// prints logo (as an image) of the given system. distributions listed alphabetically.
 	char command[256];
-	sprintf(command, "viu -t -w 18 -h 8 /usr/lib/uwufetch/%s.png 2> /dev/null", version_name);
+	if (strlen(image_name) > 1) sprintf(command, "viu -t -w 18 -h 8 %s 2> /dev/null", image_name);
+	else sprintf(command, "viu -t -w 18 -h 8 /usr/lib/uwufetch/%s.png 2> /dev/null", version_name);
 	if (system(command) != 0) {	// if viu is not installed
 		printf(	"\033[1E\033[3C%s\n"
 				"   There was an\n"
@@ -316,15 +335,17 @@ void print_image() {	// prints logo (as an image) of the given system. distribut
 void usage(char* arg) {
 	printf("Usage: %s <args>\n"
 			"    -a, --ascii     prints logo as ascii text (default)\n"
-			"    -d, --distro    %slets you choose the logo to print%s\n"
+			"    -c, --custom    choose a custom image\n"
+			"    -d, --distro    lets you choose the logo to print\n"
 			"    -h, --help      prints this help page\n"
 			"    -i, --image     prints logo as image\n"
-			"                    %sworks in few terminals\n"
-			"                    <cat res/IMAGES.md> for more info%s\n",
-			arg, YELLOW, NORMAL, BLUE, NORMAL);
+			"                    %sworks in most terminals\n"
+			"                    read res/IMAGES.md for more info%s\n",
+			arg, BLUE, NORMAL);
 }
 
 void uwu_name() {	// changes distro name to uwufied(?) name
+
 	// linux
 	if (strcmp(version_name, "arch") == 0) sprintf(version_name, "%s", "Nyarch Linuwu");
 	else if (strcmp(version_name, "artix") == 0) sprintf(version_name, "%s", "Nyartix Linuwu");
