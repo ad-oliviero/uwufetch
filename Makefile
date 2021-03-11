@@ -1,15 +1,17 @@
 NAME = uwufetch
 FILES = uwufetch.c
-FLAGS = -O3 -Wall -Wextra
+FLAGS = -O3
+FLAGS_DEBUG = -Wall -Wextra
 INSTALL_DIR = /usr/bin/
 all: build install
 
 build: uwufetch.c
 	gcc $(FLAGS) -o $(NAME) $(FILES)
 
-debug: build install
+debug:
 	clear
-	./uwufetch
+	gcc $(FLAGS_DEBUG) -o $(NAME) $(FILES)
+	./uwufetch -id asd
 
 install:
 	sudo cp $(NAME) $(INSTALL_DIR)$(NAME)

@@ -19,7 +19,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/sysinfo.h>
-#include <sys/resource.h>
 #include <sys/utsname.h>
 
 // COLORS
@@ -36,11 +35,10 @@
 #define PINK "\x1b[38;5;201m"
 #define LPINK "\x1b[38;5;213m"
 
-struct rusage r_usage;
 struct utsname sys_var;
 struct sysinfo sys;
-int ram_max, pkgs, a_i_flag = 0;
-char user[32], host[253], shell[64], version_name[64], cpu_model[256], pkgman_name[64], image_name[32];
+int ram_max = 0, ram_free = 0, pkgs, a_i_flag = 0;
+char user[32], host[256], shell[64], version_name[64], cpu_model[256], pkgman_name[64], image_name[32];
 int pkgman();
 void get_info();
 void list();
@@ -107,90 +105,94 @@ int pkgman() { // this is just a function that returns the total of installed pa
 	fscanf(file[7], "%d", &xbps);
 	for (int i = 0; i < 8; i++) fclose(file[i]);
 
-#define ADD_PACKAGES(package_count, pkgman_to_add) if (package_count > 0) { total += package_count; strcat(pkgman_name, pkgman_to_add); }
-	ADD_PACKAGES(apt,    "(apt)")
-	ADD_PACKAGES(dnf,    "(dnf)")
-	ADD_PACKAGES(emerge, "(emerge)")
-	ADD_PACKAGES(flatpak,"(flatpak)")
-	ADD_PACKAGES(nix,    "(nix)")
-	ADD_PACKAGES(pacman, "(pacman)")
-	ADD_PACKAGES(rpm,    "(rpm)")
-	ADD_PACKAGES(xbps,   "(xbps)")
-#undef ADD_PACKAGES
+	#define ADD_PACKAGES(package_count, pkgman_to_add) if (package_count > 0) { total += package_count; strcat(pkgman_name, pkgman_to_add); }
+		ADD_PACKAGES(apt,    "(apt)")
+		ADD_PACKAGES(dnf,    "(dnf)")
+		ADD_PACKAGES(emerge, "(emerge)")
+		ADD_PACKAGES(flatpak,"(flatpak)")
+		ADD_PACKAGES(nix,    "(nix)")
+		ADD_PACKAGES(pacman, "(pacman)")
+		ADD_PACKAGES(rpm,    "(rpm)")
+		ADD_PACKAGES(xbps,   "(xbps)")
+	#undef ADD_PACKAGES
 
 	return total;	
 }
 
 void print_info() {	// print collected info
 	printf(	"\033[9A\033[18C%s%s%s@%s\n"
-			"\033[17C %s%sOWOS     %s%s\n"
-			"\033[17C %s%sKERNEL   %s%s %s\n"
-			"\033[17C %s%sCPUWU    %s%s\n"
-			"\033[17C %s%sWAM      %s%ldM/%iM\n"
-			"\033[17C %s%sSHELL    %s%s\n"
-			"\033[17C %s%sPKGS     %s%s%d %s\n"
-			"\033[17C %s%sUWUPTIME %s%lid, %lih, %lim\n"
-			"\033[17C %s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n",
+			"\033[18C%s%sOWOS     %s%s\n"
+			"\033[18C%s%sKERNEL   %s%s %s\n"
+			"\033[18C%s%sCPUWU    %s%s\n"
+			"\033[18C%s%sWAM      %s%i MB/%i MB\n"
+			"\033[18C%s%sSHELL    %s%s\n"
+			"\033[18C%s%sPKGS     %s%s%d %s\n"
+			"\033[18C%s%sUWUPTIME %s"/*"%lid, "*/"%lih, %lim\n"
+			"\033[18C%s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n",
 			NORMAL, BOLD, user, host,
 			NORMAL, BOLD, NORMAL, version_name,
 			NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine,
 			NORMAL, BOLD, NORMAL, cpu_model,
-			NORMAL, BOLD, NORMAL, r_usage.ru_maxrss, ram_max,
+			NORMAL, BOLD, NORMAL, (ram_max - ram_free), ram_max,
 			NORMAL, BOLD, NORMAL, shell,
 			NORMAL, BOLD, NORMAL, NORMAL, pkgs, pkgman_name,
-			NORMAL, BOLD, NORMAL, sys.uptime/60/60/24, sys.uptime/60/60%24, sys.uptime/60%60,
+			NORMAL, BOLD, NORMAL, /*sys.uptime/60/60/24,*/ sys.uptime/60/60, sys.uptime/60%60,
 			BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN,  WHITE, NORMAL);
 }
 
 void get_info() {	// get all necessary info
+	char line[256];	// var to scan file lines
 	// os version
-	FILE *fos_rel = popen("cat /etc/os-release 2> /dev/null | awk '/^ID=/' | awk -F  '=' '{print $2}'", "r");
-	fscanf(fos_rel,"%[^\n]", version_name);
-	fclose(fos_rel);
-
-	if (strlen(version_name) < 1) {	// handling unknown distribution
+	FILE *os_release = fopen("/etc/os-release", "r");
+	FILE *cpuinfo = fopen("/proc/cpuinfo", "r");
+	if (os_release) {	// get normal vars
+		while (fgets(line, sizeof(line), os_release)) {
+			sscanf(line, "\nID=%s", version_name);
+			if (strlen(version_name)) break;
+		}
+		while (fgets(line, sizeof(line), cpuinfo)) if (fscanf(cpuinfo, "model name      : %[^with\n]", cpu_model)) break;
+		sprintf(user, "%s", getenv("USER"));
+		fclose(os_release);
+	} else {	// try for android vars, or unknown system
 		DIR *system_app = opendir("/system/app/");
 		DIR *system_priv_app = opendir("/system/priv-app/");
 		if (system_app && system_priv_app) {	// android
 			closedir(system_app);
 			closedir(system_priv_app);
 			sprintf(version_name, "android");
+			// android vars
+			FILE *whoami = popen("whoami", "r");
+			fscanf(whoami, "%s", user);
+			fclose(whoami);
+			while (fgets(line, sizeof(line), cpuinfo)) if (fscanf(cpuinfo, "Hardware        : %[^\n]", cpu_model)) break;
 		} else sprintf(version_name, "unknown");
 	}
-	// user name, host name and shell
-	if (strcmp(version_name, "android") != 0) {
-		snprintf(user, 32, "%s", getenv("USER"));
-		// cpu (this is here and not near the ram for efficiency)
-		FILE *fcpu = popen("lscpu | grep 'Model name:' | cut -d ':' -f2 | sed 's/  //g' 2> /dev/null", "r");
-		fscanf(fcpu, "%[^\n]", cpu_model);
-		fclose(fcpu);
-	}
-	else if (strcmp(version_name, "android") == 0) {	// android vars
-		FILE *whoami = popen("whoami", "r");
-		fscanf(whoami, "%s", user);
-		fclose(whoami);
-		FILE *fcpu = popen("cat /proc/cpuinfo | grep 'Hardware' | cut -d ':' -f2 | sed 's/  //g' 2> /dev/null", "r");
-		fscanf(fcpu, "%[^\n]", cpu_model);
-		fclose(fcpu);
-	}
-	gethostname(host, 253);
-	snprintf(shell, 16, "%s", getenv("SHELL"));
-	memmove(&shell[0], &shell[5], 16);
+	fclose(cpuinfo);
+	gethostname(host, 256);
+	sprintf(shell, "%s", getenv("SHELL"));
 
-	// system info
+	// system resources
 	uname(&sys_var);
 	sysinfo(&sys);
 	
 	// ram
-	ram_max = sys.totalram * sys.mem_unit / 1048576;
-	getrusage(RUSAGE_SELF, &r_usage);
+	FILE *meminfo = fopen("/proc/meminfo", "r");
+	while (fgets(line, sizeof(line), meminfo)) {
+		sscanf(line, "MemFree: %d kB", &ram_free);
+		sscanf(line, "MemTotal: %d kB", &ram_max);
+		if (ram_max > 0 && ram_free > 0) {
+			ram_max *= 0.001024;
+			ram_free *= 0.001024;
+			fclose(meminfo);
+			break;
+		}
+	}
 	pkgs = pkgman();
 }
 
 void list(char* arg) {	// prints distribution list
 	/*	distributions are listed by distribution branch
-		to make the output easier to understand by the user,
-		also i didn't like the previous listing.*/
+		to make the output easier to understand by the user.*/
 	printf(	"%s -d <options>\n"
 			"  Available distributions:\n"
 			"    %sArch linux %sbased:\n"
@@ -203,8 +205,8 @@ void list(char* arg) {	// prints distribution list
 			"      freebsd, %sopenbsd\n",
 			arg, BLUE, NORMAL, BLUE, GREEN,			// Arch based colors
 			RED, YELLOW, NORMAL, RED, GREEN, BLUE,	// Debian based colors
-			NORMAL, BLUE, PINK, GREEN, WHITE,				// Other/spare distributions colors
-			RED, YELLOW);								// BSD colors
+			NORMAL, BLUE, PINK, GREEN, WHITE,		// Other/spare distributions colors
+			RED, YELLOW);							// BSD colors
 }
 
 void print_ascii() {	// prints logo (as ascii art) of the given system. distributions listed alphabetically.
@@ -305,7 +307,6 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 	}
 
 	// BSD
-
 	else if (strcmp(version_name, "freebsd") == 0) {
 		printf(	"\032[1E\033[3C%s\n"
 				" /\\,-'''''-,/\\\n"
@@ -324,22 +325,34 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				"%s/ \\          /   \n"
 				"  /-________-\\   \n\n", YELLOW, RED, YELLOW, WHITE, YELLOW, LPINK, WHITE, LPINK, YELLOW);
 
- 	} 
+ 	}
+	else printf("\033[0E\033[1C%s"
+				"TUX for generic\n"
+				"   unix system\n"
+				" needs to be made.\n"
+				"    If you are\n"
+				"   reading this\n"
+				"  please consider\n"
+				"   contributing.\n\n", RED);
 }
 
 void print_image() {	// prints logo (as an image) of the given system. distributions listed alphabetically.
 	char command[256];
 	if (strlen(image_name) > 1) sprintf(command, "viu -t -w 18 -h 8 %s 2> /dev/null", image_name);
-	else sprintf(command, "viu -t -w 18 -h 8 /usr/lib/uwufetch/%s.png 2> /dev/null", version_name);
-	if (system(command) != 0) {	// if viu is not installed
-		printf(	"\033[1E\033[3C%s\n"
-				"   There was an\n"
-				" error, maybe viu\n"
-				" is not installed.\n"
-				" Read IMAGES.md\n"
-				"  for more info.\n\n", RED);
+	else {
+		if (strcmp(version_name, "android") == 0) sprintf(command, "viu -t -w 18 -h 8 /data/data/com.termux/files/usr/lib/uwufetch/%s.png 2> /dev/null", version_name);
+		else sprintf(command, "viu -t -w 18 -h 8 /usr/lib/uwufetch/%s.png 2> /dev/null", version_name);
 	}
-	printf("\033[1E\033[0C\b");
+	if (system(command) != 0) {	// if viu is not installed or the image is missing
+		printf(	"\033[0E\033[3C%s\n"
+				"   There was an\n"
+				"    error: viu\n"
+				" is not installed\n"
+				"   or the image\n"
+				"   is not fount\n"
+				"  Read IMAGES.md\n"
+				"   for more info.\n\n", RED);
+	}
 }
 
 void usage(char* arg) {
@@ -356,23 +369,29 @@ void usage(char* arg) {
 
 void uwu_name() {	// changes distro name to uwufied(?) name
 
-#define VERSION_TO_UWU(original, uwufied) if (strcmp(version_name, original) == 0) sprintf(version_name, "%s", uwufied)
-	// linux
-	VERSION_TO_UWU("arch", "Nyarch Linuwu");
-	VERSION_TO_UWU("artix", "Nyartix Linuwu");
-	VERSION_TO_UWU("debian", "Debinyan");
-	VERSION_TO_UWU("fedora", "Fedowa");
-	VERSION_TO_UWU("gentoo", "GentOwO");
-	VERSION_TO_UWU("linuxmint", "LinUWU Miwint");
-	VERSION_TO_UWU("manjaro", "Myanjawo");
-	VERSION_TO_UWU("manjaro-arm", "Myanjawo AWM");
-	VERSION_TO_UWU("popos", "PopOwOS");
-	VERSION_TO_UWU("ubuntu", "Uwuntu");
-	VERSION_TO_UWU("void", "OwOid");
-	VERSION_TO_UWU("android", "Nyandroid");	// android at the end because it could be not considered as an actual distribution of gnu/linux
-	
-	// BSD
-	VERSION_TO_UWU("freebsd", "FweeBSD");
-	VERSION_TO_UWU("openbsd", "OwOpenBSD");
-#undef VERSION_TO_UWU
+	#define STRING_TO_UWU(original, uwufied) if (strcmp(version_name, original) == 0) sprintf(version_name, "%s", uwufied)
+		// linux
+		STRING_TO_UWU("arch", "Nyarch Linuwu");
+		else STRING_TO_UWU("artix", "Nyartix Linuwu");
+		else STRING_TO_UWU("debian", "Debinyan");
+		else STRING_TO_UWU("fedora", "Fedowa");
+		else STRING_TO_UWU("gentoo", "GentOwO");
+		else STRING_TO_UWU("linuxmint", "LinUWU Miwint");
+		else STRING_TO_UWU("manjaro", "Myanjawo");
+		else STRING_TO_UWU("manjaro-arm", "Myanjawo AWM");
+		else STRING_TO_UWU("popos", "PopOwOS");
+		else STRING_TO_UWU("ubuntu", "Uwuntu");
+		else STRING_TO_UWU("void", "OwOid");
+		else STRING_TO_UWU("android", "Nyandroid");	// android at the end because it could be not considered as an actual distribution of gnu/linux
+
+		// BSD
+		else STRING_TO_UWU("freebsd", "FweeBSD");
+		else STRING_TO_UWU("openbsd", "OwOpenBSD");
+
+
+		else {
+			sprintf(version_name, "%s", "unknown");
+			if (a_i_flag == 1) print_image();
+		}
+	#undef STRING_TO_UWU
 }
