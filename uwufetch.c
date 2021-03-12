@@ -169,7 +169,7 @@ void get_info() {	// get all necessary info
 	}
 	fclose(cpuinfo);
 	gethostname(host, 256);
-	sprintf(shell, "%s", getenv("SHELL"));
+	sscanf(getenv("SHELL"), "%*[bin/]%s", shell);
 
 	// system resources
 	uname(&sys_var);
@@ -326,14 +326,13 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				"  /-________-\\   \n\n", YELLOW, RED, YELLOW, WHITE, YELLOW, LPINK, WHITE, LPINK, YELLOW);
 
  	}
-	else printf("\033[0E\033[1C%s"
-				"TUX for generic\n"
-				"   unix system\n"
-				" needs to be made.\n"
-				"    If you are\n"
-				"   reading this\n"
-				"  please consider\n"
-				"   contributing.\n\n", RED);
+	else printf(	"\033[0E\033[4C%s.--.\n"
+				"   |o_o |\n"
+				"   |:_/ |\n"
+				"  //    \\ \\\n"
+				" (|      | )\n"
+				" %s/'\\_   _/`\\\n"
+				" \\___)=(___/\n\n", WHITE, YELLOW);
 }
 
 void print_image() {	// prints logo (as an image) of the given system. distributions listed alphabetically.
@@ -391,7 +390,10 @@ void uwu_name() {	// changes distro name to uwufied(?) name
 
 		else {
 			sprintf(version_name, "%s", "unknown");
-			if (a_i_flag == 1) print_image();
+			if (a_i_flag == 1) {
+				print_image();
+				printf("\n");
+			}
 		}
 	#undef STRING_TO_UWU
 }

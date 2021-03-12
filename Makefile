@@ -11,7 +11,7 @@ build: uwufetch.c
 debug:
 	clear
 	gcc $(FLAGS_DEBUG) -o $(NAME) $(FILES)
-	./uwufetch -id asd
+	./uwufetch
 
 install:
 	sudo cp $(NAME) $(INSTALL_DIR)$(NAME)
