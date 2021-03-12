@@ -336,13 +336,13 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				"  /-________-\\   \n\n", YELLOW, RED, YELLOW, WHITE, YELLOW, LPINK, WHITE, LPINK, YELLOW);
 
  	}
-	else printf(	"\033[0E\033[4C%s.--.\n"
-				"   |o_o |\n"
-				"   |:_/ |\n"
-				"  //    \\ \\\n"
-				" (|      | )\n"
-				" %s/'\\_   _/`\\\n"
-				" \\___)=(___/\n\n", WHITE, YELLOW);
+	else printf(	"\033[0E\033[2C%s._.--._.\n"
+				"  \\|>%s_%s< |/\n"
+				"   |%s:_/%s |\n"
+				"  //    \\ \\   ?\n"
+				" (|      | ) /\n"
+				" %s/'\\_   _/`\\%s-\n"
+				" %s\\___)=(___/\n\n", WHITE, YELLOW, WHITE, YELLOW, WHITE, YELLOW, WHITE, YELLOW);
 }
 
 void print_image() {	// prints logo (as an image) of the given system. distributions listed alphabetically.
