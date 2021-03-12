@@ -83,30 +83,33 @@ int main(int argc, char *argv[]) {
 }
 
 int pkgman() { // this is just a function that returns the total of installed packages
-	int apt, dnf, emerge, flatpak, nix, pacman, rpm, xbps, total = 0;
+	int apt, apk, dnf, emerge, flatpak, nix, pacman, rpm, xbps, total = 0;
 
 	FILE *file[8];
 	file[0] = popen("dpkg-query -f '${binary:Package}\n' -W 2> /dev/null | wc -l", "r");
-	file[1] = popen("dnf list installed 2> /dev/null | wc -l", "r");
-	file[2] = popen("qlist -I 2> /dev/null | wc -l", "r");
-	file[3] = popen("flatpak list 2> /dev/null | wc -l", "r");
-	file[4] = popen("nix-store -q --requisites /run/current-sys_vartem/sw 2> /dev/null | wc -l", "r");
-	file[5] = popen("pacman -Qq 2> /dev/null | wc -l", "r");
-	file[6] = popen("rpm -qa --last 2> /dev/null | wc -l", "r");
-	file[7] = popen("xbps-query -l 2> /dev/null | wc -l", "r");
+	file[1] = popen("apk info 2> /dev/null | wc -l", "r");
+	file[2] = popen("dnf list installed 2> /dev/null | wc -l", "r");
+	file[3] = popen("qlist -I 2> /dev/null | wc -l", "r");
+	file[4] = popen("flatpak list 2> /dev/null | wc -l", "r");
+	file[5] = popen("nix-store -q --requisites /run/current-sys_vartem/sw 2> /dev/null | wc -l", "r");
+	file[6] = popen("pacman -Qq 2> /dev/null | wc -l", "r");
+	file[7] = popen("rpm -qa --last 2> /dev/null | wc -l", "r");
+	file[8] = popen("xbps-query -l 2> /dev/null | wc -l", "r");
 
 	fscanf(file[0], "%d", &apt);
-	fscanf(file[1], "%d", &dnf);
-	fscanf(file[2], "%d", &emerge);
-	fscanf(file[3], "%d", &flatpak);
-	fscanf(file[4], "%d", &nix);
-	fscanf(file[5], "%d", &pacman);
-	fscanf(file[6], "%d", &rpm);
-	fscanf(file[7], "%d", &xbps);
+	fscanf(file[1], "%d", &apk);
+	fscanf(file[2], "%d", &dnf);
+	fscanf(file[3], "%d", &emerge);
+	fscanf(file[4], "%d", &flatpak);
+	fscanf(file[5], "%d", &nix);
+	fscanf(file[6], "%d", &pacman);
+	fscanf(file[7], "%d", &rpm);
+	fscanf(file[8], "%d", &xbps);
 	for (int i = 0; i < 8; i++) fclose(file[i]);
 
 	#define ADD_PACKAGES(package_count, pkgman_to_add) if (package_count > 0) { total += package_count; strcat(pkgman_name, pkgman_to_add); }
 		ADD_PACKAGES(apt,    "(apt)")
+		ADD_PACKAGES(apk,    "(apk)")
 		ADD_PACKAGES(dnf,    "(dnf)")
 		ADD_PACKAGES(emerge, "(emerge)")
 		ADD_PACKAGES(flatpak,"(flatpak)")
@@ -200,19 +203,26 @@ void list(char* arg) {	// prints distribution list
 			"    %sDebian/%sUbuntu %sbased:\n"
 			"      %sdebian, %slinuxmint, %spopos\n\n"
 			"    %sOther/spare distributions:\n"
-			"      %sfedora, %sgentoo, %svoid, android, %sunknown\n\n"
+			"      %salpine, %sfedora, %sgentoo, %svoid, android, %sunknown\n\n"
 			"    %sBSD:\n"
 			"      freebsd, %sopenbsd\n",
 			arg, BLUE, NORMAL, BLUE, GREEN,			// Arch based colors
 			RED, YELLOW, NORMAL, RED, GREEN, BLUE,	// Debian based colors
-			NORMAL, BLUE, PINK, GREEN, WHITE,		// Other/spare distributions colors
+			NORMAL, BLUE, BLUE, PINK, GREEN, WHITE,		// Other/spare distributions colors
 			RED, YELLOW);							// BSD colors
 }
 
 void print_ascii() {	// prints logo (as ascii art) of the given system. distributions listed alphabetically.
 	
 	// linux
-	if (strcmp(version_name, "arch") == 0) {
+
+	if (strcmp(version_name, "alpine") == 0) {
+     printf("\033[2E\033[4C%s.  .___.\n"
+    	        "   / \\/ \\  /\n"
+    	        "  /OwO\\ɛU\\/   __\n"
+    	        " /     \\  \\__/  \\\n"
+        	    "/       \\  \\\n\n\n", BLUE);
+	} else if (strcmp(version_name, "arch") == 0) {
 		printf(	"\033[1E\033[8C%s/\\\n"
 				"       /  \\\n"
 				"      /\\   \\\n"
@@ -370,7 +380,8 @@ void uwu_name() {	// changes distro name to uwufied(?) name
 
 	#define STRING_TO_UWU(original, uwufied) if (strcmp(version_name, original) == 0) sprintf(version_name, "%s", uwufied)
 		// linux
-		STRING_TO_UWU("arch", "Nyarch Linuwu");
+		STRING_TO_UWU("alpine", "Nyalpine");
+		else STRING_TO_UWU("arch", "Nyarch Linuwu");
 		else STRING_TO_UWU("artix", "Nyartix Linuwu");
 		else STRING_TO_UWU("debian", "Debinyan");
 		else STRING_TO_UWU("fedora", "Fedowa");
