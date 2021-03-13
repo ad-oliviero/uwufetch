@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
 int pkgman() { // this is just a function that returns the total of installed packages
 	int apt, apk, dnf, emerge, flatpak, nix, pacman, rpm, xbps, total = 0;
 
-	FILE *file[8];
+	FILE *file[9];
 	file[0] = popen("dpkg-query -f '${binary:Package}\n' -W 2> /dev/null | wc -l", "r");
 	file[1] = popen("apk info 2> /dev/null | wc -l", "r");
 	file[2] = popen("dnf list installed 2> /dev/null | wc -l", "r");
