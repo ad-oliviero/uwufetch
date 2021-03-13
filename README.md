@@ -13,6 +13,7 @@ Nyalpine, Nyarch Linuwu, Nyartix Linuwu, Debinyan, Fedowa, GentOwO, Miwint, Myan
 Right now, the package is only available on the AUR:
 
 [![uwufetch](https://img.shields.io/aur/version/uwufetch?color=1793d1&label=uwufetch&logo=arch-linux&style=for-the-badge)](https://aur.archlinux.org/packages/uwufetch/)
+
 [![uwufetch-git](https://img.shields.io/aur/version/uwufetch-git?color=1793d1&label=uwufetch-git&logo=arch-linux&style=for-the-badge)](https://aur.archlinux.org/packages/uwufetch-git/)
 
 ##### Via source
@@ -22,24 +23,24 @@ To install UwUfetch from the source, type these commands in the terminal:
 ```shell
 git clone https://github.com/TheDarkBug/uwufetch.git
 cd uwufetch
-make
+make build
+sudo make install
 ```
 
 To uninstall:
 
 ```shell
 cd uwufetch
-make uninstall
+sudo make uninstall
 ```
 
 ##### Make options:
 
 ```shell
-make all                # builds and installs
 make build              # builds uwueftch
 make debug              # use for debug
-make install            # installs uwufetch
-make uninstall          # uninstalls uwufetch
+make install            # installs uwufetch (needs root permissons)
+make uninstall          # uninstalls uwufetch (needs root permissons)
 make termux             # build and install for termux
 make termux_uninstall   # uninstall for termux
 ```

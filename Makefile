@@ -3,7 +3,6 @@ FILES = uwufetch.c
 FLAGS = -O3
 FLAGS_DEBUG = -Wall -Wextra
 INSTALL_DIR = /usr/bin/
-all: build install
 
 build: uwufetch.c
 	gcc $(FLAGS) -o $(NAME) $(FILES)
@@ -14,13 +13,13 @@ debug:
 	./uwufetch
 
 install:
-	sudo cp $(NAME) $(INSTALL_DIR)$(NAME)
-	ls /usr/lib/uwufetch/ > /dev/null || sudo mkdir /usr/lib/uwufetch/
-	sudo cp res/* /usr/lib/uwufetch/
+	cp $(NAME) $(INSTALL_DIR)$(NAME)
+	ls /usr/lib/uwufetch/ 2> /dev/null || mkdir /usr/lib/uwufetch/
+	cp res/* /usr/lib/uwufetch/
 
 uninstall:
-	sudo rm $(INSTALL_DIR)$(NAME)
-	sudo rm -rf /usr/lib/uwufetch/
+	rm $(INSTALL_DIR)$(NAME)
+	rm -rf /usr/lib/uwufetch/
 
 termux: build
 	cp $(NAME) /data/data/com.termux/files$(INSTALL_DIR)$(NAME)

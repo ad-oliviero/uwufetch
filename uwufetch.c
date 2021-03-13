@@ -217,11 +217,11 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 	// linux
 
 	if (strcmp(version_name, "alpine") == 0) {
-     printf("\033[2E\033[4C%s.  .___.\n"
-    	        "   / \\/ \\  /\n"
-    	        "  /OwO\\ɛU\\/   __\n"
-    	        " /     \\  \\__/  \\\n"
-        	    "/       \\  \\\n\n\n", BLUE);
+	 printf("\033[2E\033[4C%s.  .___.\n"
+				"   / \\/ \\  /\n"
+				"  /OwO\\ɛU\\/   __\n"
+				" /     \\  \\__/  \\\n"
+				"/       \\  \\\n\n\n", BLUE);
 	} else if (strcmp(version_name, "arch") == 0) {
 		printf(	"\033[1E\033[8C%s/\\\n"
 				"       /  \\\n"
@@ -289,9 +289,9 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
  				" %s  --%s'--------'\n\n",GREEN, WHITE, GREEN, WHITE, GREEN, WHITE, GREEN, WHITE, GREEN, WHITE, GREEN, WHITE, GREEN, WHITE, GREEN, WHITE, GREEN);
 	} else if (strcasecmp(version_name, "popos") == 0) {
 		printf("\033[2E\033[6C%s|\\.-----./|\n"
-     			"      |/       \\|\n"
-     			"      |  >   <  |\n"
-     			"      | %s~  %sP! %s~ %s|\n"
+	 			"      |/       \\|\n"
+	 			"      |  >   <  |\n"
+	 			"      | %s~  %sP! %s~ %s|\n"
 				"_   ---\\   w   /\n"
 				" \\_/    '-----'\n\n", BLUE, LPINK, WHITE, LPINK, BLUE);  
 	} else if (strcmp(version_name, "ubuntu") == 0) {
