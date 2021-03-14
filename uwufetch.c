@@ -393,7 +393,7 @@ void uwu_name() {	// changes distro name to uwufied(?) name
 		else STRING_TO_UWU("guix", "gnUwU gUwUix");
 		else STRING_TO_UWU("linuxmint", "LinUWU Miwint");
 		else STRING_TO_UWU("manjaro", "Myanjawo");
-		else STRING_TO_UWU("manjaro-arm", "Myanjawo AWM");
+		else STRING_TO_UWU("\"manjaro-arm\"", "Myanjawo AWM");
 		else STRING_TO_UWU("pop", "PopOwOS");
 		else STRING_TO_UWU("ubuntu", "Uwuntu");
 		else STRING_TO_UWU("\"void\"", "OwOid");
