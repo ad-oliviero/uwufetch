@@ -199,7 +199,9 @@ void get_info() {	// get all necessary info
 	fclose(meminfo);
 
 	// gpu
-	FILE *gpu = popen("lspci -mm | grep \"VGA\\|00:02\" | cut --fields=4,6 -d '\"' --output-delimiter=\" \" | sed \"s/ Controller.*//\"", "r");
+	FILE *gpu;
+	if (strcmp(version_name, "android") != 0) gpu = popen("lspci -mm | grep \"VGA\\|00:02\" | cut --fields=4,6 -d '\"' --output-delimiter=\" \" | sed \"s/ Controller.*//\"", "r");
+	else gpu = popen("getprop ro.hardware.vulkan", "r");
 	if (gpu) {
 		// Ignore error
 		if(fscanf(gpu, "%[^\n]", gpu_model) == 3) {};
