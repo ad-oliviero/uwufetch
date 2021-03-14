@@ -405,7 +405,7 @@ void uwu_name() {	// changes distro name to uwufied(?) name
 		else STRING_TO_UWU("manjaro", "Myanjawo");
 		else STRING_TO_UWU("\"manjaro-arm\"", "Myanjawo AWM");
 		else STRING_TO_UWU("pop", "PopOwOS");
-		else STRING_TO_UWU("raspbian", "Wasbian");
+		else STRING_TO_UWU("raspbian", "Waspbian");
 		else STRING_TO_UWU("ubuntu", "Uwuntu");
 		else STRING_TO_UWU("\"void\"", "OwOid");
 		else STRING_TO_UWU("android", "Nyandroid");	// android at the end because it could be not considered as an actual distribution of gnu/linux
