@@ -83,28 +83,30 @@ int main(int argc, char *argv[]) {
 }
 
 int pkgman() { // this is just a function that returns the total of installed packages
-	int apt, apk, dnf, emerge, flatpak, nix, pacman, rpm, xbps, total = 0;
+	int apt, apk, dnf, emerge, flatpak, guix, nix, pacman, rpm, xbps, total = 0;
 
 	FILE *file[9];
 	file[0] = popen("dpkg-query -f '${binary:Package}\n' -W 2> /dev/null | wc -l", "r");
 	file[1] = popen("apk info 2> /dev/null | wc -l", "r");
 	file[2] = popen("dnf list installed 2> /dev/null | wc -l", "r");
-	file[3] = popen("qlist -I 2> /dev/null | wc -l", "r");
-	file[4] = popen("flatpak list 2> /dev/null | wc -l", "r");
-	file[5] = popen("nix-store -q --requisites /run/current-sys_vartem/sw 2> /dev/null | wc -l", "r");
-	file[6] = popen("pacman -Qq 2> /dev/null | wc -l", "r");
-	file[7] = popen("rpm -qa --last 2> /dev/null | wc -l", "r");
-	file[8] = popen("xbps-query -l 2> /dev/null | wc -l", "r");
+	file[3] = popen("guix package --list-installed 2> /dev/null | wc -l", "r");
+	file[4] = popen("qlist -I 2> /dev/null | wc -l", "r");
+	file[5] = popen("flatpak list 2> /dev/null | wc -l", "r");
+	file[6] = popen("nix-store -q --requisites /run/current-sys_vartem/sw 2> /dev/null | wc -l", "r");
+	file[7] = popen("pacman -Qq 2> /dev/null | wc -l", "r");
+	file[8] = popen("rpm -qa --last 2> /dev/null | wc -l", "r");
+	file[9] = popen("xbps-query -l 2> /dev/null | wc -l", "r");
 
 	fscanf(file[0], "%d", &apt);
 	fscanf(file[1], "%d", &apk);
 	fscanf(file[2], "%d", &dnf);
 	fscanf(file[3], "%d", &emerge);
 	fscanf(file[4], "%d", &flatpak);
-	fscanf(file[5], "%d", &nix);
-	fscanf(file[6], "%d", &pacman);
-	fscanf(file[7], "%d", &rpm);
-	fscanf(file[8], "%d", &xbps);
+	fscanf(file[5], "%d", &guix);
+	fscanf(file[6], "%d", &nix);
+	fscanf(file[7], "%d", &pacman);
+	fscanf(file[8], "%d", &rpm);
+	fscanf(file[9], "%d", &xbps);
 	for (int i = 0; i < 8; i++) fclose(file[i]);
 
 	#define ADD_PACKAGES(package_count, pkgman_to_add) if (package_count > 0) { total += package_count; strcat(pkgman_name, pkgman_to_add); }
@@ -113,6 +115,7 @@ int pkgman() { // this is just a function that returns the total of installed pa
 		ADD_PACKAGES(dnf,    "(dnf)")
 		ADD_PACKAGES(emerge, "(emerge)")
 		ADD_PACKAGES(flatpak,"(flatpak)")
+		ADD_PACKAGES(guix ,"(guix)")
 		ADD_PACKAGES(nix,    "(nix)")
 		ADD_PACKAGES(pacman, "(pacman)")
 		ADD_PACKAGES(rpm,    "(rpm)")
