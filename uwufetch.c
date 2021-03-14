@@ -195,6 +195,13 @@ void get_info() {	// get all necessary info
 			break;
 		}
 	}
+
+	// gpu
+	FILE *gpu = popen("lspci", "r");
+	if (gpu) {
+		
+		fclose(gpu);
+	}
 	pkgs = pkgman();
 }
 
