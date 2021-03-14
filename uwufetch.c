@@ -285,14 +285,14 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n"
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n"
 				" \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n");
-	} else if (strcasecmp(version_name, "linuxmint") == 0) {
+	} else if (strcmp(version_name, "linuxmint") == 0) {
 		printf( "\033[2E\033[4C%s__/\\____/\\.\n"
   				"   |%s.--.      %s|\n"
  				"  %s, %s¯| %s| UwU| %s|\n"
  				" %s||  %s| %s|    | %s|\n"
  				" %s |  %s|  %s----  %s|\n"
  				" %s  --%s'--------'\n\n",GREEN, WHITE, GREEN, WHITE, GREEN, WHITE, GREEN, WHITE, GREEN, WHITE, GREEN, WHITE, GREEN, WHITE, GREEN, WHITE, GREEN);
-	} else if (strcasecmp(version_name, "pop") == 0) {
+	} else if (strcmp(version_name, "pop") == 0) {
 		printf("\033[2E\033[6C%s|\\.-----./|\n"
 	 			"      |/       \\|\n"
 	 			"      |  >   <  |\n"
