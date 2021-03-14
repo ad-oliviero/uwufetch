@@ -321,13 +321,12 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 
 	// BSD
 	else if (strcmp(version_name, "freebsd") == 0) {
-		printf(	"\032[1E\033[3C%s\n"
-				" /\\,-'''''-,/\\\n"
+		printf(	"\033[2E\033[1C%s/\\,-'''''-,/\\\n"
 				" \\_)       (_/\n"
 				" |   \\   /   |\n"
 				" |   O w O   |\n"
 				"  ;         ;\n"
-				"   '-_____-'\n", RED);
+				"   '-_____-'\n\n", RED);
 
 	} else if (strcmp(version_name, "openbsd") == 0) {
 		printf(	"\033[1E\033[3C%s  ______  \n"
@@ -389,6 +388,7 @@ void uwu_name() {	// changes distro name to uwufied(?) name
 		else STRING_TO_UWU("debian", "Debinyan");
 		else STRING_TO_UWU("fedora", "Fedowa");
 		else STRING_TO_UWU("gentoo", "GentOwO");
+		else STRING_TO_UWU("guix", "gnUwU gUwUix");
 		else STRING_TO_UWU("linuxmint", "LinUWU Miwint");
 		else STRING_TO_UWU("manjaro", "Myanjawo");
 		else STRING_TO_UWU("manjaro-arm", "Myanjawo AWM");
