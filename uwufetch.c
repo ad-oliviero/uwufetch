@@ -130,7 +130,7 @@ int pkgman() { // this is just a function that returns the total of installed pa
 void print_info() {	// print collected info
 	printf(	"\033[9A\033[18C%s%s%s@%s\n"
 			"\033[18C%s%sOWOS     %s%s\n"
-			"\033[18C%s%sKERNEL   %s%s %s\n"
+			"\033[18C%s%sKEWNEL   %s%s %s\n"
 			"\033[18C%s%sCPUWU    %s%s\n"
 			"\033[18C%s%sWAM      %s%i MB/%i MB\n"
 			"\033[18C%s%sSHELL    %s%s\n"
