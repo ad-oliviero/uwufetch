@@ -385,7 +385,8 @@ void usage(char* arg) {
 			"    -h, --help      prints this help page\n"
 			"    -i, --image     prints logo as image\n"
 			"                    %sworks in most terminals\n"
-			"                    read res/IMAGES.md for more info%s\n",
+			"                    read res/IMAGES.md for more info%s\n"
+			"    -l        	    lists all supported distributions\n",
 			arg, BLUE, NORMAL);
 }
 
