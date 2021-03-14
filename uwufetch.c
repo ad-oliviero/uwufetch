@@ -38,7 +38,7 @@
 struct utsname sys_var;
 struct sysinfo sys;
 int ram_max = 0, ram_free = 0, pkgs, a_i_flag = 0;
-char user[32], host[256], shell[64], version_name[64], cpu_model[256], pkgman_name[64], image_name[32];
+char user[32], host[256], shell[64], version_name[64], cpu_model[256], gpu_model[256] = {0}, pkgman_name[64], image_name[32];
 int pkgman();
 void get_info();
 void list();
@@ -132,6 +132,7 @@ void print_info() {	// print collected info
 			"\033[18C%s%sOWOS     %s%s\n"
 			"\033[18C%s%sKEWNEL   %s%s %s\n"
 			"\033[18C%s%sCPUWU    %s%s\n"
+			"\033[18C%s%sGPUWU    %s%s\n"
 			"\033[18C%s%sWAM      %s%i MB/%i MB\n"
 			"\033[18C%s%sSHELL    %s%s\n"
 			"\033[18C%s%sPKGS     %s%s%d %s\n"
@@ -141,6 +142,7 @@ void print_info() {	// print collected info
 			NORMAL, BOLD, NORMAL, version_name,
 			NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine,
 			NORMAL, BOLD, NORMAL, cpu_model,
+			NORMAL, BOLD, NORMAL, gpu_model,
 			NORMAL, BOLD, NORMAL, (ram_max - ram_free), ram_max,
 			NORMAL, BOLD, NORMAL, shell,
 			NORMAL, BOLD, NORMAL, NORMAL, pkgs, pkgman_name,
@@ -191,17 +193,18 @@ void get_info() {	// get all necessary info
 		if (ram_max > 0 && ram_free > 0) {
 			ram_max *= 0.001024;
 			ram_free *= 0.001024;
-			fclose(meminfo);
 			break;
 		}
 	}
+	fclose(meminfo);
 
 	// gpu
-	FILE *gpu = popen("lspci", "r");
+	FILE *gpu = popen("lspci -vnn | grep 'VGA\\|DISPLAY\\|3D'", "r");
 	if (gpu) {
-		
+		//fscanf(gpu, "%[^\n]", gpu_model);
 		fclose(gpu);
 	}
+
 	pkgs = pkgman();
 }
 
@@ -213,15 +216,15 @@ void list(char* arg) {	// prints distribution list
 			"    %sArch linux %sbased:\n"
 			"      %sarch, artix, %smanjaro, \"manjaro-arm\"\n\n"
 			"    %sDebian/%sUbuntu %sbased:\n"
-			"      %sdebian, %slinuxmint, %spop\n\n"
+			"      %sdebian, %slinuxmint, %spop, %sraspbian\n\n"
 			"    %sOther/spare distributions:\n"
 			"      %salpine, %sfedora, %sgentoo, %s\"void\", android, %sunknown\n\n"
 			"    %sBSD:\n"
 			"      freebsd, %sopenbsd\n",
-			arg, BLUE, NORMAL, BLUE, GREEN,			// Arch based colors
-			RED, YELLOW, NORMAL, RED, GREEN, BLUE,	// Debian based colors
+			arg, BLUE, NORMAL, BLUE, GREEN,				// Arch based colors
+			RED, YELLOW, NORMAL, RED, GREEN, BLUE, RED,	// Debian based colors
 			NORMAL, BLUE, BLUE, PINK, GREEN, WHITE,		// Other/spare distributions colors
-			RED, YELLOW);							// BSD colors
+			RED, YELLOW);								// BSD colors
 }
 
 void print_ascii() {	// prints logo (as ascii art) of the given system. distributions listed alphabetically.
@@ -306,6 +309,13 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 	 			"      | %s~  %sP! %s~ %s|\n"
 				"_   ---\\   w   /\n"
 				" \\_/    '-----'\n\n", BLUE, LPINK, WHITE, LPINK, BLUE);  
+	} else if (strcmp(version_name, "raspbian") == 0) {
+		printf("\033[0E\033[6C%s__  __\n"
+	 			"     (_\\)(/_)\n"
+	 			"     %s(>(__)<)\n"
+	 			"    (_(_)(_)_)\n"
+				"     (_(__)_)\n"
+				"       (__)\n\n\n", GREEN, RED);
 	} else if (strcmp(version_name, "ubuntu") == 0) {
 		printf(	"\033[1E\033[9C%s_\n"
 				"     %s\u25E3%s__(_)%s\u25E2%s\n"
@@ -347,6 +357,7 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				"  /-________-\\   \n\n", YELLOW, RED, YELLOW, WHITE, YELLOW, LPINK, WHITE, LPINK, YELLOW);
 
  	}
+
 	else printf(	"\033[0E\033[2C%s._.--._.\n"
 				"  \\|>%s_%s< |/\n"
 				"   |%s:_/%s |\n"
@@ -402,6 +413,7 @@ void uwu_name() {	// changes distro name to uwufied(?) name
 		else STRING_TO_UWU("manjaro", "Myanjawo");
 		else STRING_TO_UWU("\"manjaro-arm\"", "Myanjawo AWM");
 		else STRING_TO_UWU("pop", "PopOwOS");
+		else STRING_TO_UWU("raspbian", "RaspNyan");
 		else STRING_TO_UWU("ubuntu", "Uwuntu");
 		else STRING_TO_UWU("\"void\"", "OwOid");
 		else STRING_TO_UWU("android", "Nyandroid");	// android at the end because it could be not considered as an actual distribution of gnu/linux

@@ -1,1 +1,0 @@
-lspci -mm | awk -F '\"|\" \"|\\(' '/"Display|"3D|"VGA/ {a[$0] = $1 " " $3 " " $4}END {for(i in a) {if(!seen[a[i]]++) print a[i]}}'
