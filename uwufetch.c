@@ -170,7 +170,7 @@ void get_info() {	// get all necessary info
 			sprintf(version_name, "android");
 			// android vars
 			FILE *whoami = popen("whoami", "r");
-			fscanf(whoami, "%s", user);
+			if (fscanf(whoami, "%s", user) == 3) sprintf(user, "unknown");
 			fclose(whoami);
 			while (fgets(line, sizeof(line), cpuinfo)) if (fscanf(cpuinfo, "Hardware        : %[^\n]", cpu_model)) break;
 		} else sprintf(version_name, "unknown");
