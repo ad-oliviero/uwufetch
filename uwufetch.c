@@ -203,7 +203,7 @@ void list(char* arg) {	// prints distribution list
 			"    %sDebian/%sUbuntu %sbased:\n"
 			"      %sdebian, %slinuxmint, %spopos\n\n"
 			"    %sOther/spare distributions:\n"
-			"      %salpine, %sfedora, %sgentoo, %svoid, android, %sunknown\n\n"
+			"      %salpine, %sfedora, %sgentoo, %s\"void\", android, %sunknown\n\n"
 			"    %sBSD:\n"
 			"      freebsd, %sopenbsd\n",
 			arg, BLUE, NORMAL, BLUE, GREEN,			// Arch based colors
@@ -301,7 +301,7 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				"  (_) |>w<| |\n"
 				"    \\  --- _/\n"
 				"  %sC__/%s---(_)\n\n\n", LPINK, PINK, LPINK, PINK, LPINK, PINK, LPINK);
-	} else if (strcmp(version_name, "void") == 0){
+	} else if (strcmp(version_name, "\"void\"") == 0){
 		printf("\033[2E\033[2C%s |\\_____/|\n"
 			"  _\\____   |\n" 
 			" | \\    \\  |\n"
@@ -391,7 +391,7 @@ void uwu_name() {	// changes distro name to uwufied(?) name
 		else STRING_TO_UWU("manjaro-arm", "Myanjawo AWM");
 		else STRING_TO_UWU("popos", "PopOwOS");
 		else STRING_TO_UWU("ubuntu", "Uwuntu");
-		else STRING_TO_UWU("void", "OwOid");
+		else STRING_TO_UWU("\"void\"", "OwOid");
 		else STRING_TO_UWU("android", "Nyandroid");	// android at the end because it could be not considered as an actual distribution of gnu/linux
 
 		// BSD
