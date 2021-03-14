@@ -199,9 +199,10 @@ void get_info() {	// get all necessary info
 	fclose(meminfo);
 
 	// gpu
-	FILE *gpu = popen("lspci -vnn | grep 'VGA\\|DISPLAY\\|3D'", "r");
+	FILE *gpu = popen("lspci -mm | grep \"VGA\\|00:02\" | cut --fields=4,6 -d '\"' --output-delimiter=\" \" | sed \"s/ Controller.*//\"", "r");
 	if (gpu) {
-		//fscanf(gpu, "%[^\n]", gpu_model);
+		// Ignore error
+		if(fscanf(gpu, "%[^\n]", gpu_model) == 3) {};
 		fclose(gpu);
 	}
 
