@@ -298,7 +298,16 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 	 			"      |  >   <  |\n"
 	 			"      | %s~  %sP! %s~ %s|\n"
 				"_   ---\\   w   /\n"
-				" \\_/    '-----'\n\n", BLUE, LPINK, WHITE, LPINK, BLUE);  
+				" \\_/    '-----'\n\n", BLUE, LPINK, WHITE, LPINK, BLUE);
+	} else if (strcmp(version_name, "raspbian") == 0) {
+          printf("\033[1E\033[4C%s\\\\ //\n"
+                    "%s   .     .\n"
+                    " .         .\n"
+                    ".           .\n"
+                    ".    %sOwO    %s.\n"
+                    ".           .\n"
+                    " .         .\n"
+					"   .     .\n", GREEN, RED, WHITE, RED);  
 	} else if (strcmp(version_name, "ubuntu") == 0) {
 		printf(	"\033[1E\033[9C%s_\n"
 				"     %s\u25E3%s__(_)%s\u25E2%s\n"
@@ -362,7 +371,7 @@ void print_image() {	// prints logo (as an image) of the given system. distribut
 				"    error: viu\n"
 				" is not installed\n"
 				"   or the image\n"
-				"   is not fount\n"
+				"   is not found.\n"
 				"  Read IMAGES.md\n"
 				"   for more info.\n\n", RED);
 	}
@@ -370,7 +379,7 @@ void print_image() {	// prints logo (as an image) of the given system. distribut
 
 void usage(char* arg) {
 	printf("Usage: %s <args>\n"
-			"    -a, --ascii     prints logo as ascii text (default)\n"
+"    -a, --ascii     prints logo as ascii text (default)\n"
 			"    -c, --custom    choose a custom image\n"
 			"    -d, --distro    lets you choose the logo to print\n"
 			"    -h, --help      prints this help page\n"
@@ -395,6 +404,7 @@ void uwu_name() {	// changes distro name to uwufied(?) name
 		else STRING_TO_UWU("manjaro", "Myanjawo");
 		else STRING_TO_UWU("\"manjaro-arm\"", "Myanjawo AWM");
 		else STRING_TO_UWU("pop", "PopOwOS");
+		else STRING_TO_UWU("raspbian", "Wasbian");
 		else STRING_TO_UWU("ubuntu", "Uwuntu");
 		else STRING_TO_UWU("\"void\"", "OwOid");
 		else STRING_TO_UWU("android", "Nyandroid");	// android at the end because it could be not considered as an actual distribution of gnu/linux
