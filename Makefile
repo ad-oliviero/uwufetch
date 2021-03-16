@@ -10,7 +10,7 @@ build: uwufetch.c
 debug:
 	clear
 	gcc $(FLAGS_DEBUG) -o $(NAME) $(FILES)
-	./uwufetch -d raspbian
+	./uwufetch
 
 install:
 	cp $(NAME) $(INSTALL_DIR)$(NAME)

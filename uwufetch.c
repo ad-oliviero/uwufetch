@@ -160,7 +160,7 @@ void get_info() {	// get all necessary info
 			sscanf(line, "\nID=%s", version_name);
 			if (strlen(version_name)) break;
 		}
-		while (fgets(line, sizeof(line), cpuinfo)) if (fscanf(cpuinfo, "model name      : %[^with\n]", cpu_model)) break;
+		while (fgets(line, sizeof(line), cpuinfo)) if (sscanf(line, "model name	: %[^\n]", cpu_model)) break;
 		sprintf(user, "%s", getenv("USER"));
 		fclose(os_release);
 	} else {	// try for android vars, or unknown system
@@ -397,7 +397,7 @@ void usage(char* arg) {
 			"    -h, --help      prints this help page\n"
 			"    -i, --image     prints logo as image\n"
 			"                    %sworks in most terminals\n"
-			"                    read res/IMAGES.md for more info%s\n",
+			"                    read res/IMAGES.md for more info%s\n"
 			"    -l        	    lists all supported distributions\n",
 			arg, BLUE, NORMAL);
 }
