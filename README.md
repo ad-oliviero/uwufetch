@@ -8,6 +8,11 @@ Nyalpine, Nyarch Linuwu, Nyartix Linuwu, Debinyan, Fedowa, GentOwO, Miwint, Myan
 
 ## Building and installation
 
+#### Requisites
+
+[viu](https://github.com/atanunq/viu) to use images instead of ascii art.
+[lshw](https://github.com/lyonel/lshw) to get gpu info.
+
 ##### Via package manager
 
 Right now, the package is only available on the AUR:

@@ -156,10 +156,7 @@ void get_info() {	// get all necessary info
 	FILE *os_release = fopen("/etc/os-release", "r");
 	FILE *cpuinfo = fopen("/proc/cpuinfo", "r");
 	if (os_release) {	// get normal vars
-		while (fgets(line, sizeof(line), os_release)) {
-			sscanf(line, "\nID=%s", version_name);
-			if (strlen(version_name)) break;
-		}
+		while (fgets(line, sizeof(line), os_release)) if (sscanf(line, "\nID=%s", version_name)) break;
 		while (fgets(line, sizeof(line), cpuinfo)) if (sscanf(line, "model name	: %[^\n]", cpu_model)) break;
 		sprintf(user, "%s", getenv("USER"));
 		fclose(os_release);
@@ -174,7 +171,7 @@ void get_info() {	// get all necessary info
 			FILE *whoami = popen("whoami", "r");
 			if (fscanf(whoami, "%s", user) == 3) sprintf(user, "unknown");
 			fclose(whoami);
-			while (fgets(line, sizeof(line), cpuinfo)) if (fscanf(cpuinfo, "Hardware        : %[^\n]", cpu_model)) break;
+			while (fgets(line, sizeof(line), cpuinfo)) if (sscanf(line, "Hardware        : %[^\n]", cpu_model)) break;
 		} else sprintf(version_name, "unknown");
 	}
 	fclose(cpuinfo);
@@ -200,13 +197,14 @@ void get_info() {	// get all necessary info
 
 	// gpu
 	FILE *gpu;
-	if (strcmp(version_name, "android") != 0) gpu = popen("lspci -mm | grep \"VGA\\|00:02\" | cut --fields=4,6 -d '\"' --output-delimiter=\" \" | sed \"s/ Controller.*//\"", "r");
-	else gpu = popen("getprop ro.hardware.vulkan", "r");
-	if (gpu) {
-		// Ignore error
-		if(fscanf(gpu, "%[^\n]", gpu_model) == 3) {};
-		fclose(gpu);
+	gpu = popen("lshw -class display 2> /dev/null", "r");
+	while (fgets(line, sizeof(line), gpu)) if (sscanf(line, "	product: %[^\n]", gpu_model)) break;
+	if (strlen(gpu_model) < 1) {
+		if (strcmp(version_name, "android") != 0) gpu = popen("lspci -mm 2> /dev/null | grep \"VGA\\|00:02\" | cut --fields=4,6 -d '\"' --output-delimiter=\" \" | sed \"s/ Controller.*//\"", "r");
+		else gpu = popen("getprop ro.hardware.vulkan 2> /dev/null", "r");
+		while (fgets(line, sizeof(line), gpu)) if (sscanf(line, "%[^\n]", gpu_model)) break;
 	}
+	fclose(gpu);
 
 	pkgs = pkgman();
 }
