@@ -398,6 +398,7 @@ void usage(char* arg) {
 			"    -i, --image     prints logo as image\n"
 			"                    %sworks in most terminals\n"
 			"                    read res/IMAGES.md for more info%s\n",
+			"    -l        	    lists all supported distributions\n",
 			arg, BLUE, NORMAL);
 }
 
@@ -409,14 +410,20 @@ void uwu_name() {	// changes distro name to uwufied(?) name
 		else STRING_TO_UWU("arch", "Nyarch Linuwu");
 		else STRING_TO_UWU("artix", "Nyartix Linuwu");
 		else STRING_TO_UWU("debian", "Debinyan");
+        else STRING_TO_UWU("endeavour", "endeavOwO");
 		else STRING_TO_UWU("fedora", "Fedowa");
 		else STRING_TO_UWU("gentoo", "GentOwO");
 		else STRING_TO_UWU("guix", "gnUwU gUwUix");
 		else STRING_TO_UWU("linuxmint", "LinUWU Miwint");
 		else STRING_TO_UWU("manjaro", "Myanjawo");
 		else STRING_TO_UWU("\"manjaro-arm\"", "Myanjawo AWM");
+        else STRING_TO_UWU("neon", "KDE NeOwOn");
+        else STRING_TO_UWU("nixos", "nixOwOs");
+        else STRING_TO_UWU("opensuse", "OwOpenSUSE");
 		else STRING_TO_UWU("pop", "PopOwOS");
 		else STRING_TO_UWU("raspbian", "RaspNyan");
+        else STRING_TO_UWU("slackware", "Swackwawe");
+        else STRING_TO_UWU("solus", "sOwOlus");
 		else STRING_TO_UWU("ubuntu", "Uwuntu");
 		else STRING_TO_UWU("\"void\"", "OwOid");
 		else STRING_TO_UWU("android", "Nyandroid");	// android at the end because it could be not considered as an actual distribution of gnu/linux
