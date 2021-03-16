@@ -11,6 +11,7 @@ Nyalpine, Nyarch Linuwu, Nyartix Linuwu, Debinyan, Fedowa, GentOwO, Miwint, Myan
 #### Requisites
 
 [viu](https://github.com/atanunq/viu) to use images instead of ascii art.
+
 [lshw](https://github.com/lyonel/lshw) to get gpu info.
 
 ##### Via package manager
