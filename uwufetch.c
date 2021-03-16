@@ -198,13 +198,16 @@ void get_info() {	// get all necessary info
 	// gpu
 	FILE *gpu;
 	gpu = popen("lshw -class display 2> /dev/null", "r");
-	while (fgets(line, sizeof(line), gpu)) if (sscanf(line, "	product: %[^\n]", gpu_model)) break;
+	while (fgets(line, sizeof(line), gpu)) if (sscanf(line, "    product: %[^\n]", gpu_model)) break;
 	if (strlen(gpu_model) < 1) {
 		if (strcmp(version_name, "android") != 0) gpu = popen("lspci -mm 2> /dev/null | grep \"VGA\\|00:02\" | cut --fields=4,6 -d '\"' --output-delimiter=\" \" | sed \"s/ Controller.*//\"", "r");
 		else gpu = popen("getprop ro.hardware.vulkan 2> /dev/null", "r");
 		while (fgets(line, sizeof(line), gpu)) if (sscanf(line, "%[^\n]", gpu_model)) break;
 	}
 	fclose(gpu);
+	for (int i = 42; i < 256; i++) {	//max gpu_name length
+		gpu_model[i] = '\0';
+	}
 
 	pkgs = pkgman();
 }
