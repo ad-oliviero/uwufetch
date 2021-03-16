@@ -176,7 +176,8 @@ void get_info() {	// get all necessary info
 	}
 	fclose(cpuinfo);
 	gethostname(host, 256);
-	sscanf(getenv("SHELL"), "%*[bin/]%s", shell);
+	sscanf(getenv("SHELL"), "%s", shell);
+	if (strlen(shell) > 16) memmove(&shell, &shell[27], sizeof(shell));	// android shell was too long, this works only for termux
 
 	// system resources
 	uname(&sys_var);
