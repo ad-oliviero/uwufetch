@@ -8,7 +8,7 @@ build: uwufetch.c
 	gcc $(FLAGS) -o $(NAME) $(FILES)
 
 debug:
-	clear
+	@clear
 	gcc $(FLAGS_DEBUG) -o $(NAME) $(FILES)
 	./uwufetch
 
