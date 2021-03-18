@@ -38,7 +38,10 @@
 struct utsname sys_var;
 struct sysinfo sys;
 int ram_max = 0, ram_free = 0, pkgs, a_i_flag = 0;
-char user[32], host[256], shell[64], version_name[64], cpu_model[256], gpu_model[256] = {0}, pkgman_name[64], image_name[32];
+
+//	initialise the variables to store data, gpu array can hold up to 8 gpus
+char user[32], host[256], shell[64], version_name[64], cpu_model[256], gpu_model[8][256] = {{'0'},{'0'},{'0'},{'0'},{'0'},{'0'},{'0'},{'0'}}, pkgman_name[64], image_name[32];
+
 int pkgman();
 void get_info();
 void list();
@@ -127,22 +130,32 @@ int pkgman() { // this is just a function that returns the total of installed pa
 	return total;	
 }
 
-void print_info() {	// print collected info
-	printf(	"\033[9A\033[18C%s%s%s@%s\n"
+void print_info() {	
+			// 	print collected info - from host to cpu info
+	printf(		"\033[9A\033[18C%s%s%s@%s\n"
 			"\033[18C%s%sOWOS     %s%s\n"
 			"\033[18C%s%sKEWNEL   %s%s %s\n"
-			"\033[18C%s%sCPUWU    %s%s\n"
-			"\033[18C%s%sGPUWU    %s%s\n"
-			"\033[18C%s%sWAM      %s%i MB/%i MB\n"
+			"\033[18C%s%sCPUWU    %s%s\n",
+			NORMAL, BOLD, user, host,
+			NORMAL, BOLD, NORMAL, version_name,
+			NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine,
+			NORMAL, BOLD, NORMAL, cpu_model);
+			
+			//	print the gpus
+	int gpu_iter = 0;
+	while(gpu_model[gpu_iter][0] != '0')
+	{
+		printf(		"\033[18C%s%sGPUWU    %s%s\n",
+				NORMAL, BOLD, NORMAL, gpu_model[gpu_iter]);
+		gpu_iter++;
+	}
+
+			//	print ram to uptime and colors
+	printf(		"\033[18C%s%sWAM      %s%i MB/%i MB\n"
 			"\033[18C%s%sSHELL    %s%s\n"
 			"\033[18C%s%sPKGS     %s%s%d %s\n"
 			"\033[18C%s%sUWUPTIME %s"/*"%lid, "*/"%lih, %lim\n"
 			"\033[18C%s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n",
-			NORMAL, BOLD, user, host,
-			NORMAL, BOLD, NORMAL, version_name,
-			NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine,
-			NORMAL, BOLD, NORMAL, cpu_model,
-			NORMAL, BOLD, NORMAL, gpu_model,
 			NORMAL, BOLD, NORMAL, (ram_max - ram_free), ram_max,
 			NORMAL, BOLD, NORMAL, shell,
 			NORMAL, BOLD, NORMAL, NORMAL, pkgs, pkgman_name,
@@ -197,17 +210,26 @@ void get_info() {	// get all necessary info
 	fclose(meminfo);
 
 	// gpu
+	int gpun = 0;	//	number of the gpu that the program is searching for to put in the array
 	FILE *gpu;
 	gpu = popen("lshw -class display 2> /dev/null", "r");
-	while (fgets(line, sizeof(line), gpu)) if (sscanf(line, "    product: %[^\n]", gpu_model)) break;
-	if (strlen(gpu_model) < 1) {
+
+	//	add all gpus to the array gpu_model (up to 8 gpus)
+	while (fgets(line, sizeof(line), gpu)) if (sscanf(line, "    product: %[^\n]", gpu_model[gpun])) gpun++;
+	if (strlen(gpu_model[0]) < 1) {
 		if (strcmp(version_name, "android") != 0) gpu = popen("lspci -mm 2> /dev/null | grep \"VGA\\|00:02\" | cut --fields=4,6 -d '\"' --output-delimiter=\" \" | sed \"s/ Controller.*//\"", "r");
 		else gpu = popen("getprop ro.hardware.vulkan 2> /dev/null", "r");
-		while (fgets(line, sizeof(line), gpu)) if (sscanf(line, "%[^\n]", gpu_model)) break;
+		while (fgets(line, sizeof(line), gpu)) if (sscanf(line, "%[^\n]", gpu_model[0])) break;
 	}
 	fclose(gpu);
-	for (int i = 42; i < 256; i++) {	//max gpu_name length
-		gpu_model[i] = '\0';
+	
+	//	format the strings a bit
+	for(int i = 0; i < gpun; i++)
+	{
+		for (int j = 42; j < 256; j++) //max gpu_name length
+		{	
+			gpu_model[i][j] = '\0';
+		}
 	}
 
 	pkgs = pkgman();
