@@ -37,9 +37,9 @@
 
 struct utsname sys_var;
 struct sysinfo sys;
-int ram_max = 0, ram_free = 0, pkgs, a_i_flag = 0;
 
 //	initialise the variables to store data, gpu array can hold up to 8 gpus
+int ram_max = 0, ram_free = 0, pkgs, a_i_flag = 0;
 char user[32], host[256], shell[64], version_name[64], cpu_model[256], gpu_model[8][256] = {{'0'},{'0'},{'0'},{'0'},{'0'},{'0'},{'0'},{'0'}}, pkgman_name[64], image_name[32];
 
 int pkgman();
@@ -131,8 +131,8 @@ int pkgman() { // this is just a function that returns the total of installed pa
 }
 
 void print_info() {	
-			// 	print collected info - from host to cpu info
-	printf(		"\033[9A\033[18C%s%s%s@%s\n"
+	// print collected info - from host to cpu info
+	printf(	"\033[9A\033[18C%s%s%s@%s\n"
 			"\033[18C%s%sOWOS     %s%s\n"
 			"\033[18C%s%sKEWNEL   %s%s %s\n"
 			"\033[18C%s%sCPUWU    %s%s\n",
@@ -140,18 +140,17 @@ void print_info() {
 			NORMAL, BOLD, NORMAL, version_name,
 			NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine,
 			NORMAL, BOLD, NORMAL, cpu_model);
-			
-			//	print the gpus
+
+	// print the gpus
 	int gpu_iter = 0;
-	while(gpu_model[gpu_iter][0] != '0')
-	{
-		printf(		"\033[18C%s%sGPUWU    %s%s\n",
+	while(gpu_model[gpu_iter][0] != '0') {
+		printf(	"\033[18C%s%sGPUWU    %s%s\n",
 				NORMAL, BOLD, NORMAL, gpu_model[gpu_iter]);
 		gpu_iter++;
 	}
 
-			//	print ram to uptime and colors
-	printf(		"\033[18C%s%sWAM      %s%i MB/%i MB\n"
+	//	print ram to uptime and colors
+	printf(	"\033[18C%s%sWAM      %s%i MB/%i MB\n"
 			"\033[18C%s%sSHELL    %s%s\n"
 			"\033[18C%s%sPKGS     %s%s%d %s\n"
 			"\033[18C%s%sUWUPTIME %s"/*"%lid, "*/"%lih, %lim\n"
@@ -224,10 +223,8 @@ void get_info() {	// get all necessary info
 	fclose(gpu);
 	
 	//	format the strings a bit
-	for(int i = 0; i < gpun; i++)
-	{
-		for (int j = 42; j < 256; j++) //max gpu_name length
-		{	
+	for(int i = 0; i < gpun; i++) {
+		for (int j = 42; j < 256; j++) {	//max gpu_name length
 			gpu_model[i][j] = '\0';
 		}
 	}
