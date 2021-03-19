@@ -427,8 +427,11 @@ void usage(char* arg) {
 			"    -i, --image     prints logo as image\n"
 			"                    %sworks in most terminals\n"
 			"                    read res/IMAGES.md for more info%s\n"
-			"    -l        	    lists all supported distributions\n",
-			arg, BLUE, NORMAL);
+			"    -l        	    lists all supported distributions\n"
+			"    %sNote that the long options (--opt) are currently not working\n"
+			"    If you are reading this and you know how to implement long opts,\n"
+			"    send a pull request on https://github.com/TheDarkBug/uwufetch%s\n",
+			arg, BLUE, NORMAL, RED, NORMAL);
 }
 
 void uwu_name() {	// changes distro name to uwufied(?) name
