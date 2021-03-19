@@ -215,7 +215,7 @@ void get_info() {	// get all necessary info
 
 	//	add all gpus to the array gpu_model (up to 8 gpus)
 	while (fgets(line, sizeof(line), gpu)) if (sscanf(line, "    product: %[^\n]", gpu_model[gpun])) gpun++;
-	if (strlen(gpu_model[0]) < 1) {
+	if (strlen(gpu_model[0]) < 2) {
 		if (strcmp(version_name, "android") != 0) gpu = popen("lspci -mm 2> /dev/null | grep \"VGA\\|00:02\" | cut --fields=4,6 -d '\"' --output-delimiter=\" \" | sed \"s/ Controller.*//\"", "r");
 		else gpu = popen("getprop ro.hardware.vulkan 2> /dev/null", "r");
 		while (fgets(line, sizeof(line), gpu)) if (sscanf(line, "%[^\n]", gpu_model[0])) break;
