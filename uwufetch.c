@@ -215,13 +215,6 @@ void get_info() {	// get all necessary info
 		while (fgets(line, sizeof(line), gpu)) if (sscanf(line, "%[^\n]", gpu_model[0])) break;
 	}
 	fclose(gpu);
-	
-	//	format the strings a bit
-	for(int i = 0; i < gpun; i++) {
-		for (int j = 42; j < 256; j++) {	//max gpu_name length
-			gpu_model[i][j] = '\0';
-		}
-	}
 
 	pkgs = pkgman();
 }
