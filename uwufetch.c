@@ -91,25 +91,25 @@ int pkgman() { // this is just a function that returns the total of installed pa
 	// TODO: should this be at the top of the program? maybe in a config.c file?
 	// TODO: do we need to `free()` this? I have no idea how to do memory management in C...
 	struct package_manager {
-		char command_string[128]; // command to get number of packages installed
-		char pkgman_name[16]; // name of the package manager
+		char command_string[128];	// command to get number of packages installed
+		char pkgman_name[16];		// name of the package manager
 	};
 
 	struct package_manager pkgmans[] = {
-		{ "apk info 2> /dev/null | wc -l",                                             "(apk)"      },
-		{ "dnf list installed 2> /dev/null | wc -l",                                   "(dnf)"      },
-		{ "qlist -I 2> /dev/null | wc -l",                                             "(emerge)"   },
-		{ "flatpak list 2> /dev/null | wc -l",                                         "(flatpack)" },
-		{ "guix package --list-installed 2> /dev/null | wc -l",                        "(guix)"     },
-		{ "nix-store -q --requisites /run/current-sys_vartem/sw 2> /dev/null | wc -l", "(nix)"      },
-		{ "pacman -Qq 2> /dev/null | wc -l",                                           "(pacman)"   },
-		{ "rpm -qa --last 2> /dev/null | wc -l",                                       "(rpm)"      },
-		{ "xbps-query -l 2> /dev/null | wc -l",                                        "(xbps)"     },
+		{ "apk info 2> /dev/null | wc -l",												"(apk)"      },
+		{ "dnf list installed 2> /dev/null | wc -l",									"(dnf)"      },
+		{ "qlist -I 2> /dev/null | wc -l",												"(emerge)"   },
+		{ "flatpak list 2> /dev/null | wc -l",											"(flatpack)" },
+		{ "guix package --list-installed 2> /dev/null | wc -l",							"(guix)"     },
+		{ "nix-store -q --requisites /run/current-sys_vartem/sw 2> /dev/null | wc -l",	"(nix)"      },
+		{ "pacman -Qq 2> /dev/null | wc -l",											"(pacman)"   },
+		{ "rpm -qa --last 2> /dev/null | wc -l",										"(rpm)"      },
+		{ "xbps-query -l 2> /dev/null | wc -l",											"(xbps)"     }
 	};
 
 	const unsigned long pkgman_count = sizeof(pkgmans) / sizeof(pkgmans[0]);
 
-	for (int i = 0; i < pkgman_count; i++) {
+	for (long unsigned int i = 0; i < pkgman_count; i++) {	// long unsigned int instead of int because of -Wsign-compare
 		struct package_manager *current = &pkgmans[i];
 
 		FILE *fp = popen(current->command_string, "r");
@@ -121,7 +121,6 @@ int pkgman() { // this is just a function that returns the total of installed pa
 		total += pkg_count;
 		if (pkg_count > 0) strcat(pkgman_name, current->pkgman_name);
 	}
-
 	return total;	
 }
 
@@ -211,7 +210,7 @@ void get_info() {	// get all necessary info
 
 	//	add all gpus to the array gpu_model (up to 8 gpus)
 	while (fgets(line, sizeof(line), gpu)) if (sscanf(line, "    product: %[^\n]", gpu_model[gpun])) gpun++;
-	if (strlen(gpu_model[0]) < 1) {
+	if (strlen(gpu_model[0]) < 2) {
 		if (strcmp(version_name, "android") != 0) gpu = popen("lspci -mm 2> /dev/null | grep \"VGA\\|00:02\" | cut --fields=4,6 -d '\"' --output-delimiter=\" \" | sed \"s/ Controller.*//\"", "r");
 		else gpu = popen("getprop ro.hardware.vulkan 2> /dev/null", "r");
 		while (fgets(line, sizeof(line), gpu)) if (sscanf(line, "%[^\n]", gpu_model[0])) break;
