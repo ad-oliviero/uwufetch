@@ -205,6 +205,7 @@ void get_info() {	// get all necessary info
 
 	// gpu
 	int gpun = 0;	//	number of the gpu that the program is searching for to put in the array
+	setenv("LANG", "en_US", 1); // force language to english
 	FILE *gpu;
 	gpu = popen("lshw -class display 2> /dev/null", "r");
 
