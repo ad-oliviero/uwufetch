@@ -3,8 +3,11 @@
 A meme system info tool for (almost) all your Linux/Unix-based systems, based on nyan/UwU trend on r/linuxmasterrace.
 
 ## Currently supported distros
+#### Full support (Both Ascii art + images are provided for the given distribution)
+Nyalpine, Nyarch Linuwu, Nyartix Linuwu, Debinyan, Fedowa, GentOwO, Miwint, Myanjawo, OwOpenSUSE, Pop OwOs, RaspNyan, UwUntu, and OwOid; Plus Nyandroid.
 
-Nyalpine, Nyarch Linuwu, Nyartix Linuwu, Debinyan, Fedowa, GentOwO, Miwint, Myanjawo, Pop OwOs, RaspNyan, UwUntu, and OwOid; Plus Nyandroid; FweeBSD, and OwOpenBSD.
+#### Partial support (Either no Ascii art, or no image is provided)
+endeavOwO, KDE NeOwOn, nixOwOs, Swackwawe, sOwOlus; Plus FweeBSD, and OwOpenBSD
 
 ## Building and installation
 
