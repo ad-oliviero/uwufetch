@@ -99,6 +99,7 @@ int pkgman() { // this is just a function that returns the total of installed pa
 	};
 
 	struct package_manager pkgmans[] = {
+		{ "apt list --installed 2> /dev/null | wc -l",									"(apt)"      },
 		{ "apk info 2> /dev/null | wc -l",												"(apk)"      },
 		{ "dnf list installed 2> /dev/null | wc -l",									"(dnf)"      },
 		{ "qlist -I 2> /dev/null | wc -l",												"(emerge)"   },
@@ -107,7 +108,8 @@ int pkgman() { // this is just a function that returns the total of installed pa
 		{ "nix-store -q --requisites /run/current-sys_vartem/sw 2> /dev/null | wc -l",	"(nix)"      },
 		{ "pacman -Qq 2> /dev/null | wc -l",											"(pacman)"   },
 		{ "rpm -qa --last 2> /dev/null | wc -l",										"(rpm)"      },
-		{ "xbps-query -l 2> /dev/null | wc -l",											"(xbps)"     }
+		{ "xbps-query -l 2> /dev/null | wc -l",											"(xbps)"     },
+		{ "zypper se --installed-only 2> /dev/null | wc -l",							"(zypper)"   }
 	};
 
 	const unsigned long pkgman_count = sizeof(pkgmans) / sizeof(pkgmans[0]);
@@ -335,13 +337,10 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
  				" %s |  %s|  %s----  %s|\n"
  				" %s  --%s'--------'\n\n",GREEN, WHITE, GREEN, WHITE, GREEN, WHITE, GREEN, WHITE, GREEN, WHITE, GREEN, WHITE, GREEN, WHITE, GREEN, WHITE, GREEN);
 	} else if (strcmp(version_name, "\"opensuse-leap\"") == 0) {
-		printf("\033[2E\033[6C%s_______\n"
-	 			"   ___|   %s__%s \\\n"
-	 			"  /      %s/ o\\%s|\n"
-	 			"         %s\\__/%s|\n"
-				"       ______/\n"
-				"      \\_______\n"
-				"   \\_________/\n\n", GREEN, NORMAL, GREEN, NORMAL, GREEN, NORMAL, GREEN);
+		printf("\033[3E\033[3C%s|\\----/|\n"
+				" _ /   %sO O%s\\\n"
+	 			" __.    W /\n"
+	 			"    '----'\n\n\n", GREEN, WHITE, GREEN);
 	} else if (strcmp(version_name, "pop") == 0) {
 		printf("\033[2E\033[6C%s|\\.-----./|\n"
 	 			"      |/       \\|\n"
