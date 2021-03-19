@@ -20,6 +20,7 @@
 #include <unistd.h>
 #include <sys/sysinfo.h>
 #include <sys/utsname.h>
+#include <sys/ioctl.h>
 
 // COLORS
 #define NORMAL "\x1b[0m"
@@ -37,9 +38,10 @@
 
 struct utsname sys_var;
 struct sysinfo sys;
+struct winsize win;
 
 //	initialise the variables to store data, gpu array can hold up to 8 gpus
-int ram_max = 0, ram_free = 0, pkgs, a_i_flag = 0;
+int ram_max = 0, ram_free = 0, pkgs, a_i_flag = 0, target_width = 0;
 char user[32], host[256], shell[64], version_name[64], cpu_model[256], gpu_model[8][256] = {{'0'},{'0'},{'0'},{'0'},{'0'},{'0'},{'0'},{'0'}}, pkgman_name[64], image_name[32];
 
 int pkgman();
@@ -50,6 +52,7 @@ void print_info();
 void print_image();
 void usage(char*);
 void uwu_name();
+void truncate_name(char*);
 
 int main(int argc, char *argv[]) {
 	int opt = 0;
@@ -158,6 +161,12 @@ void print_info() {
 
 void get_info() {	// get all necessary info
 	char line[256];	// var to scan file lines
+
+	// terminal width
+	// used to truncate long names
+	ioctl(STDOUT_FILENO, TIOCGWINSZ, &win);
+	target_width = win.ws_col - 28;
+
 	// os version
 	FILE *os_release = fopen("/etc/os-release", "r");
 	FILE *cpuinfo = fopen("/proc/cpuinfo", "r");
@@ -185,10 +194,16 @@ void get_info() {	// get all necessary info
 	sscanf(getenv("SHELL"), "%s", shell);
 	if (strlen(shell) > 16) memmove(&shell, &shell[27], strlen(shell));	// android shell was too long, this works only for termux
 
+	// truncate CPU name
+	truncate_name(cpu_model);
+
 	// system resources
 	uname(&sys_var);
 	sysinfo(&sys);
-	
+
+	truncate_name(sys_var.release);
+	truncate_name(sys_var.machine);
+
 	// ram
 	FILE *meminfo = fopen("/proc/meminfo", "r");
 	while (fgets(line, sizeof(line), meminfo)) {
@@ -217,11 +232,9 @@ void get_info() {	// get all necessary info
 	}
 	fclose(gpu);
 	
-	//	format the strings a bit
+	// truncate GPU name
 	for(int i = 0; i < gpun; i++) {
-		for (int j = 42; j < 256; j++) {	//max gpu_name length
-			gpu_model[i][j] = '\0';
-		}
+		truncate_name(gpu_model[i]);
 	}
 
 	pkgs = pkgman();
@@ -468,4 +481,10 @@ void uwu_name() {	// changes distro name to uwufied(?) name
 			}
 		}
 	#undef STRING_TO_UWU
+}
+
+void truncate_name(char* name) {
+	for (int i = target_width; i < 256; i++) {
+		name[i] = '\0';
+	}
 }
