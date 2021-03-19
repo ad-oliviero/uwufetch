@@ -89,47 +89,41 @@ int main(int argc, char *argv[]) {
 }
 
 int pkgman() { // this is just a function that returns the total of installed packages
-	int apt, apk, dnf, emerge, flatpak, guix, nix, pacman, rpm, xbps, total = 0;
+	int total = 0;
 
-	FILE *file[10];	// when you add a new package manager support, make sure to update the array size.
-	file[0] = popen("dpkg-query -f '${binary:Package}\n' -W 2> /dev/null | wc -l", "r");
-	file[1] = popen("apk info 2> /dev/null | wc -l", "r");
-	file[2] = popen("dnf list installed 2> /dev/null | wc -l", "r");
-	file[3] = popen("qlist -I 2> /dev/null | wc -l", "r");
-	file[4] = popen("flatpak list 2> /dev/null | wc -l", "r");
-	file[5] = popen("guix package --list-installed 2> /dev/null | wc -l", "r");
-	file[6] = popen("nix-store -q --requisites /run/current-sys_vartem/sw 2> /dev/null | wc -l", "r");
-	file[7] = popen("pacman -Qq 2> /dev/null | wc -l", "r");
-	file[8] = popen("rpm -qa --last 2> /dev/null | wc -l", "r");
-	file[9] = popen("xbps-query -l 2> /dev/null | wc -l", "r");
+	// TODO: should this be at the top of the program? maybe in a config.c file?
+	// TODO: do we need to `free()` this? I have no idea how to do memory management in C...
+	struct package_manager {
+		char command_string[128];	// command to get number of packages installed
+		char pkgman_name[16];		// name of the package manager
+	};
 
-	// the if statements are there for error handling and for preventing the #27 issue
-	if (fscanf(file[0], "%d", &apt) == 3) apt = 0;
-	if (fscanf(file[1], "%d", &apk) == 3) apk = 0;
-	if (fscanf(file[2], "%d", &dnf) == 3) dnf = 0;
-	if (fscanf(file[3], "%d", &emerge) == 3) emerge = 0;
-	if (fscanf(file[4], "%d", &flatpak) == 3) flatpak = 0;
-	if (fscanf(file[5], "%d", &guix) == 3) guix = 0;
-	if (fscanf(file[6], "%d", &nix) == 3) nix = 0;
-	if (fscanf(file[7], "%d", &pacman) == 3) pacman = 0;
-	if (fscanf(file[8], "%d", &rpm) == 3) rpm = 0;
-	if (fscanf(file[9], "%d", &xbps) == 3) xbps = 0;
+	struct package_manager pkgmans[] = {
+		{ "apk info 2> /dev/null | wc -l",												"(apk)"      },
+		{ "dnf list installed 2> /dev/null | wc -l",									"(dnf)"      },
+		{ "qlist -I 2> /dev/null | wc -l",												"(emerge)"   },
+		{ "flatpak list 2> /dev/null | wc -l",											"(flatpack)" },
+		{ "guix package --list-installed 2> /dev/null | wc -l",							"(guix)"     },
+		{ "nix-store -q --requisites /run/current-sys_vartem/sw 2> /dev/null | wc -l",	"(nix)"      },
+		{ "pacman -Qq 2> /dev/null | wc -l",											"(pacman)"   },
+		{ "rpm -qa --last 2> /dev/null | wc -l",										"(rpm)"      },
+		{ "xbps-query -l 2> /dev/null | wc -l",											"(xbps)"     }
+	};
 
-	for (int i = 0; i < 8; i++) fclose(file[i]);
+	const unsigned long pkgman_count = sizeof(pkgmans) / sizeof(pkgmans[0]);
 
-	#define ADD_PKGMAN_NAME(package_count, pkgman_to_add) if (package_count > 0) { total += package_count; strcat(pkgman_name, pkgman_to_add); }
-		ADD_PKGMAN_NAME(apt,    "(apt)")
-		ADD_PKGMAN_NAME(apk,    "(apk)")
-		ADD_PKGMAN_NAME(dnf,    "(dnf)")
-		ADD_PKGMAN_NAME(emerge, "(emerge)")
-		ADD_PKGMAN_NAME(flatpak,"(flatpak)")
-		ADD_PKGMAN_NAME(guix ,"(guix)")
-		ADD_PKGMAN_NAME(nix,    "(nix)")
-		ADD_PKGMAN_NAME(pacman, "(pacman)")
-		ADD_PKGMAN_NAME(rpm,    "(rpm)")
-		ADD_PKGMAN_NAME(xbps,   "(xbps)")
-	#undef ADD_PKGMAN_NAME
+	for (long unsigned int i = 0; i < pkgman_count; i++) {	// long unsigned int instead of int because of -Wsign-compare
+		struct package_manager *current = &pkgmans[i];
 
+		FILE *fp = popen(current->command_string, "r");
+		unsigned int pkg_count;
+
+		if (fscanf(fp, "%u", &pkg_count) == 3) continue;
+		fclose(fp);
+
+		total += pkg_count;
+		if (pkg_count > 0) strcat(pkgman_name, current->pkgman_name);
+	}
 	return total;	
 }
 
@@ -169,7 +163,7 @@ void get_info() {	// get all necessary info
 	char line[256];	// var to scan file lines
 
 	// terminal width
-	// used for truncating long names
+	// used to truncate long names
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &win);
 	target_width = win.ws_col - 28;
 
@@ -206,7 +200,10 @@ void get_info() {	// get all necessary info
 	// system resources
 	uname(&sys_var);
 	sysinfo(&sys);
-	
+
+	truncate_name(sys_var.release);
+	truncate_name(sys_var.machine);
+
 	// ram
 	FILE *meminfo = fopen("/proc/meminfo", "r");
 	while (fgets(line, sizeof(line), meminfo)) {
@@ -233,9 +230,9 @@ void get_info() {	// get all necessary info
 		while (fgets(line, sizeof(line), gpu)) if (sscanf(line, "%[^\n]", gpu_model[0])) break;
 	}
 	fclose(gpu);
-
-	// GPU name shortening
-	for (int i = 0; i < gpun; i++) {
+	
+	// truncate GPU name
+	for(int i = 0; i < gpun; i++) {
 		truncate_name(gpu_model[i]);
 	}
 
