@@ -108,7 +108,7 @@ int pkgman() { // this is just a function that returns the total of installed pa
 		{ "nix-store -q --requisites /run/current-sys_vartem/sw 2> /dev/null | wc -l",	"(nix)"      },
 		{ "pacman -Qq 2> /dev/null | wc -l",											"(pacman)"   },
 		{ "rpm -qa --last 2> /dev/null | wc -l",										"(rpm)"      },
-		{ "xbps-query -l 2> /dev/null | wc -l",											"(xbps)"     }
+		{ "xbps-query -l 2> /dev/null | wc -l",											"(xbps)"     },
 		{ "zypper se --installed-only 2> /dev/null | wc -l",							"(zypper)"   }
 	};
 
