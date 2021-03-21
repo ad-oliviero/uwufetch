@@ -53,6 +53,7 @@ void print_image();
 void usage(char*);
 void uwu_name();
 void truncate_name(char*);
+void remove_brackets(char*);
 
 int main(int argc, char *argv[]) {
 	int opt = 0;
@@ -226,7 +227,8 @@ void get_info() {	// get all necessary info
 	gpu = popen("lshw -class display 2> /dev/null", "r");
 
 	//	add all gpus to the array gpu_model (up to 8 gpus)
-	while (fgets(line, sizeof(line), gpu)) if (sscanf(line, "    product: %[^\n]", gpu_model[gpun])) gpun++;
+	while (fgets(line, sizeof(line), gpu)) if (sscanf(line, "    product: %[^\n]", gpu_model[gpun])) gpun++;	
+
 	if (strlen(gpu_model[0]) < 2) {
 		if (strcmp(version_name, "android") != 0) gpu = popen("lspci -mm 2> /dev/null | grep \"VGA\\|00:02\" | cut --fields=4,6 -d '\"' --output-delimiter=\" \" | sed \"s/ Controller.*//\"", "r");
 		else gpu = popen("getprop ro.hardware.vulkan 2> /dev/null", "r");
@@ -234,8 +236,9 @@ void get_info() {	// get all necessary info
 	}
 	fclose(gpu);
 	
-	// truncate GPU name
+	// truncate GPU name and remove square brackets
 	for(int i = 0; i < gpun; i++) {
+		remove_brackets(gpu_model[i]);
 		truncate_name(gpu_model[i]);
 	}
 
@@ -486,4 +489,21 @@ void truncate_name(char* name) {
 	for (int i = target_width; i < 256; i++) {
 		name[i] = '\0';
 	}
+}
+
+//	remove square brackets (for gpu names)
+void remove_brackets(char *str)
+{
+    int i,j;
+    i = 0;
+    while(i < (int)strlen(str))
+    {
+        if (str[i] == '[' || str[i] == ']') 
+        { 
+            for (j = i; j < (int)strlen(str); j++)
+	    {
+                str[j] = str[j+1];   
+	    }
+        } else i++;
+    }
 }
