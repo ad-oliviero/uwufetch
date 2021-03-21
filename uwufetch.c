@@ -230,9 +230,12 @@ void get_info() {	// get all necessary info
 	while (fgets(line, sizeof(line), gpu)) if (sscanf(line, "    product: %[^\n]", gpu_model[gpun])) gpun++;	
 
 	if (strlen(gpu_model[0]) < 2) {
-		if (strcmp(version_name, "android") != 0) gpu = popen("lspci -mm 2> /dev/null | grep \"VGA\\|00:02\" | cut --fields=4,6 -d '\"' --output-delimiter=\" \" | sed \"s/ Controller.*//\"", "r");
+		//	get gpus with lspci command
+		if (strcmp(version_name, "android") != 0) gpu = popen("lspci -mm 2> /dev/null | grep \"VGA\" | cut --fields=4,6 -d '\"' --output-delimiter=\" \" | sed \"s/ Controller.*//\"", "r");
 		else gpu = popen("getprop ro.hardware.vulkan 2> /dev/null", "r");
-		while (fgets(line, sizeof(line), gpu)) if (sscanf(line, "%[^\n]", gpu_model[0])) break;
+		
+		//	get all the gpus
+		while (fgets(line, sizeof(line), gpu)) if (sscanf(line, "%[^\n]", gpu_model[gpun])) gpun++;
 	}
 	fclose(gpu);
 	
