@@ -132,13 +132,13 @@ int pkgman() { // this is just a function that returns the total of installed pa
 
 void print_info() {	
 	// print collected info - from host to cpu info
-	printf(	"\033[9A\033[18C%s%s%s@%s\n"
-			"\033[18C%s%sOWOS     %s%s\n"
-			"\033[18C%s%sKEWNEL   %s%s %s\n"
-			"\033[18C%s%sCPUWU    %s%s\n",
-			NORMAL, BOLD, user, host,
-			NORMAL, BOLD, NORMAL, version_name,
-			NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine,
+	printf(	"\033[9A\033[18C%s%s%s@%s\n",
+			NORMAL, BOLD, user, host);
+	printf(	"\033[18C%s%sOWOS     %s%s\n",
+			NORMAL, BOLD, NORMAL, version_name);
+	printf(	"\033[18C%s%sKEWNEL   %s%s %s\n",
+			NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine);
+	printf(	"\033[18C%s%sCPUWU    %s%s\n",
 			NORMAL, BOLD, NORMAL, cpu_model);
 
 	// print the gpus
@@ -150,15 +150,15 @@ void print_info() {
 	}
 
 	//	print ram to uptime and colors
-	printf(	"\033[18C%s%sWAM      %s%i MB/%i MB\n"
-			"\033[18C%s%sSHELL    %s%s\n"
-			"\033[18C%s%sPKGS     %s%s%d %s\n"
-			"\033[18C%s%sUWUPTIME %s"/*"%lid, "*/"%lih, %lim\n"
-			"\033[18C%s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n",
-			NORMAL, BOLD, NORMAL, (ram_max - ram_free), ram_max,
-			NORMAL, BOLD, NORMAL, shell,
-			NORMAL, BOLD, NORMAL, NORMAL, pkgs, pkgman_name,
-			NORMAL, BOLD, NORMAL, /*sys.uptime/60/60/24,*/ sys.uptime/60/60, sys.uptime/60%60,
+	printf("\033[18C%s%sWAM      %s%i MB/%i MB\n",
+			NORMAL, BOLD, NORMAL, (ram_max - ram_free), ram_max);
+	printf("\033[18C%s%sSHELL    %s%s\n",
+			NORMAL, BOLD, NORMAL, shell);
+	printf("\033[18C%s%sPKGS     %s%s%d %s\n",
+			NORMAL, BOLD, NORMAL, NORMAL, pkgs, pkgman_name);
+	printf("\033[18C%s%sUWUPTIME %s"/*"%lid, "*/"%lih, %lim\n",
+			NORMAL, BOLD, NORMAL, /*sys.uptime/60/60/24,*/ sys.uptime/60/60, sys.uptime/60%60);
+	printf("\033[18C%s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n",
 			BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN,  WHITE, NORMAL);
 }
 
