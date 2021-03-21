@@ -53,6 +53,7 @@ void print_image();
 void usage(char*);
 void uwu_name();
 void truncate_name(char*);
+void remove_brackets(char*);
 
 int main(int argc, char *argv[]) {
 	int opt = 0;
@@ -131,13 +132,13 @@ int pkgman() { // this is just a function that returns the total of installed pa
 
 void print_info() {	
 	// print collected info - from host to cpu info
-	printf(	"\033[9A\033[18C%s%s%s@%s\n"
-			"\033[18C%s%sOWOS     %s%s\n"
-			"\033[18C%s%sKEWNEL   %s%s %s\n"
-			"\033[18C%s%sCPUWU    %s%s\n",
-			NORMAL, BOLD, user, host,
-			NORMAL, BOLD, NORMAL, version_name,
-			NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine,
+	printf(	"\033[9A\033[18C%s%s%s@%s\n",
+			NORMAL, BOLD, user, host);
+	printf(	"\033[18C%s%sOWOS     %s%s\n",
+			NORMAL, BOLD, NORMAL, version_name);
+	printf(	"\033[18C%s%sKEWNEL   %s%s %s\n",
+			NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine);
+	printf(	"\033[18C%s%sCPUWU    %s%s\n",
 			NORMAL, BOLD, NORMAL, cpu_model);
 
 	// print the gpus
@@ -149,15 +150,15 @@ void print_info() {
 	}
 
 	//	print ram to uptime and colors
-	printf(	"\033[18C%s%sWAM      %s%i MB/%i MB\n"
-			"\033[18C%s%sSHELL    %s%s\n"
-			"\033[18C%s%sPKGS     %s%s%d %s\n"
-			"\033[18C%s%sUWUPTIME %s"/*"%lid, "*/"%lih, %lim\n"
-			"\033[18C%s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n",
-			NORMAL, BOLD, NORMAL, (ram_max - ram_free), ram_max,
-			NORMAL, BOLD, NORMAL, shell,
-			NORMAL, BOLD, NORMAL, NORMAL, pkgs, pkgman_name,
-			NORMAL, BOLD, NORMAL, /*sys.uptime/60/60/24,*/ sys.uptime/60/60, sys.uptime/60%60,
+	printf("\033[18C%s%sWAM      %s%i MB/%i MB\n",
+			NORMAL, BOLD, NORMAL, (ram_max - ram_free), ram_max);
+	printf("\033[18C%s%sSHELL    %s%s\n",
+			NORMAL, BOLD, NORMAL, shell);
+	printf("\033[18C%s%sPKGS     %s%s%d %s\n",
+			NORMAL, BOLD, NORMAL, NORMAL, pkgs, pkgman_name);
+	printf("\033[18C%s%sUWUPTIME %s"/*"%lid, "*/"%lih, %lim\n",
+			NORMAL, BOLD, NORMAL, /*sys.uptime/60/60/24,*/ sys.uptime/60/60, sys.uptime/60%60);
+	printf("\033[18C%s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n",
 			BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN,  WHITE, NORMAL);
 }
 
@@ -226,16 +227,21 @@ void get_info() {	// get all necessary info
 	gpu = popen("lshw -class display 2> /dev/null", "r");
 
 	//	add all gpus to the array gpu_model (up to 8 gpus)
-	while (fgets(line, sizeof(line), gpu)) if (sscanf(line, "    product: %[^\n]", gpu_model[gpun])) gpun++;
+	while (fgets(line, sizeof(line), gpu)) if (sscanf(line, "    product: %[^\n]", gpu_model[gpun])) gpun++;	
+
 	if (strlen(gpu_model[0]) < 2) {
-		if (strcmp(version_name, "android") != 0) gpu = popen("lspci -mm 2> /dev/null | grep \"VGA\\|00:02\" | cut --fields=4,6 -d '\"' --output-delimiter=\" \" | sed \"s/ Controller.*//\"", "r");
+		//	get gpus with lspci command
+		if (strcmp(version_name, "android") != 0) gpu = popen("lspci -mm 2> /dev/null | grep \"VGA\" | cut --fields=4,6 -d '\"' --output-delimiter=\" \" | sed \"s/ Controller.*//\"", "r");
 		else gpu = popen("getprop ro.hardware.vulkan 2> /dev/null", "r");
-		while (fgets(line, sizeof(line), gpu)) if (sscanf(line, "%[^\n]", gpu_model[0])) break;
+		
+		//	get all the gpus
+		while (fgets(line, sizeof(line), gpu)) if (sscanf(line, "%[^\n]", gpu_model[gpun])) gpun++;
 	}
 	fclose(gpu);
 	
-	// truncate GPU name
+	// truncate GPU name and remove square brackets
 	for(int i = 0; i < gpun; i++) {
+		remove_brackets(gpu_model[i]);
 		truncate_name(gpu_model[i]);
 	}
 
@@ -486,4 +492,21 @@ void truncate_name(char* name) {
 	for (int i = target_width; i < 256; i++) {
 		name[i] = '\0';
 	}
+}
+
+//	remove square brackets (for gpu names)
+void remove_brackets(char *str)
+{
+    int i,j;
+    i = 0;
+    while(i < (int)strlen(str))
+    {
+        if (str[i] == '[' || str[i] == ']') 
+        { 
+            for (j = i; j < (int)strlen(str); j++)
+	    {
+                str[j] = str[j+1];   
+	    }
+        } else i++;
+    }
 }
