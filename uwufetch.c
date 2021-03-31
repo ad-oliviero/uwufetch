@@ -352,7 +352,7 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
  				" %s||  %s| %s|    | %s|\n"
  				" %s |  %s|  %s----  %s|\n"
  				" %s  --%s'--------'\n\n",GREEN, WHITE, GREEN, WHITE, GREEN, WHITE, GREEN, WHITE, GREEN, WHITE, GREEN, WHITE, GREEN, WHITE, GREEN, WHITE, GREEN);
-	} else if (strcmp(version_name, "\"opensuse-leap\"") == 0) {
+	} else if (strcmp(version_name, "\"opensuse-leap\"") == 0 || strcmp(version_name, "\"opensuse-tumbleweed\"") == 0) {
 		printf("\033[3E\033[3C%s|\\----/|\n"
 				" _ /   %sO O%s\\\n"
 	 			" __.    W /\n"
@@ -474,7 +474,8 @@ void uwu_name() {	// changes distro name to uwufied(?) name
 		else STRING_TO_UWU("\"manjaro-arm\"", "Myanjawo AWM");
         else STRING_TO_UWU("neon", "KDE NeOwOn");
         else STRING_TO_UWU("nixos", "nixOwOs");
-        else STRING_TO_UWU("\"opensuse-leap\"", "OwOpenSUSE");
+        else STRING_TO_UWU("\"opensuse-leap\"", "OwOpenSUSE Leap");
+        else STRING_TO_UWU("\"opensuse-tumbleweed\"", "OwOpenSUSE Tumbleweed");
 		else STRING_TO_UWU("pop", "PopOwOS");
 		else STRING_TO_UWU("raspbian", "RaspNyan");
         else STRING_TO_UWU("slackware", "Swackwawe");
