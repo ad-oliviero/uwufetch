@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <getopt.h>
 #include <sys/sysinfo.h>
 #include <sys/utsname.h>
 #include <sys/ioctl.h>
@@ -57,8 +58,17 @@ void remove_brackets(char*);
 
 int main(int argc, char *argv[]) {
 	int opt = 0;
+	static struct option long_options[] = {
+		{"ascii", no_argument, NULL, 'a'},
+		{"custom", required_argument, NULL, 'c'},
+		{"distro", required_argument, NULL, 'd'},
+		{"help", no_argument, NULL, 'h'},
+		{"image", no_argument, NULL, 'i'},
+		{"list", no_argument, NULL, 'l'},
+		{NULL, 0, NULL, 0}
+	};
 	get_info();
-	while((opt = getopt(argc, argv, "ad:hilc:")) != -1) {
+	while((opt = getopt_long(argc, argv, "ad:hilc:", long_options, NULL)) != -1) {
 		switch(opt) {
 			case 'a':
 				a_i_flag = 0;
