@@ -54,9 +54,11 @@ make termux             # build and install for termux
 make termux_uninstall   # uninstall for termux
 ```
 
-## Images
+## Images and copyright info
 
 [IMAGES.md](https://github.com/TheDarkBug/uwufetch/tree/main/res/IMAGES.md)
+
+[COPYRIGHT.md](https://github.com/TheDarkBug/uwufetch/tree/main/res/COPYRIGHT.md)
 
 ## License
 
