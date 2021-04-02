@@ -233,7 +233,6 @@ void get_info() {	// get all necessary info
 			if (ram_total > 0 && ram_free > 0) {
 				//	data is in bytes
 				ram_total /= 1024;
-				ram_free /= 1024;
 				ram_used /= 1024;
 				break;
 			}
