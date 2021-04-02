@@ -56,9 +56,12 @@ make termux_uninstall   # uninstall for termux
 
 ## Images and copyright info
 
-[IMAGES.md](https://github.com/TheDarkBug/uwufetch/tree/main/res/IMAGES.md)
+### How to use images
+First at all you need `viu`, to install it follow the [guide](https://github.com/atanunq/viu#installation).
+Images are working in almost every terminal, for a better experience i recommend [kitty](https://github.com/kovidgoyal/kitty)
 
-[COPYRIGHT.md](https://github.com/TheDarkBug/uwufetch/tree/main/res/COPYRIGHT.md)
+### For copyright and logos info
+<font size=2>[COPYRIGHT.md](https://github.com/TheDarkBug/uwufetch/tree/main/res/COPYRIGHT.md)</font>
 
 ## License
 
