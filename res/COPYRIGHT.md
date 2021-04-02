@@ -12,17 +12,86 @@ I am not a copyright expert, and maybe I am doing all wrong things, please corre
 ### Base artwork:
 
 - Copyright Holder: Arch Linux Devs
-- License: Arch Linux TrademarkPolicy
-- [License URL](https://archlinux.org/art/)
+- License: [Arch Linux TrademarkPolicy](https://archlinux.org/art/)
 - [Reference](https://wiki.archlinux.org/index.php/DeveloperWiki:TrademarkPolicy)
 
 ### Modifications
 
 - Description: uwu style
-- Copyright Holder:
-- License:
-- [License URL](https://original_post_link.com)
+- Copyright Holder: [u/Ishaan_P](https://www.reddit.com/user/Ishaan_P)
+- License: No license, just a reddit post
+- [Reference](https://www.reddit.com/r/linuxmasterrace/comments/lxfg9j/someone_posted_uwuntu_so_i_made_nyarch/)
 
+## Artix
+
+<img title="Nyartix Linuwu" src="https://raw.githubusercontent.com/TheDarkBug/uwufetch/main/res/artix.png" alt="image" width="100">
+
+### Base artwork:
+
+- Copyright Holder: Artix Linux Devs
+- License: [Artix Brand Book](https://gitea.artixlinux.org/artix/artwork/src/branch/master/README.md)
+- [Reference](https://gitea.artixlinux.org/artix/artwork)
+
+### Modifications
+
+- Description: uwu style
+- Copyright Holder: [u/akzcake](https://www.reddit.com/user/akzcake)
+- License: No license, just a reddit post
+- [Reference](https://www.reddit.com/r/linuxmasterrace/comments/ly6wd1/nyartix/)
+
+## Debian
+
+<img title="Debinyan" src="https://raw.githubusercontent.com/TheDarkBug/uwufetch/main/res/debian.png" alt="image" width="100">
+
+### Base artwork:
+
+- Copyright Holder: Debian Devs
+- License: LGPL3
+- [License URL](https://www.gnu.org/licenses/lgpl-3.0.html)
+- [Reference](https://www.debian.org/logos/)
+
+### Modifications
+
+- Description: uwu style
+- Copyright Holder: [u/Ishaan_P](https://www.reddit.com/user/Ishaan_P)
+- License: [LGPL3](https://www.gnu.org/licenses/lgpl-3.0.html)
+- [Reference](https://www.reddit.com/r/linuxmasterrace/comments/lxqip4/debinyan/)
+
+
+## Endeavour OS
+
+<img title="Endowo Os" src="https://raw.githubusercontent.com/TheDarkBug/uwufetch/main/res/endeavour.png" alt="image" width="100">
+
+### Base artwork:
+
+- Copyright Holder: Endeavour OS Devs
+- License: [No license was mentioned on the website](https://endeavouros.com/endeavouros-logo/)
+- [Reference](https://endeavouros.com/endeavouros-logo/)
+
+### Modifications
+
+- Description: uwu style
+- Copyright Holder: [u/zuru2003](https://www.reddit.com/user/zuru2003)
+- License: No license, just a reddit post
+- [Reference](https://www.reddit.com/r/linuxmasterrace/comments/ly9zed/endowo_os/)
+
+
+## Fedora
+
+<img title="Fedowa" src="https://raw.githubusercontent.com/TheDarkBug/uwufetch/main/res/fedora.png" alt="image" width="100">
+
+### Base artwork:
+
+- Copyright Holder:
+- License: [Fedora logo usage guide-lines](https://fedoraproject.org/wiki/Logo/UsageGuidelines)
+- [Reference](https://fedoraproject.org/wiki/Logo)
+
+### Modifications
+
+- Description: uwu style
+- Copyright Holder: [u/iD3nis124](https://www.reddit.com/user/iD3nis124)
+- License: [Fedora logo usage guide-lines (I guess)](https://fedoraproject.org/wiki/Logo/UsageGuidelines)
+- [Reference](https://www.reddit.com/r/linuxmasterrace/comments/lxjp3s/saw_nyarch_and_had_to_do_fedowa/)
 
 ## Android
 
@@ -40,9 +109,9 @@ I am not a copyright expert, and maybe I am doing all wrong things, please corre
 ### Modifications
 
 - Description: uwu style
-- Copyright Holder: u/6b86b3ac03c167320d93
+- Copyright Holder: [u/6b86b3ac03c167320d93](https://www.reddit.com/user/6b86b3ac03c167320d93)
 - License: No license, just a reddit post
-- [License URL](https://www.reddit.com/r/linuxmasterrace/comments/lye15q/im_not_an_artist_but_heres_my_attempt_at_making/)
+- [Reference](https://www.reddit.com/r/linuxmasterrace/comments/lye15q/im_not_an_artist_but_heres_my_attempt_at_making/)
 
 
 
@@ -51,19 +120,18 @@ I am not a copyright expert, and maybe I am doing all wrong things, please corre
 <!---
 ## TEMPLATE
 
-<img title="NAME" src="LINK" alt="image" width="150">
+<img title="NAME" src="LINK" alt="image" width="100">
 
 ### Base artwork:
 
 - Copyright Holder:
-- License:
-- [License URL]()
+- License: [name](url)
 - [Reference]()
 
 ### Modifications
 
 - Description: uwu style
-- Copyright Holder:
+- Copyright Holder: [name](link)
 - License:
-- [License URL](https://original_post_link.com)
+- [Reference]()
 --->
