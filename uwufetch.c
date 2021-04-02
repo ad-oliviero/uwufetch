@@ -42,7 +42,7 @@ struct sysinfo sys;
 struct winsize win;
 
 //	all possible ram values obtainable with free command
-int ram_total, ram_used, ram_free, shared, buff_cache, available = 0;
+int ram_total, ram_used = 0;
 //	initialise the variables to store data, gpu array can hold up to 8 gpus
 int pkgs, a_i_flag = 0, target_width = 0;
 char user[32], host[256], shell[64], version_name[64], cpu_model[256], gpu_model[8][256] = {{'0'},{'0'},{'0'},{'0'},{'0'},{'0'},{'0'},{'0'}}, pkgman_name[64], image_name[32];
@@ -228,12 +228,11 @@ void get_info() {	// get all necessary info
 	while (fgets(line, sizeof(line), meminfo)) {
 	//	free command prints like this: "Mem:" total	used	free	shared	buff/cache	available
 	
-	if(sscanf(line, "Mem: %d %d %d %d %d %d", &ram_total, &ram_used, &ram_free, &shared, &buff_cache, &available)){
+	if(sscanf(line, "Mem: %d %d", &ram_total, &ram_used)){
 		//	convert to megabytes
-			if (ram_total > 0 && ram_free > 0) {
+			if (ram_total > 0 && ram_used > 0) {
 				//	data is in bytes
 				ram_total /= 1024;
-				ram_free /= 1024;
 				ram_used /= 1024;
 				break;
 			}
