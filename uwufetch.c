@@ -41,8 +41,10 @@ struct utsname sys_var;
 struct sysinfo sys;
 struct winsize win;
 
+//	all possible ram values obtainable with free command
+int ram_total, ram_used = 0;
 //	initialise the variables to store data, gpu array can hold up to 8 gpus
-int ram_max = 0, ram_free = 0, pkgs, a_i_flag = 0, target_width = 0;
+int pkgs, a_i_flag = 0, target_width = 0;
 char user[32], host[256], shell[64], version_name[64], cpu_model[256], gpu_model[8][256] = {{'0'},{'0'},{'0'},{'0'},{'0'},{'0'},{'0'},{'0'}}, pkgman_name[64], image_name[32];
 
 int pkgman();
@@ -161,7 +163,7 @@ void print_info() {
 
 	//	print ram to uptime and colors
 	printf("\033[18C%s%sWAM      %s%i MB/%i MB\n",
-			NORMAL, BOLD, NORMAL, (ram_max - ram_free), ram_max);
+			NORMAL, BOLD, NORMAL, (ram_used), ram_total);
 	printf("\033[18C%s%sSHELL    %s%s\n",
 			NORMAL, BOLD, NORMAL, shell);
 	printf("\033[18C%s%sPKGS     %s%s%d %s\n",
@@ -218,14 +220,22 @@ void get_info() {	// get all necessary info
 	truncate_name(sys_var.machine);
 
 	// ram
-	FILE *meminfo = fopen("/proc/meminfo", "r");
+
+
+	FILE *meminfo;
+		
+	meminfo = popen("free 2> /dev/null", "r");
 	while (fgets(line, sizeof(line), meminfo)) {
-		sscanf(line, "MemFree: %d kB", &ram_free);
-		sscanf(line, "MemTotal: %d kB", &ram_max);
-		if (ram_max > 0 && ram_free > 0) {
-			ram_max *= 0.001024;
-			ram_free *= 0.001024;
-			break;
+	//	free command prints like this: "Mem:" total	used	free	shared	buff/cache	available
+	
+	if(sscanf(line, "Mem: %d %d", &ram_total, &ram_used)){
+		//	convert to megabytes
+			if (ram_total > 0 && ram_used > 0) {
+				//	data is in bytes
+				ram_total /= 1024;
+				ram_used /= 1024;
+				break;
+			}
 		}
 	}
 	fclose(meminfo);
