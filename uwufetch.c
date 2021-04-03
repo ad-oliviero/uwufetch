@@ -439,6 +439,7 @@ void print_image() {	// prints logo (as an image) of the given system. distribut
 		if (strcmp(version_name, "android") == 0) sprintf(command, "viu -t -w 18 -h 8 /data/data/com.termux/files/usr/lib/uwufetch/%s.png 2> /dev/null", version_name);
 		else sprintf(command, "viu -t -w 18 -h 8 /usr/lib/uwufetch/%s.png 2> /dev/null", version_name);
 	}
+	printf(	"\n");
 	if (system(command) != 0) {	// if viu is not installed or the image is missing
 		printf(	"\033[0E\033[3C%s\n"
 				"   There was an\n"
@@ -459,12 +460,9 @@ void usage(char* arg) {
 			"    -h, --help      prints this help page\n"
 			"    -i, --image     prints logo as image\n"
 			"                    %sworks in most terminals\n"
-			"                    read res/IMAGES.md for more info%s\n"
-			"    -l        	    lists all supported distributions\n"
-			"    %sNote that the long options (--opt) are currently not working\n"
-			"    If you are reading this and you know how to implement long opts,\n"
-			"    send a pull request on https://github.com/TheDarkBug/uwufetch%s\n",
-			arg, BLUE, NORMAL, RED, NORMAL);
+			"                    read README.md for more info%s\n"
+			"    -l        	    lists all supported distributions\n",
+			arg, BLUE, NORMAL);
 }
 
 void uwu_name() {	// changes distro name to uwufied(?) name
