@@ -224,7 +224,7 @@ void get_info() {	// get all necessary info
 
 	FILE *meminfo;
 		
-	meminfo = popen("free 2> /dev/null", "r");
+	meminfo = popen("LANG=EN_us free 2> /dev/null", "r");
 	while (fgets(line, sizeof(line), meminfo)) {
 	//	free command prints like this: "Mem:" total	used	free	shared	buff/cache	available
 	
