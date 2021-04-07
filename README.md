@@ -66,3 +66,7 @@ Images are working in almost every terminal, for a better experience i recommend
 ## License
 
 This program is provided under the [GPL-3.0 License](https://github.com/TheDarkBug/uwufetch/LICENSE).
+
+# Contributing
+
+All kind of contribution are welcome, but before contributing please read [CONTRIBUTING.md](https://github.com/TheDarkBug/uwufetch/blob/main/CONTRIBUTING.md).
