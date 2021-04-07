@@ -1,31 +1,32 @@
-NAME = uwufetch
-FILES = uwufetch.c
-FLAGS = -O3
-FLAGS_DEBUG = -Wall -Wextra
-INSTALL_DIR = /usr/bin/
+NAME			= uwufetch
+FILES			= uwufetch.c
+CFLAGS			= -O3
+CFLAGS_DEBUG	= -Wall -Wextra
+PREFIX			= /usr/bin
+CC				= cc
 
-build: uwufetch.c
-	gcc $(FLAGS) -o $(NAME) $(FILES)
+build: $(FILES)
+	$(CC) $(CFLAGS) -o $(NAME) $(FILES)
 
 debug:
 	@clear
-	gcc $(FLAGS_DEBUG) -o $(NAME) $(FILES)
+	$(CC) $(CFLAGS_DEBUG) -o $(NAME) $(FILES)
 	./uwufetch
 
 install:
-	cp $(NAME) $(INSTALL_DIR)$(NAME)
-	ls /usr/lib/uwufetch/ 2> /dev/null || mkdir /usr/lib/uwufetch/
-	cp res/* /usr/lib/uwufetch/
+	cp $(NAME) $(DESTDIR)$(INSTALL_DIR)/$(NAME)
+	ls $(DESTDIR)/usr/lib/uwufetch/ 2> /dev/null || mkdir $(DESTDIR)/usr/lib/uwufetch/
+	cp res/* $(DESTDIR)/usr/lib/uwufetch/
 
 uninstall:
-	rm $(INSTALL_DIR)$(NAME)
-	rm -rf /usr/lib/uwufetch/
+	rm -f $(DESTDIR)$(INSTALL_DIR)/$(NAME)
+	rm -rf $(DESTDIR)/usr/lib/uwufetch/
 
 termux: build
-	cp $(NAME) /data/data/com.termux/files$(INSTALL_DIR)$(NAME)
-	ls /data/data/com.termux/files/usr/lib/uwufetch/ > /dev/null || mkdir /data/data/com.termux/files/usr/lib/uwufetch/
+	cp $(NAME) $(DESTDIR)/data/data/com.termux/files$(INSTALL_DIR)/$(NAME)
+	ls $(DESTDIR)/data/data/com.termux/files/usr/lib/uwufetch/ > /dev/null || mkdir $(DESTDIR)/data/data/com.termux/files/usr/lib/uwufetch/
 	cp res/* /data/data/com.termux/files/usr/lib/uwufetch/
-	
+
 termux_uninstall:
-	rm -rf /data/data/com.termux/files$(INSTALL_DIR)$(NAME)
-	rm -rf /data/data/com.termux/files/usr/lib/uwufetch/
+	rm -rf $(DESTDIR)/data/data/com.termux/files$(INSTALL_DIR)/$(NAME)
+	rm -rf $(DESTDIR)/data/data/com.termux/files/usr/lib/uwufetch/
