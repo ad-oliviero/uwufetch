@@ -143,6 +143,8 @@ int pkgman() { // this is just a function that returns the total of installed pa
 }
 
 void print_info() {	
+	// store sys info in the sys again	
+	sysinfo(&sys);
 	// print collected info - from host to cpu info
 	printf(	"\033[9A\033[18C%s%s%s@%s\n",
 			NORMAL, BOLD, user, host);
