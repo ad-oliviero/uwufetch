@@ -337,6 +337,12 @@ void print_ascii() {	// prints logo (as ascii art) of the given system. distribu
 				"%s   \\         )\n"
 				"   /       _/\n"
 				"  (      _-\n" "  \\____-\n\n", MAGENTA, WHITE);
+	} else if (strcmp(version_name, "gnu") == 0 || strcmp(version_name, "guix") == 0) {
+		printf(	"\033[3E\033[3C%s,= %s,-_-. %s=.\n"
+				"  ((_/%s)%sU U%s(%s\\_))\n"
+				"   `-'%s(. .)%s`-'\n"
+				"       %s\\%sw%s/\n"
+        "        \u00af\n\n", WHITE, YELLOW, WHITE, YELLOW, WHITE, YELLOW, WHITE, YELLOW, WHITE, YELLOW, WHITE, YELLOW);
 	} else if (strcmp(version_name, "manjaro") == 0) {
 		printf(	"\033[0E\033[1C\u25b3       \u25b3   \u25e0\u25e0\u25e0\u25e0\n"
 				" \e[0;42m          \e[0m  \e[0;42m    \e[0m\n"
@@ -482,6 +488,7 @@ void uwu_name() {	// uwufies distro name
 	else STRING_TO_UWU("endeavour", "endeavOwO");
 	else STRING_TO_UWU("fedora", "Fedowa");
 	else STRING_TO_UWU("gentoo", "GentOwO");
+	else STRING_TO_UWU("gnu", "gnUwU");
 	else STRING_TO_UWU("guix", "gnUwU gUwUix");
 	else STRING_TO_UWU("linuxmint", "LinUWU Miwint");
 	else STRING_TO_UWU("manjaro", "Myanjawo");
