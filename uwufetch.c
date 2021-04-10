@@ -279,15 +279,15 @@ void list(char *arg) {	// prints distribution list
 			"      %sarch, artix, %smanjaro, \"manjaro-arm\"\n\n"
 			"    %sDebian/%sUbuntu %sbased:\n"
 			"      %sdebian, %slinuxmint, %spop, %sraspbian\n\n"
-			"    %sOther/spare distributions:\n"
-			"      %salpine, %sfedora, %sgentoo, %s\"void\", android, %sunknown\n\n"
 			"    %sBSD:\n"
-			"      freebsd, %sopenbsd\n",
+			"      freebsd, %sopenbsd\n\n"
+			"    %sOther/spare distributions:\n"
+			"      %salpine, %sfedora, %sgentoo, %s\"void\", android, %sgnu, guix, %sunknown\n",
 			arg,
 			BLUE, NORMAL, BLUE, GREEN,						// Arch based colors
 			RED, YELLOW, NORMAL, RED, GREEN, BLUE, RED,		// Debian based colors
-			NORMAL, BLUE, BLUE, PINK, GREEN, WHITE,			// Other/spare distributions colors
-			RED, YELLOW);									// BSD colors
+			RED, YELLOW,									// BSD colors
+			NORMAL, BLUE, BLUE, PINK, GREEN, YELLOW, WHITE);		// Other/spare distributions colors
 }
 
 void print_ascii() {	// prints logo (as ascii art) of the given system. distributions listed alphabetically.
@@ -472,7 +472,7 @@ void usage(char *arg) {
 			"    -i, --image     prints logo as image\n"
 			"                    %sworks in most terminals\n"
 			"                    read README.md for more info%s\n"
-			"    -l              lists all supported distributions\n",
+			"    -l, --list      lists all supported distributions\n",
 			arg, BLUE, NORMAL);
 }
 
