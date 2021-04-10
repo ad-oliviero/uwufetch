@@ -123,6 +123,23 @@ I am not a copyright expert, and maybe I am doing all wrong things, please corre
 
 #
 
+## GNU
+
+<img title="GnUwU" src="https://raw.githubusercontent.com/TheDarkBug/uwufetch/main/res/guix.png" alt="image" width="100">
+
+### Base artwork:
+
+- Copyright Holder: Aurelio A. Heckert (aurium@gmail.com)
+- License: [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/)
+- [Reference](https://www.gnu.org/graphics/heckert_gnu.svg)
+
+### Modifications
+
+- Description: Addition of ahegao facial expression, and colorization. 
+- Copyright Holder: [u/FOSSphorous](https://www.reddit.com/user/FOSSphorous/)
+- License: [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/)
+- [Reference](https://www.reddit.com/r/linuxmasterrace/comments/lyi8ce/its_actually_gnuwulinux/)
+
 ## Manjaro
 
 <img title="Myanjawo" src="https://raw.githubusercontent.com/TheDarkBug/uwufetch/main/res/manjaro.png" alt="image" width="100">
