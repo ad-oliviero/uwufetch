@@ -27,6 +27,12 @@ Right now, the package is only available on the AUR:
 
 ##### Via source
 
+
+Building requisites:
+- Make
+- A c compiler
+- Pandoc to compile man pages 
+
 To install UwUfetch from the source, type these commands in the terminal:
 
 ```shell

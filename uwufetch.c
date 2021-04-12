@@ -282,7 +282,7 @@ void list(char *arg) {	// prints distribution list
 			"    %sBSD:\n"
 			"      freebsd, %sopenbsd\n\n"
 			"    %sOther/spare distributions:\n"
-			"      %salpine, %sfedora, %sgentoo, %s\"void\", android, %sgnu, guix, %sunknown\n",
+			"      %salpine, %sfedora, %sgentoo, %s\"void\", \"opensuse-leap\", android, %sgnu, guix, %sunknown\n",
 			arg,
 			BLUE, NORMAL, BLUE, GREEN,						// Arch based colors
 			RED, YELLOW, NORMAL, RED, GREEN, BLUE, RED,		// Debian based colors
