@@ -54,6 +54,7 @@ char	user[32], host[256], shell[64], version_name[64], cpu_model[256],
 
 // functions definitions, to use them in main()
 int pkgman();
+void parse_config();
 void get_info();
 void list();
 void print_ascii();
@@ -76,6 +77,7 @@ int main(int argc, char *argv[]) {
 		{ NULL, 0, NULL, 0 }
 	};
 	get_info();
+	parse_config();
 	while ((opt = getopt_long(argc, argv, "ad:hilc:", long_options, NULL)) != -1) {
 		switch (opt) {
 			case 'a':
@@ -105,6 +107,47 @@ int main(int argc, char *argv[]) {
 	else if (a_i_flag) print_image();
 	uwu_name();
 	print_info();
+}
+
+void parse_config() {
+	char line[256];
+	char *homedir = getenv("HOME");
+	
+	//FILE *config = fopen(strcat(homedir, "/.config/uwufetch/config"), "r");
+	FILE *config = fopen("./config", "r");
+	if(config == NULL) {
+		return;
+	}
+	while(fgets(line, sizeof(line), config)) {
+		if(line[0] == '#') {
+			break;
+		}
+		char key[32];
+		char value[64];
+		int len = strlen(line);
+		int delim_position;
+		// parse key
+		for(int i = 0;i < len;i++) {
+			if(line[i] == '=') {
+				delim_position = i;
+				break;
+			}
+			key[i] = line[i];
+		}
+		// parse value
+		for(int i = delim_position + 1;i < len;i++) {
+			if(line[i] == '#' || line[i] == '\n') {
+				break;
+			}
+			value[i - delim_position - 1] = line[i];
+		}
+		if(strcmp("image", key) == 0) {
+			a_i_flag = 1;
+			snprintf(image_name, 32, "%s", value);
+		} else if(strcmp("distro", key) == 0) {
+			snprintf(version_name, 64, "%s", value);
+		}
+	}
 }
 
 int pkgman() {	// this is just a function that returns the total of installed packages
