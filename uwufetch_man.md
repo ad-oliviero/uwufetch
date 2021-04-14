@@ -19,6 +19,9 @@ prints the logo as ascii text (default)
 -c	--custom\
 you can choose a custom image path
 
+--config\
+you can change config path
+
 -d	--distro\
 you can choose the logo to print by the distro name
 
@@ -30,6 +33,23 @@ prints image instead of ascii logo
 
 -l	--list\
 prints a list of all supported distributions
+
+# CONFIG FILE
+The config file is located in $HOME/.config/uwufetch/config (you need to create it), but you can change the path by using the `--config` option.
+
+## OPTIONS
+distribution=name\	\	\	\	\ # use it to change displayed distribution\
+image=/path/to/image\		\	\	# enable images (leave blank), or use custom image path\
+nouser\	\	\	\	\	\	\	\	\	\	\ # disable username and hostname\
+noos\	\	\	\	\	\	\	\	\	\	\	# disable os\
+nokernel\	\	\	\	\	\	\	\	\	# disable kernel\
+nocpu\	\	\	\	\	\	\	\	\	\	\ # disable cpu\
+nogpu\	\	\	\	\	\	\	\	\	\	\ # disable gpu\
+noram\	\	\	\	\	\	\	\	\	\	\ # disable ram\
+noshell\	\	\	\	\	\	\	\	\	\ # disable shell\
+nopkgs\	\	\	\	\	\	\	\	\	\	\ # disable pkgs\
+nouptime\	\	\	\	\	\	\	\	\	# disable uptime\
+nocolors\	\	\	\	\	\	\	\	\	# disable colors
 
 # SUPPORTED DISTRIBUTIONS
 Distribution name\	\	\	\	\ -d option

@@ -1,6 +1,6 @@
 NAME			= uwufetch
 FILES			= uwufetch.c
-CFLAGS			= -O3
+CFLAGS			= 
 CFLAGS_DEBUG	= -Wall -Wextra
 PREFIX			= /usr/bin
 CC				= cc
@@ -9,12 +9,12 @@ MAN_COMPILER	= pandoc
 build: $(FILES)
 	$(CC) $(CFLAGS) -o $(NAME) $(FILES)
 	$(MAN_COMPILER) $(NAME)_man.md -st man -o $(NAME).1
-	@gzip $(NAME).1
+	@#gzip $(NAME).1
 
 debug:
 	@clear
 	$(CC) $(CFLAGS_DEBUG) -o $(NAME) $(FILES)
-	./uwufetch --config ~/.config/uwufetch/config
+	./uwufetch
 
 install:
 	cp $(NAME) $(DESTDIR)$(PREFIX)/$(NAME)

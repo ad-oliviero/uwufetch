@@ -47,7 +47,19 @@ struct sysinfo sys;
 struct winsize win;
 int ram_total, ram_used = 0;
 // initialise the variables to store data, gpu array can hold up to 8 gpus
-int pkgs, a_i_flag = 0, target_width = 0;
+int pkgs, target_width = 0;
+// all flags available
+int	ascii_image_flag = 0,
+	show_user_info = 1,
+	show_os = 1,
+	show_kernel = 1,
+	show_cpu = 1,
+	show_gpu = 1,
+	show_ram = 1,
+	show_shell = 1,
+	show_pkgs = 1,
+	show_uptime = 1,
+	show_colors = 1;
 char	user[32], host[256], shell[64], version_name[64], cpu_model[256],
 		gpu_model[8][256] = { { '0' }, { '0' }, { '0' }, { '0' }, { '0' }, { '0' }, { '0' }, { '0' } },
 		pkgman_name[64], image_name[32];
@@ -82,10 +94,10 @@ int main(int argc, char *argv[]) {
 	while ((opt = getopt_long(argc, argv, "ad:hilc:", long_options, NULL)) != -1) {
 		switch (opt) {
 			case 'a':
-				a_i_flag = 0;
+				ascii_image_flag = 0;
 				break;
 			case 'c':
-				a_i_flag = 1;
+				ascii_image_flag = 1;
 				sprintf(image_name, "%s", optarg);
 				break;
 			case 'd':
@@ -95,7 +107,7 @@ int main(int argc, char *argv[]) {
 				usage(argv[0]);
 				return 0;
 			case 'i':
-				a_i_flag = 1;
+				ascii_image_flag = 1;
 				break;
 			case 'l':
 				list(argv[0]);
@@ -104,8 +116,8 @@ int main(int argc, char *argv[]) {
 				break;
 		}
 	}
-	if ((argc == 1 && a_i_flag == 0) || (argc > 1 && a_i_flag == 0)) print_ascii();
-	else if (a_i_flag) print_image();
+	if ((argc == 1 && ascii_image_flag == 0) || (argc > 1 && ascii_image_flag == 0)) print_ascii();
+	else if (ascii_image_flag) print_image();
 	uwu_name();
 	print_info();
 }
@@ -113,13 +125,24 @@ int main(int argc, char *argv[]) {
 void parse_config() {
 	char line[256];
 	char *homedir = getenv("HOME");
+	char *temp_buffer = "";
 	
 	FILE *config = fopen(strcat(homedir, "/.config/uwufetch/config"), "r");
 	if(config == NULL) return;
 	while(fgets(line, sizeof(line), config)) {
 		if(line[0] == '#') continue;
-		if (sscanf(line, "image%s", image_name)) a_i_flag = 1;
+		ascii_image_flag = sscanf(line, "image=%s", image_name);
 		sscanf(line, "distro=%s", version_name);
+		if (sscanf(line, "nouser%s", temp_buffer)) show_user_info = 0;
+		if (sscanf(line, "noos%s", temp_buffer)) show_os = 0;
+		if (sscanf(line, "nokernel%s", temp_buffer)) show_kernel = 0;
+		if (sscanf(line, "nocpu%s", temp_buffer)) show_cpu = 0;
+		if (sscanf(line, "nogpu%s", temp_buffer)) show_gpu = 0;
+		if (sscanf(line, "noram%s", temp_buffer)) show_ram = 0;
+		if (sscanf(line, "noshell%s", temp_buffer)) show_shell = 0;
+		if (sscanf(line, "nopkgs%s", temp_buffer)) show_pkgs = 0;
+		if (sscanf(line, "nouptime%s", temp_buffer)) show_uptime = 0;
+		if (sscanf(line, "nocolors%s", temp_buffer)) show_colors = 0;
 	}
 }
 
@@ -161,29 +184,32 @@ void print_info() {
 	// store sys info in the sys again	
 	sysinfo(&sys);
 	// print collected info - from host to cpu info
-	printf("\033[9A\033[18C%s%s%s@%s\n", NORMAL, BOLD, user, host);
-	printf("\033[18C%s%sOWOS     %s%s\n", NORMAL, BOLD, NORMAL, version_name);
-	printf("\033[18C%s%sKEWNEL   %s%s %s\n", NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine);
-	printf("\033[18C%s%sCPUWU    %s%s\n", NORMAL, BOLD, NORMAL, cpu_model);
+	printf("\033[9A"); // to align info text
+	if (show_user_info) printf("\033[18C%s%s%s@%s\n", NORMAL, BOLD, user, host);
+	if (show_os) printf("\033[18C%s%sOWOS     %s%s\n", NORMAL, BOLD, NORMAL, version_name);
+	if (show_kernel) printf("\033[18C%s%sKEWNEL   %s%s %s\n", NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine);
+	if (show_cpu) printf("\033[18C%s%sCPUWU    %s%s\n", NORMAL, BOLD, NORMAL, cpu_model);
 
 	// print the gpus
-	int gpu_iter = 0;
-	while(gpu_model[gpu_iter][0] != '0') {
-		printf(	"\033[18C%s%sGPUWU    %s%s\n",
-				NORMAL, BOLD, NORMAL, gpu_model[gpu_iter]);
-		gpu_iter++;
+	if (show_gpu) {
+		int gpu_iter = 0;
+		while(gpu_model[gpu_iter][0] != '0') {
+			printf(	"\033[18C%s%sGPUWU    %s%s\n",
+					NORMAL, BOLD, NORMAL, gpu_model[gpu_iter]);
+			gpu_iter++;
+		}
 	}
 
 	// print ram to uptime and colors
-	printf("\033[18C%s%sWAM      %s%i MB/%i MB\n",
+	if (show_ram) printf("\033[18C%s%sWAM      %s%i MB/%i MB\n",
 			NORMAL, BOLD, NORMAL, (ram_used), ram_total);
-	printf("\033[18C%s%sSHELL    %s%s\n",
+	if (show_shell) printf("\033[18C%s%sSHELL    %s%s\n",
 			NORMAL, BOLD, NORMAL, shell);
-	printf("\033[18C%s%sPKGS     %s%s%d %s\n",
+	if (show_pkgs) printf("\033[18C%s%sPKGS     %s%s%d %s\n",
 			NORMAL, BOLD, NORMAL, NORMAL, pkgs, pkgman_name);
-	printf("\033[18C%s%sUWUPTIME %s"/*"%lid, "*/"%lih, %lim\n",
+	if (show_uptime) printf("\033[18C%s%sUWUPTIME %s"/*"%lid, "*/"%lih, %lim\n",
 			NORMAL, BOLD, NORMAL, /*sys.uptime/60/60/24,*/ sys.uptime/60/60, sys.uptime/60%60);
-	printf("\033[18C%s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n",
+	if (show_colors) printf("\033[18C%s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n",
 			BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN,  WHITE, NORMAL);
 }
 
@@ -530,7 +556,7 @@ void uwu_name() {	// uwufies distro name
 
 	else {
 		sprintf(version_name, "%s", "unknown");
-		if (a_i_flag == 1) {
+		if (ascii_image_flag == 1) {
 			print_image();
 			printf("\n");
 		}
