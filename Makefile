@@ -14,7 +14,7 @@ build: $(FILES)
 debug:
 	@clear
 	$(CC) $(CFLAGS_DEBUG) -o $(NAME) $(FILES)
-	./uwufetch
+	./uwufetch --config ~/.config/uwufetch/config
 
 install:
 	cp $(NAME) $(DESTDIR)$(PREFIX)/$(NAME)

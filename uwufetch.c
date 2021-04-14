@@ -70,6 +70,7 @@ int main(int argc, char *argv[]) {
 	static struct option long_options[] = {
 		{ "ascii", no_argument, NULL, 'a' },
 		{ "custom", required_argument, NULL, 'c' },
+		{ "config", required_argument, NULL, 0},
 		{ "distro", required_argument, NULL, 'd' },
 		{ "help", no_argument, NULL, 'h' },
 		{ "image", no_argument, NULL, 'i' },
@@ -103,7 +104,7 @@ int main(int argc, char *argv[]) {
 				break;
 		}
 	}
-	if (argc == 1 && a_i_flag == 0) print_ascii();
+	if ((argc == 1 && a_i_flag == 0) || (argc > 1 && a_i_flag == 0)) print_ascii();
 	else if (a_i_flag) print_image();
 	uwu_name();
 	print_info();
@@ -117,7 +118,7 @@ void parse_config() {
 	if(config == NULL) return;
 	while(fgets(line, sizeof(line), config)) {
 		if(line[0] == '#') continue;
-		if (sscanf(line, "image=%s", image_name)) a_i_flag = 1;
+		if (sscanf(line, "image%s", image_name)) a_i_flag = 1;
 		sscanf(line, "distro=%s", version_name);
 	}
 }
@@ -481,10 +482,11 @@ void print_image() {	// prints logo (as an image) of the given system. distribut
 void usage(char *arg) {
 	printf(	"Usage: %s <args>\n"
 			"    -a, --ascii     prints logo as ascii text (default)\n"
-			"    -c, --custom    choose a custom image\n"
+			"    -c, --custom    choose a custom image\n"	// this options should be different, maybe merged with `-i`
+			"        --config    use custom config path\n"
 			"    -d, --distro    lets you choose the logo to print\n"
 			"    -h, --help      prints this help page\n"
-			"    -i, --image     prints logo as image\n"
+			"    -i, --image     prints logo as image\n"	// someone should add an optional argument to change image without using `-c`, but I don't know how to do it.
 			"                    %sworks in most terminals\n"
 			"                    read README.md for more info%s\n"
 			"    -l, --list      lists all supported distributions\n",
