@@ -510,11 +510,10 @@ void print_image() {	// prints logo (as an image) of the given system. distribut
 void usage(char *arg) {
 	printf(	"Usage: %s <args>\n"
 			"    -a, --ascii     prints logo as ascii text (default)\n"
-			"    -c, --custom    choose a custom image\n"	// this options should be different, maybe merged with `-i`
-			"        --config    use custom config path\n"
+			"    -c  --config    use custom config path\n"
 			"    -d, --distro    lets you choose the logo to print\n"
 			"    -h, --help      prints this help page\n"
-			"    -i, --image     prints logo as image\n"	// someone should add an optional argument to change image without using `-c`, but I don't know how to do it.
+			"    -i, --image     prints logo as image and use a custom image if provided\n"
 			"                    %sworks in most terminals\n"
 			"                    read README.md for more info%s\n"
 			"    -l, --list      lists all supported distributions\n",
