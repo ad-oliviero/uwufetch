@@ -5,7 +5,7 @@
 To contribute to this project, you should follow some rules to keep the code consistent:
 - To indent I like to use tabs in size 4, so you should use them to commit.
 
-- When an the code in an `if` (or `else`) statement is only one line please do not use curly brackets: 
+- When the code in an `if` (or `else`) statement is only one line please do not use curly brackets: 
 ```c
 if (things)
 	something(will_happen);
@@ -17,7 +17,7 @@ else
 	something(!will_happen);
 ```
 
-- When the the code in an `if` (or `else`) statement is too short, write it in one line (if it is readable):
+- When the code in an `if` (or `else`) statement is too short, write it in one line (if it is readable):
 ```c
 if (this) that();
 
@@ -52,4 +52,4 @@ If you are requesting a feature, please specify if you are already working on it
 
 I know that adding this file now is a bit late, but I am writing this anyway, just to appear as a *professional* programmer, even though I am not.
 
-I woult take some space to thank all the [contributors](https://github.com/TheDarkBug/uwufetch/graphs/contributors) that made this project better every day.
+I would take some space to thank all the [contributors](https://github.com/TheDarkBug/uwufetch/graphs/contributors) that made this project better every day.
