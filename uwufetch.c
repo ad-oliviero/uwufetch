@@ -60,8 +60,8 @@ int	ascii_image_flag = 0,
 	show_pkgs = 1,
 	show_uptime = 1,
 	show_colors = 1;
-char	user[32], host[256], shell[64], version_name[64], cpu_model[256],
-		gpu_model[8][256] = { { '0' }, { '0' }, { '0' }, { '0' }, { '0' }, { '0' }, { '0' }, { '0' } },
+char	user[32], host[256], shell[64], kernel[256], version_name[64], cpu_model[256],
+		gpu_model[8][256] = {{'0'}, {'0'}, {'0'}, {'0'}, {'0'}, {'0'}, {'0'}, {'0'}},
 		pkgman_name[64], image_name[32];
 
 // functions definitions, to use them in main()
@@ -181,13 +181,12 @@ int pkgman() {	// this is just a function that returns the total of installed pa
 }
 
 void print_info() {
-	// store sys info in the sys again	
-	sysinfo(&sys);
+	// store sys info in the sys again
 	// print collected info - from host to cpu info
 	printf("\033[9A"); // to align info text
 	if (show_user_info) printf("\033[18C%s%s%s@%s\n", NORMAL, BOLD, user, host);
 	if (show_os) printf("\033[18C%s%sOWOS     %s%s\n", NORMAL, BOLD, NORMAL, version_name);
-	if (show_kernel) printf("\033[18C%s%sKEWNEL   %s%s %s\n", NORMAL, BOLD, NORMAL, sys_var.release, sys_var.machine);
+	if (show_kernel) printf("\033[18C%s%sKEWNEL   %s%s\n", NORMAL, BOLD, NORMAL, kernel);
 	if (show_cpu) printf("\033[18C%s%sCPUWU    %s%s\n", NORMAL, BOLD, NORMAL, cpu_model);
 
 	// print the gpus
@@ -256,10 +255,11 @@ void get_info() {	// get all necessary info
 
 	// system resources
 	uname(&sys_var);
-	sysinfo(&sys);	// somehow this function has to be called again in print_info()
+	//sysinfo(&sys);	// somehow this function has to be called again in print_info()
 
 	truncate_name(sys_var.release);
-	truncate_name(sys_var.machine);
+	sprintf(kernel, "%s %s %s", sys_var.sysname, sys_var.release, sys_var.machine);
+	truncate_name(kernel);
 
 	// ram
 	FILE *meminfo;

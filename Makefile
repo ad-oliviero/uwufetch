@@ -1,6 +1,6 @@
 NAME			= uwufetch
 FILES			= uwufetch.c
-CFLAGS			= 
+CFLAGS			= -O3
 CFLAGS_DEBUG	= -Wall -Wextra
 PREFIX			= /usr/bin
 CC				= cc
