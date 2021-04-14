@@ -9,7 +9,7 @@ MAN_COMPILER	= pandoc
 build: $(FILES)
 	$(CC) $(CFLAGS) -o $(NAME) $(FILES)
 	$(MAN_COMPILER) $(NAME)_man.md -st man -o $(NAME).1
-	@#gzip $(NAME).1
+	@gzip $(NAME).1
 
 debug:
 	@clear
