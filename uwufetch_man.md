@@ -16,10 +16,7 @@ uwufetch - A meme system info tool for Linux, based on nyan/uwu trend on r/linux
 -a	--ascii\
 prints the logo as ascii text (default)
 
--c	--custom\
-you can choose a custom image path
-
---config\
+-c --config\
 you can change config path
 
 -d	--distro\
@@ -29,7 +26,8 @@ you can choose the logo to print by the distro name
 prints a help page
 
 -i	--image\
-prints image instead of ascii logo
+prints image instead of ascii logo\
+uses a custom image if one is provided
 
 -l	--list\
 prints a list of all supported distributions
