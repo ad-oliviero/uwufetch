@@ -81,24 +81,19 @@ int main(int argc, char *argv[]) {
 	int opt = 0;
 	static struct option long_options[] = {
 		{ "ascii", no_argument, NULL, 'a' },
-		{ "custom", required_argument, NULL, 'c' },
 		{ "config", required_argument, NULL, 0},
 		{ "distro", required_argument, NULL, 'd' },
 		{ "help", no_argument, NULL, 'h' },
-		{ "image", no_argument, NULL, 'i' },
+		{ "image", optional_argument, NULL, 'i' },
 		{ "list", no_argument, NULL, 'l' },
 		{ NULL, 0, NULL, 0 }
 	};
 	get_info();
 	parse_config();
-	while ((opt = getopt_long(argc, argv, "ad:hilc:", long_options, NULL)) != -1) {
+	while ((opt = getopt_long(argc, argv, "ad:hi::l", long_options, NULL)) != -1) {
 		switch (opt) {
 			case 'a':
 				ascii_image_flag = 0;
-				break;
-			case 'c':
-				ascii_image_flag = 1;
-				sprintf(image_name, "%s", optarg);
 				break;
 			case 'd':
 				if (optarg) sprintf(version_name, "%s", optarg);
@@ -108,6 +103,10 @@ int main(int argc, char *argv[]) {
 				return 0;
 			case 'i':
 				ascii_image_flag = 1;
+				char *image_dir = NULL;
+				if(!optarg && argv[optind] != NULL && argv[optind][0] != '-') image_dir = argv[optind++];
+				else image_dir = optarg;
+				if(image_dir != NULL)  sprintf(image_name, "%s", image_dir);
 				break;
 			case 'l':
 				list(argv[0]);
