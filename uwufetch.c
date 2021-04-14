@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
 				break;
 		}
 	}
-	if (argc == 1 || a_i_flag == 0) print_ascii();
+	if (argc == 1 && a_i_flag == 0) print_ascii();
 	else if (a_i_flag) print_image();
 	uwu_name();
 	print_info();
@@ -113,40 +113,12 @@ void parse_config() {
 	char line[256];
 	char *homedir = getenv("HOME");
 	
-	//FILE *config = fopen(strcat(homedir, "/.config/uwufetch/config"), "r");
-	FILE *config = fopen("./config", "r");
-	if(config == NULL) {
-		return;
-	}
+	FILE *config = fopen(strcat(homedir, "/.config/uwufetch/config"), "r");
+	if(config == NULL) return;
 	while(fgets(line, sizeof(line), config)) {
-		if(line[0] == '#') {
-			break;
-		}
-		char key[32];
-		char value[64];
-		int len = strlen(line);
-		int delim_position;
-		// parse key
-		for(int i = 0;i < len;i++) {
-			if(line[i] == '=') {
-				delim_position = i;
-				break;
-			}
-			key[i] = line[i];
-		}
-		// parse value
-		for(int i = delim_position + 1;i < len;i++) {
-			if(line[i] == '#' || line[i] == '\n') {
-				break;
-			}
-			value[i - delim_position - 1] = line[i];
-		}
-		if(strcmp("image", key) == 0) {
-			a_i_flag = 1;
-			snprintf(image_name, 32, "%s", value);
-		} else if(strcmp("distro", key) == 0) {
-			snprintf(version_name, 64, "%s", value);
-		}
+		if(line[0] == '#') continue;
+		if (sscanf(line, "image=%s", image_name)) a_i_flag = 1;
+		sscanf(line, "distro=%s", version_name);
 	}
 }
 
