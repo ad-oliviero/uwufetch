@@ -247,10 +247,10 @@ void print_info()
 			   NORMAL, BOLD, NORMAL, NORMAL, pkgs, pkgman_name);
 	if (show_uptime)
 		if(sys.uptime/3600 < 24)
-			printf("\033[18C%s%sUWUPTIME %s" /*"%lid, "*/ "%lih, %lim\n",
+			printf("\033[18C%s%sUWUPTIME %s%lih, %lim\n",
 			   NORMAL, BOLD, NORMAL, sys.uptime/3600, sys.uptime/60%60);
 		else
-			printf("\033[18C%s%sUWUPTIME %s" /*"%lid, "*/ "%lid, %lih, %lim\n",
+			printf("\033[18C%s%sUWUPTIME %s%lid, %lih, %lim\n",
 			   NORMAL, BOLD, NORMAL, sys.uptime/86400, sys.uptime/3600%24, sys.uptime/60%60);
 	if (show_colors)
 		printf("\033[18C%s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n",
