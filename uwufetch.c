@@ -62,7 +62,7 @@ int ascii_image_flag = 0,
 	show_colors = 1;
 char user[32], host[256], shell[64], kernel[256], version_name[64], cpu_model[256],
 	gpu_model[8][256] = {{'0'}, {'0'}, {'0'}, {'0'}, {'0'}, {'0'}, {'0'}, {'0'}},
-	pkgman_name[64], image_name[32];
+	pkgman_name[64], image_name[128], *config_directory = NULL;
 
 // functions definitions, to use them in main()
 int pkgman();
@@ -82,16 +82,14 @@ int main(int argc, char *argv[])
 	int opt = 0;
 	static struct option long_options[] = {
 		{"ascii", no_argument, NULL, 'a'},
-		{"custom", required_argument, NULL, 'c'},
-		{"config", required_argument, NULL, 0},
+		{"config", required_argument, NULL, 'c'},
 		{"distro", required_argument, NULL, 'd'},
 		{"help", no_argument, NULL, 'h'},
-		{"image", no_argument, NULL, 'i'},
+		{"image", optional_argument, NULL, 'i'},
 		{"list", no_argument, NULL, 'l'},
 		{NULL, 0, NULL, 0}};
 	get_info();
-	parse_config();
-	while ((opt = getopt_long(argc, argv, "ad:hilc:", long_options, NULL)) != -1)
+	while ((opt = getopt_long(argc, argv, "ac:d:hi::l", long_options, NULL)) != -1)
 	{
 		switch (opt)
 		{
@@ -99,8 +97,7 @@ int main(int argc, char *argv[])
 			ascii_image_flag = 0;
 			break;
 		case 'c':
-			ascii_image_flag = 1;
-			sprintf(image_name, "%s", optarg);
+			config_directory = optarg;
 			break;
 		case 'd':
 			if (optarg)
@@ -111,6 +108,10 @@ int main(int argc, char *argv[])
 			return 0;
 		case 'i':
 			ascii_image_flag = 1;
+			if (!optarg && argv[optind] != NULL && argv[optind][0] != '-')
+				sprintf(image_name, "%s", argv[optind++]);
+			else if (optarg)
+				sprintf(image_name, "%s", optarg);
 			break;
 		case 'l':
 			list(argv[0]);
@@ -119,6 +120,7 @@ int main(int argc, char *argv[])
 			break;
 		}
 	}
+	parse_config();
 	if ((argc == 1 && ascii_image_flag == 0) || (argc > 1 && ascii_image_flag == 0))
 		print_ascii();
 	else if (ascii_image_flag)
@@ -132,15 +134,20 @@ void parse_config()
 	char line[256];
 	char *homedir = getenv("HOME");
 	char *temp_buffer = "";
+	FILE *config;
 
-	FILE *config = fopen(strcat(homedir, "/.config/uwufetch/config"), "r");
+	if (config_directory == NULL)
+		config = fopen(strcat(homedir, "/.config/uwufetch/config"), "r");
+	else
+		config = fopen(config_directory, "r");
 	if (config == NULL)
 		return;
 	while (fgets(line, sizeof(line), config))
 	{
 		if (line[0] == '#')
 			continue;
-		ascii_image_flag = sscanf(line, "image=%s", image_name);
+		if (strlen(image_name) < 1 && ascii_image_flag == 0)
+			ascii_image_flag = sscanf(line, "image=%s", image_name);
 		sscanf(line, "distro=%s", version_name);
 		if (sscanf(line, "nouser%s", temp_buffer))
 			show_user_info = 0;
@@ -621,11 +628,10 @@ void usage(char *arg)
 {
 	printf("Usage: %s <args>\n"
 		   "    -a, --ascii     prints logo as ascii text (default)\n"
-		   "    -c, --custom    choose a custom image\n" // this options should be different, maybe merged with `-i`
-		   "        --config    use custom config path\n"
+		   "    -c  --config    use custom config path\n"
 		   "    -d, --distro    lets you choose the logo to print\n"
 		   "    -h, --help      prints this help page\n"
-		   "    -i, --image     prints logo as image\n" // someone should add an optional argument to change image without using `-c`, but I don't know how to do it.
+		   "    -i, --image     prints logo as image and use a custom image if provided\n"
 		   "                    %sworks in most terminals\n"
 		   "                    read README.md for more info%s\n"
 		   "    -l, --list      lists all supported distributions\n",
