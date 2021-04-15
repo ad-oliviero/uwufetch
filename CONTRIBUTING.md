@@ -55,9 +55,4 @@ If you are requesting a feature, please specify if you are already working on it
 
 I know that adding this file now is a bit late, but I am writing this anyway, just to appear as a _professional_ programmer, even though I am not.
 
-<<<<<<< HEAD
 I woult take some space to thank all the [contributors](https://github.com/TheDarkBug/uwufetch/graphs/contributors) that made this project better every day.
-=======
-I would take some space to thank all the [contributors](https://github.com/TheDarkBug/uwufetch/graphs/contributors) that made this project better every day.
-
-> > > > > > > f87068f6f8746dbabd4f8936766b4389c07591ca
