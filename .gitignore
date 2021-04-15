@@ -3,3 +3,4 @@ uwufetch
 *.vscode
 *.gz
 *.1
+.prettierrc

@@ -3,10 +3,13 @@
 A meme system info tool for (almost) all your Linux/Unix-based systems, based on nyan/UwU trend on r/linuxmasterrace.
 
 ## Currently supported distros
+
 #### Full support (Both Ascii art + images are provided for the given distribution)
+
 Nyalpine, Nyarch Linuwu, Nyartix Linuwu, Debinyan, Fedowa, GentOwO, GnUwU gUwUix, Miwint, Myanjawo, OwOpenSUSE, Pop OwOs, RaspNyan, UwUntu, and OwOid; Plus Nyandroid.
 
 #### Partial support (Either no Ascii art, or no image is provided)
+
 endeavOwO, KDE NeOwOn, nixOwOs, Swackwawe, sOwOlus; Plus FweeBSD, and OwOpenBSD
 
 ## Building and installation
@@ -27,11 +30,11 @@ Right now, the package is only available on the AUR:
 
 ##### Via source
 
-
 Building requisites:
-- Make
-- A c compiler
-- Pandoc to compile man pages 
+
+-   Make
+-   A c compiler
+-   Pandoc to compile man pages
 
 To install UwUfetch from the source, type these commands in the terminal:
 
@@ -63,10 +66,12 @@ make termux_uninstall   # uninstall for termux
 ## Images and copyright info
 
 ### How to use images
+
 First at all you need `viu`, to install it follow the [guide](https://github.com/atanunq/viu#installation).
 Images are working in almost every terminal, for a better experience i recommend [kitty](https://github.com/kovidgoyal/kitty)
 
 ### For copyright and logos info
+
 <font size=2>[COPYRIGHT.md](https://github.com/TheDarkBug/uwufetch/tree/main/res/COPYRIGHT.md)</font>
 
 ## License
