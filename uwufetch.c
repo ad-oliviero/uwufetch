@@ -50,12 +50,15 @@ int ram_total, ram_used = 0;
 int pkgs, target_width = 0;
 // all flags available
 int ascii_image_flag = 0,
+	screen_width = 0,
+	screen_height = 0,
 	show_user_info = 1,
 	show_os = 1,
 	show_kernel = 1,
 	show_cpu = 1,
 	show_gpu = 1,
 	show_ram = 1,
+	show_resolution = 1,
 	show_shell = 1,
 	show_pkgs = 1,
 	show_uptime = 1,
@@ -161,6 +164,8 @@ void parse_config()
 			show_gpu = 0;
 		if (sscanf(line, "noram%s", temp_buffer))
 			show_ram = 0;
+		if (sscanf(line, "noresolution%s", temp_buffer))
+			show_resolution = 0;
 		if (sscanf(line, "noshell%s", temp_buffer))
 			show_shell = 0;
 		if (sscanf(line, "nopkgs%s", temp_buffer))
@@ -217,11 +222,11 @@ void print_info()
 	if (show_user_info)
 		printf("\033[18C%s%s%s@%s\n", NORMAL, BOLD, user, host);
 	if (show_os)
-		printf("\033[18C%s%sOWOS     %s%s\n", NORMAL, BOLD, NORMAL, version_name);
+		printf("\033[18C%s%sOWOS        %s%s\n", NORMAL, BOLD, NORMAL, version_name);
 	if (show_kernel)
-		printf("\033[18C%s%sKEWNEL   %s%s\n", NORMAL, BOLD, NORMAL, kernel);
+		printf("\033[18C%s%sKEWNEL      %s%s\n", NORMAL, BOLD, NORMAL, kernel);
 	if (show_cpu)
-		printf("\033[18C%s%sCPUWU    %s%s\n", NORMAL, BOLD, NORMAL, cpu_model);
+		printf("\033[18C%s%sCPUWU       %s%s\n", NORMAL, BOLD, NORMAL, cpu_model);
 
 	// print the gpus
 	if (show_gpu)
@@ -229,7 +234,7 @@ void print_info()
 		int gpu_iter = 0;
 		while (gpu_model[gpu_iter][0] != '0')
 		{
-			printf("\033[18C%s%sGPUWU    %s%s\n",
+			printf("\033[18C%s%sGPUWU       %s%s\n",
 				   NORMAL, BOLD, NORMAL, gpu_model[gpu_iter]);
 			gpu_iter++;
 		}
@@ -237,20 +242,23 @@ void print_info()
 
 	// print ram to uptime and colors
 	if (show_ram)
-		printf("\033[18C%s%sWAM      %s%i MB/%i MB\n",
+		printf("\033[18C%s%sWAM         %s%i MB/%i MB\n",
 			   NORMAL, BOLD, NORMAL, (ram_used), ram_total);
+	if (show_resolution)
+		printf("\033[18C%s%sRESOLUTION%s  %dx%d\n",
+				NORMAL, BOLD, NORMAL, screen_width, screen_height);
 	if (show_shell)
-		printf("\033[18C%s%sSHELL    %s%s\n",
+		printf("\033[18C%s%sSHELL       %s%s\n",
 			   NORMAL, BOLD, NORMAL, shell);
 	if (show_pkgs)
-		printf("\033[18C%s%sPKGS     %s%s%d %s\n",
+		printf("\033[18C%s%sPKGS        %s%s%d %s\n",
 			   NORMAL, BOLD, NORMAL, NORMAL, pkgs, pkgman_name);
 	if (show_uptime)
 		if(sys.uptime/3600 < 24)
-			printf("\033[18C%s%sUWUPTIME %s%lih, %lim\n",
+			printf("\033[18C%s%sUWUPTIME    %s%lih, %lim\n",
 			   NORMAL, BOLD, NORMAL, sys.uptime/3600, sys.uptime/60%60);
 		else
-			printf("\033[18C%s%sUWUPTIME %s%lid, %lih, %lim\n",
+			printf("\033[18C%s%sUWUPTIME    %s%lid, %lih, %lim\n",
 			   NORMAL, BOLD, NORMAL, sys.uptime/86400, sys.uptime/3600%24, sys.uptime/60%60);
 	if (show_colors)
 		printf("\033[18C%s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n",
@@ -263,7 +271,7 @@ void get_info()
 
 	// terminal width used to truncate long names
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &win);
-	target_width = win.ws_col - 28;
+	target_width = win.ws_col - 30;
 
 	// os version
 	FILE *os_release = fopen("/etc/os-release", "r");
@@ -371,6 +379,14 @@ void get_info()
 	{
 		remove_brackets(gpu_model[i]);
 		truncate_name(gpu_model[i]);
+	}
+
+	// Resolution
+	FILE *resolution = popen("xwininfo -root 2> /dev/null | grep -E 'Width|Height'", "r");
+	while (fgets(line, sizeof(line), resolution))
+	{
+		sscanf(line, "  Width: %d", &screen_width);
+		sscanf(line, "  Height: %d", &screen_height);
 	}
 
 	// package count
