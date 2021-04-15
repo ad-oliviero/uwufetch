@@ -1,5 +1,6 @@
 uwufetch
 *.zip
+*.idea
 *.vscode
 *.gz
 *.1
