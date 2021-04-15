@@ -246,8 +246,12 @@ void print_info()
 		printf("\033[18C%s%sPKGS     %s%s%d %s\n",
 			   NORMAL, BOLD, NORMAL, NORMAL, pkgs, pkgman_name);
 	if (show_uptime)
-		printf("\033[18C%s%sUWUPTIME %s" /*"%lid, "*/ "%lih, %lim\n",
-			   NORMAL, BOLD, NORMAL, /*sys.uptime/60/60/24,*/ sys.uptime / 60 / 60, sys.uptime / 60 % 60);
+		if(sys.uptime/3600 < 24)
+			printf("\033[18C%s%sUWUPTIME %s%lih, %lim\n",
+			   NORMAL, BOLD, NORMAL, sys.uptime/3600, sys.uptime/60%60);
+		else
+			printf("\033[18C%s%sUWUPTIME %s%lid, %lih, %lim\n",
+			   NORMAL, BOLD, NORMAL, sys.uptime/86400, sys.uptime/3600%24, sys.uptime/60%60);
 	if (show_colors)
 		printf("\033[18C%s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n",
 			   BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, NORMAL);
@@ -307,7 +311,7 @@ void get_info()
 
 	// system resources
 	uname(&sys_var);
-	//sysinfo(&sys);	// somehow this function has to be called again in print_info()
+	sysinfo(&sys);	// somehow this function has to be called again in print_info()
 
 	truncate_name(sys_var.release);
 	sprintf(kernel, "%s %s %s", sys_var.sysname, sys_var.release, sys_var.machine);
