@@ -1,3 +1,6 @@
 uwufetch
 *.zip
 *.vscode
+*.gz
+*.1
+.prettierrc
