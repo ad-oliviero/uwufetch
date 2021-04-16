@@ -20,10 +20,10 @@
 #include <unistd.h>
 #include <getopt.h>
 #ifdef __APPLE__
-    #include <sys/sysctl.h>
-    #include <time.h>
+#include <sys/sysctl.h>
+#include <time.h>
 #else
-    #include <sys/sysinfo.h>
+#include <sys/sysinfo.h>
 #endif
 #include <sys/utsname.h>
 #include <sys/ioctl.h>
@@ -42,20 +42,20 @@
 #define PINK "\x1b[38;5;201m"
 #define LPINK "\x1b[38;5;213m"
 #ifdef __APPLE__
-    // buffers where data fetched from sysctl are stored
-    // CPU
-    #define CPUBUFFERLEN 128
+// buffers where data fetched from sysctl are stored
+// CPU
+#define CPUBUFFERLEN 128
 
-    char cpu_buffer[CPUBUFFERLEN];
-	size_t cpu_buffer_len = CPUBUFFERLEN;
+char cpu_buffer[CPUBUFFERLEN];
+size_t cpu_buffer_len = CPUBUFFERLEN;
 
-	// Installed RAM
-	int64_t mem_buffer = 0;
-	size_t mem_buffer_len = sizeof(mem_buffer);
+// Installed RAM
+int64_t mem_buffer = 0;
+size_t mem_buffer_len = sizeof(mem_buffer);
 
-	// uptime
-	struct timeval time_buffer;
-	size_t time_buffer_len = sizeof(time_buffer);
+// uptime
+struct timeval time_buffer;
+size_t time_buffer_len = sizeof(time_buffer);
 #endif
 
 struct package_manager
@@ -65,7 +65,7 @@ struct package_manager
 };
 struct utsname sys_var;
 #ifndef __APPLE__
-    struct sysinfo sys;
+struct sysinfo sys;
 #endif
 struct winsize win;
 int ram_total, ram_used = 0;
@@ -207,14 +207,14 @@ int pkgman()
 	struct package_manager pkgmans[] = {
 		{"apt list --installed 2> /dev/null | wc -l", "(apt)"},
 		{"apk info 2> /dev/null | wc -l", "(apk)"},
-        {"brew list --formulae 2> /dev/null | wc -l", "(brew)"},
+		{"brew list --formulae 2> /dev/null | wc -l", "(brew)"},
 		{"dnf list installed 2> /dev/null | wc -l", "(dnf)"},
 		{"qlist -I 2> /dev/null | wc -l", "(emerge)"},
 		{"flatpak list 2> /dev/null | wc -l", "(flatpack)"},
 		{"guix package --list-installed 2> /dev/null | wc -l", "(guix)"},
 		{"nix-store -q --requisites /run/current-sys_vartem/sw 2> /dev/null | wc -l", "(nix)"},
 		{"pacman -Qq 2> /dev/null | wc -l", "(pacman)"},
-        {"port installed 2> /dev/null | tail -n +2 | wc -l", "(port)"},
+		{"port installed 2> /dev/null | tail -n +2 | wc -l", "(port)"},
 		{"rpm -qa --last 2> /dev/null | wc -l", "(rpm)"},
 		{"xbps-query -l 2> /dev/null | wc -l", "(xbps)"},
 		{"zypper se --installed-only 2> /dev/null | wc -l", "(zypper)"}};
@@ -242,13 +242,13 @@ int pkgman()
 #ifdef __APPLE__
 int uptime_mac()
 {
-    int mib[2] = { CTL_KERN, KERN_BOOTTIME };
-    sysctl(mib, 2, &time_buffer, &time_buffer_len, NULL, 0);
+	int mib[2] = {CTL_KERN, KERN_BOOTTIME};
+	sysctl(mib, 2, &time_buffer, &time_buffer_len, NULL, 0);
 
-    time_t bsec = time_buffer.tv_sec;
-    time_t csec = time(NULL);
+	time_t bsec = time_buffer.tv_sec;
+	time_t csec = time(NULL);
 
-    return difftime(csec, bsec);
+	return difftime(csec, bsec);
 }
 #endif
 
@@ -284,7 +284,7 @@ void print_info()
 			   NORMAL, BOLD, NORMAL, (ram_used), ram_total);
 	if (show_resolution)
 		printf("\033[18C%s%sRESOLUTION%s  %dx%d\n",
-				NORMAL, BOLD, NORMAL, screen_width, screen_height);
+			   NORMAL, BOLD, NORMAL, screen_width, screen_height);
 	if (show_shell)
 		printf("\033[18C%s%sSHELL       %s%s\n",
 			   NORMAL, BOLD, NORMAL, shell);
@@ -292,17 +292,17 @@ void print_info()
 		printf("\033[18C%s%sPKGS        %s%s%d %s\n",
 			   NORMAL, BOLD, NORMAL, NORMAL, pkgs, pkgman_name);
 	if (show_uptime)
-    #ifndef __APPLE__
-	    printf("\033[18C%s%sUWUPTIME %s" /*"%lid, "*/ "%lih, %lim\n",
+#ifndef __APPLE__
+		printf("\033[18C%s%sUWUPTIME %s" /*"%lid, "*/ "%lih, %lim\n",
 			   NORMAL, BOLD, NORMAL, /*sys.uptime/60/60/24,*/ sys.uptime / 60 / 60, sys.uptime / 60 % 60);
-    #else
-		if(sys.uptime/3600 < 24)
+#else
+		if (sys.uptime / 3600 < 24)
 			printf("\033[18C%s%sUWUPTIME    %s%lih, %lim\n",
-			   NORMAL, BOLD, NORMAL, sys.uptime/3600, sys.uptime/60%60);
+				   NORMAL, BOLD, NORMAL, sys.uptime / 3600, sys.uptime / 60 % 60);
 		else
 			printf("\033[18C%s%sUWUPTIME    %s%lid, %lih, %lim\n",
-			   NORMAL, BOLD, NORMAL, sys.uptime/86400, sys.uptime/3600%24, sys.uptime/60%60);
-    #endif
+				   NORMAL, BOLD, NORMAL, sys.uptime / 86400, sys.uptime / 3600 % 24, sys.uptime / 60 % 60);
+#endif
 	if (show_colors)
 		printf("\033[18C%s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n",
 			   BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, NORMAL);
@@ -350,13 +350,15 @@ void get_info()
 					break;
 		}
 		else if (library) // macOS
-        {
-		    closedir(library);
-            sysctlbyname("machdep.cpu.brand_string", &cpu_buffer, &cpu_buffer_len, NULL, 0);
+		{
+			closedir(library);
+#ifdef __APPLE__
+			sysctlbyname("machdep.cpu.brand_string", &cpu_buffer, &cpu_buffer_len, NULL, 0);
 
-		    sprintf(version_name, "macos");
-            sprintf(cpu_model, "%s", cpu_buffer);
-        }
+			sprintf(version_name, "macos");
+			sprintf(cpu_model, "%s", cpu_buffer);
+#endif
+		}
 		else
 			sprintf(version_name, "unknown");
 	}
@@ -371,7 +373,7 @@ void get_info()
 
 	// system resources
 	uname(&sys_var);
-	sysinfo(&sys);	// somehow this function has to be called again in print_info()
+	sysinfo(&sys); // somehow this function has to be called again in print_info()
 
 	truncate_name(sys_var.release);
 	sprintf(kernel, "%s %s %s", sys_var.sysname, sys_var.release, sys_var.machine);
@@ -400,18 +402,24 @@ void get_info()
 	fclose(meminfo);
 #else
 	// Used
-    FILE *mem_wired_fp, *mem_active_fp, *mem_compressed_fp;
+	FILE *mem_wired_fp, *mem_active_fp, *mem_compressed_fp;
 	mem_wired_fp = popen("vm_stat | awk '/wired/ { printf $4 }' | cut -d '.' -f 1", "r");
 	mem_active_fp = popen("vm_stat | awk '/active/ { printf $3 }' | cut -d '.' -f 1", "r");
 	mem_compressed_fp = popen("vm_stat | awk '/occupied/ { printf $5 }' | cut -d '.' -f 1", "r");
 	char mem_wired_ch[2137], mem_active_ch[2137], mem_compressed_ch[2137];
-	while(fgets(mem_wired_ch, sizeof(mem_wired_ch), mem_wired_fp) != NULL) {
-		while(fgets(mem_active_ch, sizeof(mem_active_ch), mem_active_fp) != NULL) {
-			while(fgets(mem_compressed_ch, sizeof(mem_compressed_ch), mem_compressed_fp) != NULL) {}
+	while (fgets(mem_wired_ch, sizeof(mem_wired_ch), mem_wired_fp) != NULL)
+	{
+		while (fgets(mem_active_ch, sizeof(mem_active_ch), mem_active_fp) != NULL)
+		{
+			while (fgets(mem_compressed_ch, sizeof(mem_compressed_ch), mem_compressed_fp) != NULL)
+			{
+			}
 		}
 	}
 
-	pclose(mem_wired_fp); pclose(mem_active_fp); pclose(mem_compressed_fp);
+	pclose(mem_wired_fp);
+	pclose(mem_active_fp);
+	pclose(mem_compressed_fp);
 
 	int mem_wired = atoi(mem_wired_ch);
 	int mem_active = atoi(mem_active_ch);
@@ -440,12 +448,12 @@ void get_info()
 		// get gpus with lspci command
 		if (strcmp(version_name, "android") != 0)
 		{
-            #ifndef __APPLE__
-                gpu = popen("lspci -mm 2> /dev/null | grep \"VGA\" | cut --fields=4,6 -d '\"' --output-delimiter=\" \" | sed \"s/ Controller.*//\"", "r");
-            #else
-		        gpu = popen("system_profiler SPDisplaysDataType | awk -F ': ' '/Chipset Model: /{ print $2 }'", "r");
-            #endif
-        }
+#ifndef __APPLE__
+			gpu = popen("lspci -mm 2> /dev/null | grep \"VGA\" | cut --fields=4,6 -d '\"' --output-delimiter=\" \" | sed \"s/ Controller.*//\"", "r");
+#else
+			gpu = popen("system_profiler SPDisplaysDataType | awk -F ': ' '/Chipset Model: /{ print $2 }'", "r");
+#endif
+		}
 		else
 			gpu = popen("getprop ro.hardware.vulkan 2> /dev/null", "r");
 	}
@@ -690,15 +698,16 @@ void print_ascii()
 	}
 
 	else if (strcmp(version_name, "macos") == 0)
-    {
-	    printf("\033[1E\033[3C%s    .:`\n"
-               "    .--``--.\n"
-               "%s  ww  OwO   w\n"
-               "%s w         w\n"
-               "%s w         w\n"
-               "%s  w         w\n"
-               "   www_-_www\n\n", GREEN, YELLOW, RED, PINK, BLUE);
-    }
+	{
+		printf("\033[1E\033[3C%s    .:`\n"
+			   "    .--``--.\n"
+			   "%s  ww  OwO   w\n"
+			   "%s w         w\n"
+			   "%s w         w\n"
+			   "%s  w         w\n"
+			   "   www_-_www\n\n",
+			   GREEN, YELLOW, RED, PINK, BLUE);
+	}
 
 	// everything else
 	else
