@@ -283,8 +283,9 @@ void print_info()
 		printf("\033[18C%s%sWAM         %s%i MB/%i MB\n",
 			   NORMAL, BOLD, NORMAL, (ram_used), ram_total);
 	if (show_resolution)
-		printf("\033[18C%s%sRESOLUTION%s  %dx%d\n",
-			   NORMAL, BOLD, NORMAL, screen_width, screen_height);
+		if (screen_width != 0 || screen_height != 0)
+			printf("\033[18C%s%sRESOLUTION%s  %dx%d\n",
+					NORMAL, BOLD, NORMAL, screen_width, screen_height);
 	if (show_shell)
 		printf("\033[18C%s%sSHELL       %s%s\n",
 			   NORMAL, BOLD, NORMAL, shell);
@@ -292,6 +293,7 @@ void print_info()
 		printf("\033[18C%s%sPKGS        %s%s%d %s\n",
 			   NORMAL, BOLD, NORMAL, NORMAL, pkgs, pkgman_name);
 	if (show_uptime)
+=======
 #ifndef __APPLE__
 		printf("\033[18C%s%sUWUPTIME %s" /*"%lid, "*/ "%lih, %lim\n",
 			   NORMAL, BOLD, NORMAL, /*sys.uptime/60/60/24,*/ sys.uptime / 60 / 60, sys.uptime / 60 % 60);
