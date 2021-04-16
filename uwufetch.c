@@ -19,7 +19,12 @@
 #include <string.h>
 #include <unistd.h>
 #include <getopt.h>
+#ifdef __APPLE__
+#include <sys/sysctl.h>
+#include <time.h>
+#else
 #include <sys/sysinfo.h>
+#endif
 #include <sys/utsname.h>
 #include <sys/ioctl.h>
 
@@ -36,6 +41,22 @@
 #define WHITE "\x1b[37m"
 #define PINK "\x1b[38;5;201m"
 #define LPINK "\x1b[38;5;213m"
+#ifdef __APPLE__
+// buffers where data fetched from sysctl are stored
+// CPU
+#define CPUBUFFERLEN 128
+
+char cpu_buffer[CPUBUFFERLEN];
+size_t cpu_buffer_len = CPUBUFFERLEN;
+
+// Installed RAM
+int64_t mem_buffer = 0;
+size_t mem_buffer_len = sizeof(mem_buffer);
+
+// uptime
+struct timeval time_buffer;
+size_t time_buffer_len = sizeof(time_buffer);
+#endif
 
 struct package_manager
 {
@@ -43,7 +64,9 @@ struct package_manager
 	char pkgman_name[16];	  // name of the package manager
 };
 struct utsname sys_var;
+#ifndef __APPLE__
 struct sysinfo sys;
+#endif
 struct winsize win;
 int ram_total, ram_used = 0;
 // initialise the variables to store data, gpu array can hold up to 8 gpus
@@ -184,12 +207,14 @@ int pkgman()
 	struct package_manager pkgmans[] = {
 		{"apt list --installed 2> /dev/null | wc -l", "(apt)"},
 		{"apk info 2> /dev/null | wc -l", "(apk)"},
+		{"brew list --formulae 2> /dev/null | wc -l", "(brew)"},
 		{"dnf list installed 2> /dev/null | wc -l", "(dnf)"},
 		{"qlist -I 2> /dev/null | wc -l", "(emerge)"},
 		{"flatpak list 2> /dev/null | wc -l", "(flatpack)"},
 		{"guix package --list-installed 2> /dev/null | wc -l", "(guix)"},
 		{"nix-store -q --requisites /run/current-sys_vartem/sw 2> /dev/null | wc -l", "(nix)"},
 		{"pacman -Qq 2> /dev/null | wc -l", "(pacman)"},
+		{"port installed 2> /dev/null | tail -n +2 | wc -l", "(port)"},
 		{"rpm -qa --last 2> /dev/null | wc -l", "(rpm)"},
 		{"xbps-query -l 2> /dev/null | wc -l", "(xbps)"},
 		{"zypper se --installed-only 2> /dev/null | wc -l", "(zypper)"}};
@@ -213,6 +238,19 @@ int pkgman()
 	}
 	return total;
 }
+
+#ifdef __APPLE__
+int uptime_mac()
+{
+	int mib[2] = {CTL_KERN, KERN_BOOTTIME};
+	sysctl(mib, 2, &time_buffer, &time_buffer_len, NULL, 0);
+
+	time_t bsec = time_buffer.tv_sec;
+	time_t csec = time(NULL);
+
+	return difftime(csec, bsec);
+}
+#endif
 
 void print_info()
 {
@@ -255,12 +293,18 @@ void print_info()
 		printf("\033[18C%s%sPKGS        %s%s%d %s\n",
 			   NORMAL, BOLD, NORMAL, NORMAL, pkgs, pkgman_name);
 	if (show_uptime)
-		if (sys.uptime/3600 < 24)
+=======
+#ifndef __APPLE__
+		printf("\033[18C%s%sUWUPTIME %s" /*"%lid, "*/ "%lih, %lim\n",
+			   NORMAL, BOLD, NORMAL, /*sys.uptime/60/60/24,*/ sys.uptime / 60 / 60, sys.uptime / 60 % 60);
+#else
+		if (sys.uptime / 3600 < 24)
 			printf("\033[18C%s%sUWUPTIME    %s%lih, %lim\n",
-			   NORMAL, BOLD, NORMAL, sys.uptime/3600, sys.uptime/60%60);
+				   NORMAL, BOLD, NORMAL, sys.uptime / 3600, sys.uptime / 60 % 60);
 		else
 			printf("\033[18C%s%sUWUPTIME    %s%lid, %lih, %lim\n",
-			   NORMAL, BOLD, NORMAL, sys.uptime/86400, sys.uptime/3600%24, sys.uptime/60%60);
+				   NORMAL, BOLD, NORMAL, sys.uptime / 86400, sys.uptime / 3600 % 24, sys.uptime / 60 % 60);
+#endif
 	if (show_colors)
 		printf("\033[18C%s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n",
 			   BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, NORMAL);
@@ -289,9 +333,10 @@ void get_info()
 		fclose(os_release);
 	}
 	else
-	{ // try for android vars, or unknown system
+	{ // try for android vars, next for macOS var, or unknown system
 		DIR *system_app = opendir("/system/app/");
 		DIR *system_priv_app = opendir("/system/priv-app/");
+		DIR *library = opendir("/Library/");
 		if (system_app && system_priv_app)
 		{ // android
 			closedir(system_app);
@@ -305,6 +350,16 @@ void get_info()
 			while (fgets(line, sizeof(line), cpuinfo))
 				if (sscanf(line, "Hardware        : %[^\n]", cpu_model))
 					break;
+		}
+		else if (library) // macOS
+		{
+			closedir(library);
+#ifdef __APPLE__
+			sysctlbyname("machdep.cpu.brand_string", &cpu_buffer, &cpu_buffer_len, NULL, 0);
+
+			sprintf(version_name, "macos");
+			sprintf(cpu_model, "%s", cpu_buffer);
+#endif
 		}
 		else
 			sprintf(version_name, "unknown");
@@ -320,13 +375,14 @@ void get_info()
 
 	// system resources
 	uname(&sys_var);
-	sysinfo(&sys);	// somehow this function has to be called again in print_info()
+	sysinfo(&sys); // somehow this function has to be called again in print_info()
 
 	truncate_name(sys_var.release);
 	sprintf(kernel, "%s %s %s", sys_var.sysname, sys_var.release, sys_var.machine);
 	truncate_name(kernel);
 
 	// ram
+#ifndef __APPLE__
 	FILE *meminfo;
 
 	meminfo = popen("LANG=EN_us free 2> /dev/null", "r");
@@ -346,6 +402,37 @@ void get_info()
 		}
 	}
 	fclose(meminfo);
+#else
+	// Used
+	FILE *mem_wired_fp, *mem_active_fp, *mem_compressed_fp;
+	mem_wired_fp = popen("vm_stat | awk '/wired/ { printf $4 }' | cut -d '.' -f 1", "r");
+	mem_active_fp = popen("vm_stat | awk '/active/ { printf $3 }' | cut -d '.' -f 1", "r");
+	mem_compressed_fp = popen("vm_stat | awk '/occupied/ { printf $5 }' | cut -d '.' -f 1", "r");
+	char mem_wired_ch[2137], mem_active_ch[2137], mem_compressed_ch[2137];
+	while (fgets(mem_wired_ch, sizeof(mem_wired_ch), mem_wired_fp) != NULL)
+	{
+		while (fgets(mem_active_ch, sizeof(mem_active_ch), mem_active_fp) != NULL)
+		{
+			while (fgets(mem_compressed_ch, sizeof(mem_compressed_ch), mem_compressed_fp) != NULL)
+			{
+			}
+		}
+	}
+
+	pclose(mem_wired_fp);
+	pclose(mem_active_fp);
+	pclose(mem_compressed_fp);
+
+	int mem_wired = atoi(mem_wired_ch);
+	int mem_active = atoi(mem_active_ch);
+	int mem_compressed = atoi(mem_compressed_ch);
+
+	// Total
+	sysctlbyname("hw.memsize", &mem_buffer, &mem_buffer_len, NULL, 0);
+
+	ram_used = ((mem_wired + mem_active + mem_compressed) * 4 / 1024);
+	ram_total = mem_buffer / 1024 / 1024;
+#endif
 
 	/* ---------- gpu ---------- */
 	int gpun = 0;				// number of the gpu that the program is searching for to put in the array
@@ -362,7 +449,13 @@ void get_info()
 	{
 		// get gpus with lspci command
 		if (strcmp(version_name, "android") != 0)
+		{
+#ifndef __APPLE__
 			gpu = popen("lspci -mm 2> /dev/null | grep \"VGA\" | cut --fields=4,6 -d '\"' --output-delimiter=\" \" | sed \"s/ Controller.*//\"", "r");
+#else
+			gpu = popen("system_profiler SPDisplaysDataType | awk -F ': ' '/Chipset Model: /{ print $2 }'", "r");
+#endif
+		}
 		else
 			gpu = popen("getprop ro.hardware.vulkan 2> /dev/null", "r");
 	}
@@ -606,6 +699,18 @@ void print_ascii()
 			   YELLOW, RED, YELLOW, WHITE, YELLOW, LPINK, WHITE, LPINK, YELLOW);
 	}
 
+	else if (strcmp(version_name, "macos") == 0)
+	{
+		printf("\033[1E\033[3C%s    .:`\n"
+			   "    .--``--.\n"
+			   "%s  ww  OwO   w\n"
+			   "%s w         w\n"
+			   "%s w         w\n"
+			   "%s  w         w\n"
+			   "   www_-_www\n\n",
+			   GREEN, YELLOW, RED, PINK, BLUE);
+	}
+
 	// everything else
 	else
 		printf("\033[0E\033[2C%s._.--._.\n"
@@ -694,6 +799,8 @@ void uwu_name()
 	// BSD
 	else STRING_TO_UWU("freebsd", "FweeBSD");
 	else STRING_TO_UWU("openbsd", "OwOpenBSD");
+
+	else STRING_TO_UWU("macos", "macOwOS");
 
 	else
 	{
