@@ -71,6 +71,7 @@ struct winsize win;
 int ram_total, ram_used = 0;
 // initialise the variables to store data, gpu array can hold up to 8 gpus
 int pkgs, target_width = 0;
+long uptime = 0;
 // all flags available
 int ascii_image_flag = 0,
 	screen_width = 0,
@@ -293,17 +294,17 @@ void print_info()
 		printf("\033[18C%s%sPKGS        %s%s%d %s\n",
 			   NORMAL, BOLD, NORMAL, NORMAL, pkgs, pkgman_name);
 	if (show_uptime)
-#ifndef __APPLE__
-		printf("\033[18C%s%sUWUPTIME %s" /*"%lid, "*/ "%lih, %lim\n",
-			   NORMAL, BOLD, NORMAL, /*sys.uptime/60/60/24,*/ sys.uptime / 60 / 60, sys.uptime / 60 % 60);
-#else
-		if (sys.uptime / 3600 < 24)
+        #ifdef __APPLE__
+            uptime = uptime_mac();
+        #else
+	        uptime = sys.uptime;
+        #endif
+		if (uptime / 3600 < 24)
 			printf("\033[18C%s%sUWUPTIME    %s%lih, %lim\n",
-				   NORMAL, BOLD, NORMAL, sys.uptime / 3600, sys.uptime / 60 % 60);
+				   NORMAL, BOLD, NORMAL, uptime / 3600, uptime / 60 % 60);
 		else
 			printf("\033[18C%s%sUWUPTIME    %s%lid, %lih, %lim\n",
-				   NORMAL, BOLD, NORMAL, sys.uptime / 86400, sys.uptime / 3600 % 24, sys.uptime / 60 % 60);
-#endif
+				   NORMAL, BOLD, NORMAL, uptime / 86400, uptime / 3600 % 24, uptime / 60 % 60);
 	if (show_colors)
 		printf("\033[18C%s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n",
 			   BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, NORMAL);
@@ -374,7 +375,9 @@ void get_info()
 
 	// system resources
 	uname(&sys_var);
+#ifndef __APPLE__
 	sysinfo(&sys); // somehow this function has to be called again in print_info()
+#endif
 
 	truncate_name(sys_var.release);
 	sprintf(kernel, "%s %s %s", sys_var.sysname, sys_var.release, sys_var.machine);
