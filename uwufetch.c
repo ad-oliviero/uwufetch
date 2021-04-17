@@ -211,7 +211,7 @@ int pkgman()
 		{"brew list --formulae 2> /dev/null | wc -l", "(brew)"},
 		{"dnf list installed 2> /dev/null | wc -l", "(dnf)"},
 		{"qlist -I 2> /dev/null | wc -l", "(emerge)"},
-		{"flatpak list 2> /dev/null | wc -l", "(flatpack)"},
+		{"flatpak list 2> /dev/null | wc -l", "(flatpak)"},
 		{"guix package --list-installed 2> /dev/null | wc -l", "(guix)"},
 		{"nix-store -q --requisites /run/current-sys_vartem/sw 2> /dev/null | wc -l", "(nix)"},
 		{"pacman -Qq 2> /dev/null | wc -l", "(pacman)"},
