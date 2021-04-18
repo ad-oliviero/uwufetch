@@ -20,6 +20,8 @@ endeavOwO, KDE NeOwOn, nixOwOs, Swackwawe, sOwOlus; Plus FweeBSD, OwOpenBSD and 
 
 [lshw](https://github.com/lyonel/lshw) to get gpu info.
 
+[json-c](https://github.com/json-c/json-c) to parse the json config.
+
 ##### Via package manager
 
 Right now, the package is only available on the AUR:

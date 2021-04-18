@@ -41,51 +41,57 @@ prints a list of all supported distributions
 
 The config file is located in $HOME/.config/uwufetch/config (you need to create it), but you can change the path by using the `--config` option.
 
-## OPTIONS
+## EXAMPLE
+```json
+{
+	"distribution": "debian",
+	"image": "/home/user/Pictures/debian.png",
+	"ascii": false,
+	"user": true,
+	"os": true,
+	"kernel": true,
+	"cpu": true,
+	"gpu": true,
+	"ram": true,
+	"resolution": true,
+	"shell": true,
+	"pkgs": true,
+	"uptime": true,
+	"colors": true
+}
+```
 
-distribution=name\ \ \ \ \ # use it to change displayed distribution\
-image=/path/to/image\ \ \ # enable images (leave blank), or use custom image path\
-nouser\ \ \ \ \ \ \ \ \ \ \ # disable username and hostname\
-noos\ \ \ \ \ \ \ \ \ \ \ # disable os\
-nokernel\ \ \ \ \ \ \ \ \ # disable kernel\
-nocpu\ \ \ \ \ \ \ \ \ \ \ # disable cpu\
-nogpu\ \ \ \ \ \ \ \ \ \ \ # disable gpu\
-noram\ \ \ \ \ \ \ \ \ \ \ # disable ram\
-noshell\ \ \ \ \ \ \ \ \ \ # disable shell\
-nopkgs\ \ \ \ \ \ \ \ \ \ \ # disable pkgs\
-nouptime\ \ \ \ \ \ \ \ \ # disable uptime\
-nocolors\ \ \ \ \ \ \ \ \ # disable colors
 
 # SUPPORTED DISTRIBUTIONS
 
-Distribution name\ \ \ \ \ -d option
+Distribution name\	\	\	\	\ -d option
 
-Nyalpine\ \ \ \ \ \ \ \ \ alpine\
-Nyarch Linuwu\ \ \ \ \ \ \ arch\
-Nyartix Linuwu\ \ \ \ \ \ \ artix\
-Debinyan\ \ \ \ \ \ \ \ \ debian\
-Fedowa\ \ \ \ \ \ \ \ \ \ \ fedora\
-GentOwO\ \ \ \ \ \ \ \ \ \ gentoo\
-GnUwU gUwUix\ \ \ \ \ \ \ guix\
-Miwint\ \ \ \ \ \ \ \ \ \ \ linuxmint\
-Myanjawo\ \ \ \ \ \ \ \ \ manjaro\
-Myanjawo AWM\ \ \ \ \ \ \ \\"manjaro-arm\\"\
-OwOpenSUSE\ \ \ \ \ \ \ \ \ \\"opensuse-leap\\"\
-Pop OwOs\ \ \ \ \ \ \ \ \ pop\
-RaspNyan\ \ \ \ \ \ \ \ \ raspbian\
-UwUntu\ \ \ \ \ \ \ \ \ \ \ ubuntu\
-OwOid\ \ \ \ \ \ \ \ \ \ \ \\"void\\"\
-Nyandroid\ \ \ \ \ \ \ \ \ android\
-Unknown (tux logo)\ \ \ \ \ unknown
+Nyalpine\	\	\	\	\	\	\	\	\	alpine\
+Nyarch Linuwu\	\	\	\	\	\	\ arch\
+Nyartix Linuwu\	\	\	\	\	\	\ artix\
+Debinyan\	\	\	\	\	\	\	\	\	debian\
+Fedowa\	\	\	\	\	\	\	\	\	\	\ fedora\
+GentOwO\	\	\	\	\	\	\	\	\	\ gentoo\
+GnUwU gUwUix\	\	\	\	\	\	\	guix\
+Miwint\	\	\	\	\	\	\	\	\	\	\ linuxmint\
+Myanjawo\	\	\	\	\	\	\	\	\	manjaro\
+Myanjawo AWM\	\	\	\	\	\	\	\\"manjaro-arm\\"\
+OwOpenSUSE\	\	\	\	\	\	\	\	\ \\"opensuse-leap\\"\
+Pop OwOs\	\	\	\	\	\	\	\	\	pop\
+RaspNyan\	\	\	\	\	\	\	\	\	raspbian\
+UwUntu\	\	\	\	\	\	\	\	\	\	\ ubuntu\
+OwOid\	\	\	\	\	\	\	\	\	\	\ \\"void\\"\
+Nyandroid\	\	\	\	\	\	\	\	\ android\
+Unknown (tux logo)\	\	\	\	\ unknown
 
 --image/ascii only distributions--\
-endeavOwO\ \ \ \ \ \ \ \ \ endeavour\
-KDE NeOwOn\ \ \ \ \ \ \ \ \ neon\
-nixOwOs\ \ \ \ \ \ \ \ \ \ nixos\
-Swackwawe\ \ \ \ \ \ \ \ \ slackware\
-sOwOlus\ \ \ \ \ \ \ \ \ \ solus\
-FweeBSD\ \ \ \ \ \ \ \ \ \ freebsd\
-OwOpenBSD\ \ \ \ \ \ \ \ \ openbsd
+endeavOwO\	\	\	\	\	\	\	\	\ endeavour\
+KDE NeOwOn\	\	\	\	\	\	\	\	\ neon\
+nixOwOs\	\	\	\	\	\	\	\	\	\ nixos\
+Swackwawe\	\	\	\	\	\	\	\	\ slackware\
+sOwOlus\	\	\	\	\	\	\	\	\	\ solus\
+FweeBSD\	\	\	\	\	\	\	\	\	\ freebsd\
+OwOpenBSD\	\	\	\	\	\	\	\	\ openbsd
 
 # DESCRIPTION
 
@@ -94,18 +100,20 @@ and prints them in the terminal in an UwU way, with and UwU ascii logo or image.
 
 # EXAMPLES
 
-uwufetch -d arch\ \ \ \ \ \ \ \ \ \ # prints arch logo\
-uwufetch -\-custom some_image.png\ \ # prints custom image (does not need full path)\
-ueufetch -i -d artix\ \ \ \ \ \ \ \ # prints artix image
+uwufetch -d arch\	\	\	\	\	\	\	\	\	\	# prints arch logo\
+uwufetch -\-custom some_image.png\	\	# prints custom image (does not need full path)\
+ueufetch -i -d artix\	\	\	\	\	\	\	\	# prints artix image
 
 # DEPENDANCES
 
-lshw\ \ better gpu info\
-viu\ \ \ print images instead of ascii logo\
-kitty\ \ better image viewing
+json-c\	\	\ to parse the config file\
+lshw\	\	\	better gpu info\
+viu\	\	\	\ print images instead of ascii logo\
+kitty\	\	\ better image viewing
 
 All of this are optional, there is no necessary dependancy.
 
 # LICENSE AND COPYRIGTH
 
-uwufetch is provided under the GPL3 license, for copyright info read https://github.com/TheDarkBug/uwufetch/tree/main/res/COPYRIGHT.md.
+uwufetch is provided under the GPL3 license, for copyright info read\
+https://github.com/TheDarkBug/uwufetch/tree/main/res/COPYRIGHT.md.
