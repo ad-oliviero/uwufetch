@@ -91,7 +91,6 @@ char user[32], host[256], shell[64], kernel[256], version_name[64], cpu_model[25
 
 // functions definitions, to use them in main()
 int pkgman();
-void parse_json();
 void parse_config();
 void get_info();
 void list();
@@ -146,7 +145,7 @@ int main(int argc, char *argv[])
 			break;
 		}
 	}
-	parse_json();
+	parse_config();
 	if ((argc == 1 && ascii_image_flag == 0) || (argc > 1 && ascii_image_flag == 0))
 		print_ascii();
 	else if (ascii_image_flag)
@@ -155,22 +154,22 @@ int main(int argc, char *argv[])
 	print_info();
 }
 
-void parse_json()
+void parse_config()
 { // using json-c library to parse the config
 	// allocating all necessary variables
 	char buffer[1024];
 	char *homedir = getenv("HOME");
-	config_directory = "./test.json";
 	struct json_object *parsed_json, *distributon, *image, *ascii, *user, *os, *kernel, *cpu, *gpu, *ram, *resolution, *shell, *pkgs, *uptime, *colors;
 
 	// opening and reading the config file
 	FILE *config;
 	if (config_directory == NULL)
-		config = fopen(strcat(homedir, "/.config/uwufetch/config"), "r");
+		config = fopen(strcat(homedir, "/.config/uwufetch/config.json"), "r");
 	else
 		config = fopen(config_directory, "r");
 	if (config == NULL)
 		return;
+
 	fread(buffer, 1024, 1, config);
 	fclose(config);
 
@@ -191,11 +190,12 @@ void parse_json()
 	json_object_object_get_ex(parsed_json, "uptime", &uptime);
 	json_object_object_get_ex(parsed_json, "colors", &colors);
 
-	sprintf(version_name, "%s", json_object_get_string(distributon));
+	if (json_object_get_string(distributon) != NULL)
+		sprintf(version_name, "%s", json_object_get_string(distributon));
 	if (sprintf(image_name, "%s", json_object_get_string(image)) == 0)
 		ascii_image_flag = 1;
 	else // reset image_name var to avoid errors
-		sprintf(image_name, "");
+		sprintf(image_name, "%i", 0x0);
 	ascii_image_flag = !json_object_get_boolean(ascii);
 	show_user_info = json_object_get_boolean(user);
 	show_os = json_object_get_boolean(os);
