@@ -10,7 +10,7 @@ Nyalpine, Nyarch Linuwu, Nyartix Linuwu, Debinyan, Fedowa, GentOwO, GnUwU gUwUix
 
 #### Partial support (Either no Ascii art, or no image is provided)
 
-endeavOwO, KDE NeOwOn, nixOwOs, Swackwawe, sOwOlus; Plus FweeBSD, OwOpenBSD and macOwOS
+endOwO, KDE NeOwOn, nixOwOs, Swackwawe, sOwOlus; Plus FweeBSD, OwOpenBSD and macOwOS
 
 ## Building and installation
 
@@ -19,8 +19,6 @@ endeavOwO, KDE NeOwOn, nixOwOs, Swackwawe, sOwOlus; Plus FweeBSD, OwOpenBSD and 
 [viu](https://github.com/atanunq/viu) to use images instead of ascii art.
 
 [lshw](https://github.com/lyonel/lshw) to get gpu info.
-
-[json-c](https://github.com/json-c/json-c) to parse the json config.
 
 ##### Via package manager
 

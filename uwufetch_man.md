@@ -39,27 +39,23 @@ prints a list of all supported distributions
 
 # CONFIG FILE
 
-The config file is located in $HOME/.config/uwufetch/config.json (you need to create it), but you can change the path by using the `--config` option.
+The config file is located in $HOME/.config/uwufetch/config (you need to create it), but you can change the path by using the `--config` option.
 
-## EXAMPLE
-```json
-{
-	"distribution": "debian",
-	"image": "/home/user/Pictures/debian.png",
-	"ascii": false,
-	"user": true,
-	"os": true,
-	"kernel": true,
-	"cpu": true,
-	"gpu": true,
-	"ram": true,
-	"resolution": true,
-	"shell": true,
-	"pkgs": true,
-	"uptime": true,
-	"colors": true
-}
-```
+## EXAMPLE:
+distro=arch\
+image="~/Pictures/picture.png"\
+ascii=false\
+user=true\
+os=true\
+kernel=true\
+cpu=true\
+gpu=false\
+ram=true\
+resolution=true\
+shell=true\
+pkgs=true\
+uptime=true\
+colors=true
 
 
 # SUPPORTED DISTRIBUTIONS

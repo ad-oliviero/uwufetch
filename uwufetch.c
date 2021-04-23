@@ -19,7 +19,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <getopt.h>
-#include <json-c/json.h>
 #ifdef __APPLE__
 #include <sys/sysctl.h>
 #include <time.h>
@@ -73,7 +72,7 @@ struct winsize win;
 int target_width = 0, screen_width = 0, screen_height = 0, ram_total, ram_used = 0, pkgs = 0;
 long uptime = 0;
 // all flags available
-int ascii_image_flag = 0,
+int ascii_image_flag = 0, // when (0) ascii is printed, when (1) image is printed
 	show_user_info = 1,
 	show_os = 1,
 	show_kernel = 1,
@@ -85,6 +84,7 @@ int ascii_image_flag = 0,
 	show_pkgs = 1,
 	show_uptime = 1,
 	show_colors = 1;
+
 char user[32], host[256], shell[64], kernel[256], version_name[64], cpu_model[256],
 	gpu_model[8][256] = {{'0'}, {'0'}, {'0'}, {'0'}, {'0'}, {'0'}, {'0'}, {'0'}},
 	pkgman_name[64], image_name[128], *config_directory = NULL;
@@ -145,69 +145,73 @@ int main(int argc, char *argv[])
 			break;
 		}
 	}
-	parse_config();
+	if (argc == 1)
+		parse_config();
 	if ((argc == 1 && ascii_image_flag == 0) || (argc > 1 && ascii_image_flag == 0))
 		print_ascii();
-	else if (ascii_image_flag)
+	else if (ascii_image_flag == 1)
 		print_image();
 	uwu_name();
 	print_info();
 }
 
 void parse_config()
-{ // using json-c library to parse the config
-	// allocating all necessary variables
-	char buffer[1024];
+{
+	char line[256];
 	char *homedir = getenv("HOME");
-	struct json_object *parsed_json, *distributon, *image, *ascii, *user, *os, *kernel, *cpu, *gpu, *ram, *resolution, *shell, *pkgs, *uptime, *colors;
 
 	// opening and reading the config file
 	FILE *config;
 	if (config_directory == NULL)
-		config = fopen(strcat(homedir, "/.config/uwufetch/config.json"), "r");
+		config = fopen(strcat(homedir, "/.config/uwufetch/config"), "r");
 	else
 		config = fopen(config_directory, "r");
 	if (config == NULL)
 		return;
 
-	fread(buffer, 1024, 1, config);
+	while (fgets(line, sizeof(line), config))
+	{
+		char buffer[128] = {0};
+
+		sscanf(line, "distro=%s", version_name);
+		if (sscanf(line, "ascii=%[truefalse]", buffer))
+			ascii_image_flag = !strcmp(buffer, "false");
+		if (sscanf(line, "image=\"%[^\"]\"", image_name))
+		{
+			if (image_name[0] == '~')
+			{ // image name with ~ does not work
+				memmove(&image_name[0], &image_name[1], strlen(image_name));
+				char temp[128] = "/home/";
+				strcat(temp, user);
+				strcat(temp, image_name);
+				sprintf(image_name, "%s", temp);
+			}
+			ascii_image_flag = 1;
+		}
+		if (sscanf(line, "user=%[truefalse]", buffer))
+			show_user_info = !strcmp(buffer, "true");
+		if (sscanf(line, "os=%[truefalse]", buffer))
+			show_os = strcmp(buffer, "false");
+		if (sscanf(line, "kernel=%[truefalse]", buffer))
+			show_kernel = strcmp(buffer, "false");
+		if (sscanf(line, "cpu=%[truefalse]", buffer))
+			show_cpu = strcmp(buffer, "false");
+		if (sscanf(line, "gpu=%[truefalse]", buffer))
+			show_gpu = strcmp(buffer, "false");
+		if (sscanf(line, "ram=%[truefalse]", buffer))
+			show_ram = strcmp(buffer, "false");
+		if (sscanf(line, "resolution=%[truefalse]", buffer))
+			show_resolution = strcmp(buffer, "false");
+		if (sscanf(line, "shell=%[truefalse]", buffer))
+			show_shell = strcmp(buffer, "false");
+		if (sscanf(line, "pkgs=%[truefalse]", buffer))
+			show_pkgs = strcmp(buffer, "false");
+		if (sscanf(line, "uptime=%[truefalse]", buffer))
+			show_uptime = strcmp(buffer, "false");
+		if (sscanf(line, "colors=%[truefalse]", buffer))
+			show_colors = strcmp(buffer, "false");
+	}
 	fclose(config);
-
-	// parsing json data
-	parsed_json = json_tokener_parse(buffer);
-	json_object_object_get_ex(parsed_json, "distribution", &distributon);
-	json_object_object_get_ex(parsed_json, "image", &image);
-	json_object_object_get_ex(parsed_json, "ascii", &ascii);
-	json_object_object_get_ex(parsed_json, "user", &user);
-	json_object_object_get_ex(parsed_json, "os", &os);
-	json_object_object_get_ex(parsed_json, "kernel", &kernel);
-	json_object_object_get_ex(parsed_json, "cpu", &cpu);
-	json_object_object_get_ex(parsed_json, "gpu", &gpu);
-	json_object_object_get_ex(parsed_json, "ram", &ram);
-	json_object_object_get_ex(parsed_json, "resolution", &resolution);
-	json_object_object_get_ex(parsed_json, "shell", &shell);
-	json_object_object_get_ex(parsed_json, "pkgs", &pkgs);
-	json_object_object_get_ex(parsed_json, "uptime", &uptime);
-	json_object_object_get_ex(parsed_json, "colors", &colors);
-
-	if (json_object_get_string(distributon) != NULL)
-		sprintf(version_name, "%s", json_object_get_string(distributon));
-	if (sprintf(image_name, "%s", json_object_get_string(image)) == 0)
-		ascii_image_flag = 1;
-	else // reset image_name var to avoid errors
-		sprintf(image_name, "%i", 0x0);
-	ascii_image_flag = !json_object_get_boolean(ascii);
-	show_user_info = json_object_get_boolean(user);
-	show_os = json_object_get_boolean(os);
-	show_kernel = json_object_get_boolean(kernel);
-	show_cpu = json_object_get_boolean(cpu);
-	show_gpu = json_object_get_boolean(gpu);
-	show_ram = json_object_get_boolean(ram);
-	show_resolution = json_object_get_boolean(resolution);
-	show_shell = json_object_get_boolean(shell);
-	show_pkgs = json_object_get_boolean(pkgs);
-	show_uptime = json_object_get_boolean(uptime);
-	show_colors = json_object_get_boolean(colors);
 }
 
 int pkgman()

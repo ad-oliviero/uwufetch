@@ -2,19 +2,16 @@ NAME			= uwufetch
 FILES			= uwufetch.c
 CFLAGS			= -O3
 CFLAGS_DEBUG	= -Wall -Wextra
-LIBS			= -ljson-c
 PREFIX			= /usr/bin
 CC				= cc
 MAN_COMPILER	= pandoc
 
 build: $(FILES)
-	$(CC) $(CFLAGS) $(LIBS) -o $(NAME) $(FILES)
-	$(MAN_COMPILER) $(NAME)_man.md -st man -o $(NAME).1
-	@gzip $(NAME).1
+	$(CC) $(CFLAGS) -o $(NAME) $(FILES)
 
 debug:
 	@clear
-	$(CC) $(CFLAGS_DEBUG) $(LIBS) -o $(NAME) $(FILES)
+	$(CC) $(CFLAGS_DEBUG) -o $(NAME) $(FILES)
 	./uwufetch
 
 install:
@@ -36,6 +33,10 @@ termux: build
 termux_uninstall:
 	rm -rf $(DESTDIR)/data/data/com.termux/files$(PREFIX)/$(NAME)
 	rm -rf $(DESTDIR)/data/data/com.termux/files/usr/lib/uwufetch/
+
+man:
+	$(MAN_COMPILER) $(NAME)_man.md -st man -o $(NAME).1
+	@gzip $(NAME).1
 
 man_debug:
 	$(MAN_COMPILER) $(NAME)_man.md -st man -o $(NAME).1
