@@ -1,4 +1,4 @@
-% UWUFETCH(1) uwufetch 1.2
+% UWUFETCH(1) uwufetch 1.4
 % TheDarkBug
 % April 2021
 
@@ -91,7 +91,7 @@ OwOpenBSD\	\	\	\	\	\	\	\	\ openbsd
 
 # DESCRIPTION
 
-Uwufetch is a program inspired by neofetch and ufetch, that takes system informations\
+UwUfetch is a program inspired by neofetch and ufetch, that takes system informations\
 and prints them in the terminal in an UwU way, with and UwU ascii logo or image.
 
 # EXAMPLES
@@ -102,7 +102,6 @@ ueufetch -i -d artix\	\	\	\	\	\	\	\	# prints artix image
 
 # DEPENDANCES
 
-json-c\	\	\ to parse the config file\
 lshw\	\	\	better gpu info\
 viu\	\	\	\ print images instead of ascii logo\
 kitty\	\	\ better image viewing
