@@ -533,7 +533,7 @@ void print_ascii()
 	{
 		printf("\033[2E\033[4C%s.  .___.\n"
 			   "   / \\/ \\  /\n"
-			   "  /OwO\\ɛU\\/   __\n"
+			   "  /O\u03c9O\\ɛU\\/   __\n"
 			   " /     \\  \\__/  \\\n"
 			   "/       \\  \\\n\n\n",
 			   BLUE);
@@ -543,7 +543,7 @@ void print_ascii()
 		printf("\033[1E\033[8C%s/\\\n"
 			   "       /  \\\n"
 			   "      /\\   \\\n"
-			   "     / > w <\\\n"
+			   "     / > \u03c9 <\\\n"
 			   "    /   __   \\\n"
 			   "   / __|  |__-\\\n"
 			   "  /_-''    ''-_\\\n\n",
@@ -564,18 +564,29 @@ void print_ascii()
 	{
 		printf("\033[1E\033[6C%s______\n"
 			   "     /  ___ \\\n"
-			   "    |  / OwO |\n"
+			   "    |  / O\u03c9O |\n"
 			   "    |  \\____-\n"
 			   "    -_\n"
 			   "      --_\n\n\n",
 			   RED);
+	}
+	else if (strcmp(version_name, "endeavour") == 0)
+	{
+		printf("\033[2E\033[8C%s/\\\n"
+			   "       %s/%s/ \\%s\\\n"
+			   "      %s/%s/>\u03c9<\\%s\\\n"
+			   "     %s/%s/     \\ %s\\\n"
+			   "   %s/ %s/      _) %s) \n"
+			   "  %s/_%s/___-- %s___-\n"
+			   "   /____---\n\n",
+			   MAGENTA, YELLOW, MAGENTA, BLUE, YELLOW, MAGENTA, BLUE, YELLOW, MAGENTA, BLUE, YELLOW, MAGENTA, BLUE, YELLOW, MAGENTA, BLUE);
 	}
 	else if (strcmp(version_name, "fedora") == 0)
 	{
 		printf("\033[1E\033[8C%s_____\n"
 			   "       /   __)%s\\\n"
 			   "     %s> %s|  / %s<%s\\ \\\n"
-			   "    __%s_| %sw%s|_%s_/ /\n"
+			   "    __%s_| %s\u03c9%s|_%s_/ /\n"
 			   "   / %s(_    _)%s_/\n"
 			   "  / /  %s|  |\n"
 			   "  %s\\ \\%s__/  |\n"
@@ -586,7 +597,7 @@ void print_ascii()
 	{
 		printf("\033[1E\033[3C%s_-----_\n"
 			   "  (       \\\n"
-			   "  \\   OwO   \\\n"
+			   "  \\   O\u03c9O   \\\n"
 			   "%s   \\         )\n"
 			   "   /       _/\n"
 			   "  (      _-\n"
@@ -602,22 +613,11 @@ void print_ascii()
 			   "        \u00af\n\n",
 			   WHITE, YELLOW, WHITE, YELLOW, WHITE, YELLOW, WHITE, YELLOW, WHITE, YELLOW, WHITE, YELLOW);
 	}
-	else if (strcmp(version_name, "manjaro") == 0)
+	else if (strcmp(version_name, "manjaro") == 0 || strcmp(version_name, "\"manjaro-arm\"") == 0)
 	{
 		printf("\033[0E\033[1C\u25b3       \u25b3   \u25e0\u25e0\u25e0\u25e0\n"
 			   " \e[0;42m          \e[0m  \e[0;42m    \e[0m\n"
-			   " \e[0;42m \e[0m\e[0;42m\e[1;30m > w < \e[0m\e[0;42m  \e[0m  \e[0;42m    \e[0m\n"
-			   " \e[0;42m    \e[0m        \e[0;42m    \e[0m\n"
-			   " \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n"
-			   " \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n"
-			   " \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n"
-			   " \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n");
-	}
-	else if (strcmp(version_name, "\"manjaro-arm\"") == 0)
-	{
-		printf("\033[0E\033[1C\u25b3       \u25b3   \u25e0\u25e0\u25e0\u25e0\n"
-			   " \e[0;42m          \e[0m  \e[0;42m    \e[0m\n"
-			   " \e[0;42m \e[0m\e[0;42m\e[1;30m > w < \e[0m\e[0;42m  \e[0m  \e[0;42m    \e[0m\n"
+			   " \e[0;42m \e[0m\e[0;42m\e[1;30m > \u03c9 < \e[0m\e[0;42m  \e[0m  \e[0;42m    \e[0m\n"
 			   " \e[0;42m    \e[0m        \e[0;42m    \e[0m\n"
 			   " \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n"
 			   " \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n"
@@ -628,7 +628,7 @@ void print_ascii()
 	{
 		printf("\033[2E\033[4C%s__/\\____/\\.\n"
 			   "   |%s.--.      %s|\n"
-			   "  %s, %s¯| %s| UwU| %s|\n"
+			   "  %s, %s¯| %s| U\u03c9U| %s|\n"
 			   " %s||  %s| %s|    | %s|\n"
 			   " %s |  %s|  %s----  %s|\n"
 			   " %s  --%s'--------'\n\n",
@@ -640,7 +640,7 @@ void print_ascii()
 	{
 		printf("\033[3E\033[3C%s|\\----/|\n"
 			   " _ /   %sO O%s\\\n"
-			   " __.    W /\n"
+			   " __.    \u03c9 /\n"
 			   "    '----'\n\n\n",
 			   GREEN, WHITE, GREEN);
 	}
@@ -650,7 +650,7 @@ void print_ascii()
 			   "      |/       \\|\n"
 			   "      |  >   <  |\n"
 			   "      | %s~  %sP! %s~ %s|\n"
-			   "_   ---\\   w   /\n"
+			   "_   ---\\   \u03c9   /\n"
 			   " \\_/    '-----'\n\n",
 			   BLUE, LPINK, WHITE, LPINK, BLUE);
 	}
@@ -669,7 +669,7 @@ void print_ascii()
 		printf("\033[1E\033[9C%s_\n"
 			   "     %s\u25E3%s__(_)%s\u25E2%s\n"
 			   "   _/  ---  \\\n"
-			   "  (_) |>w<| |\n"
+			   "  (_) |>\u03c9<| |\n"
 			   "    \\  --- _/\n"
 			   "  %sC__/%s---(_)\n\n\n",
 			   LPINK, PINK, LPINK, PINK, LPINK, PINK, LPINK);
@@ -679,7 +679,7 @@ void print_ascii()
 		printf("\033[2E\033[2C%s |\\_____/|\n"
 			   "  _\\____   |\n"
 			   " | \\    \\  |\n"
-			   " | | %s\u00d2w\u00d3 %s| |     ,\n"
+			   " | | %s\u00d2\u03c9\u00d3 %s| |     ,\n"
 			   " | \\_____\\_|-,  |\n"
 			   " -_______\\    \\_/\n\n",
 			   GREEN, WHITE, GREEN);
@@ -688,7 +688,7 @@ void print_ascii()
 	{ // android at the end because it could be not considered as an actual distribution of gnu/linux
 		printf("\033[2E\033[3C%s\\ _------_ /\n"
 			   "   /          \\\n"
-			   "  | %s~ %s> w < %s~  %s|\n"
+			   "  | %s~ %s> \u03c9 < %s~  %s|\n"
 			   "   ------------\n\n\n\n",
 			   GREEN, RED, GREEN, RED, GREEN);
 	}
@@ -699,7 +699,7 @@ void print_ascii()
 		printf("\033[2E\033[1C%s/\\,-'''''-,/\\\n"
 			   " \\_)       (_/\n"
 			   " |   \\   /   |\n"
-			   " |   O w O   |\n"
+			   " |   O \u03c9 O   |\n"
 			   "  ;         ;\n"
 			   "   '-_____-'\n\n",
 			   RED);
@@ -710,7 +710,7 @@ void print_ascii()
 			   "   \\-      -/  %s\u2665  \n"
 			   "%s\\_/          \\  \n"
 			   "|        %s>  < %s|   \n"
-			   "|_  <  %s//  %sW %s//   \n"
+			   "|_  <  %s//  %s\u03c9 %s//   \n"
 			   "%s/ \\          /   \n"
 			   "  /-________-\\   \n\n",
 			   YELLOW, RED, YELLOW, WHITE, YELLOW, LPINK, WHITE, LPINK, YELLOW);
@@ -720,7 +720,7 @@ void print_ascii()
 	{
 		printf("\033[1E\033[3C%s    .:`\n"
 			   "    .--``--.\n"
-			   "%s  ww  OwO   w\n"
+			   "%s  ww  O\u03c9O   w\n"
 			   "%s w         w\n"
 			   "%s w         w\n"
 			   "%s  w         w\n"
