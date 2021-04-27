@@ -570,7 +570,7 @@ void print_ascii()
 			   "      --_\n\n\n",
 			   RED);
 	}
-	else if (strcmp(version_name, "endeavour") == 0)
+	else if (strcmp(version_name, "endeavouros") == 0)
 	{
 		printf("\033[2E\033[8C%s/\\\n"
 			   "       %s/%s/ \\%s\\\n"
@@ -793,7 +793,7 @@ void uwu_name()
 	else STRING_TO_UWU("arch", "Nyarch Linuwu");
 	else STRING_TO_UWU("artix", "Nyartix Linuwu");
 	else STRING_TO_UWU("debian", "Debinyan");
-	else STRING_TO_UWU("endeavour", "endeavOwO");
+	else STRING_TO_UWU("endeavouros", "endeavOwO");
 	else STRING_TO_UWU("fedora", "Fedowa");
 	else STRING_TO_UWU("gentoo", "GentOwO");
 	else STRING_TO_UWU("gnu", "gnUwU");
