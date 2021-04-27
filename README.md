@@ -33,8 +33,8 @@ Right now, the package is only available on the AUR:
 Building requisites:
 
 -   Make
--   A c compiler
--   Pandoc to compile man pages
+-   A C compiler
+-   `pandoc` to compile man pages
 
 To install UwUfetch from the source, type these commands in the terminal:
 
@@ -42,6 +42,7 @@ To install UwUfetch from the source, type these commands in the terminal:
 git clone https://github.com/TheDarkBug/uwufetch.git
 cd uwufetch
 make build
+make man
 sudo make install
 ```
 
@@ -56,6 +57,7 @@ sudo make uninstall
 
 ```shell
 make build              # builds uwueftch
+make man                # builds the manpage (requires pandoc)
 make debug              # use for debug
 make install            # installs uwufetch (needs root permissons)
 make uninstall          # uninstalls uwufetch (needs root permissons)
