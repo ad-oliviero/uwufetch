@@ -235,6 +235,9 @@ int pkgman()
 
 	const unsigned long pkgman_count = sizeof(pkgmans) / sizeof(pkgmans[0]);
 
+	//	to format the pkgman_name string properly
+	int comma_separator = 0; 
+
 	for (long unsigned int i = 0; i < pkgman_count; i++)
 	{ // long unsigned int instead of int because of -Wsign-compare
 		struct package_manager *current = &pkgmans[i];
@@ -248,7 +251,18 @@ int pkgman()
 
 		total += pkg_count;
 		if (pkg_count > 0)
+		{
+			if(comma_separator)
+				strcat(pkgman_name, ", ");
+			comma_separator++;
+		
+			char spkg_count[16];
+			sprintf(spkg_count, "%d", pkg_count);
+			strcat(pkgman_name, spkg_count);
+			strcat(pkgman_name, " ");
+
 			strcat(pkgman_name, current->pkgman_name);
+		}
 	}
 	return total;
 }
@@ -304,8 +318,8 @@ void print_info()
 		printf("\033[18C%s%sSHELL       %s%s\n",
 			   NORMAL, BOLD, NORMAL, shell);
 	if (show_pkgs)
-		printf("\033[18C%s%sPKGS        %s%s%d %s\n",
-			   NORMAL, BOLD, NORMAL, NORMAL, pkgs, pkgman_name);
+		printf("\033[18C%s%sPKGS        %s%s%d%s %s\n",
+			   NORMAL, BOLD, NORMAL, NORMAL, pkgs, ":", pkgman_name);
 	if (show_uptime)
 	{
 #ifdef __APPLE__
