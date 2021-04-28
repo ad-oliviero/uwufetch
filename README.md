@@ -56,7 +56,7 @@ sudo make uninstall
 ##### Make options:
 
 ```shell
-make build              # builds uwueftch
+make build              # builds uwufetch
 make man                # builds the manpage (requires pandoc)
 make debug              # use for debug
 make install            # installs uwufetch (needs root permissons)
