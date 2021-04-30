@@ -14,9 +14,9 @@ uwufetch - A meme system info tool for Linux, based on nyan/uwu trend on r/linux
 
 # SYNOPSIS
 
-**uwufetch** [*OPTIONS*] [*ARGUMENTS*]\
+**uwufetch** [*OPTIONS*] [*ARGUMENTS*]
 
-## OPTIONS
+# OPTIONS
 
 -a --ascii\
 prints the logo as ascii text (default)
