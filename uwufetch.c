@@ -528,15 +528,15 @@ void list(char *arg)
 		   "      %sarch, artix, %smanjaro, \"manjaro-arm\"\n\n"
 		   "    %sDebian/%sUbuntu %sbased:\n"
 		   "      %sdebian, %slinuxmint, %spop, %sraspbian\n\n"
-		   "    %sBSD:\n"
-		   "      freebsd, %sopenbsd\n\n"
+		   "    %sBSD %sbased:\n"
+		   "      %sfreebsd, %sopenbsd, %sm%sa%sc%so%ss\n\n"
 		   "    %sOther/spare distributions:\n"
 		   "      %salpine, %sfedora, %sgentoo, %s\"void\", \"opensuse-leap\", android, %sgnu, guix, %sunknown\n",
 		   arg,
-		   BLUE, NORMAL, BLUE, GREEN,						// Arch based colors
-		   RED, YELLOW, NORMAL, RED, GREEN, BLUE, RED,		// Debian based colors
-		   RED, YELLOW,										// BSD colors
-		   NORMAL, BLUE, BLUE, PINK, GREEN, YELLOW, WHITE); // Other/spare distributions colors
+		   BLUE, NORMAL, BLUE, GREEN,									// Arch based colors
+		   RED, YELLOW, NORMAL, RED, GREEN, BLUE, RED,					// Debian based colors
+		   RED, NORMAL, RED, YELLOW, GREEN,	YELLOW, RED, PINK, BLUE,	// BSD colors
+		   NORMAL, BLUE, BLUE, PINK, GREEN, YELLOW, WHITE);				// Other/spare distributions colors
 }
 
 void print_ascii()
