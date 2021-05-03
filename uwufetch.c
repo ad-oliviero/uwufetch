@@ -262,8 +262,9 @@ int pkgman()
 			sprintf(spkg_count, "%d", pkg_count);
 			strcat(pkgman_name, spkg_count);
 			strcat(pkgman_name, " ");
-
-			strcat(pkgman_name, current->pkgman_name);
+			#ifndef __APPLE__
+			strcat(pkgman_name, current->pkgman_name); // this is the line that breaks mac os, but something strange happens before
+			#endif
 		}
 	}
 	return total;
