@@ -87,9 +87,9 @@ nixOwOs\	\	\	\	\	\	\	\	\	\ nixos\
 Swackwawe\	\	\	\	\	\	\	\	\ slackware\
 sOwOlus\	\	\	\	\	\	\	\	\	\ solus\
 FweeBSD\	\	\	\	\	\	\	\	\	\ freebsd\
-OwOpenBSD\	\	\	\	\	\	\	\	\ openbsd
-macOwOS\    \   \   \   \   \   \   \   \ macos
-WinyandOwOws\   \   \   \   \   \   \   \   \ windows
+OwOpenBSD\	\	\	\	\	\	\	\	\ openbsd\
+macOwOS\    \   \   \   \   \   \   \   \   \ macos\
+WinyandOwOws\   \   \   \   \   \   \  windows
 
 # DESCRIPTION
 
