@@ -220,10 +220,14 @@ int pkgman()
 { // this is just a function that returns the total of installed packages
 	int total = 0;
 
+	#ifdef __APPLE__
+	// we use a completely different struct because some commands in the other actually work in mac os, but they are not what you would expect (try running "apt"), but still doesn't work, maybe because of popen()
+	struct package_manager pkgmans[] = {
+		{"brew list 2>/dev/null | wc -l | sed \"s/     //g\" && touch test", "(brew)"}};
+	#else
 	struct package_manager pkgmans[] = {
 		{"apt list --installed 2> /dev/null | wc -l", "(apt)"},
 		{"apk info 2> /dev/null | wc -l", "(apk)"},
-		{"brew list --formulae 2> /dev/null | wc -l", "(brew)"},
 		{"dnf list installed 2> /dev/null | wc -l", "(dnf)"},
 		{"qlist -I 2> /dev/null | wc -l", "(emerge)"},
 		{"flatpak list 2> /dev/null | wc -l", "(flatpak)"},
@@ -234,6 +238,7 @@ int pkgman()
 		{"rpm -qa --last 2> /dev/null | wc -l", "(rpm)"},
 		{"xbps-query -l 2> /dev/null | wc -l", "(xbps)"},
 		{"zypper se --installed-only 2> /dev/null | wc -l", "(zypper)"}};
+	#endif
 
 	const unsigned long pkgman_count = sizeof(pkgmans) / sizeof(pkgmans[0]);
 
@@ -262,9 +267,7 @@ int pkgman()
 			sprintf(spkg_count, "%d", pkg_count);
 			strcat(pkgman_name, spkg_count);
 			strcat(pkgman_name, " ");
-			#ifndef __APPLE__
 			strcat(pkgman_name, current->pkgman_name); // this is the line that breaks mac os, but something strange happens before
-			#endif
 		}
 	}
 	return total;
