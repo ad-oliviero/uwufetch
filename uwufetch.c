@@ -68,6 +68,8 @@ struct utsname sys_var;
 struct sysinfo sys;
 #endif
 struct winsize win;
+
+int iscygwin = 0;
 // initialise the variables to store data, gpu array can hold up to 8 gpus
 int target_width = 0, screen_width = 0, screen_height = 0, ram_total, ram_used = 0, pkgs = 0;
 long uptime = 0;
@@ -350,16 +352,25 @@ void get_info()
 	// os version
 	FILE *os_release = fopen("/etc/os-release", "r");
 	FILE *cpuinfo = fopen("/proc/cpuinfo", "r");
-	if (os_release)
+	#ifdef __CYGWIN__
+		iscygwin = 1;
+	#endif
+	if(iscygwin == 1)
+		sprintf(version_name, "windows");
+
+	if (os_release || iscygwin == 1)
 	{ // get normal vars
-		while (fgets(line, sizeof(line), os_release))
-			if (sscanf(line, "\nID=%s", version_name))
-				break;
+		if(iscygwin == 0) {
+			while (fgets(line, sizeof(line), os_release))
+				if (sscanf(line, "\nID=%s", version_name))
+					break;
+		}
 		while (fgets(line, sizeof(line), cpuinfo))
 			if (sscanf(line, "model name    : %[^\n]", cpu_model))
 				break;
 		sprintf(user, "%s", getenv("USER"));
-		fclose(os_release);
+		if(iscygwin == 0)
+			fclose(os_release);
 	}
 	else
 	{ // try for android vars, next for macOS var, or unknown system
@@ -414,25 +425,48 @@ void get_info()
 
 	// ram
 #ifndef __APPLE__
-	FILE *meminfo;
+	#ifndef __CYGWIN__
+		FILE *meminfo;
 
-	meminfo = popen("LANG=EN_us free 2> /dev/null", "r");
-	while (fgets(line, sizeof(line), meminfo))
-	{
-		// free command prints like this: "Mem:" total     used    free    shared  buff/cache      available
-		if (sscanf(line, "Mem: %d %d", &ram_total, &ram_used))
+		meminfo = popen("LANG=EN_us free 2> /dev/null", "r");
+		while (fgets(line, sizeof(line), meminfo))
 		{
-			// convert to megabytes
-			if (ram_total > 0 && ram_used > 0)
+			// free command prints like this: "Mem:" total     used    free    shared  buff/cache      available
+			if (sscanf(line, "Mem: %d %d", &ram_total, &ram_used))
 			{
-				// data is in bytes
-				ram_total /= 1024;
-				ram_used /= 1024;
-				break;
+				// convert to megabytes
+				if (ram_total > 0 && ram_used > 0)
+				{
+					// data is in bytes
+					ram_total /= 1024;
+					ram_used /= 1024;
+					break;
+				}
 			}
 		}
-	}
-	fclose(meminfo);
+		fclose(meminfo);
+	#else
+		//wmic OS get FreePhysicalMemory
+
+		FILE *mem_used_fp, *mem_total_fp;
+		mem_used_fp = popen("wmic OS GET FreePhysicalMemory | sed -n 2p", "r");
+		mem_total_fp = popen("wmic ComputerSystem GET TotalPhysicalMemory | sed -n 2p", "r");
+		char mem_used_ch[2137], mem_total_ch[2137];
+		while (fgets(mem_used_ch, sizeof(mem_used_ch), mem_used_fp) != NULL) {
+			while (fgets(mem_total_ch, sizeof(mem_total_ch), mem_total_fp) != NULL) {}
+		}
+
+		pclose(mem_used_fp);
+		pclose(mem_total_fp);
+
+		int mem_used = atoi(mem_used_ch);
+
+		ram_used = mem_used / 1024;
+
+		// I couldn't get it to show the total amount of ram correctly, so for now this cursed method here
+		ram_total = mem_total_ch;
+		ram_total = ram_total * -1;
+	#endif
 #else
 	// Used
 	FILE *mem_wired_fp, *mem_active_fp, *mem_compressed_fp;
@@ -482,7 +516,11 @@ void get_info()
 		if (strcmp(version_name, "android") != 0)
 		{
 #ifndef __APPLE__
-			gpu = popen("lspci -mm 2> /dev/null | grep \"VGA\" | cut --fields=4,6 -d '\"' --output-delimiter=\" \" | sed \"s/ Controller.*//\"", "r");
+			#ifdef __CYGWIN__
+				gpu = popen("wmic PATH Win32_VideoController GET Name | sed -n 2p", "r");
+			#else
+				gpu = popen("lspci -mm 2> /dev/null | grep \"VGA\" | cut --fields=4,6 -d '\"' --output-delimiter=\" \" | sed \"s/ Controller.*//\"", "r");
+			#endif
 #else
 			gpu = popen("system_profiler SPDisplaysDataType | awk -F ': ' '/Chipset Model: /{ print $2 }'", "r");
 #endif
@@ -528,15 +566,15 @@ void list(char *arg)
 		   "      %sarch, artix, %smanjaro, \"manjaro-arm\"\n\n"
 		   "    %sDebian/%sUbuntu %sbased:\n"
 		   "      %sdebian, %slinuxmint, %spop, %sraspbian\n\n"
-		   "    %sBSD:\n"
-		   "      freebsd, %sopenbsd\n\n"
+		   "    %sBSD %sbased:\n"
+		   "      %sfreebsd, %sopenbsd, %sm%sa%sc%so%ss\n\n"
 		   "    %sOther/spare distributions:\n"
-		   "      %salpine, %sfedora, %sgentoo, %s\"void\", \"opensuse-leap\", android, %sgnu, guix, %sunknown\n",
+		   "      %salpine, %sfedora, %sgentoo, %s\"void\", \"opensuse-leap\", android, %sgnu, guix, %swindows, %sunknown\n",
 		   arg,
-		   BLUE, NORMAL, BLUE, GREEN,						// Arch based colors
-		   RED, YELLOW, NORMAL, RED, GREEN, BLUE, RED,		// Debian based colors
-		   RED, YELLOW,										// BSD colors
-		   NORMAL, BLUE, BLUE, PINK, GREEN, YELLOW, WHITE); // Other/spare distributions colors
+		   BLUE, NORMAL, BLUE, GREEN,									// Arch based colors
+		   RED, YELLOW, NORMAL, RED, GREEN, BLUE, RED,					// Debian based colors
+		   RED, NORMAL, RED, YELLOW, GREEN,	YELLOW, RED, PINK, BLUE,	// BSD colors
+		   NORMAL, BLUE, BLUE, PINK, GREEN, YELLOW, BLUE, WHITE);		// Other/spare distributions colors
 }
 
 void print_ascii()
@@ -742,6 +780,21 @@ void print_ascii()
 			   GREEN, YELLOW, RED, PINK, BLUE);
 	}
 
+	// Windows
+	else if (strcmp(version_name, "windows") == 0)
+	{
+		printf("%sMMMMMMM MMMMMMM\n"
+			   "M  ^  M M  ^  M\n"
+			   "M     M M     M\n"
+			   "MMMMMMM MMMMMMM\n"
+			   "\n"
+			   "MMMMMMM MMMMMMM\n"
+			   "M   W  W  W   M\n"
+			   "M    WW WW    M\n"
+			   "MMMMMMM MMMMMMM\n",
+			   BLUE);
+	}
+
 	// everything else
 	else
 		printf("\033[0E\033[2C%s._.--._.\n"
@@ -832,6 +885,9 @@ void uwu_name()
 	else STRING_TO_UWU("openbsd", "OwOpenBSD");
 
 	else STRING_TO_UWU("macos", "macOwOS");
+
+	// Windows
+	else STRING_TO_UWU("windows", "WinyandOwOws");
 
 	else
 	{
