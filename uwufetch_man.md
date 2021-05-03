@@ -88,6 +88,7 @@ Swackwawe\	\	\	\	\	\	\	\	\ slackware\
 sOwOlus\	\	\	\	\	\	\	\	\	\ solus\
 FweeBSD\	\	\	\	\	\	\	\	\	\ freebsd\
 OwOpenBSD\	\	\	\	\	\	\	\	\ openbsd
+macOwOS\    \   \   \   \   \   \   \   \ macos
 
 # DESCRIPTION
 
