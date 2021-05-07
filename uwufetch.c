@@ -567,18 +567,18 @@ void list(char *arg)
 	printf("%s -d <options>\n"
 		   "  Available distributions:\n"
 		   "    %sArch linux %sbased:\n"
-		   "      %sarch, artix, %smanjaro, \"manjaro-arm\"\n\n"
+		   "      %sarch, artix, %sendeavouros %smanjaro, \"manjaro-arm\"\n\n"
 		   "    %sDebian/%sUbuntu %sbased:\n"
-		   "      %sdebian, %slinuxmint, %spop, %sraspbian\n\n"
+		   "      %sdebian, %slinuxmint, neon %spop, %sraspbian %subuntu\n\n"
 		   "    %sBSD %sbased:\n"
 		   "      %sfreebsd, %sopenbsd, %sm%sa%sc%so%ss\n\n"
 		   "    %sOther/spare distributions:\n"
-		   "      %salpine, %sfedora, %sgentoo, %s\"void\", \"opensuse-leap\", android, %sgnu, guix, %swindows, %sunknown\n",
+		   "      %salpine, %sfedora, %sgentoo, %sslackware, %ssolus, %s\"void\", \"opensuse-leap\", android, %sgnu, guix, %swindows, %sunknown\n\n",
 		   arg,
-		   BLUE, NORMAL, BLUE, GREEN,									// Arch based colors
-		   RED, YELLOW, NORMAL, RED, GREEN, BLUE, RED,					// Debian based colors
-		   RED, NORMAL, RED, YELLOW, GREEN,	YELLOW, RED, PINK, BLUE,	// BSD colors
-		   NORMAL, BLUE, BLUE, PINK, GREEN, YELLOW, BLUE, WHITE);		// Other/spare distributions colors
+		   BLUE, NORMAL, BLUE, MAGENTA, GREEN,													// Arch based colors
+		   RED, YELLOW, NORMAL, RED, GREEN, BLUE, RED, YELLOW,									// Debian based colors
+		   RED, NORMAL, RED, YELLOW, GREEN,	YELLOW, RED, PINK, BLUE,							// BSD colors
+		   NORMAL, BLUE, BLUE, PINK, MAGENTA, WHITE, GREEN, YELLOW, BLUE, WHITE);				// Other/spare distributions colors
 }
 
 void print_ascii()
@@ -635,7 +635,7 @@ void print_ascii()
 			   "   %s/ %s/      _) %s) \n"
 			   "  %s/_%s/___-- %s___-\n"
 			   "   /____---\n\n",
-			   MAGENTA, YELLOW, MAGENTA, BLUE, YELLOW, MAGENTA, BLUE, YELLOW, MAGENTA, BLUE, YELLOW, MAGENTA, BLUE, YELLOW, MAGENTA, BLUE);
+			   MAGENTA, RED, MAGENTA, BLUE, RED, MAGENTA, BLUE, RED, MAGENTA, BLUE, RED, MAGENTA, BLUE, RED, MAGENTA, BLUE);
 	}
 	else if (strcmp(version_name, "fedora") == 0)
 	{
