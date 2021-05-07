@@ -720,6 +720,26 @@ void print_ascii()
 			   "       (__)\n\n\n",
 			   GREEN, RED);
 	}
+		else if (strcmp(version_name, "slackware") == 0)
+	{
+		printf("\033[2E\033[6C%s|\\.-----./|\n"
+			   "      |/       \\|\n"
+			   "      |  >   <  |\n"
+			   "      | %s~  %sS   %s~ %s|\n"
+			   "_   ---\\   \u03c9   /\n"
+			   " \\_/    '-----'\n\n",
+			   MAGENTA, LPINK, WHITE, LPINK, MAGENTA);
+	}
+		else if (strcmp(version_name, "solus") == 0)
+	{
+		printf("\033[2E\033[6C%s|\\.-----./|\n"
+			   "      | \\     / |\n"
+			   "      |/ >   <\\ |\n"
+			   "      |%s_%s~%s_____%s~%s\\|\n"
+			   "%s_   ---\\   %sω   %s/\n"
+			   " \\_/    '-----'\n\n",
+			   WHITE, BLUE, LPINK, BLUE, LPINK, WHITE, BLUE, WHITE, BLUE);
+	}
 	else if (strcmp(version_name, "ubuntu") == 0)
 	{
 		printf("\033[1E\033[9C%s_\n"
