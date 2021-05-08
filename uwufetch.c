@@ -243,7 +243,7 @@ int pkgman()
 	const unsigned long pkgman_count = sizeof(pkgmans) / sizeof(pkgmans[0]);
 
 	//	to format the pkgman_name string properly
-	int comma_separator = 0; 
+	int comma_separator = 0;
 
 	for (long unsigned int i = 0; i < pkgman_count; i++)
 	{ // long unsigned int instead of int because of -Wsign-compare
@@ -262,7 +262,7 @@ int pkgman()
 			if(comma_separator)
 				strcat(pkgman_name, ", ");
 			comma_separator++;
-		
+
 			char spkg_count[16];
 			sprintf(spkg_count, "%d", pkg_count);
 			strcat(pkgman_name, spkg_count);
@@ -523,7 +523,7 @@ void get_info()
 			#ifdef __CYGWIN__
 				gpu = popen("wmic PATH Win32_VideoController GET Name | sed -n 2p", "r");
 			#else
-				gpu = popen("lspci -mm 2> /dev/null | grep \"VGA\" | cut --fields=4,6 -d '\"' --output-delimiter=\" \" | sed \"s/ Controller.*//\"", "r");
+				gpu = popen("lspci -mm 2> /dev/null | grep \"VGA\" | cut -f 4,6 -d '\"' -d \" \" | sed \"s/ Controller.*//\"", "r");
 			#endif
 #else
 			gpu = popen("system_profiler SPDisplaysDataType | awk -F ': ' '/Chipset Model: /{ print $2 }'", "r");
