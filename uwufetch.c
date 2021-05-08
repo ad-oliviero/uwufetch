@@ -523,7 +523,7 @@ void get_info()
 			#ifdef __CYGWIN__
 				gpu = popen("wmic PATH Win32_VideoController GET Name | sed -n 2p", "r");
 			#else
-				gpu = popen("lspci -mm 2> /dev/null | grep \"VGA\" | cut -f 4,6 -d '\"' -d \" \" | sed \"s/ Controller.*//\"", "r");
+				gpu = popen("lspci -mm 2> /dev/null | grep \"VGA\" | awk -F '\"' '{print $4 $5 $6}'", "r");
 			#endif
 #else
 			gpu = popen("system_profiler SPDisplaysDataType | awk -F ': ' '/Chipset Model: /{ print $2 }'", "r");
