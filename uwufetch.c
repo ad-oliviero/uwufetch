@@ -318,10 +318,10 @@ void print_info()
 			   NORMAL, BOLD, NORMAL, (ram_used), ram_total);
 	if (show_resolution)
 		if (screen_width != 0 || screen_height != 0)
-			printf("\033[18C%s%sRESOLUTION%s  %dx%d\n",
+			printf("\033[18C%s%sRESOWUTION%s  %dx%d\n",
 				   NORMAL, BOLD, NORMAL, screen_width, screen_height);
 	if (show_shell)
-		printf("\033[18C%s%sSHELL       %s%s\n",
+		printf("\033[18C%s%sSHEWW       %s%s\n",
 			   NORMAL, BOLD, NORMAL, shell);
 	if (show_pkgs)
 		printf("\033[18C%s%sPKGS        %s%s%d%s %s\n",
