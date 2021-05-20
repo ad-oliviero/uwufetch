@@ -223,7 +223,7 @@ int pkgman()
 	#ifdef __APPLE__
 	// we use a completely different struct because some commands in the other actually work in mac os, but they are not what you would expect (try running "apt"), but still doesn't work, maybe because of popen()
 	struct package_manager pkgmans[] = {
-		{"brew list 2>/dev/null | wc -l | sed \"s/     //g\" && touch test", "(brew)"}};
+		{"ls $(brew --cellar)| wc -l | sed \"s/     //g\" && touch test", "(brew)"}};
 	#else
 	struct package_manager pkgmans[] = {
 		{"apt list --installed 2> /dev/null | wc -l", "(apt)"},
