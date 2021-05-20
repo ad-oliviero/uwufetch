@@ -4,4 +4,5 @@ uwufetch
 *.vscode
 *.gz
 *.1
+.DS_STORE
 .prettierrc
