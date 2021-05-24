@@ -14,7 +14,7 @@ debug:
 	$(CC) $(CFLAGS_DEBUG) -o $(NAME) $(FILES)
 	./uwufetch
 
-install:
+install: build man
 	cp $(NAME) $(DESTDIR)$(PREFIX)/$(NAME)
 	ls $(DESTDIR)/usr/lib/uwufetch/ 2> /dev/null || mkdir $(DESTDIR)/usr/lib/uwufetch/
 	cp res/* $(DESTDIR)/usr/lib/uwufetch/
