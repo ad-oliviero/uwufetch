@@ -220,11 +220,7 @@ int pkgman()
 { // this is just a function that returns the total of installed packages
 	int total = 0;
 
-	#ifdef __APPLE__
-	// we use a completely different struct because some commands in the other actually work in mac os, but they are not what you would expect (try running "apt"), but still doesn't work, maybe because of popen()
-	struct package_manager pkgmans[] = {
-		{"ls $(brew --cellar)| wc -l | sed \"s/     //g\" && touch test", "(brew)"}};
-	#else
+#ifndef __APPLE__ // this function is not used on mac os because it causes lots of problems
 	struct package_manager pkgmans[] = {
 		{"apt list --installed 2> /dev/null | wc -l", "(apt)"},
 		{"apk info 2> /dev/null | wc -l", "(apk)"},
@@ -238,8 +234,6 @@ int pkgman()
 		{"rpm -qa --last 2> /dev/null | wc -l", "(rpm)"},
 		{"xbps-query -l 2> /dev/null | wc -l", "(xbps)"},
 		{"zypper se --installed-only 2> /dev/null | wc -l", "(zypper)"}};
-	#endif
-
 	const unsigned long pkgman_count = sizeof(pkgmans) / sizeof(pkgmans[0]);
 
 	//	to format the pkgman_name string properly
@@ -259,7 +253,7 @@ int pkgman()
 		total += pkg_count;
 		if (pkg_count > 0)
 		{
-			if(comma_separator)
+			if (comma_separator)
 				strcat(pkgman_name, ", ");
 			comma_separator++;
 
@@ -270,6 +264,7 @@ int pkgman()
 			strcat(pkgman_name, current->pkgman_name); // this is the line that breaks mac os, but something strange happens before
 		}
 	}
+#endif
 	return total;
 }
 
@@ -323,9 +318,14 @@ void print_info()
 	if (show_shell)
 		printf("\033[18C%s%sSHEWW       %s%s\n",
 			   NORMAL, BOLD, NORMAL, shell);
+#ifdef __APPLE__
+	if (show_pkgs)
+		system("ls $(brew --cellar) | wc -l | awk -F' ' '{print \"  \x1b[34mw         w     \x1b[0m\x1b[1mPKGS\x1b[0m        \"$1 \" (brew)\"}'");
+#else
 	if (show_pkgs)
 		printf("\033[18C%s%sPKGS        %s%s%d%s %s\n",
 			   NORMAL, BOLD, NORMAL, NORMAL, pkgs, ":", pkgman_name);
+#endif
 	if (show_uptime)
 	{
 #ifdef __APPLE__
@@ -356,15 +356,16 @@ void get_info()
 	// os version
 	FILE *os_release = fopen("/etc/os-release", "r");
 	FILE *cpuinfo = fopen("/proc/cpuinfo", "r");
-	#ifdef __CYGWIN__
-		iscygwin = 1;
-	#endif
-	if(iscygwin == 1)
+#ifdef __CYGWIN__
+	iscygwin = 1;
+#endif
+	if (iscygwin == 1)
 		sprintf(version_name, "windows");
 
 	if (os_release || iscygwin == 1)
 	{ // get normal vars
-		if(iscygwin == 0) {
+		if (iscygwin == 0)
+		{
 			while (fgets(line, sizeof(line), os_release))
 				if (sscanf(line, "\nID=%s", version_name))
 					break;
@@ -373,7 +374,7 @@ void get_info()
 			if (sscanf(line, "model name    : %[^\n]", cpu_model))
 				break;
 		sprintf(user, "%s", getenv("USER"));
-		if(iscygwin == 0)
+		if (iscygwin == 0)
 			fclose(os_release);
 	}
 	else
@@ -429,48 +430,51 @@ void get_info()
 
 	// ram
 #ifndef __APPLE__
-	#ifndef __CYGWIN__
-		FILE *meminfo;
+#ifndef __CYGWIN__
+	FILE *meminfo;
 
-		meminfo = popen("LANG=EN_us free 2> /dev/null", "r");
-		while (fgets(line, sizeof(line), meminfo))
+	meminfo = popen("LANG=EN_us free 2> /dev/null", "r");
+	while (fgets(line, sizeof(line), meminfo))
+	{
+		// free command prints like this: "Mem:" total     used    free    shared  buff/cache      available
+		if (sscanf(line, "Mem: %d %d", &ram_total, &ram_used))
 		{
-			// free command prints like this: "Mem:" total     used    free    shared  buff/cache      available
-			if (sscanf(line, "Mem: %d %d", &ram_total, &ram_used))
+			// convert to megabytes
+			if (ram_total > 0 && ram_used > 0)
 			{
-				// convert to megabytes
-				if (ram_total > 0 && ram_used > 0)
-				{
-					// data is in bytes
-					ram_total /= 1024;
-					ram_used /= 1024;
-					break;
-				}
+				// data is in bytes
+				ram_total /= 1024;
+				ram_used /= 1024;
+				break;
 			}
 		}
-		fclose(meminfo);
-	#else
-		//wmic OS get FreePhysicalMemory
+	}
+	fclose(meminfo);
+#else
+	//wmic OS get FreePhysicalMemory
 
-		FILE *mem_used_fp, *mem_total_fp;
-		mem_used_fp = popen("wmic OS GET FreePhysicalMemory | sed -n 2p", "r");
-		mem_total_fp = popen("wmic ComputerSystem GET TotalPhysicalMemory | sed -n 2p", "r");
-		char mem_used_ch[2137], mem_total_ch[2137];
-		while (fgets(mem_used_ch, sizeof(mem_used_ch), mem_used_fp) != NULL) {
-			while (fgets(mem_total_ch, sizeof(mem_total_ch), mem_total_fp) != NULL) {}
+	FILE *mem_used_fp, *mem_total_fp;
+	mem_used_fp = popen("wmic OS GET FreePhysicalMemory | sed -n 2p", "r");
+	mem_total_fp = popen("wmic ComputerSystem GET TotalPhysicalMemory | sed -n 2p", "r");
+	char mem_used_ch[2137], mem_total_ch[2137];
+	while (fgets(mem_used_ch, sizeof(mem_used_ch), mem_used_fp) != NULL)
+	{
+		while (fgets(mem_total_ch, sizeof(mem_total_ch), mem_total_fp) != NULL)
+		{
 		}
+	}
 
-		pclose(mem_used_fp);
-		pclose(mem_total_fp);
+	pclose(mem_used_fp);
+	pclose(mem_total_fp);
 
-		int mem_used = atoi(mem_used_ch);
+	int mem_used = atoi(mem_used_ch);
 
-		ram_used = mem_used / 1024;
+	ram_used = mem_used / 1024;
 
-		// I couldn't get it to show the total amount of ram correctly, so for now this cursed method here
-		ram_total = mem_total_ch;
-		ram_total = ram_total * -1;
-	#endif
+	// I couldn't get it to show the total amount of ram correctly, so for now this cursed method here
+	ram_total = mem_total_ch;
+	ram_total = ram_total * -1;
+#endif
 #else
 	// Used
 	FILE *mem_wired_fp, *mem_active_fp, *mem_compressed_fp;
@@ -520,11 +524,11 @@ void get_info()
 		if (strcmp(version_name, "android") != 0)
 		{
 #ifndef __APPLE__
-			#ifdef __CYGWIN__
-				gpu = popen("wmic PATH Win32_VideoController GET Name | sed -n 2p", "r");
-			#else
-				gpu = popen("lspci -mm 2> /dev/null | grep \"VGA\" | awk -F '\"' '{print $4 $5 $6}'", "r");
-			#endif
+#ifdef __CYGWIN__
+			gpu = popen("wmic PATH Win32_VideoController GET Name | sed -n 2p", "r");
+#else
+			gpu = popen("lspci -mm 2> /dev/null | grep \"VGA\" | awk -F '\"' '{print $4 $5 $6}'", "r");
+#endif
 #else
 			gpu = popen("system_profiler SPDisplaysDataType | awk -F ': ' '/Chipset Model: /{ print $2 }'", "r");
 #endif
@@ -575,10 +579,10 @@ void list(char *arg)
 		   "    %sOther/spare distributions:\n"
 		   "      %salpine, %sfedora, %sgentoo, %sslackware, %ssolus, %s\"void\", \"opensuse-leap\", android, %sgnu, guix, %swindows, %sunknown\n\n",
 		   arg,
-		   BLUE, NORMAL, BLUE, MAGENTA, GREEN,													// Arch based colors
-		   RED, YELLOW, NORMAL, RED, GREEN, BLUE, RED, YELLOW,									// Debian based colors
-		   RED, NORMAL, RED, YELLOW, GREEN,	YELLOW, RED, PINK, BLUE,							// BSD colors
-		   NORMAL, BLUE, BLUE, PINK, MAGENTA, WHITE, GREEN, YELLOW, BLUE, WHITE);				// Other/spare distributions colors
+		   BLUE, NORMAL, BLUE, MAGENTA, GREEN,									  // Arch based colors
+		   RED, YELLOW, NORMAL, RED, GREEN, BLUE, RED, YELLOW,					  // Debian based colors
+		   RED, NORMAL, RED, YELLOW, GREEN, YELLOW, RED, PINK, BLUE,			  // BSD colors
+		   NORMAL, BLUE, BLUE, PINK, MAGENTA, WHITE, GREEN, YELLOW, BLUE, WHITE); // Other/spare distributions colors
 }
 
 void print_ascii()
@@ -720,7 +724,7 @@ void print_ascii()
 			   "       (__)\n\n\n",
 			   GREEN, RED);
 	}
-		else if (strcmp(version_name, "slackware") == 0)
+	else if (strcmp(version_name, "slackware") == 0)
 	{
 		printf("\033[2E\033[6C%s|\\.-----./|\n"
 			   "      |/       \\|\n"
@@ -730,7 +734,7 @@ void print_ascii()
 			   " \\_/    '-----'\n\n",
 			   MAGENTA, LPINK, WHITE, LPINK, MAGENTA);
 	}
-		else if (strcmp(version_name, "solus") == 0)
+	else if (strcmp(version_name, "solus") == 0)
 	{
 		printf("\033[2E\033[6C%s|\\.-----./|\n"
 			   "      | \\     / |\n"
