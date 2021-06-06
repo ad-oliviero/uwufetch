@@ -2,7 +2,13 @@ NAME			= uwufetch
 FILES			= uwufetch.c
 CFLAGS			= -O3
 CFLAGS_DEBUG	= -Wall -Wextra
-PREFIX			= /usr/bin
+ifeq ($(shell uname), Linux)
+	PREFIX		= /usr/bin
+	LIBDIR		= /usr/lib
+else ifeq ($(shell uname), Darwin)
+	PREFIX		= /usr/local/bin
+	LIBDIR		= /usr/local/lib
+endif
 CC				= cc
 MAN_COMPILER	= pandoc
 
@@ -16,13 +22,13 @@ debug:
 
 install: build man
 	cp $(NAME) $(DESTDIR)$(PREFIX)/$(NAME)
-	ls $(DESTDIR)/usr/lib/uwufetch/ 2> /dev/null || mkdir $(DESTDIR)/usr/lib/uwufetch/
-	cp res/* $(DESTDIR)/usr/lib/uwufetch/
+	ls $(DESTDIR)/$(LIBDIR)/ 2> /dev/null || mkdir $(DESTDIR)/$(LIBDIR)/
+	cp res/* $(DESTDIR)/$(LIBDIR)/
 	cp ./$(NAME).1.gz $(DESTDIR)/usr/share/man/man1/
 
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/$(NAME)
-	rm -rf $(DESTDIR)/usr/lib/uwufetch/
+	rm -rf $(DESTDIR)/$(LIBDIR)/
 	rm -rf $(DESTDIR)/usr/share/man/man1/$(NAME).1.gz
 
 termux: build
