@@ -5,9 +5,11 @@ CFLAGS_DEBUG	= -Wall -Wextra
 ifeq ($(shell uname), Linux)
 	PREFIX		= /usr/bin
 	LIBDIR		= /usr/lib
+	MANDIR		= /usr/share/man/man1
 else ifeq ($(shell uname), Darwin)
 	PREFIX		= /usr/local/bin
 	LIBDIR		= /usr/local/lib
+	MANDIR		= /usr/local/share/man/man1
 endif
 CC				= cc
 MAN_COMPILER	= pandoc
@@ -22,14 +24,14 @@ debug:
 
 install: build man
 	cp $(NAME) $(DESTDIR)$(PREFIX)/$(NAME)
-	ls $(DESTDIR)/$(LIBDIR)/ 2> /dev/null || mkdir $(DESTDIR)/$(LIBDIR)/
-	cp res/* $(DESTDIR)/$(LIBDIR)/
-	cp ./$(NAME).1.gz $(DESTDIR)/usr/share/man/man1/
+	ls $(DESTDIR)$(LIBDIR)/ > /dev/null || mkdir $(DESTDIR)$(LIBDIR)/
+	cp res/* $(DESTDIR)$(LIBDIR)/
+	cp ./$(NAME).1.gz $(DESTDIR)$(MANDIR)/
 
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/$(NAME)
 	rm -rf $(DESTDIR)/$(LIBDIR)/
-	rm -rf $(DESTDIR)/usr/share/man/man1/$(NAME).1.gz
+	rm -rf $(DESTDIR)$(MANDIR)/$(NAME).1.gz
 
 termux: build
 	cp $(NAME) $(DESTDIR)/data/data/com.termux/files$(PREFIX)/$(NAME)
