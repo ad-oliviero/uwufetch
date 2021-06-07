@@ -805,7 +805,7 @@ void print_ascii()
 			   "%s w         w\n",
 			   GREEN, YELLOW, RED, PINK);
 		if (!show_pkgs)
-			printf("%s  w         w\n", BLUE);
+			printf("%s  w         w", BLUE);
 		printf("\n%s   www_-_www\n\n", BLUE);
 	}
 
