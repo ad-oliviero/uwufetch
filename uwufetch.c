@@ -802,10 +802,11 @@ void print_ascii()
 			   "    .--``--.\n"
 			   "%s  ww  O\u03c9O   w\n"
 			   "%s w         w\n"
-			   "%s w         w\n"
-			   "%s  w         w\n"
-			   "   www_-_www\n\n",
-			   GREEN, YELLOW, RED, PINK, BLUE);
+			   "%s w         w\n",
+			   GREEN, YELLOW, RED, PINK);
+		if (!show_pkgs)
+			printf("%s  w         w\n", BLUE);
+		printf("\n%s   www_-_www\n\n", BLUE);
 	}
 
 	// Windows
