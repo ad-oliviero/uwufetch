@@ -110,7 +110,7 @@ kitty\	\	\ better image viewing
 
 All of this are optional, there is no necessary dependancy.
 
-# LICENSE AND COPYRIGTH
+# LICENSE AND COPYRIGHT
 
 uwufetch is provided under the GPL3 license, for copyright info read\
 https://github.com/TheDarkBug/uwufetch/tree/main/res/COPYRIGHT.md.
