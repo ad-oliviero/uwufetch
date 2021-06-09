@@ -102,13 +102,13 @@ uwufetch -d arch\	\	\	\	\	\	\	\	\	\	# prints arch logo\
 uwufetch -\-custom some_image.png\	\	# prints custom image (does not need full path)\
 ueufetch -i -d artix\	\	\	\	\	\	\	\	# prints artix image
 
-# DEPENDANCES
+# DEPENDENCIES
 
 lshw\	\	\	better gpu info\
 viu\	\	\	\ print images instead of ascii logo\
 kitty\	\	\ better image viewing
 
-All of this are optional, there is no necessary dependancy.
+All of these dependencies are optional. There are no required dependencies.
 
 # LICENSE AND COPYRIGHT
 
