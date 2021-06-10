@@ -233,7 +233,7 @@ int pkgman()
 		{"port installed 2> /dev/null | tail -n +2 | wc -l", "(port)"},
 		{"rpm -qa --last 2> /dev/null | wc -l", "(rpm)"},
 		{"xbps-query -l 2> /dev/null | wc -l", "(xbps)"},
-		{"zypper se --installed-only 2> /dev/null | wc -l", "(zypper)"}};
+		{"zypper -q se --installed-only 2> /dev/null | wc -l", "(zypper)"}};
 	const unsigned long pkgman_count = sizeof(pkgmans) / sizeof(pkgmans[0]);
 
 	//	to format the pkgman_name string properly
