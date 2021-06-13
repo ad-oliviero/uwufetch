@@ -375,9 +375,12 @@ void get_info()
 			while (fgets(line, sizeof(line), os_release))
 				if (sscanf(line, "\nID=%s", version_name))
 					break;
-			while (fgets(line, sizeof(line), host_model_info))
-				if (sscanf(line, "%[^\n]", host_model))
-					break;
+			if (host_model_info)
+			{
+				while (fgets(line, sizeof(line), host_model_info))
+					if (sscanf(line, "%[^\n]", host_model))
+						break;
+			}
 		}
 		while (fgets(line, sizeof(line), cpuinfo))
 			if (sscanf(line, "model name    : %[^\n]", cpu_model))
