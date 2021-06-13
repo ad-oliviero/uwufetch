@@ -77,6 +77,7 @@ long uptime = 0;
 int ascii_image_flag = 0, // when (0) ascii is printed, when (1) image is printed
 	show_user_info = 1,
 	show_os = 1,
+	show_host = 1,
 	show_kernel = 1,
 	show_cpu = 1,
 	show_gpu = 1,
@@ -87,7 +88,7 @@ int ascii_image_flag = 0, // when (0) ascii is printed, when (1) image is printe
 	show_uptime = 1,
 	show_colors = 1;
 
-char user[32], host[256], shell[64], kernel[256], version_name[64], cpu_model[256],
+char user[32], host[256], shell[64], host_model[256], kernel[256], version_name[64], cpu_model[256],
 	gpu_model[8][256] = {{'0'}, {'0'}, {'0'}, {'0'}, {'0'}, {'0'}, {'0'}, {'0'}},
 	pkgman_name[64], image_name[128], *config_directory = NULL;
 
@@ -194,6 +195,8 @@ void parse_config()
 			show_user_info = !strcmp(buffer, "true");
 		if (sscanf(line, "os=%[truefalse]", buffer))
 			show_os = strcmp(buffer, "false");
+		if (sscanf(line, "host=%[truefalse]", buffer))
+			show_host = strcmp(buffer, "false");
 		if (sscanf(line, "kernel=%[truefalse]", buffer))
 			show_kernel = strcmp(buffer, "false");
 		if (sscanf(line, "cpu=%[truefalse]", buffer))
@@ -290,6 +293,8 @@ void print_info()
 		printf("\033[18C%s%s%s@%s\n", NORMAL, BOLD, user, host);
 	if (show_os)
 		printf("\033[18C%s%sOWOS        %s%s\n", NORMAL, BOLD, NORMAL, version_name);
+	if (show_host)
+		printf("\033[18C%s%sHOWOST      %s%s\n", NORMAL, BOLD, NORMAL, host_model);
 	if (show_kernel)
 		printf("\033[18C%s%sKEWNEL      %s%s\n", NORMAL, BOLD, NORMAL, kernel);
 	if (show_cpu)
@@ -353,9 +358,10 @@ void get_info()
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &win);
 	target_width = win.ws_col - 30;
 
-	// os version
+	// os version, cpu and board info
 	FILE *os_release = fopen("/etc/os-release", "r");
 	FILE *cpuinfo = fopen("/proc/cpuinfo", "r");
+	FILE *host_model_info = fopen("/sys/devices/virtual/dmi/id/product_version", "r");
 #ifdef __CYGWIN__
 	iscygwin = 1;
 #endif
@@ -368,6 +374,9 @@ void get_info()
 		{
 			while (fgets(line, sizeof(line), os_release))
 				if (sscanf(line, "\nID=%s", version_name))
+					break;
+			while (fgets(line, sizeof(line), host_model_info))
+				if (sscanf(line, "%[^\n]", host_model))
 					break;
 		}
 		while (fgets(line, sizeof(line), cpuinfo))
@@ -392,6 +401,10 @@ void get_info()
 			if (fscanf(whoami, "%s", user) == 3)
 				sprintf(user, "unknown");
 			fclose(whoami);
+			host_model_info = popen("getprop ro.product.model", "r");
+			while (fgets(line, sizeof(line), host_model_info))
+				if (sscanf(line, "%[^\n]", host_model))
+					break;
 			while (fgets(line, sizeof(line), cpuinfo))
 				if (sscanf(line, "Hardware        : %[^\n]", cpu_model))
 					break;

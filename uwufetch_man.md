@@ -47,6 +47,7 @@ image="~/Pictures/picture.png"\
 ascii=false\
 user=true\
 os=true\
+host=true\
 kernel=true\
 cpu=true\
 gpu=false\
