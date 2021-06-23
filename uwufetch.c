@@ -462,10 +462,10 @@ void get_info()
 		// free command prints like this: "Mem:" total     used    free    shared  buff/cache      available
 		if (sscanf(line, "Mem: %d %d", &ram_total, &ram_used))
 		{
-			// convert to megabytes
+			// convert to mebibytes
 			if (ram_total > 0 && ram_used > 0)
 			{
-				// data is in bytes
+				// data is in kibibytes
 				ram_total /= 1024;
 				ram_used /= 1024;
 				break;
