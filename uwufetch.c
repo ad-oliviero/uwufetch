@@ -456,21 +456,11 @@ void get_info()
 #ifndef __CYGWIN__
 	FILE *meminfo;
 
-	meminfo = popen("LANG=EN_us free 2> /dev/null", "r");
+	meminfo = popen("LANG=EN_us free -m 2> /dev/null", "r");
 	while (fgets(line, sizeof(line), meminfo))
 	{
 		// free command prints like this: "Mem:" total     used    free    shared  buff/cache      available
-		if (sscanf(line, "Mem: %d %d", &ram_total, &ram_used))
-		{
-			// convert to mebibytes
-			if (ram_total > 0 && ram_used > 0)
-			{
-				// data is in kibibytes
-				ram_total /= 1024;
-				ram_used /= 1024;
-				break;
-			}
-		}
+		sscanf(line, "Mem: %d %d", &ram_total, &ram_used);
 	}
 	fclose(meminfo);
 #else
