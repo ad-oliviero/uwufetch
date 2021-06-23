@@ -338,15 +338,19 @@ void print_info()
 #else
 		uptime = sys.uptime;
 #endif
-		if (uptime < 3600)
-			printf("\033[18C%s%sUWUPTIME    %s%lim\n",
+		switch (uptime) {
+			case 0 ... 3599:
+				printf("\033[18C%s%sUWUPTIME    %s%lim\n",
 				   NORMAL, BOLD, NORMAL, uptime / 60 % 60);
-		else if (uptime / 3600 < 24)
-			printf("\033[18C%s%sUWUPTIME    %s%lih, %lim\n",
+				break;
+			case 3600 ... 86399:
+				printf("\033[18C%s%sUWUPTIME    %s%lih, %lim\n",
 				   NORMAL, BOLD, NORMAL, uptime / 3600, uptime / 60 % 60);
-		else
-			printf("\033[18C%s%sUWUPTIME    %s%lid, %lih, %lim\n",
+				break;
+			default:
+				printf("\033[18C%s%sUWUPTIME    %s%lid, %lih, %lim\n",
 				   NORMAL, BOLD, NORMAL, uptime / 86400, uptime / 3600 % 24, uptime / 60 % 60);
+		}
 	}
 	if (show_colors)
 		printf("\033[18C%s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n",
