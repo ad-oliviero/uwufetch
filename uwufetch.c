@@ -314,7 +314,7 @@ void print_info()
 
 	// print ram to uptime and colors
 	if (show_ram)
-		printf("\033[18C%s%sWAM         %s%i MB/%i MB\n",
+		printf("\033[18C%s%sWAM         %s%i MiB/%i MiB\n",
 			   NORMAL, BOLD, NORMAL, (ram_used), ram_total);
 	if (show_resolution)
 		if (screen_width != 0 || screen_height != 0)
@@ -338,7 +338,10 @@ void print_info()
 #else
 		uptime = sys.uptime;
 #endif
-		if (uptime / 3600 < 24)
+		if (uptime < 3600)
+			printf("\033[18C%s%sUWUPTIME    %s%lim\n",
+				   NORMAL, BOLD, NORMAL, uptime / 60 % 60);
+		else if (uptime / 3600 < 24)
 			printf("\033[18C%s%sUWUPTIME    %s%lih, %lim\n",
 				   NORMAL, BOLD, NORMAL, uptime / 3600, uptime / 60 % 60);
 		else
