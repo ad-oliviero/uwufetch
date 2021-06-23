@@ -338,7 +338,8 @@ void print_info()
 #else
 		uptime = sys.uptime;
 #endif
-		switch (uptime) {
+		switch (uptime)
+		{
 			case 0 ... 3599:
 				printf("\033[18C%s%sUWUPTIME    %s%lim\n",
 				   NORMAL, BOLD, NORMAL, uptime / 60 % 60);
@@ -458,10 +459,8 @@ void get_info()
 
 	meminfo = popen("LANG=EN_us free -m 2> /dev/null", "r");
 	while (fgets(line, sizeof(line), meminfo))
-	{
 		// free command prints like this: "Mem:" total     used    free    shared  buff/cache      available
 		sscanf(line, "Mem: %d %d", &ram_total, &ram_used);
-	}
 	fclose(meminfo);
 #else
 	//wmic OS get FreePhysicalMemory
