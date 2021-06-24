@@ -314,7 +314,7 @@ void print_info()
 
 	// print ram to uptime and colors
 	if (show_ram)
-		printf("\033[18C%s%sWAM         %s%i MB/%i MB\n",
+		printf("\033[18C%s%sWAM         %s%i MiB/%i MiB\n",
 			   NORMAL, BOLD, NORMAL, (ram_used), ram_total);
 	if (show_resolution)
 		if (screen_width != 0 || screen_height != 0)
@@ -338,12 +338,20 @@ void print_info()
 #else
 		uptime = sys.uptime;
 #endif
-		if (uptime / 3600 < 24)
-			printf("\033[18C%s%sUWUPTIME    %s%lih, %lim\n",
+		switch (uptime)
+		{
+			case 0 ... 3599:
+				printf("\033[18C%s%sUWUPTIME    %s%lim\n",
+				   NORMAL, BOLD, NORMAL, uptime / 60 % 60);
+				break;
+			case 3600 ... 86399:
+				printf("\033[18C%s%sUWUPTIME    %s%lih, %lim\n",
 				   NORMAL, BOLD, NORMAL, uptime / 3600, uptime / 60 % 60);
-		else
-			printf("\033[18C%s%sUWUPTIME    %s%lid, %lih, %lim\n",
+				break;
+			default:
+				printf("\033[18C%s%sUWUPTIME    %s%lid, %lih, %lim\n",
 				   NORMAL, BOLD, NORMAL, uptime / 86400, uptime / 3600 % 24, uptime / 60 % 60);
+		}
 	}
 	if (show_colors)
 		printf("\033[18C%s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n",
@@ -449,22 +457,10 @@ void get_info()
 #ifndef __CYGWIN__
 	FILE *meminfo;
 
-	meminfo = popen("LANG=EN_us free 2> /dev/null", "r");
+	meminfo = popen("LANG=EN_us free -m 2> /dev/null", "r");
 	while (fgets(line, sizeof(line), meminfo))
-	{
 		// free command prints like this: "Mem:" total     used    free    shared  buff/cache      available
-		if (sscanf(line, "Mem: %d %d", &ram_total, &ram_used))
-		{
-			// convert to megabytes
-			if (ram_total > 0 && ram_used > 0)
-			{
-				// data is in bytes
-				ram_total /= 1024;
-				ram_used /= 1024;
-				break;
-			}
-		}
-	}
+		sscanf(line, "Mem: %d %d", &ram_total, &ram_used);
 	fclose(meminfo);
 #else
 	//wmic OS get FreePhysicalMemory
