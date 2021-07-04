@@ -101,6 +101,7 @@ void print_ascii();
 void print_info();
 void print_image();
 void usage(char *);
+void uwu_kernel();
 void uwu_name();
 void truncate_name(char *);
 void remove_brackets(char *);
@@ -154,6 +155,7 @@ int main(int argc, char *argv[])
 		print_ascii();
 	else if (ascii_image_flag == 1)
 		print_image();
+	uwu_kernel();
 	uwu_name();
 	print_info();
 }
@@ -887,6 +889,31 @@ void usage(char *arg)
 		   "                    read README.md for more info%s\n"
 		   "    -l, --list      lists all supported distributions\n",
 		   arg, BLUE, NORMAL);
+}
+
+void uwu_kernel()
+{
+	#define KERNEL_TO_UWU(str, original, uwufied)	\
+		if (strcmp(str, original) == 0)	\
+			sprintf(str, "%s", uwufied)
+
+	char *temp_kernel = kernel;
+	char *token;
+	char splitted[16][128] = {};
+
+	int count = 0;
+	while((token = strsep(&temp_kernel, " "))) {
+		strcpy(splitted[count], token);
+		count++;
+	}
+	strcpy(kernel, "");
+	for(int i = 0;i < 16;i++) {
+		KERNEL_TO_UWU(splitted[i], "Linux", "Linuwu");
+		KERNEL_TO_UWU(splitted[i], "linux", "linuwu");
+		if(i != 0) strcat(kernel, " ");
+		strcat(kernel, splitted[i]);
+	}
+	#undef KERNEL_TO_UWU
 }
 
 void uwu_name()
