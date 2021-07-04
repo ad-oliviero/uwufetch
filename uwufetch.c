@@ -101,6 +101,7 @@ void print_ascii();
 void print_info();
 void print_image();
 void usage(char *);
+void uwu_kernel();
 void uwu_name();
 void truncate_name(char *);
 void remove_brackets(char *);
@@ -154,6 +155,7 @@ int main(int argc, char *argv[])
 		print_ascii();
 	else if (ascii_image_flag == 1)
 		print_image();
+	uwu_kernel();
 	uwu_name();
 	print_info();
 }
@@ -887,6 +889,67 @@ void usage(char *arg)
 		   "                    read README.md for more info%s\n"
 		   "    -l, --list      lists all supported distributions\n",
 		   arg, BLUE, NORMAL);
+}
+
+void uwu_kernel()
+{
+	#define KERNEL_TO_UWU(str, original, uwufied)	\
+		if (strcmp(str, original) == 0)	\
+			sprintf(str, "%s", uwufied)
+
+	char *temp_kernel = kernel;
+	char *token;
+	char splitted[16][128] = {};
+
+	int count = 0;
+	while((token = strsep(&temp_kernel, " "))) {
+		strcpy(splitted[count], token);
+		count++;
+	}
+	strcpy(kernel, "");
+	for(int i = 0;i < 16;i++) {
+
+		// kernel name
+		KERNEL_TO_UWU(splitted[i], "Linux", "Linuwu");
+		KERNEL_TO_UWU(splitted[i], "linux", "linuwu");
+		KERNEL_TO_UWU(splitted[i], "alpine", "Nyalpine");
+		KERNEL_TO_UWU(splitted[i], "arch", "Nyarch Linuwu");
+		KERNEL_TO_UWU(splitted[i], "artix", "Nyartix Linuwu");
+		KERNEL_TO_UWU(splitted[i], "debian", "Debinyan");
+		KERNEL_TO_UWU(splitted[i], "endeavouros", "endeavOwO");
+		KERNEL_TO_UWU(splitted[i], "EndeavourOS", "endeavOwO");
+		KERNEL_TO_UWU(splitted[i], "fedora", "Fedowa");
+		KERNEL_TO_UWU(splitted[i], "gentoo", "GentOwO");
+		KERNEL_TO_UWU(splitted[i], "gnu", "gnUwU");
+		KERNEL_TO_UWU(splitted[i], "guix", "gnUwU gUwUix");
+		KERNEL_TO_UWU(splitted[i], "linuxmint", "LinUWU Miwint");
+		KERNEL_TO_UWU(splitted[i], "manjaro", "Myanjawo");
+		KERNEL_TO_UWU(splitted[i], "\"manjaro-arm\"", "Myanjawo AWM");
+		KERNEL_TO_UWU(splitted[i], "neon", "KDE NeOwOn");
+		KERNEL_TO_UWU(splitted[i], "nixos", "nixOwOs");
+		KERNEL_TO_UWU(splitted[i], "\"opensuse-leap\"", "OwOpenSUSE Leap");
+		KERNEL_TO_UWU(splitted[i], "\"opensuse-tumbleweed\"", "OwOpenSUSE Tumbleweed");
+		KERNEL_TO_UWU(splitted[i], "pop", "PopOwOS");
+		KERNEL_TO_UWU(splitted[i], "raspbian", "RaspNyan");
+		KERNEL_TO_UWU(splitted[i], "slackware", "Swackwawe");
+		KERNEL_TO_UWU(splitted[i], "solus", "sOwOlus");
+		KERNEL_TO_UWU(splitted[i], "ubuntu", "Uwuntu");
+		KERNEL_TO_UWU(splitted[i], "\"void\"", "OwOid");
+		KERNEL_TO_UWU(splitted[i], "android", "Nyandroid"); // android at the end because it could be not considered as an actual distribution of gnu/linux
+
+		// BSD
+		KERNEL_TO_UWU(splitted[i], "freebsd", "FweeBSD");
+		KERNEL_TO_UWU(splitted[i], "openbsd", "OwOpenBSD");
+
+		KERNEL_TO_UWU(splitted[i], "macos", "macOwOS");
+
+		// Windows
+		KERNEL_TO_UWU(splitted[i], "windows", "WinyandOwOws");
+
+		if(i != 0) strcat(kernel, " ");
+		strcat(kernel, splitted[i]);
+	}
+	#undef KERNEL_TO_UWU
 }
 
 void uwu_name()
