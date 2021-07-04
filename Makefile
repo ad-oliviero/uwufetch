@@ -22,7 +22,7 @@ debug:
 	$(CC) $(CFLAGS_DEBUG) -o $(NAME) $(FILES)
 	./uwufetch
 
-install: build man
+install: build
 	cp $(NAME) $(DESTDIR)$(PREFIX)/$(NAME)
 	ls $(DESTDIR)$(LIBDIR)/uwufetch > /dev/null || mkdir $(DESTDIR)$(LIBDIR)/uwufetch
 	cp res/* $(DESTDIR)$(LIBDIR)/uwufetch

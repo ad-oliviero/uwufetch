@@ -2,7 +2,6 @@ uwufetch
 *.zip
 *.idea
 *.vscode
-*.gz
 *.1
 .DS_STORE
 .prettierrc
