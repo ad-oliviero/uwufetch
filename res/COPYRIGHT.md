@@ -218,7 +218,7 @@ I am not a copyright expert, and maybe I am doing all wrong things, please corre
 
 ## OpenSuse
 
-<img title="OwOsuse" src='https://raw.githubusercontent.com/TheDarkBug/uwufetch/main/res/"opensuse-leap".png' alt="image" width="100">
+<img title="OwOsuse" src='https://raw.githubusercontent.com/TheDarkBug/uwufetch/main/res/opensuse-leap.png' alt="image" width="100">
 
 ### Base artwork:
 
@@ -332,7 +332,7 @@ I am not a copyright expert, and maybe I am doing all wrong things, please corre
 
 ## VoidLinux
 
-<img title="Owoid" src='https://raw.githubusercontent.com/TheDarkBug/uwufetch/main/res/"void".png' alt="image" width="100">
+<img title="Owoid" src='https://raw.githubusercontent.com/TheDarkBug/uwufetch/main/res/void.png' alt="image" width="100">
 
 ### Base artwork:
 
