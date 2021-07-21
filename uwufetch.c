@@ -1008,8 +1008,11 @@ void uwu_name()
 
 void truncate_name(char *name)
 {
-	for (int i = target_width; i < 256; i++)
-		name[i] = '\0';
+	char arr[target_width];
+
+	for (int i = 0; i < target_width; i++)
+		arr[i] = name[i];
+	name = arr;
 }
 
 // remove square brackets (for gpu names)
