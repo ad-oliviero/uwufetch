@@ -67,7 +67,7 @@ I am not a copyright expert, and maybe I am doing all wrong things, please corre
 
 ## Endeavour OS
 
-<img title="Endowo Os" src="https://raw.githubusercontent.com/TheDarkBug/uwufetch/main/res/endeavour.png" alt="image" width="100">
+<img title="Endowo Os" src="https://raw.githubusercontent.com/TheDarkBug/uwufetch/main/res/endeavouros.png" alt="image" width="100">
 
 ### Base artwork:
 
