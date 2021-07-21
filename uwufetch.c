@@ -23,7 +23,9 @@
 #include <sys/sysctl.h>
 #include <time.h>
 #else
+#ifndef __FREEBSD__
 #include <sys/sysinfo.h>
+#endif
 #endif
 #include <sys/utsname.h>
 #include <sys/ioctl.h>
