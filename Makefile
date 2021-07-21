@@ -1,7 +1,7 @@
 NAME			= uwufetch
 FILES			= uwufetch.c
 CFLAGS			= -O3
-CFLAGS_DEBUG	= -Wall -Wextra -g -thread
+CFLAGS_DEBUG	= -Wall -Wextra -g -pthread
 ifeq ($(shell uname), Linux)
 	PREFIX		= /usr/bin
 	LIBDIR		= /usr/lib
@@ -16,8 +16,8 @@ CC				= cc
 MAN_COMPILER	= pandoc
 
 ifeq ($(shell uname), FreeBSD)
-CFLAGS += -D__FREEBSD__
-CFLAGS_DEBUG += -D__FREEBSD__
+	CFLAGS += -D__FREEBSD__
+	CFLAGS_DEBUG += -D__FREEBSD__
 endif
 
 

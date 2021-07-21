@@ -378,7 +378,9 @@ void get_info()
 
 	// os version, cpu and board info
 	FILE *os_release = fopen("/etc/os-release", "r");
+#ifndef __FREEBSD__
 	FILE *cpuinfo = fopen("/proc/cpuinfo", "r");
+#endif
 	FILE *host_model_info = fopen("/sys/devices/virtual/dmi/id/product_version", "r");
 #ifdef __CYGWIN__
 	iscygwin = 1;
@@ -400,10 +402,12 @@ void get_info()
 						break;
 			}
 		}
+#ifndef __FREEBSD__
 		while (fgets(line, sizeof(line), cpuinfo))
 			if (sscanf(line, "model name    : %[^\n]", cpu_model))
 				break;
 		sprintf(user, "%s", getenv("USER"));
+#endif
 		if (iscygwin == 0)
 			fclose(os_release);
 	}
