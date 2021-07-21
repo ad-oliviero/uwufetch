@@ -152,7 +152,11 @@ int main(int argc, char *argv[])
 	if (argc == 1)
 		parse_config();
 	if ((argc == 1 && ascii_image_flag == 0) || (argc > 1 && ascii_image_flag == 0))
+	{
+		printf("\n");
+		printf("\033[1A"); // to align info text
 		print_ascii();
+	}
 	else if (ascii_image_flag == 1)
 		print_image();
 	uwu_kernel();
