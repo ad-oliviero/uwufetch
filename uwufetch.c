@@ -406,7 +406,6 @@ void get_info()
 						break;
 			}
 		}
-#ifndef __FREEBSD__
 		while (fgets(line, sizeof(line), cpuinfo))
 #ifdef __FREEBSD__
 			if (sscanf(line, "hw.model: %[^\n]", cpu_model))
@@ -415,7 +414,6 @@ void get_info()
 #endif
 				break;
 		sprintf(user, "%s", getenv("USER"));
-#endif
 		if (iscygwin == 0)
 			fclose(os_release);
 	}
