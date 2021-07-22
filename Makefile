@@ -1,7 +1,7 @@
 NAME			= uwufetch
 FILES			= uwufetch.c
 CFLAGS			= -O3
-CFLAGS_DEBUG	= -Wall -Wextra
+CFLAGS_DEBUG	= -Wall -Wextra -g -pthread
 ifeq ($(shell uname), Linux)
 	PREFIX		= /usr/bin
 	LIBDIR		= /usr/lib
@@ -11,8 +11,15 @@ else ifeq ($(shell uname), Darwin)
 	LIBDIR		= /usr/local/lib
 	MANDIR		= /usr/local/share/man/man1
 endif
+
 CC				= cc
 MAN_COMPILER	= pandoc
+
+ifeq ($(shell uname), FreeBSD)
+	CFLAGS += -D__FREEBSD__
+	CFLAGS_DEBUG += -D__FREEBSD__
+endif
+
 
 build: $(FILES)
 	$(CC) $(CFLAGS) -o $(NAME) $(FILES)
