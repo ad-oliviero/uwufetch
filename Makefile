@@ -32,7 +32,7 @@ debug:
 install: build
 	cp $(NAME) $(DESTDIR)$(PREFIX)/$(NAME)
 	ls $(DESTDIR)$(LIBDIR)/uwufetch > /dev/null || mkdir $(DESTDIR)$(LIBDIR)/uwufetch
-	cp res/* $(DESTDIR)$(LIBDIR)/uwufetch
+	cp -r res/* $(DESTDIR)$(LIBDIR)/uwufetch
 	cp ./$(NAME).1.gz $(DESTDIR)$(MANDIR)/
 
 uninstall:
