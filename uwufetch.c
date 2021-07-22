@@ -631,7 +631,7 @@ replace("Hello World!", "World", "everyone")
  This returns "Hello everyone!".
 */
 void replace(char *original, char *search, char *replacer) {
-	char buffer[4096];
+	char buffer[1024];
 	char *ch;
 	if(!(ch = strstr(original, search))) return;
 
@@ -670,8 +670,8 @@ void print_ascii()
 			return print_ascii();
 		}
 	}
-	char line[64];
-	while(fgets(line, 64, file)) {
+	char line[256];
+	while(fgets(line, 256, file)) {
 		replace(line, "{NORMAL}", NORMAL);
 		replace(line, "{BOLD}", BOLD);
 		replace(line, "{BLACK}", BLACK);
@@ -684,6 +684,8 @@ void print_ascii()
 		replace(line, "{WHITE}", WHITE);
 		replace(line, "{PINK}", PINK);
 		replace(line, "{LPINK}", LPINK);
+		// For manjaro
+		replace(line, "{BACKGROUND_GREEN}", "\e[0;42m");
 		printf(line);
 	}
 	// Always set color to NORMAL, so there's no need to do this in every ascii file.
