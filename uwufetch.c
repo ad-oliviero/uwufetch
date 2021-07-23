@@ -153,8 +153,8 @@ int main(int argc, char *argv[])
 		parse_config();
 	if ((argc == 1 && ascii_image_flag == 0) || (argc > 1 && ascii_image_flag == 0))
 	{
-		printf("\n");
-		printf("\033[1A"); // to align info text
+		printf("\n");	// print a new line
+		printf("\033[1A"); // go up one line if possible
 		print_ascii();
 	}
 	else if (ascii_image_flag == 1)
