@@ -397,7 +397,7 @@ void get_info()
 		if (iscygwin == 0)
 		{
 			while (fgets(line, sizeof(line), os_release))
-				if (sscanf(line, "\nID=%s", version_name))
+				if (sscanf(line, "\nID=\"%s\"", version_name) || sscanf(line, "\nID=%s", version_name))
 					break;
 			if (host_model_info)
 			{
