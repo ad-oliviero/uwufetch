@@ -93,7 +93,7 @@ int ascii_image_flag = 0, // when (0) ascii is printed, when (1) image is printe
 	show_colors = 1;
 
 char user[32], host[256], shell[64], host_model[256], kernel[256], version_name[64], cpu_model[256],
-	gpu_model[8][256] = {{'0'}, {'0'}, {'0'}, {'0'}, {'0'}, {'0'}, {'0'}, {'0'}},
+	gpu_model[64][256],
 	pkgman_name[64], image_name[128], *config_directory = NULL;
 
 // functions definitions, to use them in main()
@@ -314,7 +314,7 @@ void print_info()
 	if (show_gpu)
 	{
 		int gpu_iter = 0;
-		while (gpu_model[gpu_iter][0] != '0')
+		while (gpu_model[gpu_iter][0])
 		{
 			printf("\033[18C%s%sGPUWU       %s%s\n",
 				   NORMAL, BOLD, NORMAL, gpu_model[gpu_iter]);
@@ -551,7 +551,7 @@ void get_info()
 	FILE *gpu;
 	gpu = popen("lshw -class display 2> /dev/null", "r");
 
-	// add all gpus to the array gpu_model (up to 8 gpus)
+	// add all gpus to the array gpu_model
 	while (fgets(line, sizeof(line), gpu))
 		if (sscanf(line, "    product: %[^\n]", gpu_model[gpun]))
 			gpun++;
