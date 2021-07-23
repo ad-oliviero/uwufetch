@@ -23,7 +23,9 @@
 #include <sys/sysctl.h>
 #include <time.h>
 #else
+#ifndef __FREEBSD__
 #include <sys/sysinfo.h>
+#endif
 #endif
 #include <sys/utsname.h>
 #include <sys/ioctl.h>
@@ -65,7 +67,9 @@ struct package_manager
 };
 struct utsname sys_var;
 #ifndef __APPLE__
+#ifdef __linux__
 struct sysinfo sys;
+#endif
 #endif
 struct winsize win;
 
@@ -153,7 +157,7 @@ int main(int argc, char *argv[])
 		parse_config();
 	if ((argc == 1 && ascii_image_flag == 0) || (argc > 1 && ascii_image_flag == 0))
 	{
-		printf("\n");	// print a new line
+		printf("\n");	   // print a new line
 		printf("\033[1A"); // go up one line if possible
 		print_ascii();
 	}
@@ -342,20 +346,22 @@ void print_info()
 #ifdef __APPLE__
 		uptime = uptime_mac();
 #else
+#ifndef __FREEBSD__
 		uptime = sys.uptime;
+#endif
 #endif
 		switch (uptime)
 		{
-			case 0 ... 3599:
-				printf("\033[18C%s%sUWUPTIME    %s%lim\n",
+		case 0 ... 3599:
+			printf("\033[18C%s%sUWUPTIME    %s%lim\n",
 				   NORMAL, BOLD, NORMAL, uptime / 60 % 60);
-				break;
-			case 3600 ... 86399:
-				printf("\033[18C%s%sUWUPTIME    %s%lih, %lim\n",
+			break;
+		case 3600 ... 86399:
+			printf("\033[18C%s%sUWUPTIME    %s%lih, %lim\n",
 				   NORMAL, BOLD, NORMAL, uptime / 3600, uptime / 60 % 60);
-				break;
-			default:
-				printf("\033[18C%s%sUWUPTIME    %s%lid, %lih, %lim\n",
+			break;
+		default:
+			printf("\033[18C%s%sUWUPTIME    %s%lid, %lih, %lim\n",
 				   NORMAL, BOLD, NORMAL, uptime / 86400, uptime / 3600 % 24, uptime / 60 % 60);
 		}
 	}
@@ -374,7 +380,11 @@ void get_info()
 
 	// os version, cpu and board info
 	FILE *os_release = fopen("/etc/os-release", "r");
+#ifndef __FREEBSD__
 	FILE *cpuinfo = fopen("/proc/cpuinfo", "r");
+#else
+	FILE *cpuinfo = popen("sysctl -a | egrep -i 'hw.model'", "r");
+#endif
 	FILE *host_model_info = fopen("/sys/devices/virtual/dmi/id/product_version", "r");
 #ifdef __CYGWIN__
 	iscygwin = 1;
@@ -397,7 +407,11 @@ void get_info()
 			}
 		}
 		while (fgets(line, sizeof(line), cpuinfo))
+#ifdef __FREEBSD__
+			if (sscanf(line, "hw.model: %[^\n]", cpu_model))
+#else
 			if (sscanf(line, "model name    : %[^\n]", cpu_model))
+#endif
 				break;
 		sprintf(user, "%s", getenv("USER"));
 		if (iscygwin == 0)
@@ -422,9 +436,11 @@ void get_info()
 			while (fgets(line, sizeof(line), host_model_info))
 				if (sscanf(line, "%[^\n]", host_model))
 					break;
+#ifndef __FREEBSD__
 			while (fgets(line, sizeof(line), cpuinfo))
 				if (sscanf(line, "Hardware        : %[^\n]", cpu_model))
 					break;
+#endif
 		}
 		else if (library) // macOS
 		{
@@ -439,7 +455,9 @@ void get_info()
 		else
 			sprintf(version_name, "unknown");
 	}
+#ifndef __FREEBSD__
 	fclose(cpuinfo);
+#endif
 	gethostname(host, 256);
 	sscanf(getenv("SHELL"), "%s", shell);
 	if (strlen(shell) > 16)
@@ -451,7 +469,9 @@ void get_info()
 	// system resources
 	uname(&sys_var);
 #ifndef __APPLE__
+#ifndef __FREEBSD__
 	sysinfo(&sys); // somehow this function has to be called again in print_info()
+#endif
 #endif
 
 	truncate_name(sys_var.release);
@@ -897,21 +917,23 @@ void usage(char *arg)
 
 void uwu_kernel()
 {
-	#define KERNEL_TO_UWU(str, original, uwufied)	\
-		if (strcmp(str, original) == 0)	\
-			sprintf(str, "%s", uwufied)
+#define KERNEL_TO_UWU(str, original, uwufied) \
+	if (strcmp(str, original) == 0)           \
+	sprintf(str, "%s", uwufied)
 
 	char *temp_kernel = kernel;
 	char *token;
 	char splitted[16][128] = {};
 
 	int count = 0;
-	while((token = strsep(&temp_kernel, " "))) {
+	while ((token = strsep(&temp_kernel, " ")))
+	{
 		strcpy(splitted[count], token);
 		count++;
 	}
 	strcpy(kernel, "");
-	for(int i = 0;i < 16;i++) {
+	for (int i = 0; i < 16; i++)
+	{
 
 		// kernel name
 		KERNEL_TO_UWU(splitted[i], "Linux", "Linuwu");
@@ -950,10 +972,11 @@ void uwu_kernel()
 		// Windows
 		KERNEL_TO_UWU(splitted[i], "windows", "WinyandOwOws");
 
-		if(i != 0) strcat(kernel, " ");
+		if (i != 0)
+			strcat(kernel, " ");
 		strcat(kernel, splitted[i]);
 	}
-	#undef KERNEL_TO_UWU
+#undef KERNEL_TO_UWU
 }
 
 void uwu_name()
