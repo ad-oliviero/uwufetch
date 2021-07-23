@@ -243,6 +243,7 @@ int pkgman()
 		{"guix package --list-installed 2> /dev/null | wc -l", "(guix)"},
 		{"nix-store -q --requisites /run/current-sys_vartem/sw 2> /dev/null | wc -l", "(nix)"},
 		{"pacman -Qq 2> /dev/null | wc -l", "(pacman)"},
+		{"pkg info | wc -l", "(pkg)"},
 		{"port installed 2> /dev/null | tail -n +2 | wc -l", "(port)"},
 		{"rpm -qa --last 2> /dev/null | wc -l", "(rpm)"},
 		{"xbps-query -l 2> /dev/null | wc -l", "(xbps)"},
