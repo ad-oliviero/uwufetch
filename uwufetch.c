@@ -386,7 +386,9 @@ void get_info()
 #else
 	FILE *cpuinfo = popen("sysctl -a | egrep -i 'hw.model'", "r");
 #endif
-	FILE *host_model_info = fopen("/sys/devices/virtual/dmi/id/product_version", "r");
+	FILE *host_model_info = fopen("/sys/devices/virtual/dmi/id/board_name", "r");
+	if (!host_model_info) host_model_info = fopen("/sys/devices/virtual/dmi/id/product_name", "r");
+    FILE *host_model_version = fopen("/sys/devices/virtual/dmi/id/product_version", "r");
 #ifdef __CYGWIN__
 	iscygwin = 1;
 #endif
@@ -405,6 +407,19 @@ void get_info()
 				while (fgets(line, sizeof(line), host_model_info))
 					if (sscanf(line, "%[^\n]", host_model))
 						break;
+				if (host_model_version)
+                {
+				    char version[32];
+                    while (fgets(line, sizeof(line), host_model_version))
+                    {
+                        if (sscanf(line, "%[^\n]", version))
+                        {
+                            strcat(host_model, " ");
+                            strcat(host_model, version);
+                            break;
+                        }
+                    }
+                }
 			}
 		}
 		while (fgets(line, sizeof(line), cpuinfo))
