@@ -297,7 +297,7 @@ int uptime_mac()
 
 #ifdef __FREEBSD__
 int uptime_freebsd()
-{
+{ // this code is from coreutils uptime: https://github.com/coreutils/coreutils/blob/master/src/uptime.c
 	int boot_time = 0;
 	static int request[2] = { CTL_KERN, KERN_BOOTTIME };
 	struct timeval result;
@@ -516,7 +516,11 @@ void get_info()
 #ifndef __CYGWIN__
 	FILE *meminfo;
 
+#ifdef __FREEBSD__
+	meminfo = popen("LANG=EN_us freecolor -om 2> /dev/null", "r");
+#else
 	meminfo = popen("LANG=EN_us free -m 2> /dev/null", "r");
+#endif
 	while (fgets(line, sizeof(line), meminfo))
 		// free command prints like this: "Mem:" total     used    free    shared  buff/cache      available
 		sscanf(line, "Mem: %d %d", &ram_total, &ram_used);

@@ -20,6 +20,8 @@ KDE NeOwOn, nixOwOs; Plus FweeBSD, OwOpenBSD and macOwOS; Plus WinyandOwOws.
 
 - [lshw](https://github.com/lyonel/lshw) to get GPU info.
 
+- [freecolor](http://www.rkeene.org/oss/freecolor/) to get ram usage on FreeBSD.
+
 ### Via package manager
 
 Right now, the package is only available on the AUR:
