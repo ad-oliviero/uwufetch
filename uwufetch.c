@@ -19,7 +19,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <getopt.h>
-#ifdef __APPLE__
+#if defined(__APPLE__) || defined(__FREEBSD__)
 #include <sys/sysctl.h>
 #include <time.h>
 #else
@@ -295,6 +295,21 @@ int uptime_mac()
 }
 #endif
 
+#ifdef __FREEBSD__
+int uptime_freebsd()
+{
+	int boot_time = 0;
+	static int request[2] = { CTL_KERN, KERN_BOOTTIME };
+	struct timeval result;
+	size_t result_len = sizeof result;
+
+	if (sysctl (request, 2, &result, &result_len, NULL, 0) >= 0)
+		boot_time = result.tv_sec;
+	int time_now = time (NULL);
+	return time_now - boot_time;
+}
+#endif
+
 void print_info()
 {
 	// store sys info in the sys again
@@ -347,7 +362,9 @@ void print_info()
 #ifdef __APPLE__
 		uptime = uptime_mac();
 #else
-#ifndef __FREEBSD__
+#ifdef __FREEBSD__
+		uptime = uptime_freebsd();
+#else
 		uptime = sys.uptime;
 #endif
 #endif
