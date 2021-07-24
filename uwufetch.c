@@ -405,6 +405,12 @@ void get_info()
 #endif
 	FILE *host_model_info = fopen("/sys/devices/virtual/dmi/id/board_name", "r");
 	if (!host_model_info) host_model_info = fopen("/sys/devices/virtual/dmi/id/product_name", "r");
+#ifdef __FREEBSD__
+	host_model_info = popen("sysctl -a hw.hv_vendor", "r");
+	while (fgets(line, sizeof(line), host_model_info))
+		if (sscanf(line, "hw.hv_vendor: %[^\n]", host_model))
+			break;
+#endif
     FILE *host_model_version = fopen("/sys/devices/virtual/dmi/id/product_version", "r");
 #ifdef __CYGWIN__
 	iscygwin = 1;
