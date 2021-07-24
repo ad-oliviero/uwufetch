@@ -10,15 +10,16 @@ else ifeq ($(shell uname), Darwin)
 	PREFIX		= /usr/local/bin
 	LIBDIR		= /usr/local/lib
 	MANDIR		= /usr/local/share/man/man1
+else ifeq ($(shell uname), FreeBSD)
+	CFLAGS += -D__FREEBSD__
+	CFLAGS_DEBUG += -D__FREEBSD__
+	PREFIX		= /usr/bin
+	LIBDIR		= /usr/lib
+	MANDIR		= /usr/share/man/man1
 endif
 
 CC				= cc
 MAN_COMPILER	= pandoc
-
-ifeq ($(shell uname), FreeBSD)
-	CFLAGS += -D__FREEBSD__
-	CFLAGS_DEBUG += -D__FREEBSD__
-endif
 
 
 build: $(FILES)
