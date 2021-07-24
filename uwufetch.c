@@ -234,7 +234,7 @@ int pkgman()
 	int total = 0;
 
 #ifndef __APPLE__ // this function is not used on mac os because it causes lots of problems
-	struct package_manager pkgmans[] = {
+    struct package_manager pkgmans[] = {
 		{"apt list --installed 2> /dev/null | wc -l", "(apt)"},
 		{"apk info 2> /dev/null | wc -l", "(apk)"},
 		{"dnf list installed 2> /dev/null | wc -l", "(dnf)"},
@@ -386,7 +386,9 @@ void get_info()
 #else
 	FILE *cpuinfo = popen("sysctl -a | egrep -i 'hw.model'", "r");
 #endif
-	FILE *host_model_info = fopen("/sys/devices/virtual/dmi/id/product_version", "r");
+	FILE *host_model_info = fopen("/sys/devices/virtual/dmi/id/board_name", "r");
+	if (!host_model_info) host_model_info = fopen("/sys/devices/virtual/dmi/id/product_name", "r");
+    FILE *host_model_version = fopen("/sys/devices/virtual/dmi/id/product_version", "r");
 #ifdef __CYGWIN__
 	iscygwin = 1;
 #endif
@@ -405,6 +407,19 @@ void get_info()
 				while (fgets(line, sizeof(line), host_model_info))
 					if (sscanf(line, "%[^\n]", host_model))
 						break;
+				if (host_model_version)
+                {
+				    char version[32];
+                    while (fgets(line, sizeof(line), host_model_version))
+                    {
+                        if (sscanf(line, "%[^\n]", version))
+                        {
+                            strcat(host_model, " ");
+                            strcat(host_model, version);
+                            break;
+                        }
+                    }
+                }
 			}
 		}
 		while (fgets(line, sizeof(line), cpuinfo))
@@ -935,43 +950,42 @@ void uwu_kernel()
 	strcpy(kernel, "");
 	for (int i = 0; i < 16; i++)
 	{
-
 		// kernel name
 		KERNEL_TO_UWU(splitted[i], "Linux", "Linuwu");
-		KERNEL_TO_UWU(splitted[i], "linux", "linuwu");
-		KERNEL_TO_UWU(splitted[i], "alpine", "Nyalpine");
-		KERNEL_TO_UWU(splitted[i], "arch", "Nyarch Linuwu");
-		KERNEL_TO_UWU(splitted[i], "artix", "Nyartix Linuwu");
-		KERNEL_TO_UWU(splitted[i], "debian", "Debinyan");
-		KERNEL_TO_UWU(splitted[i], "endeavouros", "endeavOwO");
-		KERNEL_TO_UWU(splitted[i], "EndeavourOS", "endeavOwO");
-		KERNEL_TO_UWU(splitted[i], "fedora", "Fedowa");
-		KERNEL_TO_UWU(splitted[i], "gentoo", "GentOwO");
-		KERNEL_TO_UWU(splitted[i], "gnu", "gnUwU");
-		KERNEL_TO_UWU(splitted[i], "guix", "gnUwU gUwUix");
-		KERNEL_TO_UWU(splitted[i], "linuxmint", "LinUWU Miwint");
-		KERNEL_TO_UWU(splitted[i], "manjaro", "Myanjawo");
-		KERNEL_TO_UWU(splitted[i], "manjaro-arm", "Myanjawo AWM");
-		KERNEL_TO_UWU(splitted[i], "neon", "KDE NeOwOn");
-		KERNEL_TO_UWU(splitted[i], "nixos", "nixOwOs");
-		KERNEL_TO_UWU(splitted[i], "opensuse-leap", "OwOpenSUSE Leap");
-		KERNEL_TO_UWU(splitted[i], "opensuse-tumbleweed", "OwOpenSUSE Tumbleweed");
-		KERNEL_TO_UWU(splitted[i], "pop", "PopOwOS");
-		KERNEL_TO_UWU(splitted[i], "raspbian", "RaspNyan");
-		KERNEL_TO_UWU(splitted[i], "slackware", "Swackwawe");
-		KERNEL_TO_UWU(splitted[i], "solus", "sOwOlus");
-		KERNEL_TO_UWU(splitted[i], "ubuntu", "Uwuntu");
-		KERNEL_TO_UWU(splitted[i], "void", "OwOid");
-		KERNEL_TO_UWU(splitted[i], "android", "Nyandroid"); // android at the end because it could be not considered as an actual distribution of gnu/linux
+		else KERNEL_TO_UWU(splitted[i], "linux", "linuwu");
+		else KERNEL_TO_UWU(splitted[i], "alpine", "Nyalpine");
+		else KERNEL_TO_UWU(splitted[i], "arch", "Nyarch Linuwu");
+		else KERNEL_TO_UWU(splitted[i], "artix", "Nyartix Linuwu");
+		else KERNEL_TO_UWU(splitted[i], "debian", "Debinyan");
+		else KERNEL_TO_UWU(splitted[i], "endeavouros", "endeavOwO");
+		else KERNEL_TO_UWU(splitted[i], "EndeavourOS", "endeavOwO");
+		else KERNEL_TO_UWU(splitted[i], "fedora", "Fedowa");
+		else KERNEL_TO_UWU(splitted[i], "gentoo", "GentOwO");
+		else KERNEL_TO_UWU(splitted[i], "gnu", "gnUwU");
+		else KERNEL_TO_UWU(splitted[i], "guix", "gnUwU gUwUix");
+		else KERNEL_TO_UWU(splitted[i], "linuxmint", "LinUWU Miwint");
+		else KERNEL_TO_UWU(splitted[i], "manjaro", "Myanjawo");
+		else KERNEL_TO_UWU(splitted[i], "manjaro-arm", "Myanjawo AWM");
+		else KERNEL_TO_UWU(splitted[i], "neon", "KDE NeOwOn");
+		else KERNEL_TO_UWU(splitted[i], "nixos", "nixOwOs");
+		else KERNEL_TO_UWU(splitted[i], "opensuse-leap", "OwOpenSUSE Leap");
+		else KERNEL_TO_UWU(splitted[i], "opensuse-tumbleweed", "OwOpenSUSE Tumbleweed");
+		else KERNEL_TO_UWU(splitted[i], "pop", "PopOwOS");
+		else KERNEL_TO_UWU(splitted[i], "raspbian", "RaspNyan");
+		else KERNEL_TO_UWU(splitted[i], "slackware", "Swackwawe");
+		else KERNEL_TO_UWU(splitted[i], "solus", "sOwOlus");
+		else KERNEL_TO_UWU(splitted[i], "ubuntu", "Uwuntu");
+		else KERNEL_TO_UWU(splitted[i], "void", "OwOid");
+		else KERNEL_TO_UWU(splitted[i], "android", "Nyandroid"); // android at the end because it could be not considered as an actual distribution of gnu/linux
 
 		// BSD
-		KERNEL_TO_UWU(splitted[i], "freebsd", "FweeBSD");
-		KERNEL_TO_UWU(splitted[i], "openbsd", "OwOpenBSD");
+		else KERNEL_TO_UWU(splitted[i], "freebsd", "FweeBSD");
+		else KERNEL_TO_UWU(splitted[i], "openbsd", "OwOpenBSD");
 
-		KERNEL_TO_UWU(splitted[i], "macos", "macOwOS");
+		else KERNEL_TO_UWU(splitted[i], "macos", "macOwOS");
 
 		// Windows
-		KERNEL_TO_UWU(splitted[i], "windows", "WinyandOwOws");
+		else KERNEL_TO_UWU(splitted[i], "windows", "WinyandOwOws");
 
 		if (i != 0)
 			strcat(kernel, " ");
