@@ -101,7 +101,9 @@ int pkgman();
 void parse_config();
 void get_info();
 void list();
+void replace(char *original, char *search, char *replacer);
 void print_ascii();
+void print_unknown_ascii();
 void print_info();
 void print_image();
 void usage(char *);
@@ -667,9 +669,74 @@ void list(char *arg)
 		   NORMAL, BLUE, BLUE, PINK, MAGENTA, WHITE, GREEN, YELLOW, BLUE, WHITE); // Other/spare distributions colors
 }
 
+/*
+ This replaces all terms in a string with another term.
+replace("Hello World!", "World", "everyone")
+ This returns "Hello everyone!".
+*/
+void replace(char *original, char *search, char *replacer) {
+	char buffer[1024];
+	char *ch;
+	if(!(ch = strstr(original, search))) return;
+
+	strncpy(buffer, original, ch-original);
+	buffer[ch-original] = 0;
+	sprintf(buffer+(ch - original), "%s%s", replacer, ch + strlen(search));
+
+	original[0] = 0;
+	strcpy(original, buffer);
+	return replace(original, search, replacer);
+}
+
 void print_ascii()
 { // prints logo (as ascii art) of the given system. distributions listed alphabetically.
+	printf("\n");
+	FILE *file;
+	char ascii_file[1024];
+	// First tries to get ascii art file from local directory. Good when modifying these files.
+	sprintf(ascii_file, "./res/ascii/%s.txt", version_name);
+	file = fopen(ascii_file, "r");
+	// Now tries to get file from normal directory
+	if(!file) {
+		if(strcmp(version_name, "android") == 0) {
+			sprintf(ascii_file, "/data/data/com.termux/files/usr/lib/uwufetch/ascii/%s.txt", version_name);
+		} else {
+			sprintf(ascii_file, "/usr/lib/uwufetch/ascii/%s.txt", version_name);
+		}
+		file = fopen(ascii_file, "r");
+		if(!file) {
+			// Prevent infinite loops
+			if(strcmp(version_name, "unknown") == 0) {
+				printf("No\nunknown\nascii\nfile\n\n\n\n");
+				return;
+			}
+			sprintf(version_name, "unknown");
+			return print_ascii();
+		}
+	}
+	char line[256];
+	while(fgets(line, 256, file)) {
+		replace(line, "{NORMAL}", NORMAL);
+		replace(line, "{BOLD}", BOLD);
+		replace(line, "{BLACK}", BLACK);
+		replace(line, "{RED}", RED);
+		replace(line, "{GREEN}", GREEN);
+		replace(line, "{YELLOW}", YELLOW);
+		replace(line, "{BLUE}", BLUE);
+		replace(line, "{MAGENTA}", MAGENTA);
+		replace(line, "{CYAN}", CYAN);
+		replace(line, "{WHITE}", WHITE);
+		replace(line, "{PINK}", PINK);
+		replace(line, "{LPINK}", LPINK);
+		// For manjaro
+		replace(line, "{BACKGROUND_GREEN}", "\e[0;42m");
+		printf(line);
+	}
+	// Always set color to NORMAL, so there's no need to do this in every ascii file.
+	printf(NORMAL);
+	fclose(file);
 
+	/*
 	// linux
 	if (strcmp(version_name, "alpine") == 0)
 	{
@@ -915,7 +982,12 @@ void print_ascii()
 			   " (|      | ) /\n"
 			   " %s/'\\_   _/`\\%s-\n"
 			   " %s\\___)=(___/\n\n",
-			   WHITE, YELLOW, WHITE, YELLOW, WHITE, YELLOW, WHITE, YELLOW);
+			   WHITE, YELLOW, WHITE, YELLOW, WHITE, YELLOW, WHITE, YELLOW);*/
+}
+
+void print_unknown_ascii() {
+	printf("\n\n\n\n\nidk man\n");
+	return;
 }
 
 void print_image()

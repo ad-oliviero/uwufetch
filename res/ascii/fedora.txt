@@ -1,0 +1,8 @@
+        {BLUE}_____
+       /   __){CYAN}\
+     {WHITE}> {BLUE}|  / {WHITE}<{CYAN}\ \
+    __{BLUE}_| {CYAN}ω{BLUE}|_{CYAN}_/ /
+   / {BLUE}(_    _){CYAN}_/
+  / /  {BLUE}|  |
+  {CYAN}\ \{BLUE}__/  |
+   {CYAN}\{BLUE}(_____/

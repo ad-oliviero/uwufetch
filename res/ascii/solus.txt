@@ -1,0 +1,8 @@
+
+      {WHITE}|\.-----./|
+      | \     / |
+      |/ >   <\ |
+      |{BLUE}_{LPINK}~{BLUE}_____{LPINK}~{WHITE}\|
+{BLUE}_   ---\   {WHITE}ω   {BLUE}/
+ \_/    '-----'
+
