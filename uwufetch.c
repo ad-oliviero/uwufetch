@@ -124,6 +124,7 @@ int main(int argc, char *argv[])
 		{"list", no_argument, NULL, 'l'},
 		{NULL, 0, NULL, 0}};
 	get_info();
+	parse_config();
 	while ((opt = getopt_long(argc, argv, "ac:d:hi::l", long_options, NULL)) != -1)
 	{
 		switch (opt)
@@ -155,8 +156,6 @@ int main(int argc, char *argv[])
 			break;
 		}
 	}
-	if (argc == 1)
-		parse_config();
 	if ((argc == 1 && ascii_image_flag == 0) || (argc > 1 && ascii_image_flag == 0))
 	{
 		printf("\n");	   // print a new line
