@@ -44,7 +44,7 @@ uninstall:
 termux: build
 	cp $(NAME) $(DESTDIR)/data/data/com.termux/files$(PREFIX)/$(NAME)
 	ls $(DESTDIR)/data/data/com.termux/files/usr/lib/uwufetch/ > /dev/null || mkdir $(DESTDIR)/data/data/com.termux/files/usr/lib/uwufetch/
-	cp res/* /data/data/com.termux/files/usr/lib/uwufetch/
+	cp -r res/* /data/data/com.termux/files/usr/lib/uwufetch/
 
 termux_uninstall:
 	rm -rf $(DESTDIR)/data/data/com.termux/files$(PREFIX)/$(NAME)
