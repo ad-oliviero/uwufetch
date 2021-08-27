@@ -36,7 +36,6 @@ Build requisites:
 
 - Make
 - A C compiler
-- `pandoc` to compile man pages
 
 To install UwUfetch from the source, type these commands in the terminal:
 
