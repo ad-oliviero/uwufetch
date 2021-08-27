@@ -6,7 +6,7 @@ A meme system info tool for (almost) all your Linux/Unix-based systems, based on
 
 ### Full support (Both ASCII art + images are provided for the given distribution)
 
-Nyalpine, Nyarch Linuwu, Nyartix Linuwu, Debinyan, endOwO, Fedowa, GentOwO, GnUwU gUwUix, Miwint, Myanjawo, OwOpenSUSE, Pop OwOs, RaspNyan, Swackwawe, sOwOlus, UwUntu, and OwOid; Plus Nyandroid.
+Nyalpine, Nyarch Linuwu, Nyartix Linuwu, Debinyan, endevaOwO, Fedowa, GentOwO, GnUwU gUwUix, Miwint, Myanjawo, OwOpenSUSE, Pop OwOs, RaspNyan, Swackwawe, sOwOlus, UwUntu, and OwOid; Plus Nyandroid.
 
 ### Partial support (Either no ASCII art, or no image is provided)
 
