@@ -1,0 +1,110 @@
+.\" A little documentation for future use
+.\" This a comment
+.\" TH request sets the title of the man page and the section (between 1 and 8)
+.\" SH is a primary section heading
+.\" TP sets up an indented paragraph with label
+.\" B makes text appear in bold face
+.\" I makes text appear in italic face
+.\" inline versions would look like \fBthis\fR and \fIthis\fR
+.\" EX and EE surrounds example section with text as is, with no empty lines in between the actual lines
+.TH uwufetch 1 "27 August 2021" "1.4" "A meme system info tool for Linux"
+.SH DESCRIPTION
+UwUfetch is a program inspired by neofetch and ufetch, that takes system information and prints it in terminal in an UwU way, with either UwU ascii or image logo.
+.SH SYNOPSYS
+\fBuwufetch\fR [\fIOPTIONS\fR] [\fIARGUMENTS\fR]
+.SH OPTIONS
+.TP
+.B -a --ascii
+prints the logo as ascii text (default)
+.TP
+.B -c --config
+you can change config path
+.TP
+.B -d --distro
+you can choose the logo to print by the distro name
+.TP
+.B -h --help
+prints a help page
+.TP
+.B -i --image
+prints image instead of ascii logo uses a custom image if one is provided
+.TP
+.B -l --list
+prints a list of all supported distributions
+.SH CONFIGURATION
+The config file is located in $HOME/.config/uwufetch/config (you need to create it), but you can change the path by using the \fB--config\fR option.
+.TP
+.SH EXAMPLE
+.EX
+distro=arch
+image="~/Pictures/picture.png"
+ascii=false
+user=true
+os=true
+host=true
+kernel=true
+cpu=true
+gpu=false
+ram=true
+resolution=true
+shell=true
+pkgs=true
+uptime=true
+colors=true
+.EE
+.SH SUPPORTED DISTRIBUTIONS
+Distribution name -d \fBoption\fR
+.TP
+.SH FULLY SUPPORTED
+.EX
+Nyalpine            \fBalpine\fR
+Nyarch Linuwu       \fBarch\fR
+Nyartix Linuwu      \fBartix\fR
+Debinyan            \fBdebian\fR
+Fedowa              \fBfedora\fR
+GentOwO             \fBgentoo\fR
+GnUwU gUwUix        \fBguix\fR
+Miwint              \fBlinuxmint\fR
+Myanjawo            \fBmanjaro\fR
+Myanjawo AWM        \fBmanjaro-arm\fR
+OwOpenSUSE          \fBopensuse-leap\fR
+Pop OwOs            \fBpop\fR
+RaspNyan            \fBraspbian\fR
+UwUntu              \fBubuntu\fR
+OwOid               \fBvoid\fR
+Nyandroid           \fBandroid\fR
+Unknown (tux logo)  \fBunknown\fR
+.EE
+.TP
+.SH IMAGE OR ASCII ONLY
+.EX
+endeavOwO     \fBendeavour\fR
+KDE NeOwOn    \fBneon\fR
+nixOwOs       \fBnixos\fR
+Swackwawe     \fBslackware\fR
+sOwOlus       \fBsolus\fR
+FweeBSD       \fBfreebsd\fR
+OwOpenBSD     \fBopenbsd\fR
+macOwOS       \fBmacos\fR
+WinyandOwOws  \fBwindows\fR
+.EE
+.SH EXAMPLES
+.EX
+uwufetch -d arch                  # uses ascii Arch logo
+uwufetch --custom some_image.png  # prints custom image (no full path is needed)
+uwufetch -i -d artix              # uses Artix image logo (which is also uwu)
+.EE
+.SH DEPENDENCIES
+.TP 8
+.B lshw
+better gpu info
+.TP
+.B viu
+print images instead of ascii logo
+.TP
+.B kitty
+better image viewing
+.P
+All of these dependencies are optional. There are no required dependencies.
+.SH LICENSE AND COPYRIGHT
+uwufetch is provided under the GPL3 license, for copyright info read https://github.com/TheDarkBug/uwufetch/tree/main/res/COPYRIGHT.md.
