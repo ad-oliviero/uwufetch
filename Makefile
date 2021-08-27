@@ -18,8 +18,7 @@ else ifeq ($(shell uname), FreeBSD)
 	MANDIR		= /usr/share/man/man1
 endif
 
-CC				= cc
-MAN_COMPILER	= pandoc
+CC = cc
 
 
 build: $(FILES)
@@ -51,10 +50,8 @@ termux_uninstall:
 	rm -rf $(DESTDIR)/data/data/com.termux/files/usr/lib/uwufetch/
 
 man:
-	$(MAN_COMPILER) $(NAME)_man.md -st man -o $(NAME).1
-	@gzip $(NAME).1
+	gzip --keep $(NAME).1
 
 man_debug:
-	$(MAN_COMPILER) $(NAME)_man.md -st man -o $(NAME).1
 	@clear
-	@man -P cat ./uwufetch.1
+	man -P cat ./uwufetch.1
