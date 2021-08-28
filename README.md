@@ -16,11 +16,11 @@ KDE NeOwOn, nixOwOs; Plus FweeBSD, OwOpenBSD and macOwOS; Plus WinyandOwOws.
 
 ### Requisites
 
-- [viu](https://github.com/atanunq/viu) to use images instead of ascii art (see [How to use images](#how-to-use-images) below)
-
-- [lshw](https://github.com/lyonel/lshw) to get GPU info.
-
 - [freecolor](http://www.rkeene.org/oss/freecolor/) to get ram usage on FreeBSD.
+
+- [viu](https://github.com/atanunq/viu) (optional) to use images instead of ascii art (see [How to use images](#how-to-use-images) below).
+
+- [lshw](https://github.com/lyonel/lshw) (optional) for better accuracy on GPU info.
 
 ### Via package manager
 
@@ -43,7 +43,6 @@ To install UwUfetch from the source, type these commands in the terminal:
 git clone https://github.com/TheDarkBug/uwufetch.git
 cd uwufetch
 make build
-make man
 sudo make install       # for termux, use `make termux`
 ```
 
@@ -58,7 +57,6 @@ sudo make uninstall
 
 ```shell
 make build              # builds uwufetch
-make man                # builds the manpage (requires pandoc)
 make debug              # use for debug
 make install            # installs uwufetch (needs root permissons)
 make uninstall          # uninstalls uwufetch (needs root permissons)
@@ -77,12 +75,12 @@ If not supported by the current terminal, `viu` uses the fallback Unicode half-b
 
 ### For copyright and logos info
 
-See [COPYRIGHT.md](https://github.com/TheDarkBug/uwufetch/tree/main/res/COPYRIGHT.md).
+See [COPYRIGHT.md](/res/COPYRIGHT.md).
 
 ## License
 
-This program is provided under the [GPL-3.0 License](https://github.com/TheDarkBug/uwufetch/LICENSE).
+This program is provided under the [GPL-3.0 License](/LICENSE).
 
 ## Contributing
 
-All kinds of contributions are welcome, but before contributing please read [CONTRIBUTING.md](https://github.com/TheDarkBug/uwufetch/blob/main/CONTRIBUTING.md).
+All kinds of contributions are welcome, but before contributing please read [CONTRIBUTING.md](/CONTRIBUTING.md).
