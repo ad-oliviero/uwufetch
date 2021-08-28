@@ -29,9 +29,9 @@ debug:
 	$(CC) $(CFLAGS_DEBUG) -o $(NAME) $(FILES)
 	./uwufetch
 
-install: build
+install:
+	mkdir -p $(DESTDIR)$(PREFIX) $(DESTDIR)$(LIBDIR)/uwufetch $(DESTDIR)$(MANDIR)
 	cp $(NAME) $(DESTDIR)$(PREFIX)/$(NAME)
-	ls $(DESTDIR)$(LIBDIR)/uwufetch > /dev/null || mkdir $(DESTDIR)$(LIBDIR)/uwufetch
 	cp -r res/* $(DESTDIR)$(LIBDIR)/uwufetch
 	cp ./$(NAME).1.gz $(DESTDIR)$(MANDIR)/
 
