@@ -26,6 +26,25 @@ I am not a copyright expert, and maybe I am doing all wrong things, please corre
 
 #
 
+## Arco Linux
+
+<img title="ArcOwO Linuwu" src="https://raw.githubusercontent.com/TheDarkBug/uwufetch/main/res/arcolinux.png" alt="image" width="100">
+
+### Base artwork:
+
+-   Copyright Holder: Erik Dubois
+-   License: [GPL-v3.0 (probably)](https://www.gnu.org/licenses/gpl-3.0.en.html)
+-   There is no reference I could find lol
+
+### Modifications
+
+-   Description: uwu style
+-   Copyright Holder: [plat_](https://github.com/platyple)
+-   License: [BSD-3-Clause](https://opensource.org/licenses/BSD-3-Clause)
+-   This was made specifically for this repo
+
+#
+
 ## Artix
 
 <img title="Nyartix Linuwu" src="https://raw.githubusercontent.com/TheDarkBug/uwufetch/main/res/artix.png" alt="image" width="100">
