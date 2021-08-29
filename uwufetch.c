@@ -654,7 +654,7 @@ void list(char *arg)
 	printf("%s -d <options>\n"
 		   "  Available distributions:\n"
 		   "    %sArch linux %sbased:\n"
-		   "      %sarch, artix, %sendeavouros %smanjaro, manjaro-arm\n\n"
+		   "      %sarch, arcolinux, %sartix, endeavouros %smanjaro, manjaro-arm\n\n"
 		   "    %sDebian/%sUbuntu %sbased:\n"
 		   "      %sdebian, %slinuxmint, neon %spop, %sraspbian %subuntu\n\n"
 		   "    %sBSD %sbased:\n"
@@ -1103,6 +1103,7 @@ void uwu_name()
 	// linux
 	STRING_TO_UWU("alpine", "Nyalpine");
 	else STRING_TO_UWU("arch", "Nyarch Linuwu");
+	else STRING_TO_UWU("arcolinux", "ArcOwO Linuwu");
 	else STRING_TO_UWU("artix", "Nyartix Linuwu");
 	else STRING_TO_UWU("debian", "Debinyan");
 	else STRING_TO_UWU("endeavouros", "endeavOwO");
