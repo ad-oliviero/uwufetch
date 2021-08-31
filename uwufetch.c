@@ -729,7 +729,7 @@ void print_ascii()
 		replace(line, "{LPINK}", LPINK);
 		// For manjaro
 		replace(line, "{BACKGROUND_GREEN}", "\e[0;42m");
-		printf(line);
+		printf("%s", line);
 	}
 	// Always set color to NORMAL, so there's no need to do this in every ascii file.
 	printf(NORMAL);
