@@ -13,6 +13,8 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#define _GNU_SOURCE  // for strcasestr
+
 #include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -102,12 +104,14 @@ void parse_config();
 void get_info();
 void list();
 void replace(char *original, char *search, char *replacer);
+void replace_ignorecase(char *original, char *search, char *replacer);
 void print_ascii();
 void print_unknown_ascii();
 void print_info();
 void print_image();
 void usage(char *);
 void uwu_kernel();
+void uwu_hw(char *);
 void uwu_name();
 void truncate_name(char *);
 void remove_brackets(char *);
@@ -166,6 +170,13 @@ int main(int argc, char *argv[])
 		print_image();
 	uwu_kernel();
 	uwu_name();
+
+    for (int i = 0; gpu_model[i][0]; i++) {
+        uwu_hw(gpu_model[i]);
+    }
+    uwu_hw(cpu_model);
+    uwu_hw(host_model);
+
 	print_info();
 }
 
@@ -687,6 +698,20 @@ void replace(char *original, char *search, char *replacer) {
 	return replace(original, search, replacer);
 }
 
+void replace_ignorecase(char *original, char *search, char *replacer) {
+	char buffer[1024];
+	char *ch;
+	if(!(ch = strcasestr(original, search))) return;
+
+	strncpy(buffer, original, ch-original);
+	buffer[ch-original] = 0;
+	sprintf(buffer+(ch - original), "%s%s", replacer, ch + strlen(search));
+
+	original[0] = 0;
+	strcpy(original, buffer);
+	return replace(original, search, replacer);
+}
+
 void print_ascii()
 { // prints logo (as ascii art) of the given system. distributions listed alphabetically.
 	printf("\n");
@@ -1091,6 +1116,32 @@ void uwu_kernel()
 		strcat(kernel, splitted[i]);
 	}
 #undef KERNEL_TO_UWU
+}
+
+void uwu_hw(char *hwname)
+{
+#define HW_TO_UWU(original, uwuified)   \
+    replace_ignorecase(hwname, original, uwuified);
+
+    HW_TO_UWU("lenovo", "LenOwO")
+    HW_TO_UWU("cpu", "CPUwU")
+    HW_TO_UWU("gpu", "GPUwU")
+    HW_TO_UWU("graphics", "Gwaphics")
+    HW_TO_UWU("corporation", "COwOpowation")
+    HW_TO_UWU("nvidia", "NyaVIDIA")
+    HW_TO_UWU("mobile", "Mwobile")
+    HW_TO_UWU("intel", "Inteww")
+    HW_TO_UWU("radeon", "Radenyan")
+    HW_TO_UWU("geforce", "GeFOwOce")
+    HW_TO_UWU("raspberry", "Nyasberry")
+    HW_TO_UWU("broadcom", "Bwoadcom")
+    HW_TO_UWU("motorola", "MotOwOwa")
+    HW_TO_UWU("proliant", "ProLinyant")
+    HW_TO_UWU("poweredge", "POwOwEdge")
+    HW_TO_UWU("apple", "Nyapple")
+    HW_TO_UWU("electronic", "ElectrOwOnic")
+
+#undef HW_TO_UWU
 }
 
 void uwu_name()
