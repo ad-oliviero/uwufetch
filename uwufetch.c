@@ -440,6 +440,17 @@ void get_info()
 			while (fgets(line, sizeof(line), os_release))
 				if (sscanf(line, "\nID=\"%s\"", version_name) || sscanf(line, "\nID=%s", version_name))
 					break;
+
+			// trying to detect amogos because in its os-release file ID value is just "debian"
+			if (strcmp(version_name, "debian") == 0)
+			{
+				DIR *amogos_plymouth = opendir("/usr/share/plymouth/themes/amogos");
+				if (amogos_plymouth)
+				{
+					closedir(amogos_plymouth);
+					sprintf(version_name, "amogos");
+				}
+			}
 			if (host_model_info)
 			{
 				while (fgets(line, sizeof(line), host_model_info))
