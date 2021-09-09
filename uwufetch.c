@@ -13,7 +13,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#define _GNU_SOURCE  // for strcasestr
+#define _GNU_SOURCE // for strcasestr
 
 #include <dirent.h>
 #include <stdio.h>
@@ -171,11 +171,12 @@ int main(int argc, char *argv[])
 	uwu_kernel();
 	uwu_name();
 
-    for (int i = 0; gpu_model[i][0]; i++) {
-        uwu_hw(gpu_model[i]);
-    }
-    uwu_hw(cpu_model);
-    uwu_hw(host_model);
+	for (int i = 0; gpu_model[i][0]; i++)
+	{
+		uwu_hw(gpu_model[i]);
+	}
+	uwu_hw(cpu_model);
+	uwu_hw(host_model);
 
 	print_info();
 }
@@ -246,7 +247,7 @@ int pkgman()
 	int total = 0;
 
 #ifndef __APPLE__ // this function is not used on mac os because it causes lots of problems
-    struct package_manager pkgmans[] = {
+	struct package_manager pkgmans[] = {
 		{"apt list --installed 2> /dev/null | wc -l", "(apt)"},
 		{"apk info 2> /dev/null | wc -l", "(apk)"},
 		{"dnf list installed 2> /dev/null | wc -l", "(dnf)"},
@@ -312,13 +313,13 @@ int uptime_mac()
 int uptime_freebsd()
 { // this code is from coreutils uptime: https://github.com/coreutils/coreutils/blob/master/src/uptime.c
 	int boot_time = 0;
-	static int request[2] = { CTL_KERN, KERN_BOOTTIME };
+	static int request[2] = {CTL_KERN, KERN_BOOTTIME};
 	struct timeval result;
 	size_t result_len = sizeof result;
 
-	if (sysctl (request, 2, &result, &result_len, NULL, 0) >= 0)
+	if (sysctl(request, 2, &result, &result_len, NULL, 0) >= 0)
 		boot_time = result.tv_sec;
-	int time_now = time (NULL);
+	int time_now = time(NULL);
 	return time_now - boot_time;
 }
 #endif
@@ -417,14 +418,15 @@ void get_info()
 	FILE *cpuinfo = popen("sysctl -a | egrep -i 'hw.model'", "r");
 #endif
 	FILE *host_model_info = fopen("/sys/devices/virtual/dmi/id/board_name", "r");
-	if (!host_model_info) host_model_info = fopen("/sys/devices/virtual/dmi/id/product_name", "r");
+	if (!host_model_info)
+		host_model_info = fopen("/sys/devices/virtual/dmi/id/product_name", "r");
 #ifdef __FREEBSD__
 	host_model_info = popen("sysctl -a hw.hv_vendor", "r");
 	while (fgets(line, sizeof(line), host_model_info))
 		if (sscanf(line, "hw.hv_vendor: %[^\n]", host_model))
 			break;
 #endif
-    FILE *host_model_version = fopen("/sys/devices/virtual/dmi/id/product_version", "r");
+	FILE *host_model_version = fopen("/sys/devices/virtual/dmi/id/product_version", "r");
 #ifdef __CYGWIN__
 	iscygwin = 1;
 #endif
@@ -444,18 +446,18 @@ void get_info()
 					if (sscanf(line, "%[^\n]", host_model))
 						break;
 				if (host_model_version)
-                {
-				    char version[32];
-                    while (fgets(line, sizeof(line), host_model_version))
-                    {
-                        if (sscanf(line, "%[^\n]", version))
-                        {
-                            strcat(host_model, " ");
-                            strcat(host_model, version);
-                            break;
-                        }
-                    }
-                }
+				{
+					char version[32];
+					while (fgets(line, sizeof(line), host_model_version))
+					{
+						if (sscanf(line, "%[^\n]", version))
+						{
+							strcat(host_model, " ");
+							strcat(host_model, version);
+							break;
+						}
+					}
+				}
 			}
 		}
 		while (fgets(line, sizeof(line), cpuinfo))
@@ -667,7 +669,7 @@ void list(char *arg)
 		   "    %sArch linux %sbased:\n"
 		   "      %sarch, arcolinux, %sartix, endeavouros %smanjaro, manjaro-arm\n\n"
 		   "    %sDebian/%sUbuntu %sbased:\n"
-		   "      %sdebian, %slinuxmint, neon %spop, %sraspbian %subuntu\n\n"
+		   "      %samogos, debian, %slinuxmint, neon %spop, %sraspbian %subuntu\n\n"
 		   "    %sBSD %sbased:\n"
 		   "      %sfreebsd, %sopenbsd, %sm%sa%sc%so%ss\n\n"
 		   "    %sOther/spare distributions:\n"
@@ -684,28 +686,32 @@ void list(char *arg)
 replace("Hello World!", "World", "everyone")
  This returns "Hello everyone!".
 */
-void replace(char *original, char *search, char *replacer) {
+void replace(char *original, char *search, char *replacer)
+{
 	char buffer[1024];
 	char *ch;
-	if(!(ch = strstr(original, search))) return;
+	if (!(ch = strstr(original, search)))
+		return;
 
-	strncpy(buffer, original, ch-original);
-	buffer[ch-original] = 0;
-	sprintf(buffer+(ch - original), "%s%s", replacer, ch + strlen(search));
+	strncpy(buffer, original, ch - original);
+	buffer[ch - original] = 0;
+	sprintf(buffer + (ch - original), "%s%s", replacer, ch + strlen(search));
 
 	original[0] = 0;
 	strcpy(original, buffer);
 	return replace(original, search, replacer);
 }
 
-void replace_ignorecase(char *original, char *search, char *replacer) {
+void replace_ignorecase(char *original, char *search, char *replacer)
+{
 	char buffer[1024];
 	char *ch;
-	if(!(ch = strcasestr(original, search))) return;
+	if (!(ch = strcasestr(original, search)))
+		return;
 
-	strncpy(buffer, original, ch-original);
-	buffer[ch-original] = 0;
-	sprintf(buffer+(ch - original), "%s%s", replacer, ch + strlen(search));
+	strncpy(buffer, original, ch - original);
+	buffer[ch - original] = 0;
+	sprintf(buffer + (ch - original), "%s%s", replacer, ch + strlen(search));
 
 	original[0] = 0;
 	strcpy(original, buffer);
@@ -721,16 +727,22 @@ void print_ascii()
 	sprintf(ascii_file, "./res/ascii/%s.txt", version_name);
 	file = fopen(ascii_file, "r");
 	// Now tries to get file from normal directory
-	if(!file) {
-		if(strcmp(version_name, "android") == 0) {
+	if (!file)
+	{
+		if (strcmp(version_name, "android") == 0)
+		{
 			sprintf(ascii_file, "/data/data/com.termux/files/usr/lib/uwufetch/ascii/%s.txt", version_name);
-		} else {
+		}
+		else
+		{
 			sprintf(ascii_file, "/usr/lib/uwufetch/ascii/%s.txt", version_name);
 		}
 		file = fopen(ascii_file, "r");
-		if(!file) {
+		if (!file)
+		{
 			// Prevent infinite loops
-			if(strcmp(version_name, "unknown") == 0) {
+			if (strcmp(version_name, "unknown") == 0)
+			{
 				printf("No\nunknown\nascii\nfile\n\n\n\n");
 				return;
 			}
@@ -739,7 +751,8 @@ void print_ascii()
 		}
 	}
 	char line[256];
-	while(fgets(line, 256, file)) {
+	while (fgets(line, 256, file))
+	{
 		replace(line, "{NORMAL}", NORMAL);
 		replace(line, "{BOLD}", BOLD);
 		replace(line, "{BLACK}", BLACK);
@@ -752,8 +765,10 @@ void print_ascii()
 		replace(line, "{WHITE}", WHITE);
 		replace(line, "{PINK}", PINK);
 		replace(line, "{LPINK}", LPINK);
-		// For manjaro
+		// For manjaro and amogos
 		replace(line, "{BACKGROUND_GREEN}", "\e[0;42m");
+		replace(line, "{BACKGROUND_RED}", "\e[0;41m");
+		replace(line, "{BACKGROUND_WHITE}", "\e[0;47m");
 		printf("%s", line);
 	}
 	// Always set color to NORMAL, so there's no need to do this in every ascii file.
@@ -1009,11 +1024,6 @@ void print_ascii()
 			   WHITE, YELLOW, WHITE, YELLOW, WHITE, YELLOW, WHITE, YELLOW);*/
 }
 
-void print_unknown_ascii() {
-	printf("\n\n\n\n\nidk man\n");
-	return;
-}
-
 void print_image()
 { // prints logo (as an image) of the given system. distributions listed alphabetically.
 	char command[256];
@@ -1078,6 +1088,7 @@ void uwu_kernel()
 		KERNEL_TO_UWU(splitted[i], "Linux", "Linuwu");
 		else KERNEL_TO_UWU(splitted[i], "linux", "linuwu");
 		else KERNEL_TO_UWU(splitted[i], "alpine", "Nyalpine");
+		else KERNEL_TO_UWU(splitted[i], "amogos", "AmogOwOS");
 		else KERNEL_TO_UWU(splitted[i], "arch", "Nyarch Linuwu");
 		else KERNEL_TO_UWU(splitted[i], "artix", "Nyartix Linuwu");
 		else KERNEL_TO_UWU(splitted[i], "debian", "Debinyan");
@@ -1120,26 +1131,26 @@ void uwu_kernel()
 
 void uwu_hw(char *hwname)
 {
-#define HW_TO_UWU(original, uwuified)   \
-    replace_ignorecase(hwname, original, uwuified);
+#define HW_TO_UWU(original, uwuified) \
+	replace_ignorecase(hwname, original, uwuified);
 
-    HW_TO_UWU("lenovo", "LenOwO")
-    HW_TO_UWU("cpu", "CPUwU")
-    HW_TO_UWU("gpu", "GPUwU")
-    HW_TO_UWU("graphics", "Gwaphics")
-    HW_TO_UWU("corporation", "COwOpowation")
-    HW_TO_UWU("nvidia", "NyaVIDIA")
-    HW_TO_UWU("mobile", "Mwobile")
-    HW_TO_UWU("intel", "Inteww")
-    HW_TO_UWU("radeon", "Radenyan")
-    HW_TO_UWU("geforce", "GeFOwOce")
-    HW_TO_UWU("raspberry", "Nyasberry")
-    HW_TO_UWU("broadcom", "Bwoadcom")
-    HW_TO_UWU("motorola", "MotOwOwa")
-    HW_TO_UWU("proliant", "ProLinyant")
-    HW_TO_UWU("poweredge", "POwOwEdge")
-    HW_TO_UWU("apple", "Nyapple")
-    HW_TO_UWU("electronic", "ElectrOwOnic")
+	HW_TO_UWU("lenovo", "LenOwO")
+	HW_TO_UWU("cpu", "CPUwU")
+	HW_TO_UWU("gpu", "GPUwU")
+	HW_TO_UWU("graphics", "Gwaphics")
+	HW_TO_UWU("corporation", "COwOpowation")
+	HW_TO_UWU("nvidia", "NyaVIDIA")
+	HW_TO_UWU("mobile", "Mwobile")
+	HW_TO_UWU("intel", "Inteww")
+	HW_TO_UWU("radeon", "Radenyan")
+	HW_TO_UWU("geforce", "GeFOwOce")
+	HW_TO_UWU("raspberry", "Nyasberry")
+	HW_TO_UWU("broadcom", "Bwoadcom")
+	HW_TO_UWU("motorola", "MotOwOwa")
+	HW_TO_UWU("proliant", "ProLinyant")
+	HW_TO_UWU("poweredge", "POwOwEdge")
+	HW_TO_UWU("apple", "Nyapple")
+	HW_TO_UWU("electronic", "ElectrOwOnic")
 
 #undef HW_TO_UWU
 }
@@ -1153,6 +1164,7 @@ void uwu_name()
 
 	// linux
 	STRING_TO_UWU("alpine", "Nyalpine");
+	else STRING_TO_UWU("amogos", "AmogOwOS");
 	else STRING_TO_UWU("arch", "Nyarch Linuwu");
 	else STRING_TO_UWU("arcolinux", "ArcOwO Linuwu");
 	else STRING_TO_UWU("artix", "Nyartix Linuwu");
