@@ -1055,7 +1055,7 @@ void print_image()
 			   "    error: viu\n"
 			   " is not installed\n"
 			   "   or the image\n"
-			   "   is not fount\n"
+			   "   is not found\n"
 			   "  Read IMAGES.md\n"
 			   "   for more info.\n\n",
 			   RED);
