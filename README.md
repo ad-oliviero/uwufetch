@@ -10,7 +10,7 @@ Nyalpine, Nyarch Linuwu, ArcOwO, Nyartix Linuwu, Debinyan, endevaOwO, Fedowa, Ge
 
 ### Partial support (Either no ASCII art, or no image is provided)
 
-AmogOwOS, KDE NeOwOn, nixOwOs; Plus FweeBSD, OwOpenBSD and macOwOS; Plus WinyandOwOws.
+AmogOwOS, KDE NeOwOn, nixOwOs, xuwulinux; Plus FweeBSD, OwOpenBSD and macOwOS; Plus WinyandOwOws.
 
 ## Building and installation
 

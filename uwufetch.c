@@ -678,7 +678,7 @@ void list(char *arg)
 	printf("%s -d <options>\n"
 		   "  Available distributions:\n"
 		   "    %sArch linux %sbased:\n"
-		   "      %sarch, arcolinux, %sartix, endeavouros %smanjaro, manjaro-arm\n\n"
+		   "      %sarch, arcolinux, %sartix, endeavouros %smanjaro, manjaro-arm, %sxerolinux\n\n"
 		   "    %sDebian/%sUbuntu %sbased:\n"
 		   "      %samogos, debian, %slinuxmint, neon %spop, %sraspbian %subuntu\n\n"
 		   "    %sBSD %sbased:\n"
@@ -686,7 +686,7 @@ void list(char *arg)
 		   "    %sOther/spare distributions:\n"
 		   "      %salpine, %sfedora, %sgentoo, %sslackware, %ssolus, %svoid, opensuse-leap, android, %sgnu, guix, %swindows, %sunknown\n\n",
 		   arg,
-		   BLUE, NORMAL, BLUE, MAGENTA, GREEN,									  // Arch based colors
+		   BLUE, NORMAL, BLUE, MAGENTA, GREEN, BLUE,							  // Arch based colors
 		   RED, YELLOW, NORMAL, RED, GREEN, BLUE, RED, YELLOW,					  // Debian based colors
 		   RED, NORMAL, RED, YELLOW, GREEN, YELLOW, RED, PINK, BLUE,			  // BSD colors
 		   NORMAL, BLUE, BLUE, PINK, MAGENTA, WHITE, GREEN, YELLOW, BLUE, WHITE); // Other/spare distributions colors
@@ -1122,6 +1122,7 @@ void uwu_kernel()
 		else KERNEL_TO_UWU(splitted[i], "solus", "sOwOlus");
 		else KERNEL_TO_UWU(splitted[i], "ubuntu", "Uwuntu");
 		else KERNEL_TO_UWU(splitted[i], "void", "OwOid");
+		else KERNEL_TO_UWU(splitted[i], "xerolinux", "xuwulinux");
 		else KERNEL_TO_UWU(splitted[i], "android", "Nyandroid"); // android at the end because it could be not considered as an actual distribution of gnu/linux
 
 		// BSD
@@ -1199,6 +1200,7 @@ void uwu_name()
 	else STRING_TO_UWU("solus", "sOwOlus");
 	else STRING_TO_UWU("ubuntu", "Uwuntu");
 	else STRING_TO_UWU("void", "OwOid");
+	else STRING_TO_UWU("xerolinux", "xuwulinux");
 	else STRING_TO_UWU("android", "Nyandroid"); // android at the end because it could be not considered as an actual distribution of gnu/linux
 
 	// BSD
