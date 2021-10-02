@@ -184,13 +184,13 @@ int main(int argc, char *argv[])
 void parse_config()
 {
 	char line[256];
-	char homedir[64];
-	sprintf(homedir, "%s", getenv("HOME"));
+	char *homedir = getenv("HOME");
 
 	// opening and reading the config file
 	FILE *config;
 	if (config_directory == NULL)
-		config = fopen(strcat(homedir, "/.config/uwufetch/config"), "r");
+	    if (homedir != NULL)
+		    config = fopen(strcat(homedir, "/.config/uwufetch/config"), "r");
 	else
 		config = fopen(config_directory, "r");
 	if (config == NULL)
@@ -479,7 +479,11 @@ void get_info()
 			if (sscanf(line, "model name    : %[^\n]", cpu_model))
 #endif
 				break;
-		sprintf(user, "%s", getenv("USER"));
+        char *tmp_user = getenv("USER");
+        if (tmp_user == NULL)
+            sprintf(user, "%s", "");
+        else
+		    sprintf(user, "%s", tmp_user);
 		if (iscygwin == 0)
 			fclose(os_release);
 	}
@@ -525,7 +529,11 @@ void get_info()
 	fclose(cpuinfo);
 #endif
 	gethostname(host, 256);
-	sprintf(shell, "%s", getenv("SHELL"));
+	char *tmp_shell = getenv("SHELL");
+	if (tmp_shell == NULL)
+	    sprintf(shell, "%s", "");
+	else
+	    sprintf(shell, "%s", tmp_shell);
 	if (strlen(shell) > 16)
 		memmove(&shell, &shell[27], strlen(shell)); // android shell was too long, this works only for termux
 
