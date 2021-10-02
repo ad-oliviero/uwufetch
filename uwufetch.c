@@ -184,7 +184,8 @@ int main(int argc, char *argv[])
 void parse_config()
 {
 	char line[256];
-	char *homedir = getenv("HOME");
+	char homedir[64];
+	sprintf(homedir, "%s", getenv("HOME"));
 
 	// opening and reading the config file
 	FILE *config;
@@ -524,7 +525,7 @@ void get_info()
 	fclose(cpuinfo);
 #endif
 	gethostname(host, 256);
-	sscanf(getenv("SHELL"), "%s", shell);
+	sprintf(shell, "%s", getenv("SHELL"));
 	if (strlen(shell) > 16)
 		memmove(&shell, &shell[27], strlen(shell)); // android shell was too long, this works only for termux
 
