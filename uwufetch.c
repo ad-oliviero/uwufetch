@@ -1155,9 +1155,9 @@ void uwu_hw(char *hwname)
 {
 #define HW_TO_UWU(original, uwuified) \
 	replace_ignorecase(hwname, original, uwuified);
-	replace(hwname, "CPU", "CC\bPUwU"); // for some reasons this caused a segfault, using a \b char fixes it
-	replace(hwname, "cpu", "CPUwU");
+
 	HW_TO_UWU("lenovo", "LenOwO")
+	HW_TO_UWU("cpu", "CC\bPUwU"); // for some reasons this caused a segfault, using a \b char fixes it
 	HW_TO_UWU("gpu", "GPUwU")
 	HW_TO_UWU("graphics", "Gwaphics")
 	HW_TO_UWU("corporation", "COwOpowation")
