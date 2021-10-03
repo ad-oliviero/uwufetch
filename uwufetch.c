@@ -188,9 +188,10 @@ void parse_config()
 
 	// opening and reading the config file
 	FILE *config;
-	if (config_directory == NULL)
+	if (config_directory == NULL) {
 	    if (homedir != NULL)
 		    config = fopen(strcat(homedir, "/.config/uwufetch/config"), "r");
+    }
 	else
 		config = fopen(config_directory, "r");
 	if (config == NULL)
@@ -738,7 +739,7 @@ void replace_ignorecase(char *original, char *search, char *replacer)
 	original[0] = 0;
 	strcpy(original, buffer);
 	replace(original, search, replacer);
-    return replace_ignorecase(original, search, replacer);
+    return replace(original, search, replacer);
 }
 
 void print_ascii()
