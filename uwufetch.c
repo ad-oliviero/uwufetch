@@ -738,8 +738,8 @@ void replace_ignorecase(char *original, char *search, char *replacer)
 
 	original[0] = 0;
 	strcpy(original, buffer);
-	replace(original, search, replacer);
-    return replace(original, search, replacer);
+
+    return replace_ignorecase(original, search, replacer);
 }
 
 void print_ascii()
