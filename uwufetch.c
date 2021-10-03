@@ -173,7 +173,7 @@ int main(int argc, char *argv[])
 
 	for (int i = 0; gpu_model[i][0]; i++)
 	{
-		uwu_hw(gpu_model[i]);
+        uwu_hw(gpu_model[i]);
 	}
 	uwu_hw(cpu_model);
 	uwu_hw(host_model);
@@ -708,10 +708,11 @@ replace("Hello World!", "World", "everyone")
 */
 void replace(char *original, char *search, char *replacer)
 {
-	char buffer[1024];
 	char *ch;
 	if (!(ch = strstr(original, search)))
 		return;
+
+	char buffer[1024];
 
 	strncpy(buffer, original, ch - original);
 	buffer[ch - original] = 0;
@@ -724,10 +725,11 @@ void replace(char *original, char *search, char *replacer)
 
 void replace_ignorecase(char *original, char *search, char *replacer)
 {
-	char buffer[1024];
 	char *ch;
 	if (!(ch = strcasestr(original, search)))
 		return;
+
+	char buffer[1024];
 
 	strncpy(buffer, original, ch - original);
 	buffer[ch - original] = 0;
@@ -735,7 +737,8 @@ void replace_ignorecase(char *original, char *search, char *replacer)
 
 	original[0] = 0;
 	strcpy(original, buffer);
-	return replace(original, search, replacer);
+	replace(original, search, replacer);
+    return replace_ignorecase(original, search, replacer);
 }
 
 void print_ascii()
