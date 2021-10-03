@@ -710,36 +710,29 @@ replace("Hello World!", "World", "everyone")
 void replace(char *original, char *search, char *replacer)
 {
 	char *ch;
-	if (!(ch = strstr(original, search)))
-		return;
-
 	char buffer[1024];
+	while (ch = strstr(original, search)) {
+    	strncpy(buffer, original, ch - original);
+    	buffer[ch - original] = 0;
+    	sprintf(buffer + (ch - original), "%s%s", replacer, ch + strlen(search));
 
-	strncpy(buffer, original, ch - original);
-	buffer[ch - original] = 0;
-	sprintf(buffer + (ch - original), "%s%s", replacer, ch + strlen(search));
-
-	original[0] = 0;
-	strcpy(original, buffer);
-	return replace(original, search, replacer);
+    	original[0] = 0;
+    	strcpy(original, buffer);
+    }
 }
 
 void replace_ignorecase(char *original, char *search, char *replacer)
 {
 	char *ch;
-	if (!(ch = strcasestr(original, search)))
-		return;
+    char buffer[1024];
+	while (ch = strcasestr(original, search)) {
+    	strncpy(buffer, original, ch - original);
+    	buffer[ch - original] = 0;
+    	sprintf(buffer + (ch - original), "%s%s", replacer, ch + strlen(search));
 
-	char buffer[1024];
-
-	strncpy(buffer, original, ch - original);
-	buffer[ch - original] = 0;
-	sprintf(buffer + (ch - original), "%s%s", replacer, ch + strlen(search));
-
-	original[0] = 0;
-	strcpy(original, buffer);
-
-    return replace_ignorecase(original, search, replacer);
+    	original[0] = 0;
+    	strcpy(original, buffer);
+    }
 }
 
 void print_ascii()
