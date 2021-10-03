@@ -173,7 +173,7 @@ int main(int argc, char *argv[])
 
 	for (int i = 0; gpu_model[i][0]; i++)
 	{
-        uwu_hw(gpu_model[i]);
+		uwu_hw(gpu_model[i]);
 	}
 	uwu_hw(cpu_model);
 	uwu_hw(host_model);
@@ -188,10 +188,11 @@ void parse_config()
 
 	// opening and reading the config file
 	FILE *config;
-	if (config_directory == NULL) {
-	    if (homedir != NULL)
-		    config = fopen(strcat(homedir, "/.config/uwufetch/config"), "r");
-    }
+	if (config_directory == NULL)
+	{
+		if (homedir != NULL)
+			config = fopen(strcat(homedir, "/.config/uwufetch/config"), "r");
+	}
 	else
 		config = fopen(config_directory, "r");
 	if (config == NULL)
@@ -480,11 +481,11 @@ void get_info()
 			if (sscanf(line, "model name    : %[^\n]", cpu_model))
 #endif
 				break;
-        char *tmp_user = getenv("USER");
-        if (tmp_user == NULL)
-            sprintf(user, "%s", "");
-        else
-		    sprintf(user, "%s", tmp_user);
+		char *tmp_user = getenv("USER");
+		if (tmp_user == NULL)
+			sprintf(user, "%s", "");
+		else
+			sprintf(user, "%s", tmp_user);
 		if (iscygwin == 0)
 			fclose(os_release);
 	}
@@ -532,9 +533,9 @@ void get_info()
 	gethostname(host, 256);
 	char *tmp_shell = getenv("SHELL");
 	if (tmp_shell == NULL)
-	    sprintf(shell, "%s", "");
+		sprintf(shell, "%s", "");
 	else
-	    sprintf(shell, "%s", tmp_shell);
+		sprintf(shell, "%s", tmp_shell);
 	if (strlen(shell) > 16)
 		memmove(&shell, &shell[27], strlen(shell)); // android shell was too long, this works only for termux
 
@@ -710,36 +711,32 @@ replace("Hello World!", "World", "everyone")
 void replace(char *original, char *search, char *replacer)
 {
 	char *ch;
-	if (!(ch = strstr(original, search)))
-		return;
-
 	char buffer[1024];
+	while ((ch = strstr(original, search)))
+	{
+		ch = strstr(original, search);
+		strncpy(buffer, original, ch - original);
+		buffer[ch - original] = 0;
+		sprintf(buffer + (ch - original), "%s%s", replacer, ch + strlen(search));
 
-	strncpy(buffer, original, ch - original);
-	buffer[ch - original] = 0;
-	sprintf(buffer + (ch - original), "%s%s", replacer, ch + strlen(search));
-
-	original[0] = 0;
-	strcpy(original, buffer);
-	return replace(original, search, replacer);
+		original[0] = 0;
+		strcpy(original, buffer);
+	}
 }
 
 void replace_ignorecase(char *original, char *search, char *replacer)
 {
 	char *ch;
-	if (!(ch = strcasestr(original, search)))
-		return;
-
 	char buffer[1024];
+	while ((ch = strcasestr(original, search)))
+	{
+		strncpy(buffer, original, ch - original);
+		buffer[ch - original] = 0;
+		sprintf(buffer + (ch - original), "%s%s", replacer, ch + strlen(search));
 
-	strncpy(buffer, original, ch - original);
-	buffer[ch - original] = 0;
-	sprintf(buffer + (ch - original), "%s%s", replacer, ch + strlen(search));
-
-	original[0] = 0;
-	strcpy(original, buffer);
-	replace(original, search, replacer);
-    return replace(original, search, replacer);
+		original[0] = 0;
+		strcpy(original, buffer);
+	}
 }
 
 void print_ascii()
@@ -1158,9 +1155,9 @@ void uwu_hw(char *hwname)
 {
 #define HW_TO_UWU(original, uwuified) \
 	replace_ignorecase(hwname, original, uwuified);
-
+	replace(hwname, "CPU", "CC\bPUwU"); // for some reasons this caused a segfault, using a \b char fixes it
+	replace(hwname, "cpu", "CPUwU");
 	HW_TO_UWU("lenovo", "LenOwO")
-	HW_TO_UWU("cpu", "CPUwU")
 	HW_TO_UWU("gpu", "GPUwU")
 	HW_TO_UWU("graphics", "Gwaphics")
 	HW_TO_UWU("corporation", "COwOpowation")
