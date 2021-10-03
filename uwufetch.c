@@ -175,7 +175,7 @@ int main(int argc, char *argv[])
 	{
 		uwu_hw(gpu_model[i]);
 	}
-	// uwu_hw("cpu");
+	uwu_hw(cpu_model);
 	uwu_hw(host_model);
 
 	print_info();
@@ -712,8 +712,9 @@ void replace(char *original, char *search, char *replacer)
 {
 	char *ch;
 	char buffer[1024];
-	while (ch = strstr(original, search))
+	while ((ch = strstr(original, search)))
 	{
+		ch = strstr(original, search);
 		strncpy(buffer, original, ch - original);
 		buffer[ch - original] = 0;
 		sprintf(buffer + (ch - original), "%s%s", replacer, ch + strlen(search));
@@ -727,7 +728,7 @@ void replace_ignorecase(char *original, char *search, char *replacer)
 {
 	char *ch;
 	char buffer[1024];
-	while (ch = strcasestr(original, search))
+	while ((ch = strcasestr(original, search)))
 	{
 		strncpy(buffer, original, ch - original);
 		buffer[ch - original] = 0;
@@ -1154,7 +1155,7 @@ void uwu_hw(char *hwname)
 {
 #define HW_TO_UWU(original, uwuified) \
 	replace_ignorecase(hwname, original, uwuified);
-	replace(hwname, "CPU", "CPUwU");
+	replace(hwname, "CPU", "CC\bPUwU"); // for some reasons this caused a segfault, using a \b char fixes it
 	replace(hwname, "cpu", "CPUwU");
 	HW_TO_UWU("lenovo", "LenOwO")
 	HW_TO_UWU("gpu", "GPUwU")
