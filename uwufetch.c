@@ -1158,7 +1158,7 @@ void uwu_hw(char *hwname)
 
 	HW_TO_UWU("lenovo", "LenOwO")
 	HW_TO_UWU("cpu", "CC\bPUwU"); // for some reasons this caused a segfault, using a \b char fixes it
-	HW_TO_UWU("gpu", "GPUwU")
+	HW_TO_UWU("gpu", "GG\bPUwU")
 	HW_TO_UWU("graphics", "Gwaphics")
 	HW_TO_UWU("corporation", "COwOpowation")
 	HW_TO_UWU("nvidia", "NyaVIDIA")
@@ -1171,7 +1171,7 @@ void uwu_hw(char *hwname)
 	HW_TO_UWU("motorola", "MotOwOwa")
 	HW_TO_UWU("proliant", "ProLinyant")
 	HW_TO_UWU("poweredge", "POwOwEdge")
-	HW_TO_UWU("apple", "Nyapple")
+	HW_TO_UWU("apple", "Nyaa\bpple")
 	HW_TO_UWU("electronic", "ElectrOwOnic")
 
 #undef HW_TO_UWU
