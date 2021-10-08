@@ -1,0 +1,1 @@
+UWUFETCH_CACHE_ENABLED=true ./uwufetch

@@ -108,8 +108,9 @@ void replace_ignorecase(char *original, char *search, char *replacer);
 void print_ascii();
 void print_unknown_ascii();
 void print_info();
-int write_cache();
-int read_cache();
+void write_cache();
+void read_cache();
+void print_cache();
 void print_image();
 void usage(char *);
 void uwu_kernel();
@@ -129,9 +130,7 @@ int main(int argc, char *argv[])
 		cache_enabled = (strcmp(buffer, "true") == 0 || strcmp(buffer, "TRUE") == 0 || strcmp(buffer, "1") == 0);
 		if (cache_enabled)
 		{
-			read_cache();
-			print_ascii();
-			print_info();
+			print_cache();
 			return 0;
 		}
 	}
@@ -149,7 +148,7 @@ int main(int argc, char *argv[])
 		{NULL, 0, NULL, 0}};
 	get_info();
 	parse_config();
-	while ((opt = getopt_long(argc, argv, "ac:d:ghi::l", long_options, NULL)) != -1)
+	while ((opt = getopt_long(argc, argv, "ac:d:hi::lw", long_options, NULL)) != -1)
 	{
 		switch (opt)
 		{
@@ -177,7 +176,8 @@ int main(int argc, char *argv[])
 			list(argv[0]);
 			return 0;
 		case 'w':
-			return write_cache();
+			write_cache();
+			return 0;
 		default:
 			break;
 		}
@@ -420,13 +420,13 @@ void print_info()
 			   BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, NORMAL);
 }
 
-int write_cache()
+void write_cache()
 {
 	char cache_file[512];
 	sprintf(cache_file, "%s/.cache/uwufetch.cache", getenv("HOME"));
 	FILE *cache_fp = fopen(cache_file, "w");
 	if (cache_fp == NULL)
-		return -1;
+		return;
 		// writing all info to the cache file
 #ifdef __APPLE__
 	uptime = uptime_mac();
@@ -437,7 +437,7 @@ int write_cache()
 	uptime = sys.uptime;
 #endif
 #endif
-	fprintf(cache_fp, "user=%s\nhost=%s\nversion_name=%s\nhost_model=%s\nkernel=%s\ncpu=%s\nram_used=%i\nram_total=%i\nscreen_width=%d\nscreen_height=%d\nshell=%s\npkgs=%d\npkgman_name=%s\nuptime=%li\n", user, host, version_name, host_model, kernel, cpu_model, ram_used, ram_total, screen_width, screen_height, shell, pkgs, pkgman_name, uptime);
+	fprintf(cache_fp, "user=%s\nhost=%s\nversion_name=%s\nhost_model=%s\nkernel=%s\ncpu=%s\nscreen_width=%d\nscreen_height=%d\nshell=%s\npkgs=%d\npkgman_name=%s\n", user, host, version_name, host_model, kernel, cpu_model, screen_width, screen_height, shell, pkgs, pkgman_name);
 
 	for (int i = 0; gpu_model[i][0]; i++)
 		fprintf(cache_fp, "gpu=%s\n", gpu_model[i]);
@@ -448,16 +448,16 @@ int write_cache()
 	system(brew_command); */
 #endif
 	fclose(cache_fp);
-	return 0;
+	return;
 }
 
-int read_cache()
+void read_cache()
 {
 	char cache_file[512];
 	sprintf(cache_file, "%s/.cache/uwufetch.cache", getenv("HOME"));
 	FILE *cache_fp = fopen(cache_file, "r");
 	if (cache_fp == NULL)
-		return -1;
+		return;
 
 	char line[256];
 
@@ -469,18 +469,87 @@ int read_cache()
 		sscanf(line, "host_model=%99[^\n]", host_model);
 		sscanf(line, "kernel=%99[^\n]", kernel);
 		sscanf(line, "cpu=%99[^\n]", cpu_model);
-		sscanf(line, "ram_used=%i", &ram_used);
-		sscanf(line, "ram_total=%i", &ram_total);
 		sscanf(line, "screen_width=%i", &screen_width);
 		sscanf(line, "screen_height=%i", &screen_height);
 		sscanf(line, "shell=%99[^\n]", shell);
 		sscanf(line, "pkgs=%i", &pkgs);
 		sscanf(line, "pkgman_name=%99[^\n]", pkgman_name);
-		sscanf(line, "uptime=%li", &uptime);
 	}
 
 	fclose(cache_fp);
-	return 0;
+	return;
+}
+
+void print_cache()
+{
+	char line[256];
+	read_cache();
+
+	// ram
+#ifndef __APPLE__
+#ifndef __CYGWIN__
+	FILE *meminfo;
+
+#ifdef __FREEBSD__
+	meminfo = popen("LANG=EN_us freecolor -om 2> /dev/null", "r");
+#else
+	meminfo = popen("LANG=EN_us free -m 2> /dev/null", "r");
+#endif
+	while (fgets(line, sizeof(line), meminfo))
+		// free command prints like this: "Mem:" total     used    free    shared  buff/cache      available
+		sscanf(line, "Mem: %d %d", &ram_total, &ram_used);
+	fclose(meminfo);
+#else
+	//wmic OS get FreePhysicalMemory
+
+	FILE *mem_used_fp;
+	mem_used_fp = popen("wmic OS GET FreePhysicalMemory | sed -n 2p", "r");
+	char mem_used_ch[2137];
+	while (fgets(mem_used_ch, sizeof(mem_used_ch), mem_used_fp) != NULL)
+		;
+	pclose(mem_used_fp);
+
+	int mem_used = atoi(mem_used_ch);
+
+	ram_used = mem_used / 1024;
+
+#endif
+#else
+	// Used
+	FILE *mem_wired_fp, *mem_active_fp, *mem_compressed_fp;
+	mem_wired_fp = popen("vm_stat | awk '/wired/ { printf $4 }' | cut -d '.' -f 1", "r");
+	mem_active_fp = popen("vm_stat | awk '/active/ { printf $3 }' | cut -d '.' -f 1", "r");
+	mem_compressed_fp = popen("vm_stat | awk '/occupied/ { printf $5 }' | cut -d '.' -f 1", "r");
+	char mem_wired_ch[2137], mem_active_ch[2137], mem_compressed_ch[2137];
+	while (fgets(mem_wired_ch, sizeof(mem_wired_ch), mem_wired_fp) != NULL)
+	{
+		while (fgets(mem_active_ch, sizeof(mem_active_ch), mem_active_fp) != NULL)
+		{
+			while (fgets(mem_compressed_ch, sizeof(mem_compressed_ch), mem_compressed_fp) != NULL)
+			{
+			}
+		}
+	}
+
+	pclose(mem_wired_fp);
+	pclose(mem_active_fp);
+	pclose(mem_compressed_fp);
+
+	int mem_wired = atoi(mem_wired_ch);
+	int mem_active = atoi(mem_active_ch);
+	int mem_compressed = atoi(mem_compressed_ch);
+
+	// Total
+	sysctlbyname("hw.memsize", &mem_buffer, &mem_buffer_len, NULL, 0);
+
+	ram_used = ((mem_wired + mem_active + mem_compressed) * 4 / 1024);
+#endif
+
+	sysinfo(&sys); // to get uptime
+
+	print_ascii();
+	print_info();
+	return;
 }
 
 void get_info()
@@ -654,11 +723,8 @@ void get_info()
 	mem_total_fp = popen("wmic ComputerSystem GET TotalPhysicalMemory | sed -n 2p", "r");
 	char mem_used_ch[2137], mem_total_ch[2137];
 	while (fgets(mem_used_ch, sizeof(mem_used_ch), mem_used_fp) != NULL)
-	{
 		while (fgets(mem_total_ch, sizeof(mem_total_ch), mem_total_fp) != NULL)
-		{
-		}
-	}
+			;
 
 	pclose(mem_used_fp);
 	pclose(mem_total_fp);

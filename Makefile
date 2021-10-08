@@ -27,7 +27,7 @@ build: $(FILES)
 debug:
 	@clear
 	$(CC) $(CFLAGS_DEBUG) -o $(NAME) $(FILES)
-	./uwufetch
+	UWUFETCH_CACHE_ENABLED=true ./uwufetch
 
 install:
 	mkdir -p $(DESTDIR)$(PREFIX) $(DESTDIR)$(LIBDIR)/uwufetch $(DESTDIR)$(MANDIR)
