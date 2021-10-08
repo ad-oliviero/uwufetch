@@ -96,7 +96,7 @@ int ascii_image_flag = 0, // when (0) ascii is printed, when (1) image is printe
 
 char user[32], host[256], shell[64], host_model[256], kernel[256], version_name[64], cpu_model[256],
 	gpu_model[64][256],
-	pkgman_name[64], image_name[128], *config_directory = NULL;
+	pkgman_name[64], image_name[128], *config_directory = NULL, *cache_content = NULL;
 
 // functions definitions, to use them in main()
 int pkgman();
@@ -108,28 +108,48 @@ void replace_ignorecase(char *original, char *search, char *replacer);
 void print_ascii();
 void print_unknown_ascii();
 void print_info();
+int write_cache();
+int read_cache();
 void print_image();
 void usage(char *);
 void uwu_kernel();
 void uwu_hw(char *);
 void uwu_name();
-void truncate_name(char *);
-void remove_brackets(char *);
+void truncate_name(char *name);
+void remove_brackets(char *str);
 
 int main(int argc, char *argv[])
 {
+	char *cache_env = getenv("UWUFETCH_CACHE_ENABLED");
+	int cache_enabled = 0;
+	if (cache_env != NULL)
+	{
+		char buffer[128];
+		sscanf(cache_env, "%[TRUEtrue1]", buffer);
+		cache_enabled = (strcmp(buffer, "true") == 0 || strcmp(buffer, "TRUE") == 0 || strcmp(buffer, "1") == 0);
+		if (cache_enabled)
+		{
+			read_cache();
+			print_ascii();
+			print_info();
+			return 0;
+		}
+	}
+
 	int opt = 0;
 	static struct option long_options[] = {
 		{"ascii", no_argument, NULL, 'a'},
 		{"config", required_argument, NULL, 'c'},
+		// {"cache", no_argument, NULL, 'C'},
 		{"distro", required_argument, NULL, 'd'},
+		{"write-cache", no_argument, NULL, 'w'},
 		{"help", no_argument, NULL, 'h'},
 		{"image", optional_argument, NULL, 'i'},
 		{"list", no_argument, NULL, 'l'},
 		{NULL, 0, NULL, 0}};
 	get_info();
 	parse_config();
-	while ((opt = getopt_long(argc, argv, "ac:d:hi::l", long_options, NULL)) != -1)
+	while ((opt = getopt_long(argc, argv, "ac:d:ghi::l", long_options, NULL)) != -1)
 	{
 		switch (opt)
 		{
@@ -156,6 +176,8 @@ int main(int argc, char *argv[])
 		case 'l':
 			list(argv[0]);
 			return 0;
+		case 'w':
+			return write_cache();
 		default:
 			break;
 		}
@@ -168,15 +190,6 @@ int main(int argc, char *argv[])
 	}
 	else if (ascii_image_flag == 1)
 		print_image();
-	uwu_kernel();
-	uwu_name();
-
-	for (int i = 0; gpu_model[i][0]; i++)
-	{
-		uwu_hw(gpu_model[i]);
-	}
-	uwu_hw(cpu_model);
-	uwu_hw(host_model);
 
 	print_info();
 }
@@ -184,14 +197,17 @@ int main(int argc, char *argv[])
 void parse_config()
 {
 	char line[256];
-	char *homedir = getenv("HOME");
+	char homedir[512];
 
 	// opening and reading the config file
 	FILE *config;
 	if (config_directory == NULL)
 	{
-		if (homedir != NULL)
-			config = fopen(strcat(homedir, "/.config/uwufetch/config"), "r");
+		if (getenv("HOME") != NULL)
+		{
+			sprintf(homedir, "%s/.config/uwufetch/config", getenv("HOME"));
+			config = fopen(homedir, "r");
+		}
 	}
 	else
 		config = fopen(config_directory, "r");
@@ -334,6 +350,7 @@ void print_info()
 	printf("\033[9A"); // to align info text
 	if (show_user_info)
 		printf("\033[18C%s%s%s@%s\n", NORMAL, BOLD, user, host);
+	uwu_name();
 	if (show_os)
 		printf("\033[18C%s%sOWOS        %s%s\n", NORMAL, BOLD, NORMAL, version_name);
 	if (show_host)
@@ -345,15 +362,9 @@ void print_info()
 
 	// print the gpus
 	if (show_gpu)
-	{
-		int gpu_iter = 0;
-		while (gpu_model[gpu_iter][0])
-		{
+		for (int i = 0; gpu_model[i][0]; i++)
 			printf("\033[18C%s%sGPUWU       %s%s\n",
-				   NORMAL, BOLD, NORMAL, gpu_model[gpu_iter]);
-			gpu_iter++;
-		}
-	}
+				   NORMAL, BOLD, NORMAL, gpu_model[i]);
 
 	// print ram to uptime and colors
 	if (show_ram)
@@ -371,20 +382,24 @@ void print_info()
 		system("ls $(brew --cellar) | wc -l | awk -F' ' '{print \"  \x1b[34mw         w     \x1b[0m\x1b[1mPKGS\x1b[0m        \"$1 \" (brew)\"}'");
 #else
 	if (show_pkgs)
-		printf("\033[18C%s%sPKGS        %s%s%d%s %s\n",
-			   NORMAL, BOLD, NORMAL, NORMAL, pkgs, ":", pkgman_name);
+		printf("\033[18C%s%sPKGS        %s%s%d: %s\n",
+			   NORMAL, BOLD, NORMAL, NORMAL, pkgs, pkgman_name);
 #endif
 	if (show_uptime)
 	{
+		if (uptime == 0)
+		{
+
 #ifdef __APPLE__
-		uptime = uptime_mac();
+			uptime = uptime_mac();
 #else
 #ifdef __FREEBSD__
-		uptime = uptime_freebsd();
+			uptime = uptime_freebsd();
 #else
-		uptime = sys.uptime;
+			uptime = sys.uptime;
 #endif
 #endif
+		}
 		switch (uptime)
 		{
 		case 0 ... 3599:
@@ -403,6 +418,69 @@ void print_info()
 	if (show_colors)
 		printf("\033[18C%s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n",
 			   BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, NORMAL);
+}
+
+int write_cache()
+{
+	char cache_file[512];
+	sprintf(cache_file, "%s/.cache/uwufetch.cache", getenv("HOME"));
+	FILE *cache_fp = fopen(cache_file, "w");
+	if (cache_fp == NULL)
+		return -1;
+		// writing all info to the cache file
+#ifdef __APPLE__
+	uptime = uptime_mac();
+#else
+#ifdef __FREEBSD__
+	uptime = uptime_freebsd();
+#else
+	uptime = sys.uptime;
+#endif
+#endif
+	fprintf(cache_fp, "user=%s\nhost=%s\nversion_name=%s\nhost_model=%s\nkernel=%s\ncpu=%s\nram_used=%i\nram_total=%i\nscreen_width=%d\nscreen_height=%d\nshell=%s\npkgs=%d\npkgman_name=%s\nuptime=%li\n", user, host, version_name, host_model, kernel, cpu_model, ram_used, ram_total, screen_width, screen_height, shell, pkgs, pkgman_name, uptime);
+
+	for (int i = 0; gpu_model[i][0]; i++)
+		fprintf(cache_fp, "gpu=%s\n", gpu_model[i]);
+
+#ifdef __APPLE__
+		/* char brew_command[2048];
+	sprintf(brew_command, "ls $(brew --cellar) | wc -l | awk -F' ' '{print \"  \x1b[34mw         w     \x1b[0m\x1b[1mPKGS\x1b[0m        \"$1 \" (brew)\"}' > %s", cache_file);
+	system(brew_command); */
+#endif
+	fclose(cache_fp);
+	return 0;
+}
+
+int read_cache()
+{
+	char cache_file[512];
+	sprintf(cache_file, "%s/.cache/uwufetch.cache", getenv("HOME"));
+	FILE *cache_fp = fopen(cache_file, "r");
+	if (cache_fp == NULL)
+		return -1;
+
+	char line[256];
+
+	while (fgets(line, sizeof(line), cache_fp))
+	{
+		sscanf(line, "user=%99[^\n]", user);
+		sscanf(line, "host=%99[^\n]", host);
+		sscanf(line, "version_name=%99[^\n]", version_name);
+		sscanf(line, "host_model=%99[^\n]", host_model);
+		sscanf(line, "kernel=%99[^\n]", kernel);
+		sscanf(line, "cpu=%99[^\n]", cpu_model);
+		sscanf(line, "ram_used=%i", &ram_used);
+		sscanf(line, "ram_total=%i", &ram_total);
+		sscanf(line, "screen_width=%i", &screen_width);
+		sscanf(line, "screen_height=%i", &screen_height);
+		sscanf(line, "shell=%99[^\n]", shell);
+		sscanf(line, "pkgs=%i", &pkgs);
+		sscanf(line, "pkgman_name=%99[^\n]", pkgman_name);
+		sscanf(line, "uptime=%li", &uptime);
+	}
+
+	fclose(cache_fp);
+	return 0;
 }
 
 void get_info()
@@ -680,6 +758,15 @@ void get_info()
 
 	// package count
 	pkgs = pkgman();
+
+	uwu_kernel();
+
+	for (int i = 0; gpu_model[i][0]; i++)
+	{
+		uwu_hw(gpu_model[i]);
+	}
+	uwu_hw(cpu_model);
+	uwu_hw(host_model);
 }
 
 void list(char *arg)
@@ -1075,14 +1162,16 @@ void print_image()
 void usage(char *arg)
 {
 	printf("Usage: %s <args>\n"
-		   "    -a, --ascii     prints logo as ascii text (default)\n"
-		   "    -c  --config    use custom config path\n"
-		   "    -d, --distro    lets you choose the logo to print\n"
-		   "    -h, --help      prints this help page\n"
-		   "    -i, --image     prints logo as image and use a custom image if provided\n"
-		   "                    %sworks in most terminals\n"
-		   "                    read README.md for more info%s\n"
-		   "    -l, --list      lists all supported distributions\n",
+		   "    -a, --ascii         prints logo as ascii text (default)\n"
+		   "    -c  --config        use custom config path\n"
+		   "    -d, --distro        lets you choose the logo to print\n"
+		   "    -h, --help          prints this help page\n"
+		   "    -i, --image         prints logo as image and use a custom image if provided\n"
+		   "                        %sworks in most terminals\n"
+		   "                        read README.md for more info%s\n"
+		   "    -l, --list          lists all supported distributions\n"
+		   "    -w, --write-cache   writes to the cache file (~/.cache/uwufetch.cache)\n"
+		   "    using the cache     set $UWUFETCH_CACHE_ENABLED to TRUE, true or 1\n",
 		   arg, BLUE, NORMAL);
 }
 
