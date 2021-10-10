@@ -109,7 +109,7 @@ void print_ascii();
 void print_unknown_ascii();
 void print_info();
 void write_cache();
-void read_cache();
+int read_cache();
 void print_cache();
 void print_image();
 void usage(char *);
@@ -128,10 +128,14 @@ int main(int argc, char *argv[])
 		char buffer[128];
 		sscanf(cache_env, "%[TRUEtrue1]", buffer);
 		cache_enabled = (strcmp(buffer, "true") == 0 || strcmp(buffer, "TRUE") == 0 || strcmp(buffer, "1") == 0);
-		if (cache_enabled)
-		{
-			print_cache();
-			return 0;
+		if (cache_enabled) {
+		    // if no cache file found write to it
+		    if (!read_cache()) {
+                get_info();
+                write_cache();
+			}
+            print_cache();
+            return 0;
 		}
 	}
 
@@ -177,6 +181,7 @@ int main(int argc, char *argv[])
 			return 0;
 		case 'w':
 			write_cache();
+			print_cache();
 			return 0;
 		default:
 			break;
@@ -451,13 +456,14 @@ void write_cache()
 	return;
 }
 
-void read_cache()
+// return whether the cache file is found
+int read_cache()
 {
 	char cache_file[512];
 	sprintf(cache_file, "%s/.cache/uwufetch.cache", getenv("HOME"));
 	FILE *cache_fp = fopen(cache_file, "r");
 	if (cache_fp == NULL)
-		return;
+		return 0;
 
 	char line[256];
 
@@ -477,14 +483,12 @@ void read_cache()
 	}
 
 	fclose(cache_fp);
-	return;
+	return 1;
 }
 
 void print_cache()
 {
 	char line[256];
-	read_cache();
-
 	// ram
 #ifndef __APPLE__
 #ifndef __CYGWIN__
