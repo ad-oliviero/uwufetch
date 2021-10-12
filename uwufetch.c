@@ -128,14 +128,16 @@ int main(int argc, char *argv[])
 		char buffer[128];
 		sscanf(cache_env, "%[TRUEtrue1]", buffer);
 		cache_enabled = (strcmp(buffer, "true") == 0 || strcmp(buffer, "TRUE") == 0 || strcmp(buffer, "1") == 0);
-		if (cache_enabled) {
-		    // if no cache file found write to it
-		    if (!read_cache()) {
-                get_info();
-                write_cache();
+		if (cache_enabled)
+		{
+			// if no cache file found write to it
+			if (!read_cache())
+			{
+				get_info();
+				write_cache();
 			}
-            print_cache();
-            return 0;
+			print_cache();
+			return 0;
 		}
 	}
 
@@ -467,6 +469,8 @@ int read_cache()
 
 	char line[256];
 
+	int gpun = 0;
+
 	while (fgets(line, sizeof(line), cache_fp))
 	{
 		sscanf(line, "user=%99[^\n]", user);
@@ -475,6 +479,8 @@ int read_cache()
 		sscanf(line, "host_model=%99[^\n]", host_model);
 		sscanf(line, "kernel=%99[^\n]", kernel);
 		sscanf(line, "cpu=%99[^\n]", cpu_model);
+		if (sscanf(line, "gpu=%99[^\n]", gpu_model[gpun]) != 0)
+			gpun++;
 		sscanf(line, "screen_width=%i", &screen_width);
 		sscanf(line, "screen_height=%i", &screen_height);
 		sscanf(line, "shell=%99[^\n]", shell);
