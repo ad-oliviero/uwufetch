@@ -136,6 +136,7 @@ int main(int argc, char *argv[])
 				get_info();
 				write_cache();
 			}
+			parse_config();
 			print_cache();
 			return 0;
 		}
