@@ -208,7 +208,7 @@ void parse_config()
 	char homedir[512];
 
 	// opening and reading the config file
-	FILE *config;
+	FILE *config=NULL;
 	if (config_directory == NULL)
 	{
 		if (getenv("HOME") != NULL)
@@ -581,6 +581,7 @@ void get_info()
 	FILE *host_model_info = fopen("/sys/devices/virtual/dmi/id/board_name", "r");
 	if (!host_model_info)
 		host_model_info = fopen("/sys/devices/virtual/dmi/id/product_name", "r");
+	fclose(host_model_info);
 #ifdef __FREEBSD__
 	host_model_info = popen("sysctl -a hw.hv_vendor", "r");
 	while (fgets(line, sizeof(line), host_model_info))
