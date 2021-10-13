@@ -218,7 +218,7 @@ void parse_config()
 		}
 	}
 	else
-			config = fopen(config_directory, "r");
+		config = fopen(config_directory, "r");
 	if (config == NULL)
 		return;
 
