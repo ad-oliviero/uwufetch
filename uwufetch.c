@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
 		int cache_enabled = 0;
 		char buffer[128];
 	
-		sscanf(cache_env, "%1[TRUEtrue1]", buffer);
+		sscanf(cache_env, "%4[TRUEtrue1]", buffer);
 		cache_enabled = (strcmp(buffer, "true") == 0 || strcmp(buffer, "TRUE") == 0 || strcmp(buffer, "1") == 0);
 		if (cache_enabled)
 		{
