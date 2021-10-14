@@ -122,11 +122,13 @@ void remove_brackets(char *str);
 int main(int argc, char *argv[])
 {
 	char *cache_env = getenv("UWUFETCH_CACHE_ENABLED");
-	int cache_enabled = 0;
 	if (cache_env != NULL)
-	{
+	{	
+
+		int cache_enabled = 0;
 		char buffer[128];
-		sscanf(cache_env, "%[TRUEtrue1]", buffer);
+	
+		sscanf(cache_env, "%4[TRUEtrue1]", buffer);
 		cache_enabled = (strcmp(buffer, "true") == 0 || strcmp(buffer, "TRUE") == 0 || strcmp(buffer, "1") == 0);
 		if (cache_enabled)
 		{
@@ -205,7 +207,6 @@ int main(int argc, char *argv[])
 void parse_config()
 {
 	char line[256];
-	char homedir[512];
 
 	// opening and reading the config file
 	FILE *config=NULL;
@@ -213,6 +214,7 @@ void parse_config()
 	{
 		if (getenv("HOME") != NULL)
 		{
+			char homedir[512];
 			sprintf(homedir, "%s/.config/uwufetch/config", getenv("HOME"));
 			config = fopen(homedir, "r");
 		}
@@ -313,7 +315,7 @@ int pkgman()
 			comma_separator++;
 
 			char spkg_count[16];
-			sprintf(spkg_count, "%d", pkg_count);
+			sprintf(spkg_count, "%u", pkg_count);
 			strcat(pkgman_name, spkg_count);
 			strcat(pkgman_name, " ");
 			strcat(pkgman_name, current->pkgman_name); // this is the line that breaks mac os, but something strange happens before
@@ -495,7 +497,6 @@ int read_cache()
 
 void print_cache()
 {
-	char line[256];
 	// ram
 #ifndef __APPLE__
 #ifndef __CYGWIN__
@@ -506,6 +507,7 @@ void print_cache()
 #else
 	meminfo = popen("LANG=EN_us free -m 2> /dev/null", "r");
 #endif
+	char line[256];
 	while (fgets(line, sizeof(line), meminfo))
 		// free command prints like this: "Mem:" total     used    free    shared  buff/cache      available
 		sscanf(line, "Mem: %d %d", &ram_total, &ram_used);
