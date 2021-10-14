@@ -123,11 +123,11 @@ int main(int argc, char *argv[])
 {
 	char *cache_env = getenv("UWUFETCH_CACHE_ENABLED");
 	if (cache_env != NULL)
-	{	
+	{
 
 		int cache_enabled = 0;
 		char buffer[128];
-	
+
 		sscanf(cache_env, "%4[TRUEtrue1]", buffer);
 		cache_enabled = (strcmp(buffer, "true") == 0 || strcmp(buffer, "TRUE") == 0 || strcmp(buffer, "1") == 0);
 		if (cache_enabled)
@@ -209,7 +209,7 @@ void parse_config()
 	char line[256];
 
 	// opening and reading the config file
-	FILE *config=NULL;
+	FILE *config = NULL;
 	if (config_directory == NULL)
 	{
 		if (getenv("HOME") != NULL)
@@ -497,8 +497,8 @@ int read_cache()
 
 void print_cache()
 {
-	// ram
 #ifndef __APPLE__
+	sysinfo(&sys); // to get uptime
 #ifndef __CYGWIN__
 	FILE *meminfo;
 
@@ -513,7 +513,7 @@ void print_cache()
 		sscanf(line, "Mem: %d %d", &ram_total, &ram_used);
 	fclose(meminfo);
 #else
-	//wmic OS get FreePhysicalMemory
+	// wmic OS get FreePhysicalMemory
 
 	FILE *mem_used_fp;
 	mem_used_fp = popen("wmic OS GET FreePhysicalMemory | sed -n 2p", "r");
@@ -528,7 +528,7 @@ void print_cache()
 
 #endif
 #else
-	// Used
+	// Used ram
 	FILE *mem_wired_fp, *mem_active_fp, *mem_compressed_fp;
 	mem_wired_fp = popen("vm_stat | awk '/wired/ { printf $4 }' | cut -d '.' -f 1", "r");
 	mem_active_fp = popen("vm_stat | awk '/active/ { printf $3 }' | cut -d '.' -f 1", "r");
@@ -552,13 +552,11 @@ void print_cache()
 	int mem_active = atoi(mem_active_ch);
 	int mem_compressed = atoi(mem_compressed_ch);
 
-	// Total
+	// Total ram
 	sysctlbyname("hw.memsize", &mem_buffer, &mem_buffer_len, NULL, 0);
-
 	ram_used = ((mem_wired + mem_active + mem_compressed) * 4 / 1024);
-#endif
 
-	sysinfo(&sys); // to get uptime
+#endif
 
 	print_ascii();
 	print_info();
@@ -730,7 +728,7 @@ void get_info()
 		sscanf(line, "Mem: %d %d", &ram_total, &ram_used);
 	fclose(meminfo);
 #else
-	//wmic OS get FreePhysicalMemory
+	// wmic OS get FreePhysicalMemory
 
 	FILE *mem_used_fp, *mem_total_fp;
 	mem_used_fp = popen("wmic OS GET FreePhysicalMemory | sed -n 2p", "r");
