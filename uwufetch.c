@@ -284,7 +284,7 @@ int pkgman()
 		{"flatpak list 2> /dev/null | wc -l", "(flatpak)"},
 		{"snap list 2> /dev/null | wc -l", "(snap)"},
 		{"guix package --list-installed 2> /dev/null | wc -l", "(guix)"},
-		{"nix-store -q --requisites /run/current-sys_vartem/sw 2> /dev/null | wc -l", "(nix)"},
+		{"nix-store -q --requisites /run/current-system/sw 2> /dev/null | wc -l", "(nix)"},
 		{"pacman -Qq 2> /dev/null | wc -l", "(pacman)"},
 		{"pkg info 2>/dev/null | wc -l", "(pkg)"},
 		{"port installed 2> /dev/null | tail -n +2 | wc -l", "(port)"},
