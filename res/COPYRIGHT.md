@@ -14,7 +14,7 @@ I am not a copyright expert, and maybe I am doing all wrong things, please corre
 ### Base artwork:
 
 -   Copyright Holder: mobilegmYT
--   License: THE "Sussy Baka" LICENSE, VERSION 1 (probably)
+-   License: [No license](https://github.com/TheDarkBug/uwufetch/pull/152#issuecomment-951941364)<!--License: THE "Sussy Baka" LICENSE, VERSION 1 (probably)-->
 
 #
 
