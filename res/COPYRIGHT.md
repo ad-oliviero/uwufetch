@@ -9,7 +9,7 @@ I am not a copyright expert, and maybe I am doing all wrong things, please corre
 
 ## AmogOS
 
-<img title="AmogOS" src="https://github.com/TheDarkBug/uwufetch/issues/151" alt="image" width="100">
+<img title="AmogOS" src="https://raw.githubusercontent.com/TheDarkBug/uwufetch/main/res/amogos.png" alt="image" width="100">
 
 ### Base artwork:
 
