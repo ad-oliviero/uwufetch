@@ -7,6 +7,17 @@ I am not a copyright expert, and maybe I am doing all wrong things, please corre
 
 # Copyrights
 
+## AmogOS
+
+<img title="AmogOS" src="https://raw.githubusercontent.com/TheDarkBug/uwufetch/main/res/amogos.png" alt="image" width="100">
+
+### Base artwork:
+
+-   Copyright Holder: mobilegmYT
+-   License: [No license](https://github.com/TheDarkBug/uwufetch/pull/152#issuecomment-951941364)<!--License: THE "Sussy Baka" LICENSE, VERSION 1 (probably)-->
+
+#
+
 ## Arch Linux
 
 <img title="Nyarch Linuwu" src="https://raw.githubusercontent.com/TheDarkBug/uwufetch/main/res/arch.png" alt="image" width="100">
