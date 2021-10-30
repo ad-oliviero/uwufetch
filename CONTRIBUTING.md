@@ -36,6 +36,7 @@ To contribute to this project, you should follow some rules to keep the code con
 ## Pull requests
 
 Before sending a pull request be sure that no one is already working on the same thing and to follow this guide-lines.
+Please add any external dependancies in the [README.md](https://github.com/TheDarkBug/uwufetch#requisites).
 
 With pull requests you can `[FIX]` a bug (reported or not), add `[OS-SUPPORT]`, add a `[NEW-FEATURE]` requested in an [issue](https://github.com/TheDarkBug/uwufetch/blob/main/CONTRIBUTING.md#issues), fix a `[TYPO]` or `[OPTIMIZE]` the code. For everything else do not use tags.
 

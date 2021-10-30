@@ -355,7 +355,6 @@ int uptime_freebsd()
 
 void print_info()
 {
-	// store sys info in the sys again
 	// print collected info - from host to cpu info
 	printf("\033[9A"); // to align info text
 	if (show_user_info)

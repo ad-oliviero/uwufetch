@@ -18,6 +18,8 @@ KDE NeOwOn, nixOwOs, xuwulinux; Plus FweeBSD, OwOpenBSD and macOwOS; Plus Winyan
 
 - [freecolor](http://www.rkeene.org/oss/freecolor/) to get ram usage on FreeBSD.
 
+- [xwininfo](https://github.com/freedesktop/xorg-xwininfo) to get screen resolution.
+
 - [viu](https://github.com/atanunq/viu) (optional) to use images instead of ascii art (see [How to use images](#how-to-use-images) below).
 
 - [lshw](https://github.com/lyonel/lshw) (optional) for better accuracy on GPU info.
