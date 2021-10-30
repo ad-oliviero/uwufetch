@@ -580,8 +580,8 @@ void get_info()
 #endif
 	FILE *host_model_info = fopen("/sys/devices/virtual/dmi/id/board_name", "r");
 	if (!host_model_info)
-		host_model_info = fopen("/sys/devices/virtual/dmi/id/product_name", "r");
-	fclose(host_model_info);
+		if ((host_model_info = fopen("/sys/devices/virtual/dmi/id/product_name", "r")) != NULL)
+			fclose(host_model_info);
 #ifdef __FREEBSD__
 	host_model_info = popen("sysctl -a hw.hv_vendor", "r");
 	while (fgets(line, sizeof(line), host_model_info))
