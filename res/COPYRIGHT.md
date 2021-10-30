@@ -69,8 +69,8 @@ I am not a copyright expert, and maybe I am doing all wrong things, please corre
 ### Modifications
 
 -   Description: uwu style
--   Copyright Holder: [u/akzcake](https://www.reddit.com/user/akzcake)
--   License: No license, just a reddit post
+-   Copyright Holder: [u/exxxxkc](https://www.reddit.com/user/exxxxkc)
+-   License: [DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE](https://www.reddit.com/r/linuxmasterrace/comments/ly6wd1/nyartix/gpxdwc2/?context=3) 2021-08-22
 -   [Reference](https://www.reddit.com/r/linuxmasterrace/comments/ly6wd1/nyartix/)
 
 #
