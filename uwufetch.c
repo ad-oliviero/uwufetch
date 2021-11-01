@@ -355,44 +355,65 @@ int uptime_freebsd()
 
 void print_info()
 {
+#define responsively_printf(buf, format, ...) {	\
+	sprintf(buf, format, __VA_ARGS__);			\
+	printf("%.*s\n", win.ws_col-1, buf);		\
+}
+	char print_buf[255]; // for responsively print
+
 	// print collected info - from host to cpu info
 	printf("\033[9A"); // to align info text
-	if (show_user_info)
-		printf("\033[18C%s%s%s@%s\n", NORMAL, BOLD, user, host);
+	if (show_user_info) {
+		responsively_printf(print_buf, "\033[18C%s%s%s@%s", NORMAL, BOLD, user, host);
+	}
 	uwu_name();
-	if (show_os)
-		printf("\033[18C%s%sOWOS        %s%s\n", NORMAL, BOLD, NORMAL, version_name);
-	if (show_host)
-		printf("\033[18C%s%sHOWOST      %s%s\n", NORMAL, BOLD, NORMAL, host_model);
-	if (show_kernel)
-		printf("\033[18C%s%sKEWNEL      %s%s\n", NORMAL, BOLD, NORMAL, kernel);
-	if (show_cpu)
-		printf("\033[18C%s%sCPUWU       %s%s\n", NORMAL, BOLD, NORMAL, cpu_model);
+	if (show_os) {
+		responsively_printf(print_buf, "\033[18C%s%sOWOS        %s%s", NORMAL, BOLD, NORMAL, version_name);
+	}
+	if (show_host) {
+		responsively_printf(print_buf, "\033[18C%s%sHOWOST      %s%s", NORMAL, BOLD, NORMAL, host_model);
+	}
+	if (show_kernel) {
+		responsively_printf(print_buf, "\033[18C%s%sKEWNEL      %s%s", NORMAL, BOLD, NORMAL, kernel);
+	}
+	if (show_cpu) {
+		responsively_printf(print_buf, "\033[18C%s%sCPUWU       %s%s", NORMAL, BOLD, NORMAL, cpu_model);
+	}
 
 	// print the gpus
-	if (show_gpu)
+	if (show_gpu) {
 		for (int i = 0; gpu_model[i][0]; i++)
-			printf("\033[18C%s%sGPUWU       %s%s\n",
-				   NORMAL, BOLD, NORMAL, gpu_model[i]);
+			responsively_printf(print_buf,
+			   "\033[18C%s%sGPUWU       %s%s",
+			   NORMAL, BOLD, NORMAL, gpu_model[i]);
+	}
 
 	// print ram to uptime and colors
-	if (show_ram)
-		printf("\033[18C%s%sWAM         %s%i MiB/%i MiB\n",
+	if (show_ram) {
+		responsively_printf(print_buf,
+			   "\033[18C%s%sWAM         %s%i MiB/%i MiB",
 			   NORMAL, BOLD, NORMAL, (ram_used), ram_total);
+	}
 	if (show_resolution)
-		if (screen_width != 0 || screen_height != 0)
-			printf("\033[18C%s%sRESOWUTION%s  %dx%d\n",
+		if (screen_width != 0 || screen_height != 0) {
+			responsively_printf(print_buf,
+				   "\033[18C%s%sRESOWUTION%s  %dx%d",
 				   NORMAL, BOLD, NORMAL, screen_width, screen_height);
-	if (show_shell)
-		printf("\033[18C%s%sSHEWW       %s%s\n",
+		}
+	if (show_shell) {
+		responsively_printf(print_buf,
+			   "\033[18C%s%sSHEWW       %s%s",
 			   NORMAL, BOLD, NORMAL, shell);
+	}
 #ifdef __APPLE__
 	if (show_pkgs)
 		system("ls $(brew --cellar) | wc -l | awk -F' ' '{print \"  \x1b[34mw         w     \x1b[0m\x1b[1mPKGS\x1b[0m        \"$1 \" (brew)\"}'");
 #else
-	if (show_pkgs)
-		printf("\033[18C%s%sPKGS        %s%s%d: %s\n",
+	if (show_pkgs) {
+		responsively_printf(print_buf,
+			   "\033[18C%s%sPKGS        %s%s%d: %s",
 			   NORMAL, BOLD, NORMAL, NORMAL, pkgs, pkgman_name);
+	}
 #endif
 	if (show_uptime)
 	{
@@ -412,15 +433,18 @@ void print_info()
 		switch (uptime)
 		{
 		case 0 ... 3599:
-			printf("\033[18C%s%sUWUPTIME    %s%lim\n",
+			responsively_printf(print_buf,
+				   "\033[18C%s%sUWUPTIME    %s%lim",
 				   NORMAL, BOLD, NORMAL, uptime / 60 % 60);
 			break;
 		case 3600 ... 86399:
-			printf("\033[18C%s%sUWUPTIME    %s%lih, %lim\n",
+			responsively_printf(print_buf,
+				   "\033[18C%s%sUWUPTIME    %s%lih, %lim",
 				   NORMAL, BOLD, NORMAL, uptime / 3600, uptime / 60 % 60);
 			break;
 		default:
-			printf("\033[18C%s%sUWUPTIME    %s%lid, %lih, %lim\n",
+			responsively_printf(print_buf,
+				   "\033[18C%s%sUWUPTIME    %s%lid, %lih, %lim",
 				   NORMAL, BOLD, NORMAL, uptime / 86400, uptime / 3600 % 24, uptime / 60 % 60);
 		}
 	}
