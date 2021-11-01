@@ -4,3 +4,4 @@ uwufetch
 *.vscode
 .DS_STORE
 .prettierrc
+*.exe
