@@ -24,13 +24,23 @@
 #if defined(__APPLE__) || defined(__FREEBSD__)
 #include <sys/sysctl.h>
 #include <time.h>
-#else
-#ifndef __FREEBSD__
+#else // defined(__APPLE__) || defined(__FREEBSD__)
+#ifdef __FREEBSD__
+#else // defined(__FREEBSD__) || defined(__WINDOWS__)
+#ifndef __WINDOWS__
 #include <sys/sysinfo.h>
-#endif
-#endif
+#else // __WINDOWS__
+#include <sysinfoapi.h>
+#endif // __WINDOWS__
+#endif // defined(__FREEBSD__) || defined(__WINDOWS__)
+#endif // defined(__APPLE__) || defined(__FREEBSD__)
+#ifndef __WINDOWS__
 #include <sys/utsname.h>
-#include <sys/ioctl.h>
+#include <ioctl.h>
+#else // __WINDOWS__
+#include <windows.h>
+CONSOLE_SCREEN_BUFFER_INFO csbi;
+#endif // __WINDOWS__
 
 // COLORS
 #define NORMAL "\x1b[0m"
@@ -38,6 +48,7 @@
 #define BLACK "\x1b[30m"
 #define RED "\x1b[31m"
 #define GREEN "\x1b[32m"
+#define SPRING_GREEN "\x1b[38;5;120m"
 #define YELLOW "\x1b[33m"
 #define BLUE "\x1b[34m"
 #define MAGENTA "\x1b[0;35m"
@@ -45,6 +56,12 @@
 #define WHITE "\x1b[37m"
 #define PINK "\x1b[38;5;201m"
 #define LPINK "\x1b[38;5;213m"
+
+#ifdef __WINDOWS__
+#define BLOCK_CHAR "\xdb"
+#else // __WINDOWS__
+#define BLOCK_CHAR "\u2587"
+#endif // __WINDOWS__
 #ifdef __APPLE__
 // buffers where data fetched from sysctl are stored
 // CPU
@@ -60,22 +77,31 @@ size_t mem_buffer_len = sizeof(mem_buffer);
 // uptime
 struct timeval time_buffer;
 size_t time_buffer_len = sizeof(time_buffer);
-#endif
+#endif // __APPLE__
 
 struct package_manager
 {
 	char command_string[128]; // command to get number of packages installed
 	char pkgman_name[16];	  // name of the package manager
 };
+#ifndef __WINDOWS__
 struct utsname sys_var;
+#endif // __WINDOWS__
 #ifndef __APPLE__
 #ifdef __linux__
 struct sysinfo sys;
-#endif
-#endif
+#else // __linux__
+#ifdef __WINDOWS__
+struct _SYSTEM_INFO sys;
+#endif // __WINDOWS__
+#endif // __linux__
+#endif // __APPLE__
+#ifndef __WINDOWS__
 struct winsize win;
+#else  // __WINDOWS__
+int ws_col, ws_rows;
+#endif // __WINDOWS__
 
-int iscygwin = 0;
 // initialise the variables to store data, gpu array can hold up to 8 gpus
 int target_width = 0, screen_width = 0, screen_height = 0, ram_total, ram_used = 0, pkgs = 0;
 long uptime = 0;
@@ -94,9 +120,15 @@ int ascii_image_flag = 0, // when (0) ascii is printed, when (1) image is printe
 	show_uptime = 1,
 	show_colors = 1;
 
-char user[32], host[256], shell[64], host_model[256], kernel[256], version_name[64], cpu_model[256],
+char user[128], host[256], shell[64], host_model[256], kernel[256], version_name[64], cpu_model[256],
 	gpu_model[64][256],
 	pkgman_name[64], image_name[128], *config_directory = NULL, *cache_content = NULL;
+
+#ifndef __WINDOWS__
+char *terminal_cursor_move = "\033[18C";
+#else  // __WINDOWS__
+char *terminal_cursor_move = "\033[21C";
+#endif // __WINDOWS__
 
 // functions definitions, to use them in main()
 int pkgman();
@@ -143,6 +175,10 @@ int main(int argc, char *argv[])
 			return 0;
 		}
 	}
+#ifdef __WINDOWS__
+	// packages disabled by default because chocolatey is slow
+	show_pkgs = 0;
+#endif
 
 	int opt = 0;
 	static struct option long_options[] = {
@@ -208,7 +244,6 @@ void parse_config()
 {
 	char line[256];
 
-	// opening and reading the config file
 	FILE *config = NULL;
 	if (config_directory == NULL)
 	{
@@ -216,11 +251,11 @@ void parse_config()
 		{
 			char homedir[512];
 			sprintf(homedir, "%s/.config/uwufetch/config", getenv("HOME"));
-			config = fopen(homedir, "r");
+			config = fopen(homedir, "r+");
 		}
 	}
 	else
-		config = fopen(config_directory, "r");
+		config = fopen(config_directory, "r+");
 	if (config == NULL)
 		return;
 
@@ -276,6 +311,7 @@ int pkgman()
 	int total = 0;
 
 #ifndef __APPLE__ // this function is not used on mac os because it causes lots of problems
+#ifndef __WINDOWS__
 	struct package_manager pkgmans[] = {
 		{"apt list --installed 2> /dev/null | wc -l", "(apt)"},
 		{"apk info 2> /dev/null | wc -l", "(apk)"},
@@ -292,15 +328,13 @@ int pkgman()
 		{"xbps-query -l 2> /dev/null | wc -l", "(xbps)"},
 		{"zypper -q se --installed-only 2> /dev/null | wc -l", "(zypper)"}};
 	const unsigned long pkgman_count = sizeof(pkgmans) / sizeof(pkgmans[0]);
-
 	//	to format the pkgman_name string properly
 	int comma_separator = 0;
-
 	for (long unsigned int i = 0; i < pkgman_count; i++)
 	{ // long unsigned int instead of int because of -Wsign-compare
 		struct package_manager *current = &pkgmans[i];
 
-		FILE *fp = popen(current->command_string, "r");
+		FILE *fp = popen(current->command_string, "r+");
 		unsigned int pkg_count;
 
 		if (fscanf(fp, "%u", &pkg_count) == 3)
@@ -321,6 +355,28 @@ int pkgman()
 			strcat(pkgman_name, current->pkgman_name); // this is the line that breaks mac os, but something strange happens before
 		}
 	}
+#else  // __WINDOWS__
+	if (show_pkgs)
+	{
+		FILE *fp = popen("choco list -l --no-color 2> nul", "r");
+		unsigned int pkg_count;
+		char buffer[7562] = {0};
+		while (fgets(buffer, sizeof(buffer), fp))
+		{
+			sscanf(buffer, "%u packages installed.", &pkg_count);
+		}
+		if (fp)
+			pclose(fp);
+
+		total = pkg_count;
+		char spkg_count[16];
+		sprintf(spkg_count, "%u", pkg_count);
+		strcat(pkgman_name, spkg_count);
+		strcat(pkgman_name, " ");
+		strcat(pkgman_name, "(chocolatey)");
+	}
+#endif // __WINDOWS__
+
 #endif
 	return total;
 }
@@ -355,65 +411,64 @@ int uptime_freebsd()
 
 void print_info()
 {
-#define responsively_printf(buf, format, ...) {	\
-	sprintf(buf, format, __VA_ARGS__);			\
-	printf("%.*s\n", win.ws_col-1, buf);		\
-}
-	char print_buf[255]; // for responsively print
+#ifdef __WINDOWS__
+#define responsively_printf(buf, format, ...) \
+	{                                         \
+		sprintf(buf, format, __VA_ARGS__);    \
+		printf("%.*s\n", ws_col - 1, buf);    \
+	}
+#else // __WINDOWS__
+#define responsively_printf(buf, format, ...)  \
+	{                                          \
+		sprintf(buf, format, __VA_ARGS__);     \
+		printf("%.*s\n", win.ws_col - 1, buf); \
+	}
+#endif					  // __WINDOWS__
+	char print_buf[1024]; // for responsively print
 
 	// print collected info - from host to cpu info
 	printf("\033[9A"); // to align info text
-	if (show_user_info) {
-		responsively_printf(print_buf, "\033[18C%s%s%s@%s", NORMAL, BOLD, user, host);
-	}
+	if (show_user_info)
+		responsively_printf(print_buf, "%s%s%s%s@%s", terminal_cursor_move, NORMAL, BOLD, user, host);
 	uwu_name();
-	if (show_os) {
-		responsively_printf(print_buf, "\033[18C%s%sOWOS        %s%s", NORMAL, BOLD, NORMAL, version_name);
-	}
-	if (show_host) {
-		responsively_printf(print_buf, "\033[18C%s%sHOWOST      %s%s", NORMAL, BOLD, NORMAL, host_model);
-	}
-	if (show_kernel) {
-		responsively_printf(print_buf, "\033[18C%s%sKEWNEL      %s%s", NORMAL, BOLD, NORMAL, kernel);
-	}
-	if (show_cpu) {
-		responsively_printf(print_buf, "\033[18C%s%sCPUWU       %s%s", NORMAL, BOLD, NORMAL, cpu_model);
-	}
+	if (show_os)
+		responsively_printf(print_buf, "%s%s%sOWOS        %s%s", terminal_cursor_move, NORMAL, BOLD, NORMAL, version_name);
+	if (show_host)
+		responsively_printf(print_buf, "%s%s%sHOWOST      %s%s", terminal_cursor_move, NORMAL, BOLD, NORMAL, host_model);
+	if (show_kernel)
+		responsively_printf(print_buf, "%s%s%sKEWNEL      %s%s", terminal_cursor_move, NORMAL, BOLD, NORMAL, kernel);
+	if (show_cpu)
+		responsively_printf(print_buf, "%s%s%sCPUWU       %s%s", terminal_cursor_move, NORMAL, BOLD, NORMAL, cpu_model);
 
 	// print the gpus
-	if (show_gpu) {
+	if (show_gpu)
 		for (int i = 0; gpu_model[i][0]; i++)
 			responsively_printf(print_buf,
-			   "\033[18C%s%sGPUWU       %s%s",
-			   NORMAL, BOLD, NORMAL, gpu_model[i]);
-	}
+								"%s%s%sGPUWU       %s%s",
+								terminal_cursor_move, NORMAL, BOLD, NORMAL, gpu_model[i]);
 
 	// print ram to uptime and colors
-	if (show_ram) {
+	if (show_ram)
 		responsively_printf(print_buf,
-			   "\033[18C%s%sWAM         %s%i MiB/%i MiB",
-			   NORMAL, BOLD, NORMAL, (ram_used), ram_total);
-	}
+							"%s%s%sWAM         %s%i MiB/%i MiB",
+							terminal_cursor_move, NORMAL, BOLD, NORMAL, (ram_used), ram_total);
 	if (show_resolution)
-		if (screen_width != 0 || screen_height != 0) {
+		if (screen_width != 0 || screen_height != 0)
 			responsively_printf(print_buf,
-				   "\033[18C%s%sRESOWUTION%s  %dx%d",
-				   NORMAL, BOLD, NORMAL, screen_width, screen_height);
-		}
-	if (show_shell) {
+								"%s%s%sRESOWUTION%s  %dx%d",
+								terminal_cursor_move, NORMAL, BOLD, NORMAL, screen_width, screen_height);
+	if (show_shell)
 		responsively_printf(print_buf,
-			   "\033[18C%s%sSHEWW       %s%s",
-			   NORMAL, BOLD, NORMAL, shell);
-	}
+							"%s%s%sSHEWW       %s%s",
+							terminal_cursor_move, NORMAL, BOLD, NORMAL, shell);
 #ifdef __APPLE__
 	if (show_pkgs)
 		system("ls $(brew --cellar) | wc -l | awk -F' ' '{print \"  \x1b[34mw         w     \x1b[0m\x1b[1mPKGS\x1b[0m        \"$1 \" (brew)\"}'");
 #else
-	if (show_pkgs) {
+	if (show_pkgs)
 		responsively_printf(print_buf,
-			   "\033[18C%s%sPKGS        %s%s%d: %s",
-			   NORMAL, BOLD, NORMAL, NORMAL, pkgs, pkgman_name);
-	}
+							"%s%s%sPKGS        %s%s%d: %s",
+							terminal_cursor_move, NORMAL, BOLD, NORMAL, NORMAL, pkgs, pkgman_name);
 #endif
 	if (show_uptime)
 	{
@@ -426,7 +481,11 @@ void print_info()
 #ifdef __FREEBSD__
 			uptime = uptime_freebsd();
 #else
+#ifdef __WINDOWS__
+			uptime = GetTickCount() / 1000;
+#else  // __WINDOWS__
 			uptime = sys.uptime;
+#endif // __WINDOWS__
 #endif
 #endif
 		}
@@ -434,23 +493,23 @@ void print_info()
 		{
 		case 0 ... 3599:
 			responsively_printf(print_buf,
-				   "\033[18C%s%sUWUPTIME    %s%lim",
-				   NORMAL, BOLD, NORMAL, uptime / 60 % 60);
+								"%s%s%sUWUPTIME    %s%lim",
+								terminal_cursor_move, NORMAL, BOLD, NORMAL, uptime / 60 % 60);
 			break;
 		case 3600 ... 86399:
 			responsively_printf(print_buf,
-				   "\033[18C%s%sUWUPTIME    %s%lih, %lim",
-				   NORMAL, BOLD, NORMAL, uptime / 3600, uptime / 60 % 60);
+								"%s%s%sUWUPTIME    %s%lih, %lim",
+								terminal_cursor_move, NORMAL, BOLD, NORMAL, uptime / 3600, uptime / 60 % 60);
 			break;
 		default:
 			responsively_printf(print_buf,
-				   "\033[18C%s%sUWUPTIME    %s%lid, %lih, %lim",
-				   NORMAL, BOLD, NORMAL, uptime / 86400, uptime / 3600 % 24, uptime / 60 % 60);
+								"%s%s%sUWUPTIME    %s%lid, %lih, %lim",
+								terminal_cursor_move, NORMAL, BOLD, NORMAL, uptime / 86400, uptime / 3600 % 24, uptime / 60 % 60);
 		}
 	}
 	if (show_colors)
-		printf("\033[18C%s%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\u2587\u2587%s\n",
-			   BOLD, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, NORMAL);
+		printf("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n",
+			   terminal_cursor_move, BOLD, BLACK, BLOCK_CHAR, BLOCK_CHAR, RED, BLOCK_CHAR, BLOCK_CHAR, GREEN, BLOCK_CHAR, BLOCK_CHAR, YELLOW, BLOCK_CHAR, BLOCK_CHAR, BLUE, BLOCK_CHAR, BLOCK_CHAR, MAGENTA, BLOCK_CHAR, BLOCK_CHAR, CYAN, BLOCK_CHAR, BLOCK_CHAR, WHITE, BLOCK_CHAR, BLOCK_CHAR, NORMAL);
 }
 
 void write_cache()
@@ -467,7 +526,9 @@ void write_cache()
 #ifdef __FREEBSD__
 	uptime = uptime_freebsd();
 #else
+#ifndef __WINDOWS__
 	uptime = sys.uptime;
+#endif // __WINDOWS__
 #endif
 #endif
 	fprintf(cache_fp, "user=%s\nhost=%s\nversion_name=%s\nhost_model=%s\nkernel=%s\ncpu=%s\nscreen_width=%d\nscreen_height=%d\nshell=%s\npkgs=%d\npkgman_name=%s\n", user, host, version_name, host_model, kernel, cpu_model, screen_width, screen_height, shell, pkgs, pkgman_name);
@@ -489,7 +550,7 @@ int read_cache()
 {
 	char cache_file[512];
 	sprintf(cache_file, "%s/.cache/uwufetch.cache", getenv("HOME"));
-	FILE *cache_fp = fopen(cache_file, "r");
+	FILE *cache_fp = fopen(cache_file, "r+");
 	if (cache_fp == NULL)
 		return 0;
 
@@ -521,41 +582,44 @@ int read_cache()
 void print_cache()
 {
 #ifndef __APPLE__
+#ifndef __WINDOWS__
 	sysinfo(&sys); // to get uptime
-#ifndef __CYGWIN__
+#endif			   // __WINDOWS__
 	FILE *meminfo;
 
 #ifdef __FREEBSD__
-	meminfo = popen("LANG=EN_us freecolor -om 2> /dev/null", "r");
-#else
-	meminfo = popen("LANG=EN_us free -m 2> /dev/null", "r");
-#endif
+	meminfo = popen("LANG=EN_us freecolor -om 2> /dev/null", "r+");
+#else  // __FREEBSD__
+	meminfo = popen("LANG=EN_us free -m 2> /dev/null", "r+");
+#endif // __FREEBSD__
 	char line[256];
 	while (fgets(line, sizeof(line), meminfo))
 		// free command prints like this: "Mem:" total     used    free    shared  buff/cache      available
 		sscanf(line, "Mem: %d %d", &ram_total, &ram_used);
 	fclose(meminfo);
-#else
+#elif defined(__WINDOWS__)
 	// wmic OS get FreePhysicalMemory
 
 	FILE *mem_used_fp;
-	mem_used_fp = popen("wmic OS GET FreePhysicalMemory | sed -n 2p", "r");
+	mem_used_fp = popen("wmic OS GET FreePhysicalMemory", "r+");
 	char mem_used_ch[2137];
+	printf("\n\n\n\\\n");
 	while (fgets(mem_used_ch, sizeof(mem_used_ch), mem_used_fp) != NULL)
-		;
+	{
+		printf("%s\n", mem_used_ch);
+	}
 	pclose(mem_used_fp);
 
 	int mem_used = atoi(mem_used_ch);
 
 	ram_used = mem_used / 1024;
 
-#endif
-#else
+#else // __APPLE__
 	// Used ram
 	FILE *mem_wired_fp, *mem_active_fp, *mem_compressed_fp;
-	mem_wired_fp = popen("vm_stat | awk '/wired/ { printf $4 }' | cut -d '.' -f 1", "r");
-	mem_active_fp = popen("vm_stat | awk '/active/ { printf $3 }' | cut -d '.' -f 1", "r");
-	mem_compressed_fp = popen("vm_stat | awk '/occupied/ { printf $5 }' | cut -d '.' -f 1", "r");
+	mem_wired_fp = popen("vm_stat | awk '/wired/ { printf $4 }' | cut -d '.' -f 1", "r+");
+	mem_active_fp = popen("vm_stat | awk '/active/ { printf $3 }' | cut -d '.' -f 1", "r+");
+	mem_compressed_fp = popen("vm_stat | awk '/occupied/ { printf $5 }' | cut -d '.' -f 1", "r+");
 	char mem_wired_ch[2137], mem_active_ch[2137], mem_compressed_ch[2137];
 	while (fgets(mem_wired_ch, sizeof(mem_wired_ch), mem_wired_fp) != NULL)
 	{
@@ -579,8 +643,7 @@ void print_cache()
 	sysctlbyname("hw.memsize", &mem_buffer, &mem_buffer_len, NULL, 0);
 	ram_used = ((mem_wired + mem_active + mem_compressed) * 4 / 1024);
 
-#endif
-
+#endif // __APPLE__
 	print_ascii();
 	print_info();
 	return;
@@ -590,86 +653,98 @@ void get_info()
 {					// get all necessary info
 	char line[256]; // var to scan file lines
 
-	// terminal width used to truncate long names
+// terminal width used to truncate long names
+#ifndef __WINDOWS__
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &win);
 	target_width = win.ws_col - 30;
+#else  // __WINDOWS__
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+	ws_col = csbi.srWindow.Right - csbi.srWindow.Left - 29;
+	ws_rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+#endif // __WINDOWS__
 
 	// os version, cpu and board info
-	FILE *os_release = fopen("/etc/os-release", "r");
+	FILE *os_release = fopen("/etc/os-release", "r+");
 #ifndef __FREEBSD__
-	FILE *cpuinfo = fopen("/proc/cpuinfo", "r");
+	FILE *cpuinfo = fopen("/proc/cpuinfo", "r+");
 #else
-	FILE *cpuinfo = popen("sysctl -a | egrep -i 'hw.model'", "r");
+	FILE *cpuinfo = popen("sysctl -a | egrep -i 'hw.model'", "r+");
 #endif
-	FILE *host_model_info = fopen("/sys/devices/virtual/dmi/id/board_name", "r");
+	FILE *host_model_info = fopen("/sys/devices/virtual/dmi/id/board_name", "r+");
 	if (!host_model_info)
 		if ((host_model_info = fopen("/sys/devices/virtual/dmi/id/product_name", "r")) != NULL)
 			fclose(host_model_info);
-#ifdef __FREEBSD__
-	host_model_info = popen("sysctl -a hw.hv_vendor", "r");
+#ifdef __WINDOWS__
+	host_model_info = popen("wmic computersystem get model", "r");
+	while (fgets(line, sizeof(line), host_model_info))
+	{
+		if (strstr(line, "Model") != 0)
+			continue;
+		else
+		{
+			sprintf(host_model, "%s", line);
+			host_model[strlen(host_model) - 2] = '\0';
+			break;
+		}
+	}
+#elif defined(__FREEBSD__)
+	host_model_info = popen("sysctl -a hw.hv_vendor", "r+");
 	while (fgets(line, sizeof(line), host_model_info))
 		if (sscanf(line, "hw.hv_vendor: %[^\n]", host_model))
 			break;
-#endif
+#endif // __WINDOWS__
 	FILE *host_model_version = fopen("/sys/devices/virtual/dmi/id/product_version", "r");
-#ifdef __CYGWIN__
-	iscygwin = 1;
-#endif
-	if (iscygwin == 1)
-		sprintf(version_name, "windows");
 
-	if (os_release || iscygwin == 1)
+	if (os_release)
 	{ // get normal vars
-		if (iscygwin == 0)
-		{
-			while (fgets(line, sizeof(line), os_release))
-				if (sscanf(line, "\nID=\"%s\"", version_name) || sscanf(line, "\nID=%s", version_name))
-					break;
+		while (fgets(line, sizeof(line), os_release))
+			if (sscanf(line, "\nID=\"%s\"", version_name) || sscanf(line, "\nID=%s", version_name))
+				break;
 
-			// trying to detect amogos because in its os-release file ID value is just "debian"
-			if (strcmp(version_name, "debian") == 0)
+		// trying to detect amogos because in its os-release file ID value is just "debian"
+		if (strcmp(version_name, "debian") == 0)
+		{
+			DIR *amogos_plymouth = opendir("/usr/share/plymouth/themes/amogos");
+			if (amogos_plymouth)
 			{
-				DIR *amogos_plymouth = opendir("/usr/share/plymouth/themes/amogos");
-				if (amogos_plymouth)
-				{
-					closedir(amogos_plymouth);
-					sprintf(version_name, "amogos");
-				}
+				closedir(amogos_plymouth);
+				sprintf(version_name, "amogos");
 			}
-			if (host_model_info)
+		}
+		if (host_model_info)
+		{
+			while (fgets(line, sizeof(line), host_model_info))
+				if (sscanf(line, "%[^\n]", host_model))
+					break;
+			if (host_model_version)
 			{
-				while (fgets(line, sizeof(line), host_model_info))
-					if (sscanf(line, "%[^\n]", host_model))
-						break;
-				if (host_model_version)
+				char version[32];
+				while (fgets(line, sizeof(line), host_model_version))
 				{
-					char version[32];
-					while (fgets(line, sizeof(line), host_model_version))
+					if (sscanf(line, "%[^\n]", version))
 					{
-						if (sscanf(line, "%[^\n]", version))
-						{
-							strcat(host_model, " ");
-							strcat(host_model, version);
-							break;
-						}
+						strcat(host_model, " ");
+						strcat(host_model, version);
+						break;
 					}
 				}
 			}
 		}
 		while (fgets(line, sizeof(line), cpuinfo))
+		{
 #ifdef __FREEBSD__
 			if (sscanf(line, "hw.model: %[^\n]", cpu_model))
 #else
 			if (sscanf(line, "model name    : %[^\n]", cpu_model))
-#endif
 				break;
+#endif // __FREEBSD__
+		}
 		char *tmp_user = getenv("USER");
 		if (tmp_user == NULL)
 			sprintf(user, "%s", "");
 		else
 			sprintf(user, "%s", tmp_user);
-		if (iscygwin == 0)
-			fclose(os_release);
+		fclose(os_release);
 	}
 	else
 	{ // try for android vars, next for macOS var, or unknown system
@@ -682,11 +757,11 @@ void get_info()
 			closedir(system_priv_app);
 			sprintf(version_name, "android");
 			// android vars
-			FILE *whoami = popen("whoami", "r");
+			FILE *whoami = popen("whoami", "r+");
 			if (fscanf(whoami, "%s", user) == 3)
 				sprintf(user, "unknown");
 			fclose(whoami);
-			host_model_info = popen("getprop ro.product.model", "r");
+			host_model_info = popen("getprop ro.product.model", "r+");
 			while (fgets(line, sizeof(line), host_model_info))
 				if (sscanf(line, "%[^\n]", host_model))
 					break;
@@ -712,7 +787,9 @@ void get_info()
 #ifndef __FREEBSD__
 	fclose(cpuinfo);
 #endif
+#ifndef __WINDOWS__
 	gethostname(host, 256);
+	// #endif // __WINDOWS__
 	char *tmp_shell = getenv("SHELL");
 	if (tmp_shell == NULL)
 		sprintf(shell, "%s", "");
@@ -720,64 +797,124 @@ void get_info()
 		sprintf(shell, "%s", tmp_shell);
 	if (strlen(shell) > 16)
 		memmove(&shell, &shell[27], strlen(shell)); // android shell was too long, this works only for termux
-
+#else
+	cpuinfo = popen("wmic cpu get caption", "r");
+	while (fgets(line, sizeof(line), cpuinfo))
+	{
+		if (strstr(line, "Caption") != 0)
+			continue;
+		else
+		{
+			sprintf(cpu_model, "%s", line);
+			cpu_model[strlen(cpu_model) - 2] = '\0';
+			break;
+		}
+	}
+	FILE *user_host_fp = popen("wmic computersystem get username", "r");
+	while (fgets(line, sizeof(line), user_host_fp))
+	{
+		if (strstr(line, "UserName") != 0)
+			continue;
+		else
+		{
+			sscanf(line, "%[^\\]%s", host, user);
+			memmove(user, user + 1, sizeof(user) - 1);
+			break;
+		}
+	}
+	FILE *shell_fp = popen("powershell $PSVersionTable", "r");
+	sprintf(shell, "PowerShell ");
+	char tmp_shell[64];
+	while (fgets(line, sizeof(line), shell_fp))
+		if (sscanf(line, "PSVersion                      %s", tmp_shell) != 0)
+			break;
+	strcat(shell, tmp_shell);
+#endif // __WINDOWS__
 	// truncate CPU name
 	truncate_name(cpu_model);
 
-	// system resources
+// system resources
+#ifndef __WINDOWS__
 	uname(&sys_var);
+#endif // __WINDOWS__
 #ifndef __APPLE__
 #ifndef __FREEBSD__
+#ifndef __WINDOWS__
 	sysinfo(&sys); // somehow this function has to be called again in print_info()
+#else			   // __WINDOWS__
+	GetSystemInfo(&sys);
+#endif			   // __WINDOWS__
 #endif
 #endif
 
+#ifndef __WINDOWS__
 	truncate_name(sys_var.release);
 	sprintf(kernel, "%s %s %s", sys_var.sysname, sys_var.release, sys_var.machine);
 	truncate_name(kernel);
+#else  // __WINDOWS__
+	sprintf(version_name, "windows");
+	FILE *kernel_fp = popen("wmic computersystem get systemtype", "r");
+	while (fgets(line, sizeof(line), kernel_fp))
+	{
+		if (strstr(line, "SystemType") != 0)
+			continue;
+		else
+		{
+			sprintf(kernel, "%s", line);
+			kernel[strlen(kernel) - 2] = '\0';
+			break;
+		}
+	}
+	if (kernel_fp != NULL)
+		pclose(kernel_fp);
+#endif // __WINDOWS__
 
-	// ram
+// ram
 #ifndef __APPLE__
-#ifndef __CYGWIN__
+#ifdef __WINDOWS__
+	FILE *mem_used_fp = popen("wmic os get freevirtualmemory", "r");
+	FILE *mem_total_fp = popen("wmic os get totalvirtualmemorysize", "r");
+	char mem_used_ch[2137] = {0}, mem_total_ch[2137] = {0};
+
+	while (fgets(mem_total_ch, sizeof(mem_total_ch), mem_total_fp) != NULL)
+	{
+		if (strstr(mem_total_ch, "TotalVirtualMemorySize") != 0)
+			continue;
+		else if (strstr(mem_total_ch, "  ") == 0)
+			continue;
+		else
+			ram_total = atoi(mem_total_ch) / 1024;
+	}
+	while (fgets(mem_used_ch, sizeof(mem_used_ch), mem_used_fp) != NULL)
+	{
+		if (strstr(mem_used_ch, "FreeVirtualMemory") != 0)
+			continue;
+		else if (strstr(mem_used_ch, "  ") == 0)
+			continue;
+		else
+			ram_used = ram_total - (atoi(mem_used_ch) / 1024);
+	}
+	pclose(mem_used_fp);
+	pclose(mem_total_fp);
+#else
 	FILE *meminfo;
 
 #ifdef __FREEBSD__
-	meminfo = popen("LANG=EN_us freecolor -om 2> /dev/null", "r");
+	meminfo = popen("LANG=EN_us freecolor -om 2> /dev/null", "r+");
 #else
-	meminfo = popen("LANG=EN_us free -m 2> /dev/null", "r");
+	meminfo = popen("LANG=EN_us free -m 2> /dev/null", "r+");
 #endif
 	while (fgets(line, sizeof(line), meminfo))
 		// free command prints like this: "Mem:" total     used    free    shared  buff/cache      available
 		sscanf(line, "Mem: %d %d", &ram_total, &ram_used);
 	fclose(meminfo);
-#else
-	// wmic OS get FreePhysicalMemory
-
-	FILE *mem_used_fp, *mem_total_fp;
-	mem_used_fp = popen("wmic OS GET FreePhysicalMemory | sed -n 2p", "r");
-	mem_total_fp = popen("wmic ComputerSystem GET TotalPhysicalMemory | sed -n 2p", "r");
-	char mem_used_ch[2137], mem_total_ch[2137];
-	while (fgets(mem_used_ch, sizeof(mem_used_ch), mem_used_fp) != NULL)
-		while (fgets(mem_total_ch, sizeof(mem_total_ch), mem_total_fp) != NULL)
-			;
-
-	pclose(mem_used_fp);
-	pclose(mem_total_fp);
-
-	int mem_used = atoi(mem_used_ch);
-
-	ram_used = mem_used / 1024;
-
-	// I couldn't get it to show the total amount of ram correctly, so for now this cursed method here
-	ram_total = mem_total_ch;
-	ram_total = ram_total * -1;
 #endif
 #else
 	// Used
 	FILE *mem_wired_fp, *mem_active_fp, *mem_compressed_fp;
-	mem_wired_fp = popen("vm_stat | awk '/wired/ { printf $4 }' | cut -d '.' -f 1", "r");
-	mem_active_fp = popen("vm_stat | awk '/active/ { printf $3 }' | cut -d '.' -f 1", "r");
-	mem_compressed_fp = popen("vm_stat | awk '/occupied/ { printf $5 }' | cut -d '.' -f 1", "r");
+	mem_wired_fp = popen("vm_stat | awk '/wired/ { printf $4 }' | cut -d '.' -f 1", "r+");
+	mem_active_fp = popen("vm_stat | awk '/active/ { printf $3 }' | cut -d '.' -f 1", "r+");
+	mem_compressed_fp = popen("vm_stat | awk '/occupied/ { printf $5 }' | cut -d '.' -f 1", "r+");
 	char mem_wired_ch[2137], mem_active_ch[2137], mem_compressed_ch[2137];
 	while (fgets(mem_wired_ch, sizeof(mem_wired_ch), mem_wired_fp) != NULL)
 	{
@@ -805,10 +942,12 @@ void get_info()
 #endif
 
 	/* ---------- gpu ---------- */
-	int gpun = 0;				// number of the gpu that the program is searching for to put in the array
+	int gpun = 0; // number of the gpu that the program is searching for to put in the array
+#ifndef __WINDOWS__
 	setenv("LANG", "en_US", 1); // force language to english
+#endif							// __WINDOWS__
 	FILE *gpu;
-	gpu = popen("lshw -class display 2> /dev/null", "r");
+	gpu = popen("lshw -class display 2> /dev/null", "r+");
 
 	// add all gpus to the array gpu_model
 	while (fgets(line, sizeof(line), gpu))
@@ -821,17 +960,17 @@ void get_info()
 		if (strcmp(version_name, "android") != 0)
 		{
 #ifndef __APPLE__
-#ifdef __CYGWIN__
-			gpu = popen("wmic PATH Win32_VideoController GET Name | sed -n 2p", "r");
+#ifdef __WINDOWS__
+			gpu = popen("wmic PATH Win32_VideoController GET Name | sed -n 2p", "r+");
 #else
-			gpu = popen("lspci -mm 2> /dev/null | grep \"VGA\" | awk -F '\"' '{print $4 $5 $6}'", "r");
+			gpu = popen("lspci -mm 2> /dev/null | grep \"VGA\" | awk -F '\"' '{print $4 $5 $6}'", "r+");
 #endif
 #else
-			gpu = popen("system_profiler SPDisplaysDataType | awk -F ': ' '/Chipset Model: /{ print $2 }'", "r");
+			gpu = popen("system_profiler SPDisplaysDataType | awk -F ': ' '/Chipset Model: /{ print $2 }'", "r+");
 #endif
 		}
 		else
-			gpu = popen("getprop ro.hardware.vulkan 2> /dev/null", "r");
+			gpu = popen("getprop ro.hardware.vulkan 2> /dev/null", "r+");
 	}
 
 	// get all the gpus
@@ -850,7 +989,7 @@ void get_info()
 	}
 
 	// Resolution
-	FILE *resolution = popen("xwininfo -root 2> /dev/null | grep -E 'Width|Height'", "r");
+	FILE *resolution = popen("xwininfo -root 2> /dev/null | grep -E 'Width|Height'", "r+");
 	while (fgets(line, sizeof(line), resolution))
 	{
 		sscanf(line, "  Width: %d", &screen_width);
@@ -916,7 +1055,11 @@ void replace_ignorecase(char *original, char *search, char *replacer)
 {
 	char *ch;
 	char buffer[1024];
+#ifndef __WINDOWS__
 	while ((ch = strcasestr(original, search)))
+#else
+	while ((ch = strstr(original, search)))
+#endif // __WINDOWS__
 	{
 		strncpy(buffer, original, ch - original);
 		buffer[ch - original] = 0;
@@ -934,7 +1077,7 @@ void print_ascii()
 	char ascii_file[1024];
 	// First tries to get ascii art file from local directory. Good when modifying these files.
 	sprintf(ascii_file, "./res/ascii/%s.txt", version_name);
-	file = fopen(ascii_file, "r");
+	file = fopen(ascii_file, "r+");
 	// Now tries to get file from normal directory
 	if (!file)
 	{
@@ -946,7 +1089,7 @@ void print_ascii()
 		{
 			sprintf(ascii_file, "/usr/lib/uwufetch/ascii/%s.txt", version_name);
 		}
-		file = fopen(ascii_file, "r");
+		file = fopen(ascii_file, "r+");
 		if (!file)
 		{
 			// Prevent infinite loops
@@ -967,6 +1110,7 @@ void print_ascii()
 		replace(line, "{BLACK}", BLACK);
 		replace(line, "{RED}", RED);
 		replace(line, "{GREEN}", GREEN);
+		replace(line, "{SPRING_GREEN}", SPRING_GREEN);
 		replace(line, "{YELLOW}", YELLOW);
 		replace(line, "{BLUE}", BLUE);
 		replace(line, "{MAGENTA}", MAGENTA);
@@ -974,7 +1118,9 @@ void print_ascii()
 		replace(line, "{WHITE}", WHITE);
 		replace(line, "{PINK}", PINK);
 		replace(line, "{LPINK}", LPINK);
-		// For manjaro and amogos
+		// For manjaro and amogos and windows
+		replace(line, "{BLOCK}", "\xdc");
+		replace(line, "{BLOCK_VERTICAL}", "\xdb");
 		replace(line, "{BACKGROUND_GREEN}", "\e[0;42m");
 		replace(line, "{BACKGROUND_RED}", "\e[0;41m");
 		replace(line, "{BACKGROUND_WHITE}", "\e[0;47m");
@@ -983,254 +1129,6 @@ void print_ascii()
 	// Always set color to NORMAL, so there's no need to do this in every ascii file.
 	printf(NORMAL);
 	fclose(file);
-
-	/*
-	// linux
-	if (strcmp(version_name, "alpine") == 0)
-	{
-		printf("\033[2E\033[4C%s.  .___.\n"
-			   "   / \\/ \\  /\n"
-			   "  /O\u03c9O\\ɛU\\/   __\n"
-			   " /     \\  \\__/  \\\n"
-			   "/       \\  \\\n\n\n",
-			   BLUE);
-	}
-	else if (strcmp(version_name, "arch") == 0)
-	{
-		printf("\033[1E\033[8C%s/\\\n"
-			   "       /  \\\n"
-			   "      /\\   \\\n"
-			   "     / > \u03c9 <\\\n"
-			   "    /   __   \\\n"
-			   "   / __|  |__-\\\n"
-			   "  /_-''    ''-_\\\n\n",
-			   BLUE);
-	}
-	else if (strcmp(version_name, "artix") == 0)
-	{
-		printf("\033[1E\033[8C%s/\\\n"
-			   "       /  \\\n"
-			   "      /`'.,\\\n"
-			   "     /\u2022 w \u2022 \\\n"
-			   "    /      ,`\\\n"
-			   "   /   ,.'`.  \\\n"
-			   "  /.,'`     `'.\\\n\n",
-			   BLUE);
-	}
-	else if (strcmp(version_name, "debian") == 0)
-	{
-		printf("\033[1E\033[6C%s______\n"
-			   "     /  ___ \\\n"
-			   "    |  / O\u03c9O |\n"
-			   "    |  \\____-\n"
-			   "    -_\n"
-			   "      --_\n\n\n",
-			   RED);
-	}
-	else if (strcmp(version_name, "endeavouros") == 0 || strcmp(version_name, "EndeavourOS") == 0)
-	{
-		printf("\033[2E\033[8C%s/\\\n"
-			   "       %s/%s/ \\%s\\\n"
-			   "      %s/%s/>\u03c9<\\%s\\\n"
-			   "     %s/%s/     \\ %s\\\n"
-			   "   %s/ %s/      _) %s) \n"
-			   "  %s/_%s/___-- %s___-\n"
-			   "   /____---\n\n",
-			   MAGENTA, RED, MAGENTA, BLUE, RED, MAGENTA, BLUE, RED, MAGENTA, BLUE, RED, MAGENTA, BLUE, RED, MAGENTA, BLUE);
-	}
-	else if (strcmp(version_name, "fedora") == 0)
-	{
-		printf("\033[1E\033[8C%s_____\n"
-			   "       /   __)%s\\\n"
-			   "     %s> %s|  / %s<%s\\ \\\n"
-			   "    __%s_| %s\u03c9%s|_%s_/ /\n"
-			   "   / %s(_    _)%s_/\n"
-			   "  / /  %s|  |\n"
-			   "  %s\\ \\%s__/  |\n"
-			   "   %s\\%s(_____/\n",
-			   BLUE, CYAN, WHITE, BLUE, WHITE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE, CYAN, BLUE);
-	}
-	else if (strcmp(version_name, "gentoo") == 0)
-	{
-		printf("\033[1E\033[3C%s_-----_\n"
-			   "  (       \\\n"
-			   "  \\   O\u03c9O   \\\n"
-			   "%s   \\         )\n"
-			   "   /       _/\n"
-			   "  (      _-\n"
-			   "  \\____-\n\n",
-			   MAGENTA, WHITE);
-	}
-	else if (strcmp(version_name, "gnu") == 0 || strcmp(version_name, "guix") == 0)
-	{
-		printf("\033[3E\033[3C%s,= %s,-_-. %s=.\n"
-			   "  ((_/%s)%sU U%s(%s\\_))\n"
-			   "   `-'%s(. .)%s`-'\n"
-			   "       %s\\%sw%s/\n"
-			   "        \u00af\n\n",
-			   WHITE, YELLOW, WHITE, YELLOW, WHITE, YELLOW, WHITE, YELLOW, WHITE, YELLOW, WHITE, YELLOW);
-	}
-	else if (strcmp(version_name, "manjaro") == 0 || strcmp(version_name, "manjaro-arm") == 0)
-	{
-		printf("\033[0E\033[1C\u25b3       \u25b3   \u25e0\u25e0\u25e0\u25e0\n"
-			   " \e[0;42m          \e[0m  \e[0;42m    \e[0m\n"
-			   " \e[0;42m \e[0m\e[0;42m\e[1;30m > \u03c9 < \e[0m\e[0;42m  \e[0m  \e[0;42m    \e[0m\n"
-			   " \e[0;42m    \e[0m        \e[0;42m    \e[0m\n"
-			   " \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n"
-			   " \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n"
-			   " \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n"
-			   " \e[0;42m    \e[0m  \e[0;42m    \e[0m  \e[0;42m    \e[0m\n");
-	}
-	else if (strcmp(version_name, "linuxmint") == 0)
-	{
-		printf("\033[2E\033[4C%s__/\\____/\\.\n"
-			   "   |%s.--.      %s|\n"
-			   "  %s, %s¯| %s| U\u03c9U| %s|\n"
-			   " %s||  %s| %s|    | %s|\n"
-			   " %s |  %s|  %s----  %s|\n"
-			   " %s  --%s'--------'\n\n",
-			   GREEN, WHITE, GREEN, WHITE,
-			   GREEN, WHITE, GREEN, WHITE, GREEN, WHITE, GREEN, WHITE,
-			   GREEN, WHITE, GREEN, WHITE, GREEN);
-	}
-	else if (strcmp(version_name, "opensuse-leap") == 0 || strcmp(version_name, "opensuse-tumbleweed") == 0)
-	{
-		printf("\033[3E\033[3C%s|\\----/|\n"
-			   " _ /   %sO O%s\\\n"
-			   " __.    \u03c9 /\n"
-			   "    '----'\n\n\n",
-			   GREEN, WHITE, GREEN);
-	}
-	else if (strcmp(version_name, "pop") == 0)
-	{
-		printf("\033[2E\033[6C%s|\\.-----./|\n"
-			   "      |/       \\|\n"
-			   "      |  >   <  |\n"
-			   "      | %s~  %sP! %s~ %s|\n"
-			   "_   ---\\   \u03c9   /\n"
-			   " \\_/    '-----'\n\n",
-			   BLUE, LPINK, WHITE, LPINK, BLUE);
-	}
-	else if (strcmp(version_name, "raspbian") == 0)
-	{
-		printf("\033[0E\033[6C%s__  __\n"
-			   "     (_\\)(/_)\n"
-			   "     %s(>(__)<)\n"
-			   "    (_(_)(_)_)\n"
-			   "     (_(__)_)\n"
-			   "       (__)\n\n\n",
-			   GREEN, RED);
-	}
-	else if (strcmp(version_name, "slackware") == 0)
-	{
-		printf("\033[2E\033[6C%s|\\.-----./|\n"
-			   "      |/       \\|\n"
-			   "      |  >   <  |\n"
-			   "      | %s~  %sS   %s~ %s|\n"
-			   "_   ---\\   \u03c9   /\n"
-			   " \\_/    '-----'\n\n",
-			   MAGENTA, LPINK, WHITE, LPINK, MAGENTA);
-	}
-	else if (strcmp(version_name, "solus") == 0)
-	{
-		printf("\033[2E\033[6C%s|\\.-----./|\n"
-			   "      | \\     / |\n"
-			   "      |/ >   <\\ |\n"
-			   "      |%s_%s~%s_____%s~%s\\|\n"
-			   "%s_   ---\\   %sω   %s/\n"
-			   " \\_/    '-----'\n\n",
-			   WHITE, BLUE, LPINK, BLUE, LPINK, WHITE, BLUE, WHITE, BLUE);
-	}
-	else if (strcmp(version_name, "ubuntu") == 0)
-	{
-		printf("\033[1E\033[9C%s_\n"
-			   "     %s\u25E3%s__(_)%s\u25E2%s\n"
-			   "   _/  ---  \\\n"
-			   "  (_) |>\u03c9<| |\n"
-			   "    \\  --- _/\n"
-			   "  %sC__/%s---(_)\n\n\n",
-			   LPINK, PINK, LPINK, PINK, LPINK, PINK, LPINK);
-	}
-	else if (strcmp(version_name, "void") == 0)
-	{
-		printf("\033[2E\033[2C%s |\\_____/|\n"
-			   "  _\\____   |\n"
-			   " | \\    \\  |\n"
-			   " | | %s\u00d2\u03c9\u00d3 %s| |     ,\n"
-			   " | \\_____\\_|-,  |\n"
-			   " -_______\\    \\_/\n\n",
-			   GREEN, WHITE, GREEN);
-	}
-	else if (strcmp(version_name, "android") == 0)
-	{ // android at the end because it could be not considered as an actual distribution of gnu/linux
-		printf("\033[2E\033[3C%s\\ _------_ /\n"
-			   "   /          \\\n"
-			   "  | %s~ %s> \u03c9 < %s~  %s|\n"
-			   "   ------------\n\n\n\n",
-			   GREEN, RED, GREEN, RED, GREEN);
-	}
-
-	// BSD
-	else if (strcmp(version_name, "freebsd") == 0)
-	{
-		printf("\033[2E\033[1C%s/\\,-'''''-,/\\\n"
-			   " \\_)       (_/\n"
-			   " |   \\   /   |\n"
-			   " |   O \u03c9 O   |\n"
-			   "  ;         ;\n"
-			   "   '-_____-'\n\n",
-			   RED);
-	}
-	else if (strcmp(version_name, "openbsd") == 0)
-	{
-		printf("\033[1E\033[3C%s  ______  \n"
-			   "   \\-      -/  %s\u2665  \n"
-			   "%s\\_/          \\  \n"
-			   "|        %s>  < %s|   \n"
-			   "|_  <  %s//  %s\u03c9 %s//   \n"
-			   "%s/ \\          /   \n"
-			   "  /-________-\\   \n\n",
-			   YELLOW, RED, YELLOW, WHITE, YELLOW, LPINK, WHITE, LPINK, YELLOW);
-	}
-
-	else if (strcmp(version_name, "macos") == 0)
-	{
-		printf("\033[1E\033[3C%s    .:`\n"
-			   "    .--``--.\n"
-			   "%s  ww  O\u03c9O   w\n"
-			   "%s w         w\n"
-			   "%s w         w\n",
-			   GREEN, YELLOW, RED, PINK);
-		if (!show_pkgs)
-			printf("%s  w         w", BLUE);
-		printf("\n%s   www_-_www\n\n", BLUE);
-	}
-
-	// Windows
-	else if (strcmp(version_name, "windows") == 0)
-	{
-		printf("%sMMMMMMM MMMMMMM\n"
-			   "M  ^  M M  ^  M\n"
-			   "M     M M     M\n"
-			   "MMMMMMM MMMMMMM\n"
-			   "\n"
-			   "MMMMMMM MMMMMMM\n"
-			   "M   W  W  W   M\n"
-			   "M    WW WW    M\n"
-			   "MMMMMMM MMMMMMM\n",
-			   BLUE);
-	}
-
-	// everything else
-	else
-		printf("\033[0E\033[2C%s._.--._.\n"
-			   "  \\|>%s_%s< |/\n"
-			   "   |%s:_/%s |\n"
-			   "  //    \\ \\   ?\n"
-			   " (|      | ) /\n"
-			   " %s/'\\_   _/`\\%s-\n"
-			   " %s\\___)=(___/\n\n",
-			   WHITE, YELLOW, WHITE, YELLOW, WHITE, YELLOW, WHITE, YELLOW);*/
 }
 
 void print_image()
@@ -1275,6 +1173,27 @@ void usage(char *arg)
 		   "    using the cache     set $UWUFETCH_CACHE_ENABLED to TRUE, true or 1\n",
 		   arg, BLUE, NORMAL);
 }
+
+#ifdef __WINDOWS__
+// windows sucks and hasn't a strstep, so I copied one from https://stackoverflow.com/questions/8512958/is-there-a-windows-variant-of-strsep-function
+char *strsep(char **stringp, const char *delim)
+{
+	char *start = *stringp;
+	char *p;
+
+	p = (start != NULL) ? strpbrk(start, delim) : NULL;
+
+	if (p == NULL)
+		*stringp = NULL;
+	else
+	{
+		*p = '\0';
+		*stringp = p + 1;
+	}
+
+	return start;
+}
+#endif
 
 void uwu_kernel()
 {

@@ -2,6 +2,8 @@ NAME			= uwufetch
 FILES			= uwufetch.c
 CFLAGS			= -O3
 CFLAGS_DEBUG	= -Wall -Wextra -g -pthread
+CC = cc
+
 ifeq ($(shell uname), Linux)
 	PREFIX		= /usr/bin
 	LIBDIR		= /usr/lib
@@ -16,18 +18,21 @@ else ifeq ($(shell uname), FreeBSD)
 	PREFIX		= /usr/bin
 	LIBDIR		= /usr/lib
 	MANDIR		= /usr/share/man/man1
+else ifeq ($(shell uname), windows32)
+	CC 			= gcc
+	CFLAGS += -D__WINDOWS__
+	CFLAGS_DEBUG += -D__WINDOWS__
+	PREFIX		= "C:\Program Files"
+	LIBDIR		=
+	MANDIR		=
 endif
-
-CC = cc
-
 
 build: $(FILES)
 	$(CC) $(CFLAGS) -o $(NAME) $(FILES)
 
 debug:
-	@clear
 	$(CC) $(CFLAGS_DEBUG) -o $(NAME) $(FILES)
-	./uwufetch
+	./$(NAME)
 
 install:
 	mkdir -p $(DESTDIR)$(PREFIX) $(DESTDIR)$(LIBDIR)/uwufetch $(DESTDIR)$(MANDIR)
