@@ -947,12 +947,14 @@ void get_info()
 	setenv("LANG", "en_US", 1); // force language to english
 #endif							// __WINDOWS__
 	FILE *gpu;
+#ifndef __WINDOWS__
 	gpu = popen("lshw -class display 2> /dev/null", "r");
 
 	// add all gpus to the array gpu_model
 	while (fgets(line, sizeof(line), gpu))
 		if (sscanf(line, "    product: %[^\n]", gpu_model[gpun]))
 			gpun++;
+#endif // __WINDOWS__
 
 	if (strlen(gpu_model[0]) < 2)
 	{
@@ -961,7 +963,7 @@ void get_info()
 		{
 #ifndef __APPLE__
 #ifdef __WINDOWS__
-			gpu = popen("wmic PATH Win32_VideoController GET Name | sed -n 2p", "r");
+			gpu = popen("wmic PATH Win32_VideoController GET Name", "r");
 #else
 			gpu = popen("lspci -mm 2> /dev/null | grep \"VGA\" | awk -F '\"' '{print $4 $5 $6}'", "r");
 #endif
@@ -976,7 +978,12 @@ void get_info()
 	// get all the gpus
 	while (fgets(line, sizeof(line), gpu))
 	{
-		if (sscanf(line, "%[^\n]", gpu_model[gpun]))
+		if (strstr(line, "Name"))
+			continue;
+		else if (strlen(line) == 2)
+			continue;
+		// ^^^ for windows
+		else if (sscanf(line, "%[^\n]", gpu_model[gpun]))
 			gpun++;
 	}
 	fclose(gpu);
@@ -988,13 +995,15 @@ void get_info()
 		truncate_name(gpu_model[i]);
 	}
 
-	// Resolution
+// Resolution
+#ifndef __WINDOWS__
 	FILE *resolution = popen("xwininfo -root 2> /dev/null | grep -E 'Width|Height'", "r");
 	while (fgets(line, sizeof(line), resolution))
 	{
 		sscanf(line, "  Width: %d", &screen_width);
 		sscanf(line, "  Height: %d", &screen_height);
 	}
+#endif // __WINDOWS__
 
 	// package count
 	pkgs = pkgman();
@@ -1002,9 +1011,7 @@ void get_info()
 	uwu_kernel();
 
 	for (int i = 0; gpu_model[i][0]; i++)
-	{
 		uwu_hw(gpu_model[i]);
-	}
 	uwu_hw(cpu_model);
 	uwu_hw(host_model);
 }
