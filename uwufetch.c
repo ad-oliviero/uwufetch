@@ -124,11 +124,7 @@ char user[128], host[256], shell[64], host_model[256], kernel[256], version_name
 	gpu_model[64][256],
 	pkgman_name[64], image_name[128], *config_directory = NULL, *cache_content = NULL;
 
-#ifndef __WINDOWS__
 char *terminal_cursor_move = "\033[18C";
-#else  // __WINDOWS__
-char *terminal_cursor_move = "\033[21C";
-#endif // __WINDOWS__
 
 // functions definitions, to use them in main()
 int pkgman();
@@ -1004,6 +1000,9 @@ void get_info()
 		sscanf(line, "  Height: %d", &screen_height);
 	}
 #endif // __WINDOWS__
+
+	if (strcmp(version_name, "windows"))
+		terminal_cursor_move = "\033[21C";
 
 	// package count
 	pkgs = pkgman();
