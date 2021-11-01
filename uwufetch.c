@@ -36,7 +36,7 @@
 #endif // defined(__APPLE__) || defined(__FREEBSD__)
 #ifndef __WINDOWS__
 #include <sys/utsname.h>
-#include <ioctl.h>
+#include <sys/ioctl.h>
 #else // __WINDOWS__
 #include <windows.h>
 CONSOLE_SCREEN_BUFFER_INFO csbi;
@@ -251,11 +251,11 @@ void parse_config()
 		{
 			char homedir[512];
 			sprintf(homedir, "%s/.config/uwufetch/config", getenv("HOME"));
-			config = fopen(homedir, "r+");
+			config = fopen(homedir, "r");
 		}
 	}
 	else
-		config = fopen(config_directory, "r+");
+		config = fopen(config_directory, "r");
 	if (config == NULL)
 		return;
 
@@ -334,7 +334,7 @@ int pkgman()
 	{ // long unsigned int instead of int because of -Wsign-compare
 		struct package_manager *current = &pkgmans[i];
 
-		FILE *fp = popen(current->command_string, "r+");
+		FILE *fp = popen(current->command_string, "r");
 		unsigned int pkg_count;
 
 		if (fscanf(fp, "%u", &pkg_count) == 3)
@@ -550,7 +550,7 @@ int read_cache()
 {
 	char cache_file[512];
 	sprintf(cache_file, "%s/.cache/uwufetch.cache", getenv("HOME"));
-	FILE *cache_fp = fopen(cache_file, "r+");
+	FILE *cache_fp = fopen(cache_file, "r");
 	if (cache_fp == NULL)
 		return 0;
 
@@ -588,9 +588,9 @@ void print_cache()
 	FILE *meminfo;
 
 #ifdef __FREEBSD__
-	meminfo = popen("LANG=EN_us freecolor -om 2> /dev/null", "r+");
+	meminfo = popen("LANG=EN_us freecolor -om 2> /dev/null", "r");
 #else  // __FREEBSD__
-	meminfo = popen("LANG=EN_us free -m 2> /dev/null", "r+");
+	meminfo = popen("LANG=EN_us free -m 2> /dev/null", "r");
 #endif // __FREEBSD__
 	char line[256];
 	while (fgets(line, sizeof(line), meminfo))
@@ -601,7 +601,7 @@ void print_cache()
 	// wmic OS get FreePhysicalMemory
 
 	FILE *mem_used_fp;
-	mem_used_fp = popen("wmic OS GET FreePhysicalMemory", "r+");
+	mem_used_fp = popen("wmic OS GET FreePhysicalMemory", "r");
 	char mem_used_ch[2137];
 	printf("\n\n\n\\\n");
 	while (fgets(mem_used_ch, sizeof(mem_used_ch), mem_used_fp) != NULL)
@@ -617,9 +617,9 @@ void print_cache()
 #else // __APPLE__
 	// Used ram
 	FILE *mem_wired_fp, *mem_active_fp, *mem_compressed_fp;
-	mem_wired_fp = popen("vm_stat | awk '/wired/ { printf $4 }' | cut -d '.' -f 1", "r+");
-	mem_active_fp = popen("vm_stat | awk '/active/ { printf $3 }' | cut -d '.' -f 1", "r+");
-	mem_compressed_fp = popen("vm_stat | awk '/occupied/ { printf $5 }' | cut -d '.' -f 1", "r+");
+	mem_wired_fp = popen("vm_stat | awk '/wired/ { printf $4 }' | cut -d '.' -f 1", "r");
+	mem_active_fp = popen("vm_stat | awk '/active/ { printf $3 }' | cut -d '.' -f 1", "r");
+	mem_compressed_fp = popen("vm_stat | awk '/occupied/ { printf $5 }' | cut -d '.' -f 1", "r");
 	char mem_wired_ch[2137], mem_active_ch[2137], mem_compressed_ch[2137];
 	while (fgets(mem_wired_ch, sizeof(mem_wired_ch), mem_wired_fp) != NULL)
 	{
@@ -664,13 +664,13 @@ void get_info()
 #endif // __WINDOWS__
 
 	// os version, cpu and board info
-	FILE *os_release = fopen("/etc/os-release", "r+");
+	FILE *os_release = fopen("/etc/os-release", "r");
 #ifndef __FREEBSD__
-	FILE *cpuinfo = fopen("/proc/cpuinfo", "r+");
+	FILE *cpuinfo = fopen("/proc/cpuinfo", "r");
 #else
-	FILE *cpuinfo = popen("sysctl -a | egrep -i 'hw.model'", "r+");
+	FILE *cpuinfo = popen("sysctl -a | egrep -i 'hw.model'", "r");
 #endif
-	FILE *host_model_info = fopen("/sys/devices/virtual/dmi/id/board_name", "r+");
+	FILE *host_model_info = fopen("/sys/devices/virtual/dmi/id/board_name", "r");
 	if (!host_model_info)
 		if ((host_model_info = fopen("/sys/devices/virtual/dmi/id/product_name", "r")) != NULL)
 			fclose(host_model_info);
@@ -688,7 +688,7 @@ void get_info()
 		}
 	}
 #elif defined(__FREEBSD__)
-	host_model_info = popen("sysctl -a hw.hv_vendor", "r+");
+	host_model_info = popen("sysctl -a hw.hv_vendor", "r");
 	while (fgets(line, sizeof(line), host_model_info))
 		if (sscanf(line, "hw.hv_vendor: %[^\n]", host_model))
 			break;
@@ -757,11 +757,11 @@ void get_info()
 			closedir(system_priv_app);
 			sprintf(version_name, "android");
 			// android vars
-			FILE *whoami = popen("whoami", "r+");
+			FILE *whoami = popen("whoami", "r");
 			if (fscanf(whoami, "%s", user) == 3)
 				sprintf(user, "unknown");
 			fclose(whoami);
-			host_model_info = popen("getprop ro.product.model", "r+");
+			host_model_info = popen("getprop ro.product.model", "r");
 			while (fgets(line, sizeof(line), host_model_info))
 				if (sscanf(line, "%[^\n]", host_model))
 					break;
@@ -900,9 +900,9 @@ void get_info()
 	FILE *meminfo;
 
 #ifdef __FREEBSD__
-	meminfo = popen("LANG=EN_us freecolor -om 2> /dev/null", "r+");
+	meminfo = popen("LANG=EN_us freecolor -om 2> /dev/null", "r");
 #else
-	meminfo = popen("LANG=EN_us free -m 2> /dev/null", "r+");
+	meminfo = popen("LANG=EN_us free -m 2> /dev/null", "r");
 #endif
 	while (fgets(line, sizeof(line), meminfo))
 		// free command prints like this: "Mem:" total     used    free    shared  buff/cache      available
@@ -912,9 +912,9 @@ void get_info()
 #else
 	// Used
 	FILE *mem_wired_fp, *mem_active_fp, *mem_compressed_fp;
-	mem_wired_fp = popen("vm_stat | awk '/wired/ { printf $4 }' | cut -d '.' -f 1", "r+");
-	mem_active_fp = popen("vm_stat | awk '/active/ { printf $3 }' | cut -d '.' -f 1", "r+");
-	mem_compressed_fp = popen("vm_stat | awk '/occupied/ { printf $5 }' | cut -d '.' -f 1", "r+");
+	mem_wired_fp = popen("vm_stat | awk '/wired/ { printf $4 }' | cut -d '.' -f 1", "r");
+	mem_active_fp = popen("vm_stat | awk '/active/ { printf $3 }' | cut -d '.' -f 1", "r");
+	mem_compressed_fp = popen("vm_stat | awk '/occupied/ { printf $5 }' | cut -d '.' -f 1", "r");
 	char mem_wired_ch[2137], mem_active_ch[2137], mem_compressed_ch[2137];
 	while (fgets(mem_wired_ch, sizeof(mem_wired_ch), mem_wired_fp) != NULL)
 	{
@@ -947,7 +947,7 @@ void get_info()
 	setenv("LANG", "en_US", 1); // force language to english
 #endif							// __WINDOWS__
 	FILE *gpu;
-	gpu = popen("lshw -class display 2> /dev/null", "r+");
+	gpu = popen("lshw -class display 2> /dev/null", "r");
 
 	// add all gpus to the array gpu_model
 	while (fgets(line, sizeof(line), gpu))
@@ -961,16 +961,16 @@ void get_info()
 		{
 #ifndef __APPLE__
 #ifdef __WINDOWS__
-			gpu = popen("wmic PATH Win32_VideoController GET Name | sed -n 2p", "r+");
+			gpu = popen("wmic PATH Win32_VideoController GET Name | sed -n 2p", "r");
 #else
-			gpu = popen("lspci -mm 2> /dev/null | grep \"VGA\" | awk -F '\"' '{print $4 $5 $6}'", "r+");
+			gpu = popen("lspci -mm 2> /dev/null | grep \"VGA\" | awk -F '\"' '{print $4 $5 $6}'", "r");
 #endif
 #else
-			gpu = popen("system_profiler SPDisplaysDataType | awk -F ': ' '/Chipset Model: /{ print $2 }'", "r+");
+			gpu = popen("system_profiler SPDisplaysDataType | awk -F ': ' '/Chipset Model: /{ print $2 }'", "r");
 #endif
 		}
 		else
-			gpu = popen("getprop ro.hardware.vulkan 2> /dev/null", "r+");
+			gpu = popen("getprop ro.hardware.vulkan 2> /dev/null", "r");
 	}
 
 	// get all the gpus
@@ -989,7 +989,7 @@ void get_info()
 	}
 
 	// Resolution
-	FILE *resolution = popen("xwininfo -root 2> /dev/null | grep -E 'Width|Height'", "r+");
+	FILE *resolution = popen("xwininfo -root 2> /dev/null | grep -E 'Width|Height'", "r");
 	while (fgets(line, sizeof(line), resolution))
 	{
 		sscanf(line, "  Width: %d", &screen_width);
@@ -1077,7 +1077,7 @@ void print_ascii()
 	char ascii_file[1024];
 	// First tries to get ascii art file from local directory. Good when modifying these files.
 	sprintf(ascii_file, "./res/ascii/%s.txt", version_name);
-	file = fopen(ascii_file, "r+");
+	file = fopen(ascii_file, "r");
 	// Now tries to get file from normal directory
 	if (!file)
 	{
@@ -1089,7 +1089,7 @@ void print_ascii()
 		{
 			sprintf(ascii_file, "/usr/lib/uwufetch/ascii/%s.txt", version_name);
 		}
-		file = fopen(ascii_file, "r+");
+		file = fopen(ascii_file, "r");
 		if (!file)
 		{
 			// Prevent infinite loops
@@ -1118,9 +1118,14 @@ void print_ascii()
 		replace(line, "{WHITE}", WHITE);
 		replace(line, "{PINK}", PINK);
 		replace(line, "{LPINK}", LPINK);
-		// For manjaro and amogos and windows
+// For manjaro and amogos and windows
+#ifdef __WINDOWS__
 		replace(line, "{BLOCK}", "\xdc");
 		replace(line, "{BLOCK_VERTICAL}", "\xdb");
+#else  // __WINDOWS__
+		replace(line, "{BLOCK}", "\u2584");
+		replace(line, "{BLOCK_VERTICAL}", "\u2587");
+#endif // __WINDOWS__
 		replace(line, "{BACKGROUND_GREEN}", "\e[0;42m");
 		replace(line, "{BACKGROUND_RED}", "\e[0;41m");
 		replace(line, "{BACKGROUND_WHITE}", "\e[0;47m");
