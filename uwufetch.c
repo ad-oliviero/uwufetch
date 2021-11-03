@@ -666,11 +666,17 @@ void get_info()
 #else
 	FILE *cpuinfo = popen("sysctl -a | egrep -i 'hw.model'", "r");
 #endif
-	FILE *host_model_info = fopen("/sys/devices/virtual/dmi/id/board_name", "r"); // first try open the file
+        FILE *host_model_info = fopen("/etc/hostname","r"); // try open /etc/hostname first
+        if (!host_model_info)
+          host_model_info = fopen("/sys/devices/virtual/dmi/id/board_name", "r"); // if couldn't then try another
 	if (!host_model_info) // if failed
-		host_model_info = fopen("/sys/devices/virtual/dmi/id/product_name", "r"); // try open another file
-	if(host_model_info) // if one of the file could be open then close it
-		fclose(host_model_info);
+          host_model_info = fopen("/sys/devices/virtual/dmi/id/product_name", "r"); // etc.
+	if(host_model_info) { // if succeeded to open one of the file
+          fgets(line, 256, host_model_info);
+          line[strlen(line)-1] = '\0';
+          sprintf(host_model,"%s",line);
+          fclose(host_model_info);
+        }
 #ifdef __WINDOWS__
 	host_model_info = popen("wmic computersystem get model", "r");
 	while (fgets(line, sizeof(line), host_model_info))
