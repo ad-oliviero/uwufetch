@@ -690,10 +690,15 @@ void get_info()
 			break;
 		}
 	}
-#elif defined(__FREEBSD__)
-	host_model_info = popen("sysctl -a hw.hv_vendor", "r");
+#elif defined(__FREEBSD__) || defined(__APPLE__)
+	#if defined(__FREEBSD__)
+		#define HOSTCTL "hw.hv_vendor"
+	#elif defined(__APPLE__)
+		#define HOSTCTL "hw.model"
+	#endif
+	host_model_info = popen("sysctl -a " HOSTCTL, "r");
 	while (fgets(line, sizeof(line), host_model_info))
-		if (sscanf(line, "hw.hv_vendor: %[^\n]", host_model))
+		if (sscanf(line, HOSTCTL ": %[^\n]", host_model))
 			break;
 #endif // __WINDOWS__
 	FILE *host_model_version = fopen("/sys/devices/virtual/dmi/id/product_version", "r");
