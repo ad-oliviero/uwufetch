@@ -10,7 +10,7 @@ AmogOwOS, Nyalpine, Nyarch Linuwu, ArcOwO, Nyartix Linuwu, Debinyan, endevaOwO, 
 
 ### Partial support (Either no ASCII art, or no image is provided)
 
-KDE NeOwOn, nixOwOs, xuwulinux; Plus FweeBSD, OwOpenBSD and macOwOS; Plus WinyandOwOws.
+KDE NeOwOn, nixOwOs, xuwulinux; Plus FweeBSD, OwOpenBSD, macOwOS and iOwOS; Plus WinyandOwOws.
 
 ## Building and installation
 
@@ -38,6 +38,7 @@ Build requisites:
 
 - Make
 - A C compiler
+    - A iOS patched SDK (if you build UwUfetch under iOS device)
 
 To install UwUfetch from the source, type these commands in the terminal:
 
@@ -69,6 +70,8 @@ make termux_uninstall   # uninstall for termux
 ## Images and copyright info
 
 ### How to use images
+
+Notice: images are currently disabled under iOS due to lack of a one command in UwUfetch code
 
 First of all, you will need `viu`, which you can install by following the [guide](https://github.com/atanunq/viu#installation).
 

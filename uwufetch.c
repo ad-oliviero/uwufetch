@@ -15,6 +15,9 @@
 
 #define _GNU_SOURCE // for strcasestr
 
+#ifdef __APPLE__
+#include <TargetConditionals.h> // for checking iOS
+#endif
 #include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -378,7 +381,7 @@ int pkgman()
 }
 
 #ifdef __APPLE__
-int uptime_mac()
+int uptime_apple()
 {
 	int mib[2] = {CTL_KERN, KERN_BOOTTIME};
 	sysctl(mib, 2, &time_buffer, &time_buffer_len, NULL, 0);
@@ -457,7 +460,7 @@ void print_info()
 		responsively_printf(print_buf,
 							"%s%s%sSHEWW       %s%s",
 							terminal_cursor_move, NORMAL, BOLD, NORMAL, shell);
-#ifdef __APPLE__
+#if defined(__APPLE__) && !defined(TARGET_OS_IPHONE)
 	if (show_pkgs)
 		system("ls $(brew --cellar) | wc -l | awk -F' ' '{print \"  \x1b[34mw         w     \x1b[0m\x1b[1mPKGS\x1b[0m        \"$1 \" (brew)\"}'");
 #else
@@ -472,7 +475,7 @@ void print_info()
 		{
 
 #ifdef __APPLE__
-			uptime = uptime_mac();
+			uptime = uptime_apple();
 #else
 #ifdef __FREEBSD__
 			uptime = uptime_freebsd();
@@ -517,7 +520,7 @@ void write_cache()
 		return;
 		// writing all info to the cache file
 #ifdef __APPLE__
-	uptime = uptime_mac();
+	uptime = uptime_apple();
 #else
 #ifdef __FREEBSD__
 	uptime = uptime_freebsd();
@@ -755,7 +758,7 @@ void get_info()
 		fclose(os_release);
 	}
 	else
-	{ // try for android vars, next for macOS var, or unknown system
+	{ // try for android vars, next for Apple var, or unknown system
 		DIR *system_app = opendir("/system/app/");
 		DIR *system_priv_app = opendir("/system/priv-app/");
 		DIR *library = opendir("/Library/");
@@ -779,13 +782,17 @@ void get_info()
 					break;
 #endif
 		}
-		else if (library) // macOS
+		else if (library) // Apple
 		{
 			closedir(library);
 #ifdef __APPLE__
 			sysctlbyname("machdep.cpu.brand_string", &cpu_buffer, &cpu_buffer_len, NULL, 0);
 
+	#ifndef TARGET_OS_IPHONE
 			sprintf(version_name, "macos");
+	#else
+			sprintf(version_name, "ios");
+	#endif
 			sprintf(cpu_model, "%s", cpu_buffer);
 #endif
 		}
@@ -1038,13 +1045,13 @@ void list(char *arg)
 		   "    %sDebian/%sUbuntu %sbased:\n"
 		   "      %samogos, debian, %slinuxmint, neon %spop, %sraspbian %subuntu\n\n"
 		   "    %sBSD %sbased:\n"
-		   "      %sfreebsd, %sopenbsd, %sm%sa%sc%so%ss\n\n"
+		   "      %sfreebsd, %sopenbsd, %sm%sa%sc%so%ss, %sios\n\n"
 		   "    %sOther/spare distributions:\n"
 		   "      %salpine, %sfedora, %sgentoo, %sslackware, %ssolus, %svoid, opensuse-leap, android, %sgnu, guix, %swindows, %sunknown\n\n",
 		   arg,
 		   BLUE, NORMAL, BLUE, MAGENTA, GREEN, BLUE,							  // Arch based colors
 		   RED, YELLOW, NORMAL, RED, GREEN, BLUE, RED, YELLOW,					  // Debian based colors
-		   RED, NORMAL, RED, YELLOW, GREEN, YELLOW, RED, PINK, BLUE,			  // BSD colors
+		   RED, NORMAL, RED, YELLOW, GREEN, YELLOW, RED, PINK, BLUE, WHITE,		  // BSD/Apple colors
 		   NORMAL, BLUE, BLUE, PINK, MAGENTA, WHITE, GREEN, YELLOW, BLUE, WHITE); // Other/spare distributions colors
 }
 
@@ -1156,6 +1163,7 @@ void print_ascii()
 
 void print_image()
 { // prints logo (as an image) of the given system. distributions listed alphabetically.
+#ifndef TARGET_OS_IPHONE
 	char command[256];
 	if (strlen(image_name) > 1)
 		sprintf(command, "viu -t -w 18 -h 8 %s 2> /dev/null", image_name);
@@ -1179,6 +1187,16 @@ void print_image()
 			   "   for more info.\n\n",
 			   RED);
 	}
+#else
+// unfortunately, the iOS stdlib does not have system();
+// because it reports that it is not available under iOS during compilation
+	printf("\033[0E\033[3C%s\n"
+			"   There was an\n"
+			"   error: images\n"
+			"   are currently\n"
+			"  disabled on iOS.\n\n",
+			RED);
+#endif
 }
 
 void usage(char *arg)
@@ -1188,13 +1206,24 @@ void usage(char *arg)
 		   "    -c  --config        use custom config path\n"
 		   "    -d, --distro        lets you choose the logo to print\n"
 		   "    -h, --help          prints this help page\n"
+#ifndef TARGET_OS_IPHONE
 		   "    -i, --image         prints logo as image and use a custom image if provided\n"
 		   "                        %sworks in most terminals\n"
+#else
+		   "    -i, --image         prints logo as image and use a custom image if provided\n"
+		   "                        %sdisabled under iOS\n"
+#endif
 		   "                        read README.md for more info%s\n"
 		   "    -l, --list          lists all supported distributions\n"
 		   "    -w, --write-cache   writes to the cache file (~/.cache/uwufetch.cache)\n"
 		   "    using the cache     set $UWUFETCH_CACHE_ENABLED to TRUE, true or 1\n",
-		   arg, BLUE, NORMAL);
+		   arg,
+#ifndef TARGET_OS_IPHONE
+		   BLUE,
+#else
+		   RED,
+#endif
+		   NORMAL);
 }
 
 #ifdef __WINDOWS__
@@ -1270,8 +1299,9 @@ void uwu_kernel()
 		// BSD
 		else KERNEL_TO_UWU(splitted[i], "freebsd", "FweeBSD");
 		else KERNEL_TO_UWU(splitted[i], "openbsd", "OwOpenBSD");
-
+		//// Apple family
 		else KERNEL_TO_UWU(splitted[i], "macos", "macOwOS");
+		else KERNEL_TO_UWU(splitted[i], "ios", "iOwOS");
 
 		// Windows
 		else KERNEL_TO_UWU(splitted[i], "windows", "WinyandOwOws");
@@ -1348,8 +1378,9 @@ void uwu_name()
 	// BSD
 	else STRING_TO_UWU("freebsd", "FweeBSD");
 	else STRING_TO_UWU("openbsd", "OwOpenBSD");
-
+	//// Apple family
 	else STRING_TO_UWU("macos", "macOwOS");
+	else STRING_TO_UWU("ios", "iOwOS");
 
 	// Windows
 	else STRING_TO_UWU("windows", "WinyandOwOws");
