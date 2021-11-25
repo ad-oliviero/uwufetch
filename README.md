@@ -26,11 +26,16 @@ KDE NeOwOn, nixOwOs, xuwulinux; Plus FweeBSD, OwOpenBSD, macOwOS and iOwOS; Plus
 
 ### Via package manager
 
-Right now, the package is only available on the AUR:
+From the AUR
 
 [![uwufetch](https://img.shields.io/aur/version/uwufetch?color=1793d1&label=uwufetch&logo=arch-linux&style=for-the-badge)](https://aur.archlinux.org/packages/uwufetch/)
 
 [![uwufetch-git](https://img.shields.io/aur/version/uwufetch-git?color=1793d1&label=uwufetch-git&logo=arch-linux&style=for-the-badge)](https://aur.archlinux.org/packages/uwufetch-git/)
+
+From [Pacstall](https://github.com/pacstall/pacstall#installing)
+```bash
+pacstall -I uwufetch
+```
 
 ### From source
 
