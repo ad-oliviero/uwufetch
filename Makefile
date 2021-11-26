@@ -2,7 +2,7 @@ NAME			= uwufetch
 FILES			= uwufetch.c
 CFLAGS			= -O3
 CFLAGS_DEBUG	= -Wall -Wextra -g -pthread
-CC = cc
+CC				= cc
 
 ifeq ($(shell uname), Linux)
 	PREFIX		= /usr/bin
@@ -20,8 +20,6 @@ else ifeq ($(shell uname), FreeBSD)
 	MANDIR		= /usr/share/man/man1
 else ifeq ($(shell uname), windows32)
 	CC 			= gcc
-	CFLAGS += -D__WINDOWS__
-	CFLAGS_DEBUG += -D__WINDOWS__
 	PREFIX		= "C:\Program Files"
 	LIBDIR		=
 	MANDIR		=
