@@ -30,7 +30,7 @@ build: $(FILES)
 
 debug:
 	$(CC) $(CFLAGS_DEBUG) -o $(NAME) $(FILES)
-	./$(NAME)
+	./$(NAME) -d amogos
 
 install:
 	mkdir -p $(DESTDIR)$(PREFIX) $(DESTDIR)$(LIBDIR)/uwufetch $(DESTDIR)$(MANDIR)

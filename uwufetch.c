@@ -706,11 +706,11 @@ struct info get_info()
 #else
 	FILE *cpuinfo = popen("sysctl -a | egrep -i 'hw.model'", "r");
 #endif
-	FILE *host_model_info = fopen("/etc/hostname", "r"); // try open /etc/hostname first
+	FILE *host_model_info = fopen("/sys/devices/virtual/dmi/id/board_name", "r"); // try to get board name ("HOWOST" INFO NAME SHOULD BE CHANGED AS IT IS NOT MEANT TO BE THE hostname, BUT THE MODEL OF THE COMPUTER)
 	if (!host_model_info)
-		host_model_info = fopen("/sys/devices/virtual/dmi/id/board_name", "r");	  // if couldn't then try another
+		host_model_info = fopen("/sys/devices/virtual/dmi/id/product_name", "r"); // if couldn't then try another
 	if (!host_model_info)														  // if failed
-		host_model_info = fopen("/sys/devices/virtual/dmi/id/product_name", "r"); // etc.
+		host_model_info = fopen("/etc/hostname", "r");							  // etc.
 	if (host_model_info)
 	{ // if succeeded to open one of the file
 		fgets(line, 256, host_model_info);
@@ -751,7 +751,7 @@ struct info get_info()
 				break;
 
 		// trying to detect amogos because in its os-release file ID value is just "debian"
-		if (strcmp(user_info.version_name, "debian") == 0)
+		if (strcmp(user_info.version_name, "debian") == 0 || strcmp(user_info.version_name, "raspbian") == 0) // will be removed when amogos will have an os-release file with ID=amogos
 		{
 			DIR *amogos_plymouth = opendir("/usr/share/plymouth/themes/amogos");
 			if (amogos_plymouth)
@@ -1232,7 +1232,7 @@ void print_image(struct info *user_info)
 			   RED);
 	}
 #else
-	// unfortunately, the iOS stdlib does not have system();
+  // unfortunately, the iOS stdlib does not have system();
 	// because it reports that it is not available under iOS during compilation
 	printf("\033[0E\033[3C%s\n"
 		   "   There was an\n"
