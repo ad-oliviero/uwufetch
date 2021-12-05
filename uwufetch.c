@@ -100,7 +100,7 @@ struct configuration {
 		show_colors;
 };
 
-char *terminal_cursor_move = "\033[18C";
+char* terminal_cursor_move = "\033[18C";
 struct info {
 	char user[128], host[256], shell[64], host_model[256], kernel[256],
 		version_name[64], cpu_model[256], gpu_model[64][256], pkgman_name[64],
@@ -128,35 +128,35 @@ struct info {
 };
 
 // functions definitions, to use them in main()
-struct configuration parse_config(struct info *user_info);
+struct configuration parse_config(struct info* user_info);
 #ifdef _WIN32
-int pkgman(struct info *user_info, struct configuration *config_flags);
+int pkgman(struct info* user_info, struct configuration* config_flags);
 #else  // _WIN32
-int pkgman(struct info *user_info);
+int pkgman(struct info* user_info);
 #endif // _WIN32
-void print_info(struct configuration *config_flags, struct info *user_info);
-void write_cache(struct info *user_info);
-int read_cache(struct info *user_info);
-void print_cache(struct configuration *config_flags, struct info *user_info);
+void print_info(struct configuration* config_flags, struct info* user_info);
+void write_cache(struct info* user_info);
+int read_cache(struct info* user_info);
+void print_cache(struct configuration* config_flags, struct info* user_info);
 #ifdef _WIN32
-struct info get_info(struct configuration *config_flags);
+struct info get_info(struct configuration* config_flags);
 #else  // _WIN32
 struct info get_info();
 #endif // _WIN32
-void list(char *arg);
-void replace(char *original, char *search, char *replacer);
-void replace_ignorecase(char *original, char *search, char *replacer);
-void print_ascii(struct info *user_info);
-void print_image(struct info *user_info);
-void usage(char *arg);
-void uwu_kernel(char *kernel);
-void uwu_hw(char *hwname);
-void uwu_name(struct configuration *config_flags, struct info *user_info);
-void truncate_name(char *name, int target_width);
-void remove_brackets(char *str);
+void list(char* arg);
+void replace(char* original, char* search, char* replacer);
+void replace_ignorecase(char* original, char* search, char* replacer);
+void print_ascii(struct info* user_info);
+void print_image(struct info* user_info);
+void usage(char* arg);
+void uwu_kernel(char* kernel);
+void uwu_hw(char* hwname);
+void uwu_name(struct configuration* config_flags, struct info* user_info);
+void truncate_name(char* name, int target_width);
+void remove_brackets(char* str);
 
-int main(int argc, char *argv[]) {
-	char *cache_env = getenv("UWUFETCH_CACHE_ENABLED");
+int main(int argc, char* argv[]) {
+	char* cache_env = getenv("UWUFETCH_CACHE_ENABLED");
 	struct configuration config_flags;
 	struct info user_info = {0};
 	if (cache_env != NULL) {
@@ -240,12 +240,12 @@ int main(int argc, char *argv[]) {
 	print_info(&config_flags, &user_info);
 }
 
-struct configuration parse_config(struct info *user_info) {
+struct configuration parse_config(struct info* user_info) {
 	char line[256];
 	struct configuration config_flags = {
 		0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}; // enabling all flags by default
 
-	FILE *config = NULL;
+	FILE* config = NULL;
 	if (user_info->config_directory == NULL) {
 		if (getenv("HOME") != NULL) {
 			char homedir[512];
@@ -303,9 +303,9 @@ struct configuration parse_config(struct info *user_info) {
 }
 
 #ifdef _WIN32
-int pkgman(struct info *user_info, struct configuration *config_flags)
+int pkgman(struct info* user_info, struct configuration* config_flags)
 #else // _WIN32
-int pkgman(struct info *user_info)
+int pkgman(struct info* user_info)
 #endif
 { // this is just a function that returns the total of installed packages
 	int total = 0;
@@ -335,9 +335,9 @@ int pkgman(struct info *user_info)
 	int comma_separator = 0;
 	for (long unsigned int i = 0; i < pkgman_count;
 		 i++) { // long unsigned int instead of int because of -Wsign-compare
-		struct package_manager *current = &pkgmans[i];
+		struct package_manager* current = &pkgmans[i];
 
-		FILE *fp = popen(current->command_string, "r");
+		FILE* fp = popen(current->command_string, "r");
 		unsigned int pkg_count;
 
 		if (fscanf(fp, "%u", &pkg_count) == 3) continue;
@@ -360,7 +360,7 @@ int pkgman(struct info *user_info)
 	}
 	#else  // _WIN32
 	if (config_flags->show_pkgs) {
-		FILE *fp = popen("choco list -l --no-color 2> nul", "r");
+		FILE* fp = popen("choco list -l --no-color 2> nul", "r");
 		unsigned int pkg_count;
 		char buffer[7562] = {0};
 		while (fgets(buffer, sizeof(buffer), fp)) {
@@ -408,7 +408,7 @@ int uptime_freebsd() { // this code is from coreutils uptime:
 }
 #endif
 
-void print_info(struct configuration *config_flags, struct info *user_info) {
+void print_info(struct configuration* config_flags, struct info* user_info) {
 #ifdef _WIN32
 	#define responsively_printf(buf, format, ...)         \
 		{                                                 \
@@ -470,7 +470,7 @@ void print_info(struct configuration *config_flags, struct info *user_info) {
 							terminal_cursor_move, NORMAL, BOLD, NORMAL,
 							user_info->shell);
 #if defined(__APPLE__) && !defined(TARGET_OS_IPHONE)
-	if (show_pkgs)
+	if (config_flags->show_pkgs)
 		system(
 			"ls $(brew --cellar) | wc -l | awk -F' ' '{print \"  \x1b[34mw     "
 			"    w     \x1b[0m\x1b[1mPKGS\x1b[0m        \"$1 \" (brew)\"}'");
@@ -526,14 +526,14 @@ void print_info(struct configuration *config_flags, struct info *user_info) {
 			   BLOCK_CHAR, BLOCK_CHAR, NORMAL);
 }
 
-void write_cache(struct info *user_info) {
+void write_cache(struct info* user_info) {
 	char cache_file[512];
 	sprintf(cache_file, "%s/.cache/uwufetch.cache", getenv("HOME"));
-	FILE *cache_fp = fopen(cache_file, "w");
+	FILE* cache_fp = fopen(cache_file, "w");
 	if (cache_fp == NULL) return;
 		// writing all info to the cache file
 #ifdef __APPLE__
-	uptime = uptime_apple();
+	user_info->uptime = uptime_apple();
 #else
 	#ifdef __FREEBSD__
 	uptime = uptime_freebsd();
@@ -567,10 +567,10 @@ void write_cache(struct info *user_info) {
 }
 
 // return whether the cache file is found
-int read_cache(struct info *user_info) {
+int read_cache(struct info* user_info) {
 	char cache_file[512];
 	sprintf(cache_file, "%s/.cache/uwufetch.cache", getenv("HOME"));
-	FILE *cache_fp = fopen(cache_file, "r");
+	FILE* cache_fp = fopen(cache_file, "r");
 	if (cache_fp == NULL) return 0;
 
 	char line[256];
@@ -597,12 +597,12 @@ int read_cache(struct info *user_info) {
 	return 1;
 }
 
-void print_cache(struct configuration *config_flags, struct info *user_info) {
+void print_cache(struct configuration* config_flags, struct info* user_info) {
 #ifndef __APPLE__
 	#ifndef _WIN32
 	sysinfo(&user_info->sys); // to get uptime
 	#endif					  // _WIN32
-	FILE *meminfo;
+	FILE* meminfo;
 
 	#ifdef __FREEBSD__
 	meminfo = popen("LANG=EN_us freecolor -om 2> /dev/null", "r");
@@ -618,7 +618,7 @@ void print_cache(struct configuration *config_flags, struct info *user_info) {
 #elif defined(_WIN32)
 	// wmic OS get FreePhysicalMemory
 
-	FILE *mem_used_fp;
+	FILE* mem_used_fp;
 	mem_used_fp = popen("wmic OS GET FreePhysicalMemory", "r");
 	char mem_used_ch[2137];
 	printf("\n\n\n\\\n");
@@ -661,7 +661,7 @@ void print_cache(struct configuration *config_flags, struct info *user_info) {
 
 	// Total ram
 	sysctlbyname("hw.memsize", &mem_buffer, &mem_buffer_len, NULL, 0);
-	ram_used = ((mem_wired + mem_active + mem_compressed) * 4 / 1024);
+	user_info->ram_used = ((mem_wired + mem_active + mem_compressed) * 4 / 1024);
 
 #endif // __APPLE__
 	print_ascii(user_info);
@@ -670,7 +670,7 @@ void print_cache(struct configuration *config_flags, struct info *user_info) {
 }
 
 #ifdef _WIN32
-struct info get_info(struct configuration *config_flags)
+struct info get_info(struct configuration* config_flags)
 #else  // _WIN32
 struct info get_info()
 #endif // _WIN32
@@ -689,13 +689,13 @@ struct info get_info()
 #endif // _WIN32
 
 	// os version, cpu and board info
-	FILE *os_release = fopen("/etc/os-release", "r");
+	FILE* os_release = fopen("/etc/os-release", "r");
 #ifndef __FREEBSD__
-	FILE *cpuinfo = fopen("/proc/cpuinfo", "r");
+	FILE* cpuinfo = fopen("/proc/cpuinfo", "r");
 #else
-	FILE *cpuinfo	  = popen("sysctl -a | egrep -i 'hw.model'", "r");
+	FILE* cpuinfo	  = popen("sysctl -a | egrep -i 'hw.model'", "r");
 #endif
-	FILE *host_model_info =
+	FILE* host_model_info =
 		fopen("/sys/devices/virtual/dmi/id/board_name",
 			  "r"); // try to get board name ("HOWOST" INFO NAME SHOULD BE
 					// CHANGED AS IT IS NOT MEANT TO BE THE hostname, BUT THE
@@ -730,9 +730,9 @@ struct info get_info()
 	#endif
 	host_model_info	  = popen("sysctl -a " HOSTCTL, "r");
 	while (fgets(line, sizeof(line), host_model_info))
-		if (sscanf(line, HOSTCTL ": %[^\n]", host_model)) break;
+		if (sscanf(line, HOSTCTL ": %[^\n]", user_info->host_model)) break;
 #endif // _WIN32
-	FILE *host_model_version =
+	FILE* host_model_version =
 		fopen("/sys/devices/virtual/dmi/id/product_version", "r");
 
 	if (os_release) { // get normal vars
@@ -748,7 +748,7 @@ struct info get_info()
 				0) // will be removed when amogos will have an os-release file
 				   // with ID=amogos
 		{
-			DIR *amogos_plymouth = opendir("/usr/share/plymouth/themes/amogos");
+			DIR* amogos_plymouth = opendir("/usr/share/plymouth/themes/amogos");
 			if (amogos_plymouth) {
 				closedir(amogos_plymouth);
 				sprintf(user_info.version_name, "amogos");
@@ -776,22 +776,22 @@ struct info get_info()
 				break;
 #endif // __FREEBSD__
 		}
-		char *tmp_user = getenv("USER");
+		char* tmp_user = getenv("USER");
 		if (tmp_user == NULL)
 			sprintf(user_info.user, "%s", "");
 		else
 			sprintf(user_info.user, "%s", tmp_user);
 		fclose(os_release);
 	} else { // try for android vars, next for Apple var, or unknown system
-		DIR *system_app		 = opendir("/system/app/");
-		DIR *system_priv_app = opendir("/system/priv-app/");
-		DIR *library		 = opendir("/Library/");
+		DIR* system_app		 = opendir("/system/app/");
+		DIR* system_priv_app = opendir("/system/priv-app/");
+		DIR* library		 = opendir("/Library/");
 		if (system_app && system_priv_app) { // android
 			closedir(system_app);
 			closedir(system_priv_app);
 			sprintf(user_info.version_name, "android");
 			// android vars
-			FILE *whoami = popen("whoami", "r");
+			FILE* whoami = popen("whoami", "r");
 			if (fscanf(whoami, "%s", user_info.user) == 3)
 				sprintf(user_info.user, "unknown");
 			fclose(whoami);
@@ -827,7 +827,7 @@ struct info get_info()
 #ifndef _WIN32
 	gethostname(user_info.host, 256);
 	// #endif // _WIN32
-	char *tmp_shell = getenv("SHELL");
+	char* tmp_shell = getenv("SHELL");
 	if (tmp_shell == NULL)
 		sprintf(user_info.shell, "%s", "");
 	else
@@ -847,7 +847,7 @@ struct info get_info()
 			break;
 		}
 	}
-	FILE *user_host_fp = popen("wmic computersystem get username", "r");
+	FILE* user_host_fp = popen("wmic computersystem get username", "r");
 	while (fgets(line, sizeof(line), user_host_fp)) {
 		if (strstr(line, "UserName") != 0)
 			continue;
@@ -858,7 +858,7 @@ struct info get_info()
 			break;
 		}
 	}
-	FILE *shell_fp = popen("powershell $PSVersionTable", "r");
+	FILE* shell_fp = popen("powershell $PSVersionTable", "r");
 	sprintf(user_info.shell, "PowerShell ");
 	char tmp_shell[64];
 	while (fgets(line, sizeof(line), shell_fp))
@@ -892,7 +892,7 @@ struct info get_info()
 	truncate_name(user_info.kernel, user_info.target_width);
 #else  // _WIN32
 	sprintf(user_info.version_name, "windows");
-	FILE *kernel_fp = popen("wmic computersystem get systemtype", "r");
+	FILE* kernel_fp = popen("wmic computersystem get systemtype", "r");
 	while (fgets(line, sizeof(line), kernel_fp)) {
 		if (strstr(line, "SystemType") != 0)
 			continue;
@@ -908,8 +908,8 @@ struct info get_info()
 // ram
 #ifndef __APPLE__
 	#ifdef _WIN32
-	FILE *mem_used_fp	   = popen("wmic os get freevirtualmemory", "r");
-	FILE *mem_total_fp	   = popen("wmic os get totalvirtualmemorysize", "r");
+	FILE* mem_used_fp	   = popen("wmic os get freevirtualmemory", "r");
+	FILE* mem_total_fp	   = popen("wmic os get totalvirtualmemorysize", "r");
 	char mem_used_ch[2137] = {0}, mem_total_ch[2137] = {0};
 
 	while (fgets(mem_total_ch, sizeof(mem_total_ch), mem_total_fp) != NULL) {
@@ -932,7 +932,7 @@ struct info get_info()
 	pclose(mem_used_fp);
 	pclose(mem_total_fp);
 	#else
-	FILE *meminfo;
+	FILE* meminfo;
 
 		#ifdef __FREEBSD__
 	meminfo = popen("LANG=EN_us freecolor -om 2> /dev/null", "r");
@@ -975,8 +975,8 @@ struct info get_info()
 	// Total
 	sysctlbyname("hw.memsize", &mem_buffer, &mem_buffer_len, NULL, 0);
 
-	ram_used  = ((mem_wired + mem_active + mem_compressed) * 4 / 1024);
-	ram_total = mem_buffer / 1024 / 1024;
+	user_info->ram_used	 = ((mem_wired + mem_active + mem_compressed) * 4 / 1024);
+	user_info->ram_total = mem_buffer / 1024 / 1024;
 #endif
 
 	/* ---------- gpu ---------- */
@@ -985,7 +985,7 @@ struct info get_info()
 #ifndef _WIN32
 	setenv("LANG", "en_US", 1); // force language to english
 #endif							// _WIN32
-	FILE *gpu;
+	FILE* gpu;
 #ifndef _WIN32
 	gpu = popen("lshw -class display 2> /dev/null", "r");
 
@@ -1035,7 +1035,7 @@ struct info get_info()
 
 // Resolution
 #ifndef _WIN32
-	FILE *resolution =
+	FILE* resolution =
 		popen("xwininfo -root 2> /dev/null | grep -E 'Width|Height'", "r");
 	while (fgets(line, sizeof(line), resolution)) {
 		sscanf(line, "  Width: %d", &user_info.screen_width);
@@ -1062,7 +1062,7 @@ struct info get_info()
 	return user_info;
 }
 
-void list(char *arg) { // prints distribution list
+void list(char* arg) { // prints distribution list
 	// distributions are listed by distribution branch
 	// to make the output easier to understand by the user.
 	printf("%s -d <options>\n"
@@ -1092,8 +1092,8 @@ void list(char *arg) { // prints distribution list
 replace("Hello World!", "World", "everyone")
  This returns "Hello everyone!".
 */
-void replace(char *original, char *search, char *replacer) {
-	char *ch;
+void replace(char* original, char* search, char* replacer) {
+	char* ch;
 	char buffer[1024];
 	while ((ch = strstr(original, search))) {
 		ch = strstr(original, search);
@@ -1107,8 +1107,8 @@ void replace(char *original, char *search, char *replacer) {
 	}
 }
 
-void replace_ignorecase(char *original, char *search, char *replacer) {
-	char *ch;
+void replace_ignorecase(char* original, char* search, char* replacer) {
+	char* ch;
 	char buffer[1024];
 #ifndef _WIN32
 	while ((ch = strcasestr(original, search)))
@@ -1127,10 +1127,10 @@ void replace_ignorecase(char *original, char *search, char *replacer) {
 }
 
 void print_ascii(
-	struct info *user_info) { // prints logo (as ascii art) of the given system.
+	struct info* user_info) { // prints logo (as ascii art) of the given system.
 							  // distributions listed alphabetically.
 	printf("\n");
-	FILE *file;
+	FILE* file;
 	char ascii_file[1024];
 	// First tries to get ascii art file from local directory. Good when
 	// modifying these files.
@@ -1192,7 +1192,7 @@ void print_ascii(
 }
 
 void print_image(
-	struct info *user_info) { // prints logo (as an image) of the given system.
+	struct info* user_info) { // prints logo (as an image) of the given system.
 							  // distributions listed alphabetically.
 #ifndef TARGET_OS_IPHONE
 	char command[256];
@@ -1237,7 +1237,7 @@ void print_image(
 #endif
 }
 
-void usage(char *arg) {
+void usage(char* arg) {
 	printf("Usage: %s <args>\n"
 		   "    -a, --ascii         prints logo as ascii text (default)\n"
 		   "    -c  --config        use custom config path\n"
@@ -1270,9 +1270,9 @@ void usage(char *arg) {
 #ifdef _WIN32
 // windows sucks and hasn't a strstep, so I copied one from
 // https://stackoverflow.com/questions/8512958/is-there-a-windows-variant-of-strsep-function
-char *strsep(char **stringp, const char *delim) {
-	char *start = *stringp;
-	char *p;
+char* strsep(char** stringp, const char* delim) {
+	char* start = *stringp;
+	char* p;
 
 	p = (start != NULL) ? strpbrk(start, delim) : NULL;
 
@@ -1287,12 +1287,12 @@ char *strsep(char **stringp, const char *delim) {
 }
 #endif
 
-void uwu_kernel(char *kernel) {
+void uwu_kernel(char* kernel) {
 #define KERNEL_TO_UWU(str, original, uwufied) \
 	if (strcmp(str, original) == 0) sprintf(str, "%s", uwufied)
 
-	char *temp_kernel = kernel;
-	char *token;
+	char* temp_kernel = kernel;
+	char* token;
 	char splitted[16][128] = {};
 
 	int count = 0;
@@ -1352,7 +1352,7 @@ void uwu_kernel(char *kernel) {
 #undef KERNEL_TO_UWU
 }
 
-void uwu_hw(char *hwname) {
+void uwu_hw(char* hwname) {
 #define HW_TO_UWU(original, uwuified) \
 	replace_ignorecase(hwname, original, uwuified);
 
@@ -1378,8 +1378,8 @@ void uwu_hw(char *hwname) {
 #undef HW_TO_UWU
 }
 
-void uwu_name(struct configuration *config_flags,
-			  struct info *user_info) { // uwufies distro name
+void uwu_name(struct configuration* config_flags,
+			  struct info* user_info) { // uwufies distro name
 
 #define STRING_TO_UWU(original, uwufied)                \
 	if (strcmp(user_info->version_name, original) == 0) \
@@ -1437,7 +1437,7 @@ void uwu_name(struct configuration *config_flags,
 #undef STRING_TO_UWU
 }
 
-void truncate_name(char *name, int target_width) {
+void truncate_name(char* name, int target_width) {
 	char arr[target_width];
 
 	for (int i = 0; i < target_width; i++) arr[i] = name[i];
@@ -1445,7 +1445,7 @@ void truncate_name(char *name, int target_width) {
 }
 
 // remove square brackets (for gpu names)
-void remove_brackets(char *str) {
+void remove_brackets(char* str) {
 	int i = 0, j;
 	while (i < (int)strlen(str)) {
 		if (str[i] == '[' || str[i] == ']') {

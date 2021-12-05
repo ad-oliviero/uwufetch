@@ -13,4 +13,5 @@ AllowShortIfStatementsOnASingleLine: true
 AllowShortLoopsOnASingleLine: true
 ColumnLimit: 0
 MaxEmptyLinesToKeep: 1
+PointerAlignment: Left
 ...
