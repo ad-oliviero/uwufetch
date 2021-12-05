@@ -1,9 +1,10 @@
-
-   {BACKGROUND_RED}            {NORMAL}
-{BACKGROUND_WHITE}   {BACKGROUND_RED}    {NORMAL}      {BACKGROUND_RED}  {NORMAL}
-{BACKGROUND_WHITE}   {BACKGROUND_RED}    {NORMAL}      {BACKGROUND_RED}  {NORMAL}
-{BACKGROUND_WHITE}   {BACKGROUND_RED}            {NORMAL}
-{BACKGROUND_WHITE}   {BACKGROUND_RED}            {NORMAL}
-{BACKGROUND_WHITE}   {BACKGROUND_RED}            {NORMAL}
-   {BACKGROUND_RED}     {NORMAL}  {BACKGROUND_RED}     {NORMAL}
-   {BACKGROUND_RED}     {NORMAL}  {BACKGROUND_RED}     {NORMAL}
+       ▄▄▄▄▄▄▄    
+      █ ▄▄▄▄▄ █   
+     ▐  █▄▄▄█  █  
+     ▌         ▐  
+    ▐          ▐  
+    █          ▐  
+   ▐  ▐▀▀▀▀█   ▐  
+▐▀▀▀  ▐    ▐   ▐  
+ ▀▀▀▀▀▀ █▀▀▀   █  
+         ▀▀▀▀▀▀   
