@@ -469,7 +469,7 @@ void print_info(struct configuration* config_flags, struct info* user_info) {
 		responsively_printf(print_buf, "%s%s%sSHEWW       %s%s",
 							terminal_cursor_move, NORMAL, BOLD, NORMAL,
 							user_info->shell);
-#if defined(__APPLE__) && !defined(TARGET_OS_IPHONE)
+#if defined(__APPLE__) && !defined(__IPHONE__) // some time ago __IPHONE__ was defined as TARGET_OS_IPHONE, but it was defined also in m1 macs, so i changed it
 	if (config_flags->show_pkgs)
 		system(
 			"ls $(brew --cellar) | wc -l | awk -F' ' '{print \"  \x1b[34mw     "
@@ -811,7 +811,7 @@ struct info get_info()
 			sysctlbyname("machdep.cpu.brand_string", &cpu_buffer,
 						 &cpu_buffer_len, NULL, 0);
 
-	#ifndef TARGET_OS_IPHONE
+	#ifndef __IPHONE__
 			sprintf(user_info.version_name, "macos");
 	#else
 			sprintf(user_info.version_name, "ios");
@@ -1194,7 +1194,7 @@ void print_ascii(
 void print_image(
 	struct info* user_info) { // prints logo (as an image) of the given system.
 							  // distributions listed alphabetically.
-#ifndef TARGET_OS_IPHONE
+#ifndef __IPHONE__
 	char command[256];
 	if (strlen(user_info->image_name) > 1)
 		sprintf(command, "viu -t -w 18 -h 8 %s 2> /dev/null",
@@ -1243,7 +1243,7 @@ void usage(char* arg) {
 		   "    -c  --config        use custom config path\n"
 		   "    -d, --distro        lets you choose the logo to print\n"
 		   "    -h, --help          prints this help page\n"
-#ifndef TARGET_OS_IPHONE
+#ifndef __IPHONE__
 		   "    -i, --image         prints logo as image and use a custom "
 		   "image if provided\n"
 		   "                        %sworks in most terminals\n"
@@ -1259,7 +1259,7 @@ void usage(char* arg) {
 		   "    using the cache     set $UWUFETCH_CACHE_ENABLED to TRUE, true "
 		   "or 1\n",
 		   arg,
-#ifndef TARGET_OS_IPHONE
+#ifndef __IPHONE__
 		   BLUE,
 #else
 		   RED,
