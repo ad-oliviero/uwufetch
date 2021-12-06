@@ -730,7 +730,7 @@ struct info get_info()
 	#endif
 	host_model_info	  = popen("sysctl -a " HOSTCTL, "r");
 	while (fgets(line, sizeof(line), host_model_info))
-		if (sscanf(line, HOSTCTL ": %[^\n]", user_info->host_model)) break;
+		if (sscanf(line, HOSTCTL ": %[^\n]", user_info.host_model)) break;
 #endif // _WIN32
 	FILE* host_model_version =
 		fopen("/sys/devices/virtual/dmi/id/product_version", "r");
@@ -975,8 +975,8 @@ struct info get_info()
 	// Total
 	sysctlbyname("hw.memsize", &mem_buffer, &mem_buffer_len, NULL, 0);
 
-	user_info->ram_used	 = ((mem_wired + mem_active + mem_compressed) * 4 / 1024);
-	user_info->ram_total = mem_buffer / 1024 / 1024;
+	user_info.ram_used	= ((mem_wired + mem_active + mem_compressed) * 4 / 1024);
+	user_info.ram_total = mem_buffer / 1024 / 1024;
 #endif
 
 	/* ---------- gpu ---------- */
