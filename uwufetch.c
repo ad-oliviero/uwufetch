@@ -327,6 +327,7 @@ int pkgman(struct info* user_info)
 		{"pacman -Qq 2> /dev/null | wc -l", "(pacman)"},
 		{"pkg info 2>/dev/null | wc -l", "(pkg)"},
 		{"port installed 2> /dev/null | tail -n +2 | wc -l", "(port)"},
+		{"brew list 2> /dev/null | wc -l", "(brew)"},
 		{"rpm -qa --last 2> /dev/null | wc -l", "(rpm)"},
 		{"xbps-query -l 2> /dev/null | wc -l", "(xbps)"},
 		{"zypper -q se --installed-only 2> /dev/null | wc -l", "(zypper)"}};
