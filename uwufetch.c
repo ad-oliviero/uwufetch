@@ -102,7 +102,7 @@ struct configuration {
 
 char* terminal_cursor_move = "\033[18C";
 struct info {
-	char user[128], host[256], shell[64], host_model[256], kernel[256],
+	char user[128], host[256], shell[64], host_model[256], host_model_version[256], kernel[256],
 		version_name[64], cpu_model[256], gpu_model[64][256], pkgman_name[64],
 		image_name[128], *config_directory, *cache_content;
 	int target_width, screen_width, screen_height, ram_total, ram_used, pkgs;
@@ -310,8 +310,10 @@ int pkgman(struct info* user_info)
 { // this is just a function that returns the total of installed packages
 	int total = 0;
 
-#ifndef __APPLE__ // this function is not used on mac os because it causes lots \
-				  // of problems
+#ifndef __APPLE__
+	// this function is not used on mac os because it causes lots of
+	// problems
+
 	#ifndef _WIN32
 	struct package_manager pkgmans[] = {
 		{"apt list --installed 2> /dev/null | wc -l", "(apt)"},
@@ -755,15 +757,15 @@ struct info get_info()
 				sprintf(user_info.version_name, "amogos");
 			}
 		}
-		if (host_model_info) {
-			while (fgets(line, sizeof(line), host_model_info))
-				if (sscanf(line, "%[^\n]", user_info.host_model)) break;
+		if (host_model_version) {
+			while (fgets(line, sizeof(line), host_model_version))
+				if (sscanf(line, "%[^\n]", user_info.host_model_version)) break;
 			if (host_model_version) {
 				char version[32];
 				while (fgets(line, sizeof(line), host_model_version)) {
 					if (sscanf(line, "%[^\n]", version)) {
-						strcat(user_info.host_model, " ");
-						strcat(user_info.host_model, version);
+						strcat(user_info.host_model_version, " ");
+						strcat(user_info.host_model_version, version);
 						break;
 					}
 				}
