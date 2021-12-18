@@ -438,7 +438,7 @@ void print_info(struct configuration* config_flags, struct info* user_info) {
 							terminal_cursor_move, NORMAL, BOLD, NORMAL,
 							user_info->version_name);
 	if (config_flags->show_host)
-		responsively_printf(print_buf, "%s%s%sHOWOST      %s%s",
+		responsively_printf(print_buf, "%s%s%sMOWODEL     %s%s",
 							terminal_cursor_move, NORMAL, BOLD, NORMAL,
 							user_info->host_model);
 	if (config_flags->show_kernel)
@@ -700,9 +700,7 @@ struct info get_info()
 #endif
 	FILE* host_model_info =
 		fopen("/sys/devices/virtual/dmi/id/board_name",
-			  "r"); // try to get board name ("HOWOST" INFO NAME SHOULD BE
-					// CHANGED AS IT IS NOT MEANT TO BE THE hostname, BUT THE
-					// MODEL OF THE COMPUTER)
+			  "r"); // try to get board name
 	if (!host_model_info)
 		host_model_info = fopen("/sys/devices/virtual/dmi/id/product_name",
 								"r");				   // if couldn't then try another
