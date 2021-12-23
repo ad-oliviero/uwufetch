@@ -965,7 +965,7 @@ struct info get_info()
 			while (fgets(buffer, sizeof(buffer), model_fp) && !sscanf(buffer, "%[^\n]", user_info.host_model))
 				;
 #ifndef __FREEBSD__
-			while (fgets(buffer, sizeof(buffer), cpuinfo) && sscanf(buffer, "Hardware        : %[^\n]", user_info.cpu_model))
+			while (fgets(buffer, sizeof(buffer), cpuinfo) && !sscanf(buffer, "Hardware        : %[^\n]", user_info.cpu_model))
 				;
 #endif
 		} else if (library) { // Apple
@@ -1182,7 +1182,7 @@ struct info get_info()
 		sscanf(buffer, "  Height: %d", &user_info.screen_height);
 	}
 #endif
-	if (strcmp(user_info.os_name, "windows")) MOVE_CURSOR = "\033[21C"; // windows logo is slightly bigger
+	if (strcmp(user_info.os_name, "windows")) MOVE_CURSOR = "\033[21C"; // to print windows logo on not windows systems
 
 // package count
 #ifdef _WIN32
