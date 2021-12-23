@@ -1260,7 +1260,11 @@ int main(int argc, char* argv[]) {
 		if (cache_enabled) {
 			// if no cache file found write to it
 			if (!read_cache(&user_info)) {
+#ifdef _WIN32
 				user_info = get_info(&config_flags);
+#else
+				user_info = get_info();
+#endif
 				write_cache(&user_info);
 			}
 			config_flags = parse_config(&user_info); // reading the config
@@ -1284,7 +1288,12 @@ int main(int argc, char* argv[]) {
 		 {"image", optional_argument, NULL, 'i'},
 		 {"list", no_argument, NULL, 'l'},
 		 {NULL, 0, NULL, 0}};
-	user_info	 = get_info(&config_flags);	 // get the info to modify it with cmdline options
+
+#ifdef _WIN32
+	user_info = get_info(&config_flags); // get the info to modify it with cmdline options
+#else
+	user_info = get_info();
+#endif
 	config_flags = parse_config(&user_info); // same as user_info
 
 	// reading cmdline options
