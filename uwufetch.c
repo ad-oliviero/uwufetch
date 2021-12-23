@@ -106,12 +106,12 @@ struct configuration {
 
 // info that will be printed with the logo
 struct info {
-	char user[128],		 // username
-		host[256],		 // hostname (computer name)
-		shell[64],		 // shell name
-		host_model[256], // motherboard name
-		kernel[256],	 // kernel name (linux 5.x-whatever)
-		os_name[64],	 // os name (arch linux, windows, mac os)
+	char user[128],	 // username
+		host[256],	 // hostname (computer name)
+		shell[64],	 // shell name
+		model[256],	 // model name
+		kernel[256], // kernel name (linux 5.x-whatever)
+		os_name[64], // os name (arch linux, windows, mac os)
 		cpu_model[256],
 		gpu_model[64][256],
 		pkgman_name[64], // package managers string
@@ -439,7 +439,7 @@ void print_info(struct configuration* config_flags, struct info* user_info) {
 	if (config_flags->show_host)
 		responsively_printf(print_buf, "%s%s%sMOWODEL     %s%s",
 							MOVE_CURSOR, NORMAL, BOLD, NORMAL,
-							user_info->host_model);
+							user_info->model);
 	if (config_flags->show_kernel)
 		responsively_printf(print_buf, "%s%s%sKEWNEL      %s%s",
 							MOVE_CURSOR, NORMAL, BOLD, NORMAL,
@@ -532,7 +532,7 @@ void write_cache(struct info* user_info) {
 		"s\nscreen_width=%d\nscreen_height=%d\nshell=%s\npkgs=%d\npkgman_name=%"
 		"s\n",
 		user_info->user, user_info->host, user_info->os_name,
-		user_info->host_model, user_info->kernel, user_info->cpu_model,
+		user_info->model, user_info->kernel, user_info->cpu_model,
 		user_info->screen_width, user_info->screen_height, user_info->shell,
 		user_info->pkgs, user_info->pkgman_name);
 
@@ -561,7 +561,7 @@ int read_cache(struct info* user_info) {
 		sscanf(buffer, "user=%99[^\n]", user_info->user);
 		sscanf(buffer, "host=%99[^\n]", user_info->host);
 		sscanf(buffer, "version_name=%99[^\n]", user_info->os_name);
-		sscanf(buffer, "host_model=%99[^\n]", user_info->host_model);
+		sscanf(buffer, "host_model=%99[^\n]", user_info->model);
 		sscanf(buffer, "kernel=%99[^\n]", user_info->kernel);
 		sscanf(buffer, "cpu=%99[^\n]", user_info->cpu_model);
 		if (sscanf(buffer, "gpu=%99[^\n]", user_info->gpu_model[gpuc]) != 0)
@@ -874,15 +874,31 @@ struct info get_info()
 	FILE* cpuinfo	  = popen("sysctl -a | egrep -i 'hw.model'", "r"); // cpu name command for freebsd
 #endif
 	// trying to get some kind of information about the name of the computer (hopefully a product full name)
-	FILE* model_fp = fopen("/sys/devices/virtual/dmi/id/product_version", "r");		  // trying to get product version
-	if (!model_fp) model_fp = fopen("/sys/devices/virtual/dmi/id/product_name", "r"); // trying to get product name
-	if (!model_fp) model_fp = fopen("/sys/devices/virtual/dmi/id/board_name", "r");	  // trying to get motherboard name
-	if (model_fp) {
-		fgets(buffer, 256, model_fp);
-		buffer[strlen(buffer) - 1] = '\0';
-		sprintf(user_info.host_model, "%s", buffer); // read model name
-		fclose(model_fp);
+	FILE* model_fp /* = fopen("/sys/devices/virtual/dmi/id/product_version", "r") */; // trying to get product version
+	// if (!model_fp) model_fp = fopen("/sys/devices/virtual/dmi/id/product_name", "r"); // trying to get product name
+	// if (!model_fp) model_fp = fopen("/sys/devices/virtual/dmi/id/board_name", "r");	  // trying to get motherboard name
+	char model_filename[3][256] = {"/sys/devices/virtual/dmi/id/product_version",
+								   "/sys/devices/virtual/dmi/id/product_name",
+								   "/sys/devices/virtual/dmi/id/board_name"};
+
+	char tmp_model[3][256]; // temporary variable to store the contents of all 3 files
+	int longest_model = 0, best_len = 0, currentlen = 0;
+	for (int i = 0; i < 3; i++) {
+		// read file
+		model_fp = fopen(model_filename[i], "r");
+		if (model_fp) {
+			fgets(tmp_model[i], 256, model_fp);
+			tmp_model[i][strlen(tmp_model[i]) - 1] = '\0';
+			fclose(model_fp);
+		}
+		// choose the file with the longest name
+		currentlen = strlen(tmp_model[i]);
+		if (currentlen > best_len) {
+			best_len	  = currentlen;
+			longest_model = i;
+		}
 	}
+	sprintf(user_info.model, "%s", tmp_model[longest_model]); // read model name
 #ifdef _WIN32
 	// all the previous files obviously did not exist on windows
 	model_fp = popen("wmic computersystem get model", "r");
@@ -890,8 +906,8 @@ struct info get_info()
 		if (strstr(buffer, "Model") != 0)
 			continue;
 		else {
-			sprintf(user_info.host_model, "%s", buffer);
-			user_info.host_model[strlen(user_info.host_model) - 2] = '\0';
+			sprintf(user_info.model, "%s", buffer);
+			user_info.model[strlen(user_info.model) - 2] = '\0';
 			break;
 		}
 	}
@@ -903,7 +919,7 @@ struct info get_info()
 	#endif
 	model_fp		  = popen("sysctl -a " HOSTCTL, "r");
 	while (fgets(buffer, sizeof(buffer), model_fp))
-		if (sscanf(buffer, HOSTCTL ": %[^\n]", user_info.host_model)) break;
+		if (sscanf(buffer, HOSTCTL ": %[^\n]", user_info.model)) break;
 #endif				  // _WIN32
 	if (os_release) { // get normal vars if os_release exists
 		while (fgets(buffer, sizeof(buffer), os_release) && !(sscanf(buffer, "\nID=\"%s\"", user_info.os_name) || sscanf(buffer, "\nID=%s", user_info.os_name)))
@@ -918,13 +934,13 @@ struct info get_info()
 			}
 		}
 		/* if (model_fp) { // what the fuck is this? I don't remember writing this code
-			while (fgets(buffer, sizeof(buffer), model_fp) && !(sscanf(buffer, "%[^\n]", user_info.host_model)))
+			while (fgets(buffer, sizeof(buffer), model_fp) && !(sscanf(buffer, "%[^\n]", user_info.model)))
 				;
 			char version[32];
 			while (fgets(buffer, sizeof(buffer), model_fp)) {
 				if (sscanf(buffer, "%[^\n]", version)) {
-					strcat(user_info.host_model, " ");
-					strcat(user_info.host_model, version);
+					strcat(user_info.model, " ");
+					strcat(user_info.model, version);
 					break;
 				}
 			}
@@ -962,7 +978,7 @@ struct info get_info()
 			fclose(whoami);
 			// model name
 			model_fp = popen("getprop ro.product.model", "r");
-			while (fgets(buffer, sizeof(buffer), model_fp) && !sscanf(buffer, "%[^\n]", user_info.host_model))
+			while (fgets(buffer, sizeof(buffer), model_fp) && !sscanf(buffer, "%[^\n]", user_info.model))
 				;
 #ifndef __FREEBSD__
 			while (fgets(buffer, sizeof(buffer), cpuinfo) && !sscanf(buffer, "Hardware        : %[^\n]", user_info.cpu_model))
@@ -1195,7 +1211,7 @@ struct info get_info()
 	uwu_kernel(user_info.kernel);
 	for (int i = 0; user_info.gpu_model[i][0]; i++) uwu_hw(user_info.gpu_model[i]);
 	uwu_hw(user_info.cpu_model);
-	uwu_hw(user_info.host_model);
+	uwu_hw(user_info.model);
 	return user_info;
 }
 
