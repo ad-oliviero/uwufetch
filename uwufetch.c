@@ -106,13 +106,12 @@ struct configuration {
 
 // info that will be printed with the logo
 struct info {
-	char user[128],				 // username
-		host[256],				 // hostname (computer name)
-		shell[64],				 // shell name
-		host_model[256],		 // motherboard name
-		host_model_version[256], // alternative to motherboard name if it doesn't exist
-		kernel[256],			 // kernel name (linux 5.x-whatever)
-		os_name[64],			 // os name (arch linux, windows, mac os)
+	char user[128],		 // username
+		host[256],		 // hostname (computer name)
+		shell[64],		 // shell name
+		host_model[256], // motherboard name
+		kernel[256],	 // kernel name (linux 5.x-whatever)
+		os_name[64],	 // os name (arch linux, windows, mac os)
 		cpu_model[256],
 		gpu_model[64][256],
 		pkgman_name[64], // package managers string
@@ -827,7 +826,6 @@ void uwu_hw(char* hwname) {
 }
 
 // get all necessary info
-// I'LL COMMENT THIS FUNCTION LATER
 #ifdef _WIN32
 struct info get_info(struct configuration* config_flags)
 #else
@@ -835,9 +833,9 @@ struct info get_info()
 #endif
 {
 	struct info user_info = {0};
-	char line[256]; // var to scan file lines
+	char buffer[256]; // line buffer
 
-// terminal width used to truncate long names
+// get terminal width used to truncate long names
 #ifndef _WIN32
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &user_info.win);
 	user_info.target_width = user_info.win.ws_col - 30;
@@ -848,33 +846,30 @@ struct info get_info()
 #endif // _WIN32
 
 	// os version, cpu and board info
-	FILE* os_release = fopen("/etc/os-release", "r");
+	FILE* os_release = fopen("/etc/os-release", "r"); // os name file
 #ifndef __FREEBSD__
-	FILE* cpuinfo = fopen("/proc/cpuinfo", "r");
+	FILE* cpuinfo = fopen("/proc/cpuinfo", "r"); // cpu name file for not-freebsd systems
 #else
-	FILE* cpuinfo	  = popen("sysctl -a | egrep -i 'hw.model'", "r");
+	FILE* cpuinfo	  = popen("sysctl -a | egrep -i 'hw.model'", "r"); // cpu name command for freebsd
 #endif
-	FILE* host_model_info =
-		fopen("/sys/devices/virtual/dmi/id/board_name",
-			  "r"); // try to get board name
-	if (!host_model_info)
-		host_model_info = fopen("/sys/devices/virtual/dmi/id/product_name",
-								"r");				   // if couldn't then try another
-	if (!host_model_info)							   // if failed
-		host_model_info = fopen("/etc/hostname", "r"); // etc.
-	if (host_model_info) {							   // if succeeded to open one of the file
-		fgets(line, 256, host_model_info);
-		line[strlen(line) - 1] = '\0';
-		sprintf(user_info.host_model, "%s", line);
-		fclose(host_model_info);
+	// trying to get some kind of information about the name of the computer (hopefully a product full name)
+	FILE* model_fp = fopen("/sys/devices/virtual/dmi/id/product_version", "r");		  // trying to get product version
+	if (!model_fp) model_fp = fopen("/sys/devices/virtual/dmi/id/product_name", "r"); // trying to get product name
+	if (!model_fp) model_fp = fopen("/sys/devices/virtual/dmi/id/board_name", "r");	  // trying to get motherboard name
+	if (model_fp) {
+		fgets(buffer, 256, model_fp);
+		buffer[strlen(buffer) - 1] = '\0';
+		sprintf(user_info.host_model, "%s", buffer); // read model name
+		fclose(model_fp);
 	}
 #ifdef _WIN32
-	host_model_info = popen("wmic computersystem get model", "r");
-	while (fgets(line, sizeof(line), host_model_info)) {
-		if (strstr(line, "Model") != 0)
+	// all the previous files obviously did not exist on windows
+	model_fp = popen("wmic computersystem get model", "r");
+	while (fgets(buffer, sizeof(buffer), model_fp)) {
+		if (strstr(buffer, "Model") != 0)
 			continue;
 		else {
-			sprintf(user_info.host_model, "%s", line);
+			sprintf(user_info.host_model, "%s", buffer);
 			user_info.host_model[strlen(user_info.host_model) - 2] = '\0';
 			break;
 		}
@@ -885,54 +880,45 @@ struct info get_info()
 	#elif defined(__APPLE__)
 		#define HOSTCTL "hw.model"
 	#endif
-	host_model_info	  = popen("sysctl -a " HOSTCTL, "r");
-	while (fgets(line, sizeof(line), host_model_info))
-		if (sscanf(line, HOSTCTL ": %[^\n]", user_info.host_model)) break;
-#endif // _WIN32
-	FILE* host_model_version =
-		fopen("/sys/devices/virtual/dmi/id/product_version", "r");
-
-	if (os_release) { // get normal vars
-		while (fgets(line, sizeof(line), os_release))
-			if (sscanf(line, "\nID=\"%s\"", user_info.os_name) ||
-				sscanf(line, "\nID=%s", user_info.os_name))
-				break;
-
-		// trying to detect amogos because in its os-release file ID value is
-		// just "debian"
-		if (strcmp(user_info.os_name, "debian") == 0 ||
-			strcmp(user_info.os_name, "raspbian") ==
-				0) // will be removed when amogos will have an os-release file
-				   // with ID=amogos
-		{
+	model_fp		  = popen("sysctl -a " HOSTCTL, "r");
+	while (fgets(buffer, sizeof(buffer), model_fp))
+		if (sscanf(buffer, HOSTCTL ": %[^\n]", user_info.host_model)) break;
+#endif				  // _WIN32
+	if (os_release) { // get normal vars if os_release exists
+		while (fgets(buffer, sizeof(buffer), os_release) && !(sscanf(buffer, "\nID=\"%s\"", user_info.os_name) || sscanf(buffer, "\nID=%s", user_info.os_name)))
+			;
+		/* trying to detect amogos because in its os-release file ID value is just "debian",
+		will be removed when amogos will have an os-release file with ID=amogos */
+		if (strcmp(user_info.os_name, "debian") == 0 || strcmp(user_info.os_name, "raspbian") == 0) {
 			DIR* amogos_plymouth = opendir("/usr/share/plymouth/themes/amogos");
 			if (amogos_plymouth) {
 				closedir(amogos_plymouth);
 				sprintf(user_info.os_name, "amogos");
 			}
 		}
-		if (host_model_version) {
-			while (fgets(line, sizeof(line), host_model_version))
-				if (sscanf(line, "%[^\n]", user_info.host_model_version)) break;
-			if (host_model_version) {
-				char version[32];
-				while (fgets(line, sizeof(line), host_model_version)) {
-					if (sscanf(line, "%[^\n]", version)) {
-						strcat(user_info.host_model_version, " ");
-						strcat(user_info.host_model_version, version);
-						break;
-					}
+		/* if (model_fp) { // what the fuck is this? I don't remember writing this code
+			while (fgets(buffer, sizeof(buffer), model_fp) && !(sscanf(buffer, "%[^\n]", user_info.host_model)))
+				;
+			char version[32];
+			while (fgets(buffer, sizeof(buffer), model_fp)) {
+				if (sscanf(buffer, "%[^\n]", version)) {
+					strcat(user_info.host_model, " ");
+					strcat(user_info.host_model, version);
+					break;
 				}
 			}
-		}
-		while (fgets(line, sizeof(line), cpuinfo)) {
+		} */
+
+		// getting cpu name
+		while (fgets(buffer, sizeof(buffer), cpuinfo)) {
 #ifdef __FREEBSD__
-			if (sscanf(line, "hw.model: %[^\n]", user_info.cpu_model))
+			if (sscanf(buffer, "hw.model: %[^\n]", user_info.cpu_model))
 #else
-			if (sscanf(line, "model name    : %[^\n]", user_info.cpu_model))
+			if (sscanf(buffer, "model name    : %[^\n]", user_info.cpu_model))
 				break;
 #endif // __FREEBSD__
 		}
+		// getting username
 		char* tmp_user = getenv("USER");
 		if (tmp_user == NULL)
 			sprintf(user_info.user, "%s", "");
@@ -940,34 +926,31 @@ struct info get_info()
 			sprintf(user_info.user, "%s", tmp_user);
 		fclose(os_release);
 	} else { // try for android vars, next for Apple var, or unknown system
+		// android
 		DIR* system_app		 = opendir("/system/app/");
 		DIR* system_priv_app = opendir("/system/priv-app/");
 		DIR* library		 = opendir("/Library/");
-		if (system_app && system_priv_app) { // android
+		if (system_app && system_priv_app) {
 			closedir(system_app);
 			closedir(system_priv_app);
 			sprintf(user_info.os_name, "android");
-			// android vars
+			// username
 			FILE* whoami = popen("whoami", "r");
 			if (fscanf(whoami, "%s", user_info.user) == 3)
 				sprintf(user_info.user, "unknown");
 			fclose(whoami);
-			host_model_info = popen("getprop ro.product.model", "r");
-			while (fgets(line, sizeof(line), host_model_info))
-				if (sscanf(line, "%[^\n]", user_info.host_model)) break;
+			// model name
+			model_fp = popen("getprop ro.product.model", "r");
+			while (fgets(buffer, sizeof(buffer), model_fp) && !sscanf(buffer, "%[^\n]", user_info.host_model))
+				;
 #ifndef __FREEBSD__
-			while (fgets(line, sizeof(line), cpuinfo))
-				if (sscanf(line, "Hardware        : %[^\n]",
-						   user_info.cpu_model))
-					break;
+			while (fgets(buffer, sizeof(buffer), cpuinfo) && sscanf(buffer, "Hardware        : %[^\n]", user_info.cpu_model))
+				;
 #endif
-		} else if (library) // Apple
-		{
+		} else if (library) { // Apple
 			closedir(library);
 #ifdef __APPLE__
-			sysctlbyname("machdep.cpu.brand_string", &cpu_buffer,
-						 &cpu_buffer_len, NULL, 0);
-
+			sysctlbyname("machdep.cpu.brand_string", &cpu_buffer, &cpu_buffer_len, NULL, 0); // cpu name
 	#ifndef __IPHONE__
 			sprintf(user_info.os_name, "macos");
 	#else
@@ -976,55 +959,52 @@ struct info get_info()
 			sprintf(user_info.cpu_model, "%s", cpu_buffer);
 #endif
 		} else
-			sprintf(user_info.os_name, "unknown");
+			sprintf(user_info.os_name, "unknown"); // if no option before is working, the system is unknown
 	}
 #ifndef __FREEBSD__
 	fclose(cpuinfo);
 #endif
 #ifndef _WIN32
-	gethostname(user_info.host, 256);
-	// #endif // _WIN32
-	char* tmp_shell = getenv("SHELL");
+	gethostname(user_info.host, 256);  // hostname
+	char* tmp_shell = getenv("SHELL"); // shell name
 	if (tmp_shell == NULL)
 		sprintf(user_info.shell, "%s", "");
 	else
 		sprintf(user_info.shell, "%s", tmp_shell);
-	if (strlen(user_info.shell) > 16)
-		memmove(&user_info.shell, &user_info.shell[27],
-				strlen(user_info.shell)); // android shell was too long, this
-										  // works only for termux
-#else
+	if (strlen(user_info.shell) > 16) // android shell was too long, this works only for termux
+		memmove(&user_info.shell, &user_info.shell[27], strlen(user_info.shell));
+#else  // if _WIN32
+	// cpu name
 	cpuinfo = popen("wmic cpu get caption", "r");
-	while (fgets(line, sizeof(line), cpuinfo)) {
-		if (strstr(line, "Caption") != 0)
+	while (fgets(buffer, sizeof(buffer), cpuinfo)) {
+		if (strstr(buffer, "Caption") != 0)
 			continue;
 		else {
-			sprintf(user_info.cpu_model, "%s", line);
+			sprintf(user_info.cpu_model, "%s", buffer);
 			user_info.cpu_model[strlen(user_info.cpu_model) - 2] = '\0';
 			break;
 		}
 	}
+	// username
 	FILE* user_host_fp = popen("wmic computersystem get username", "r");
-	while (fgets(line, sizeof(line), user_host_fp)) {
-		if (strstr(line, "UserName") != 0)
+	while (fgets(buffer, sizeof(buffer), user_host_fp)) {
+		if (strstr(buffer, "UserName") != 0)
 			continue;
 		else {
-			sscanf(line, "%[^\\]%s", user_info.host, user_info.user);
+			sscanf(buffer, "%[^\\]%s", user_info.host, user_info.user);
 			memmove(user_info.user, user_info.user + 1,
 					sizeof(user_info.user) - 1);
 			break;
 		}
 	}
+	// powershell version
 	FILE* shell_fp = popen("powershell $PSVersionTable", "r");
 	sprintf(user_info.shell, "PowerShell ");
 	char tmp_shell[64];
-	while (fgets(line, sizeof(line), shell_fp))
-		if (sscanf(line, "PSVersion                      %s", tmp_shell) != 0)
-			break;
+	while (fgets(buffer, sizeof(buffer), shell_fp) && sscanf(buffer, "PSVersion                      %s", tmp_shell) == 0)
+		;
 	strcat(user_info.shell, tmp_shell);
 #endif // _WIN32
-
-	// truncate CPU name
 	truncate_str(user_info.cpu_model, user_info.target_width);
 
 // system resources
@@ -1034,39 +1014,38 @@ struct info get_info()
 #ifndef __APPLE__
 	#ifndef __FREEBSD__
 		#ifndef _WIN32
-	sysinfo(&user_info.sys); // somehow this function has to be called again in
-							 // print_info()
-		#else				 // _WIN32
+	sysinfo(&user_info.sys); // somehow this function has to be called again in print_info()
+		#else
 	GetSystemInfo(&user_info.sys);
-		#endif				 // _WIN32
+		#endif
 	#endif
 #endif
 
 #ifndef _WIN32
 	truncate_str(user_info.sys_var.release, user_info.target_width);
-	sprintf(user_info.kernel, "%s %s %s", user_info.sys_var.sysname,
-			user_info.sys_var.release, user_info.sys_var.machine);
+	sprintf(user_info.kernel, "%s %s %s", user_info.sys_var.sysname, user_info.sys_var.release, user_info.sys_var.machine); // kernel name
 	truncate_str(user_info.kernel, user_info.target_width);
 #else  // _WIN32
+	// os name and windows version
 	sprintf(user_info.os_name, "windows");
 	FILE* kernel_fp = popen("wmic computersystem get systemtype", "r");
-	while (fgets(line, sizeof(line), kernel_fp)) {
-		if (strstr(line, "SystemType") != 0)
+	while (fgets(buffer, sizeof(buffer), kernel_fp)) {
+		if (strstr(buffer, "SystemType") != 0)
 			continue;
 		else {
-			sprintf(user_info.kernel, "%s", line);
+			sprintf(user_info.kernel, "%s", buffer);
 			user_info.kernel[strlen(user_info.kernel) - 2] = '\0';
 			break;
 		}
 	}
-	if (kernel_fp != NULL) pclose(kernel_fp);
+	if (kernel_fp) pclose(kernel_fp);
 #endif // _WIN32
 
 // ram
 #ifndef __APPLE__
 	#ifdef _WIN32
-	FILE* mem_used_fp	   = popen("wmic os get freevirtualmemory", "r");
-	FILE* mem_total_fp	   = popen("wmic os get totalvirtualmemorysize", "r");
+	FILE* mem_used_fp	   = popen("wmic os get freevirtualmemory", "r");	   // free memory
+	FILE* mem_total_fp	   = popen("wmic os get totalvirtualmemorysize", "r"); // total memory
 	char mem_used_ch[2137] = {0}, mem_total_ch[2137] = {0};
 
 	while (fgets(mem_total_ch, sizeof(mem_total_ch), mem_total_fp) != NULL) {
@@ -1088,38 +1067,30 @@ struct info get_info()
 	}
 	pclose(mem_used_fp);
 	pclose(mem_total_fp);
-	#else
+	#else // if not _WIN32
 	FILE* meminfo;
 
 		#ifdef __FREEBSD__
-	meminfo = popen("LANG=EN_us freecolor -om 2> /dev/null", "r");
+	meminfo = popen("LANG=EN_us freecolor -om 2> /dev/null", "r"); // free alternative for freebsd
 		#else
-	meminfo = popen("LANG=EN_us free -m 2> /dev/null", "r");
+	meminfo = popen("LANG=EN_us free -m 2> /dev/null", "r"); // get ram info with free
 		#endif
-	while (fgets(line, sizeof(line), meminfo))
-		// free command prints like this: "Mem:" total     used    free shared
-		// buff/cache      available
-		sscanf(line, "Mem: %d %d", &user_info.ram_total, &user_info.ram_used);
+	while (fgets(buffer, sizeof(buffer), meminfo))
+		// free command prints like this: "Mem:" total     used    free shared    buff/cache      available
+		sscanf(buffer, "Mem: %d %d", &user_info.ram_total, &user_info.ram_used);
 	fclose(meminfo);
 	#endif
-#else
+#else // if __APPLE__
 	// Used
 	FILE *mem_wired_fp, *mem_active_fp, *mem_compressed_fp;
-	mem_wired_fp =
-		popen("vm_stat | awk '/wired/ { printf $4 }' | cut -d '.' -f 1", "r");
-	mem_active_fp =
-		popen("vm_stat | awk '/active/ { printf $3 }' | cut -d '.' -f 1", "r");
-	mem_compressed_fp = popen(
-		"vm_stat | awk '/occupied/ { printf $5 }' | cut -d '.' -f 1", "r");
+	mem_wired_fp	  = popen("vm_stat | awk '/wired/ { printf $4 }' | cut -d '.' -f 1", "r");
+	mem_active_fp	  = popen("vm_stat | awk '/active/ { printf $3 }' | cut -d '.' -f 1", "r");
+	mem_compressed_fp = popen("vm_stat | awk '/occupied/ { printf $5 }' | cut -d '.' -f 1", "r");
 	char mem_wired_ch[2137], mem_active_ch[2137], mem_compressed_ch[2137];
-	while (fgets(mem_wired_ch, sizeof(mem_wired_ch), mem_wired_fp) != NULL) {
-		while (fgets(mem_active_ch, sizeof(mem_active_ch), mem_active_fp) !=
-			   NULL) {
-			while (fgets(mem_compressed_ch, sizeof(mem_compressed_ch),
-						 mem_compressed_fp) != NULL) {
-			}
-		}
-	}
+	while (fgets(mem_wired_ch, sizeof(mem_wired_ch), mem_wired_fp) != NULL)
+		while (fgets(mem_active_ch, sizeof(mem_active_ch), mem_active_fp) != NULL)
+			while (fgets(mem_compressed_ch, sizeof(mem_compressed_ch), mem_compressed_fp) != NULL)
+				;
 
 	pclose(mem_wired_fp);
 	pclose(mem_active_fp);
@@ -1131,26 +1102,24 @@ struct info get_info()
 
 	// Total
 	sysctlbyname("hw.memsize", &mem_buffer, &mem_buffer_len, NULL, 0);
-
 	user_info.ram_used	= ((mem_wired + mem_active + mem_compressed) * 4 / 1024);
 	user_info.ram_total = mem_buffer / 1024 / 1024;
 #endif
 
-	/* ---------- gpu ---------- */
-	int gpun = 0; // number of the gpu that the program is searching for to put
-				  // in the array
+	// gpus
+	int gpuc = 0; // gpu counter
 #ifndef _WIN32
 	setenv("LANG", "en_US", 1); // force language to english
-#endif							// _WIN32
+#endif
 	FILE* gpu;
 #ifndef _WIN32
 	gpu = popen("lshw -class display 2> /dev/null", "r");
 
 	// add all gpus to the array gpu_model
-	while (fgets(line, sizeof(line), gpu))
-		if (sscanf(line, "    product: %[^\n]", user_info.gpu_model[gpun]))
-			gpun++;
-#endif // _WIN32
+	while (fgets(buffer, sizeof(buffer), gpu))
+		if (sscanf(buffer, "    product: %[^\n]", user_info.gpu_model[gpuc]))
+			gpuc++;
+#endif
 
 	if (strlen(user_info.gpu_model[0]) < 2) {
 		// get gpus with lspci command
@@ -1159,49 +1128,40 @@ struct info get_info()
 	#ifdef _WIN32
 			gpu = popen("wmic PATH Win32_VideoController GET Name", "r");
 	#else
-			gpu = popen("lspci -mm 2> /dev/null | grep \"VGA\" | awk -F '\"' "
-						"'{print $4 $5 $6}'",
-						"r");
+			gpu = popen("lspci -mm 2> /dev/null | grep \"VGA\" | awk -F '\"' '{print $4 $5 $6}'", "r");
 	#endif
 #else
-			gpu = popen("system_profiler SPDisplaysDataType | awk -F ': ' "
-						"'/Chipset Model: /{ print $2 }'",
-						"r");
+			gpu = popen("system_profiler SPDisplaysDataType | awk -F ': ' '/Chipset Model: /{ print $2 }'", "r");
 #endif
 		} else
-			gpu = popen("getprop ro.hardware.vulkan 2> /dev/null", "r");
+			gpu = popen("getprop ro.hardware.vulkan 2> /dev/null", "r"); // for android
 	}
 
 	// get all the gpus
-	while (fgets(line, sizeof(line), gpu)) {
-		if (strstr(line, "Name"))
+	while (fgets(buffer, sizeof(buffer), gpu)) {
+		// windows
+		if (strstr(buffer, "Name") || (strlen(buffer) == 2))
 			continue;
-		else if (strlen(line) == 2)
-			continue;
-		// ^^^ for windows
-		else if (sscanf(line, "%[^\n]", user_info.gpu_model[gpun]))
-			gpun++;
+		else if (sscanf(buffer, "%[^\n]", user_info.gpu_model[gpuc]))
+			gpuc++;
 	}
 	fclose(gpu);
 
-	// truncate GPU name and remove square brackets
-	for (int i = 0; i < gpun; i++) {
+	// format gpu names
+	for (int i = 0; i < gpuc; i++) {
 		remove_brackets(user_info.gpu_model[i]);
 		truncate_str(user_info.gpu_model[i], user_info.target_width);
 	}
 
 // Resolution
 #ifndef _WIN32
-	FILE* resolution =
-		popen("xwininfo -root 2> /dev/null | grep -E 'Width|Height'", "r");
-	while (fgets(line, sizeof(line), resolution)) {
-		sscanf(line, "  Width: %d", &user_info.screen_width);
-		sscanf(line, "  Height: %d", &user_info.screen_height);
+	FILE* resolution = popen("xwininfo -root 2> /dev/null | grep -E 'Width|Height'", "r");
+	while (fgets(buffer, sizeof(buffer), resolution)) {
+		sscanf(buffer, "  Width: %d", &user_info.screen_width);
+		sscanf(buffer, "  Height: %d", &user_info.screen_height);
 	}
-#endif // _WIN32
-
-	if (strcmp(user_info.os_name, "windows"))
-		MOVE_CURSOR = "\033[21C";
+#endif
+	if (strcmp(user_info.os_name, "windows")) MOVE_CURSOR = "\033[21C"; // windows logo is slightly bigger
 
 // package count
 #ifdef _WIN32
@@ -1210,14 +1170,13 @@ struct info get_info()
 	user_info.pkgs = pkgman(&user_info);
 #endif // _WIN32
 
+	// uwufy info
 	uwu_kernel(user_info.kernel);
-
-	for (int i = 0; user_info.gpu_model[i][0]; i++)
-		uwu_hw(user_info.gpu_model[i]);
+	for (int i = 0; user_info.gpu_model[i][0]; i++) uwu_hw(user_info.gpu_model[i]);
 	uwu_hw(user_info.cpu_model);
 	uwu_hw(user_info.host_model);
 	return user_info;
-} // get_info
+}
 
 /* prints distribution list
 distributions are listed by distribution branch
