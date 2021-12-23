@@ -119,7 +119,7 @@ struct info {
 		image_name[128],
 		*config_directory, // configuration directory name
 		*cache_content;	   // cache file content
-	int target_width,	   // for the truncate_name function
+	int target_width,	   // for the truncate_str function
 		screen_width,
 		screen_height,
 		ram_total,
@@ -148,6 +148,7 @@ struct info {
 
 char* MOVE_CURSOR = "\033[18C"; // moves the cursor after printing the image or the ascii logo
 
+// reads the config file
 struct configuration parse_config(struct info* user_info) {
 	char buffer[256];															 // buffer for the current line
 	struct configuration config_flags = {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}; // enabling all flags by default
@@ -209,6 +210,7 @@ struct configuration parse_config(struct info* user_info) {
 	return config_flags;
 }
 
+// gets the installed package count and package managers name
 #ifdef _WIN32
 int pkgman(struct info* user_info, struct configuration* config_flags)
 #else // _WIN32
@@ -248,8 +250,7 @@ int pkgman(struct info* user_info)
 		if (fscanf(fp, "%u", &pkg_count) == 3) continue; // if a number is found, continue the loop
 		fclose(fp);
 
-		// I WAS WRITING NEW COMMENTS AND STOPPED THERE. I PROMISE THAT I WILL CONTINUE
-
+		// adding a package manager with its package count to user_info->pkgman_name
 		total += pkg_count;
 		if (pkg_count > 0) {
 			if (comma_separator++) strcat(user_info->pkgman_name, ", ");
@@ -261,6 +262,7 @@ int pkgman(struct info* user_info)
 		}
 	}
 	#else  // _WIN32
+	// chocolatey for windows
 	if (config_flags->show_pkgs) {
 		FILE* fp = popen("choco list -l --no-color 2> nul", "r");
 		unsigned int pkg_count;
@@ -284,6 +286,7 @@ int pkgman(struct info* user_info)
 }
 
 #ifdef __APPLE__
+// gets the uptime for mac os
 int uptime_apple() {
 	int mib[2] = {CTL_KERN, KERN_BOOTTIME};
 	sysctl(mib, 2, &time_buffer, &time_buffer_len, NULL, 0);
@@ -296,8 +299,8 @@ int uptime_apple() {
 #endif
 
 #ifdef __FREEBSD__
-int uptime_freebsd() { // this code is from coreutils uptime:
-					   // https://github.com/coreutils/coreutils/blob/master/src/uptime.c
+// gets the uptime for freebsd
+int uptime_freebsd() { // this code is from coreutils uptime: https://github.com/coreutils/coreutils/blob/master/src/uptime.c
 	int boot_time		  = 0;
 	static int request[2] = {CTL_KERN, KERN_BOOTTIME};
 	struct timeval result;
@@ -310,27 +313,20 @@ int uptime_freebsd() { // this code is from coreutils uptime:
 }
 #endif
 
-void print_image(struct info* user_info) { // prints logo (as an image) of the given system.
+// prints logo (as an image) of the given system.
+void print_image(struct info* user_info) {
 #ifndef __IPHONE__
 	char command[256];
 	if (strlen(user_info->image_name) > 1)
-		sprintf(command, "viu -t -w 18 -h 8 %s 2> /dev/null",
-				user_info->image_name);
+		sprintf(command, "viu -t -w 18 -h 8 %s 2> /dev/null", user_info->image_name); // creating the command to show the image
 	else {
 		if (strcmp(user_info->os_name, "android") == 0)
-			sprintf(command,
-					"viu -t -w 18 -h 8 "
-					"/data/data/com.termux/files/usr/lib/uwufetch/%s.png 2> "
-					"/dev/null",
-					user_info->os_name);
+			sprintf(command, "viu -t -w 18 -h 8 /data/data/com.termux/files/usr/lib/uwufetch/%s.png 2> /dev/null", user_info->os_name); // image command for android
 		else
-			sprintf(command,
-					"viu -t -w 18 -h 8 /usr/lib/uwufetch/%s.png 2> /dev/null",
-					user_info->os_name);
+			sprintf(command, "viu -t -w 18 -h 8 /usr/lib/uwufetch/%s.png 2> /dev/null", user_info->os_name); // image command for other systems
 	}
 	printf("\n");
-	if (system(command) !=
-		0) { // if viu is not installed or the image is missing
+	if (system(command) != 0) // if viu is not installed or the image is missing
 		printf("\033[0E\033[3C%s\n"
 			   "   There was an\n"
 			   "    error: viu\n"
@@ -340,7 +336,6 @@ void print_image(struct info* user_info) { // prints logo (as an image) of the g
 			   "  Read IMAGES.md\n"
 			   "   for more info.\n\n",
 			   RED);
-	}
 #else
 	// unfortunately, the iOS stdlib does not have
 	// system();
@@ -354,9 +349,8 @@ void print_image(struct info* user_info) { // prints logo (as an image) of the g
 #endif
 }
 
-void uwu_name(struct configuration* config_flags,
-			  struct info* user_info) { // uwufies distro name
-
+// uwufies distro name
+void uwu_name(struct configuration* config_flags, struct info* user_info) {
 #define STRING_TO_UWU(original, uwufied)           \
 	if (strcmp(user_info->os_name, original) == 0) \
 	sprintf(user_info->os_name, "%s", uwufied)
@@ -388,15 +382,12 @@ void uwu_name(struct configuration* config_flags,
 	else STRING_TO_UWU("ubuntu", "Uwuntu");
 	else STRING_TO_UWU("void", "OwOid");
 	else STRING_TO_UWU("xerolinux", "xuwulinux");
-	else STRING_TO_UWU(
-		"android",
-		"Nyandroid"); // android at the end because it could be not considered
-					  // as an actual distribution of gnu/linux
+	else STRING_TO_UWU("android", "Nyandroid"); // android at the end because it could be not considered as an actual distribution of gnu/linux
 
 	// BSD
 	else STRING_TO_UWU("freebsd", "FweeBSD");
 	else STRING_TO_UWU("openbsd", "OwOpenBSD");
-	//// Apple family
+	// Apple family
 	else STRING_TO_UWU("macos", "macOwOS");
 	else STRING_TO_UWU("ios", "iOwOS");
 
@@ -404,7 +395,7 @@ void uwu_name(struct configuration* config_flags,
 	else STRING_TO_UWU("windows", "WinyandOwOws");
 
 	else {
-		sprintf(user_info->os_name, "%s", "unknown");
+		sprintf(user_info->os_name, "%s", "unknown"); // replacing the original os name with the uwufied version
 		if (config_flags->ascii_image_flag == 1) {
 			print_image(user_info);
 			printf("\n");
@@ -413,14 +404,17 @@ void uwu_name(struct configuration* config_flags,
 #undef STRING_TO_UWU
 }
 
+// prints all the collected info
 void print_info(struct configuration* config_flags, struct info* user_info) {
 #ifdef _WIN32
+	// prints without overflowing the terminal width
 	#define responsively_printf(buf, format, ...)         \
 		{                                                 \
 			sprintf(buf, format, __VA_ARGS__);            \
 			printf("%.*s\n", user_info->ws_col - 1, buf); \
 		}
 #else // _WIN32
+	// prints without overflowing the terminal width
 	#define responsively_printf(buf, format, ...)             \
 		{                                                     \
 			sprintf(buf, format, __VA_ARGS__);                \
@@ -455,37 +449,23 @@ void print_info(struct configuration* config_flags, struct info* user_info) {
 	// print the gpus
 	if (config_flags->show_gpu)
 		for (int i = 0; user_info->gpu_model[i][0]; i++)
-			responsively_printf(print_buf, "%s%s%sGPUWU       %s%s",
-								MOVE_CURSOR, NORMAL, BOLD, NORMAL,
-								user_info->gpu_model[i]);
+			responsively_printf(print_buf, "%s%s%sGPUWU       %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->gpu_model[i]);
 
-	// print ram to uptime and colors
-	if (config_flags->show_ram)
-		responsively_printf(print_buf, "%s%s%sWAM         %s%i MiB/%i MiB",
-							MOVE_CURSOR, NORMAL, BOLD, NORMAL,
-							(user_info->ram_used), user_info->ram_total);
-	if (config_flags->show_resolution)
+	if (config_flags->show_ram) // print ram
+		responsively_printf(print_buf, "%s%s%sWAM         %s%i MiB/%i MiB", MOVE_CURSOR, NORMAL, BOLD, NORMAL, (user_info->ram_used), user_info->ram_total);
+	if (config_flags->show_resolution) // print resolution
 		if (user_info->screen_width != 0 || user_info->screen_height != 0)
-			responsively_printf(print_buf, "%s%s%sRESOWUTION%s  %dx%d",
-								MOVE_CURSOR, NORMAL, BOLD, NORMAL,
-								user_info->screen_width,
-								user_info->screen_height);
-	if (config_flags->show_shell)
-		responsively_printf(print_buf, "%s%s%sSHEWW       %s%s",
-							MOVE_CURSOR, NORMAL, BOLD, NORMAL,
-							user_info->shell);
-#if defined(__APPLE__) && !defined(__IPHONE__) // some time ago __IPHONE__ was defined as TARGET_OS_IPHONE, but it was defined also in m1 macs, so i changed it
-	if (config_flags->show_pkgs)
-		system(
-			"ls $(brew --cellar) | wc -l | awk -F' ' '{print \"  \x1b[34mw     "
-			"    w     \x1b[0m\x1b[1mPKGS\x1b[0m        \"$1 \" (brew)\"}'");
+			responsively_printf(print_buf, "%s%s%sRESOWUTION%s  %dx%d", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->screen_width, user_info->screen_height);
+	if (config_flags->show_shell) // print shell name
+		responsively_printf(print_buf, "%s%s%sSHEWW       %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->shell);
+#if defined(__APPLE__) && !defined(__IPHONE__) // some time ago __IPHONE__ was defined as TARGET_OS_IPHONE, but it was defined also in m1 macs, so I changed it
+	if (config_flags->show_pkgs)			   // print pkgs for mac os
+		system("ls $(brew --cellar) | wc -l | awk -F' ' '{print \"  \x1b[34mw         w     \x1b[0m\x1b[1mPKGS\x1b[0m        \"$1 \" (brew)\"}'");
 #else
-	if (config_flags->show_pkgs)
-		responsively_printf(print_buf, "%s%s%sPKGS        %s%s%d: %s",
-							MOVE_CURSOR, NORMAL, BOLD, NORMAL, NORMAL,
-							user_info->pkgs, user_info->pkgman_name);
+	if (config_flags->show_pkgs) // print pkgs
+		responsively_printf(print_buf, "%s%s%sPKGS        %s%s%d: %s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, NORMAL, user_info->pkgs, user_info->pkgman_name);
 #endif
-	if (config_flags->show_uptime) {
+	if (config_flags->show_uptime) { // print uptime
 		if (user_info->uptime == 0) {
 
 #ifdef __APPLE__
@@ -502,27 +482,18 @@ void print_info(struct configuration* config_flags, struct info* user_info) {
 	#endif
 #endif
 		}
-		switch (user_info->uptime) {
+		switch (user_info->uptime) { // formatting the uptime which is store in seconds
 		case 0 ... 3599:
-			responsively_printf(print_buf, "%s%s%sUWUPTIME    %s%lim",
-								MOVE_CURSOR, NORMAL, BOLD, NORMAL,
-								user_info->uptime / 60 % 60);
+			responsively_printf(print_buf, "%s%s%sUWUPTIME    %s%lim", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->uptime / 60 % 60);
 			break;
 		case 3600 ... 86399:
-			responsively_printf(print_buf, "%s%s%sUWUPTIME    %s%lih, %lim",
-								MOVE_CURSOR, NORMAL, BOLD, NORMAL,
-								user_info->uptime / 3600,
-								user_info->uptime / 60 % 60);
+			responsively_printf(print_buf, "%s%s%sUWUPTIME    %s%lih, %lim", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->uptime / 3600, user_info->uptime / 60 % 60);
 			break;
 		default:
-			responsively_printf(
-				print_buf, "%s%s%sUWUPTIME    %s%lid, %lih, %lim",
-				MOVE_CURSOR, NORMAL, BOLD, NORMAL,
-				user_info->uptime / 86400, user_info->uptime / 3600 % 24,
-				user_info->uptime / 60 % 60);
+			responsively_printf(print_buf, "%s%s%sUWUPTIME    %s%lid, %lih, %lim", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->uptime / 86400, user_info->uptime / 3600 % 24, user_info->uptime / 60 % 60);
 		}
 	}
-	if (config_flags->show_colors)
+	if (config_flags->show_colors) // print colors
 		printf("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n",
 			   MOVE_CURSOR, BOLD, BLACK, BLOCK_CHAR, BLOCK_CHAR, RED,
 			   BLOCK_CHAR, BLOCK_CHAR, GREEN, BLOCK_CHAR, BLOCK_CHAR, YELLOW,
@@ -531,12 +502,16 @@ void print_info(struct configuration* config_flags, struct info* user_info) {
 			   BLOCK_CHAR, BLOCK_CHAR, NORMAL);
 }
 
+// writes cache to cache file
 void write_cache(struct info* user_info) {
 	char cache_file[512];
-	sprintf(cache_file, "%s/.cache/uwufetch.cache", getenv("HOME"));
+	sprintf(cache_file, "%s/.cache/uwufetch.cache", getenv("HOME")); // default cache file location
 	FILE* cache_fp = fopen(cache_file, "w");
-	if (cache_fp == NULL) return;
-		// writing all info to the cache file
+	if (cache_fp == NULL) {
+		fprintf(stderr, "Failed to write to %s!", cache_file);
+		return;
+	}
+	// writing all info to the cache file
 #ifdef __APPLE__
 	user_info->uptime = uptime_apple();
 #else
@@ -548,7 +523,7 @@ void write_cache(struct info* user_info) {
 		#endif // _WIN32
 	#endif
 #endif
-	fprintf(
+	fprintf( // writing most of the values to config file
 		cache_fp,
 		"user=%s\nhost=%s\nversion_name=%s\nhost_model=%s\nkernel=%s\ncpu=%"
 		"s\nscreen_width=%d\nscreen_height=%d\nshell=%s\npkgs=%d\npkgman_name=%"
@@ -558,7 +533,7 @@ void write_cache(struct info* user_info) {
 		user_info->screen_width, user_info->screen_height, user_info->shell,
 		user_info->pkgs, user_info->pkgman_name);
 
-	for (int i = 0; user_info->gpu_model[i][0]; i++)
+	for (int i = 0; user_info->gpu_model[i][0]; i++) // writing gpu names to file
 		fprintf(cache_fp, "gpu=%s\n", user_info->gpu_model[i]);
 
 #ifdef __APPLE__
@@ -571,31 +546,28 @@ void write_cache(struct info* user_info) {
 	return;
 }
 
-// return whether the cache file is found
+// reads cache file if it exists
 int read_cache(struct info* user_info) {
 	char cache_file[512];
-	sprintf(cache_file, "%s/.cache/uwufetch.cache", getenv("HOME"));
+	sprintf(cache_file, "%s/.cache/uwufetch.cache", getenv("HOME")); // cache file location
 	FILE* cache_fp = fopen(cache_file, "r");
 	if (cache_fp == NULL) return 0;
-
-	char line[256];
-
-	int gpun = 0;
-
-	while (fgets(line, sizeof(line), cache_fp)) {
-		sscanf(line, "user=%99[^\n]", user_info->user);
-		sscanf(line, "host=%99[^\n]", user_info->host);
-		sscanf(line, "version_name=%99[^\n]", user_info->os_name);
-		sscanf(line, "host_model=%99[^\n]", user_info->host_model);
-		sscanf(line, "kernel=%99[^\n]", user_info->kernel);
-		sscanf(line, "cpu=%99[^\n]", user_info->cpu_model);
-		if (sscanf(line, "gpu=%99[^\n]", user_info->gpu_model[gpun]) != 0)
-			gpun++;
-		sscanf(line, "screen_width=%i", &user_info->screen_width);
-		sscanf(line, "screen_height=%i", &user_info->screen_height);
-		sscanf(line, "shell=%99[^\n]", user_info->shell);
-		sscanf(line, "pkgs=%i", &user_info->pkgs);
-		sscanf(line, "pkgman_name=%99[^\n]", user_info->pkgman_name);
+	char buffer[256];								  // line buffer
+	int gpuc = 0;									  // gpu counter
+	while (fgets(buffer, sizeof(buffer), cache_fp)) { // reading the file
+		sscanf(buffer, "user=%99[^\n]", user_info->user);
+		sscanf(buffer, "host=%99[^\n]", user_info->host);
+		sscanf(buffer, "version_name=%99[^\n]", user_info->os_name);
+		sscanf(buffer, "host_model=%99[^\n]", user_info->host_model);
+		sscanf(buffer, "kernel=%99[^\n]", user_info->kernel);
+		sscanf(buffer, "cpu=%99[^\n]", user_info->cpu_model);
+		if (sscanf(buffer, "gpu=%99[^\n]", user_info->gpu_model[gpuc]) != 0)
+			gpuc++;
+		sscanf(buffer, "screen_width=%i", &user_info->screen_width);
+		sscanf(buffer, "screen_height=%i", &user_info->screen_height);
+		sscanf(buffer, "shell=%99[^\n]", user_info->shell);
+		sscanf(buffer, "pkgs=%i", &user_info->pkgs);
+		sscanf(buffer, "pkgman_name=%99[^\n]", user_info->pkgman_name);
 	}
 
 	fclose(cache_fp);
@@ -603,9 +575,9 @@ int read_cache(struct info* user_info) {
 }
 
 /*
- This replaces all terms in a string with another term.
+This replaces all terms in a string with another term.
 replace("Hello World!", "World", "everyone")
- This returns "Hello everyone!".
+This returns "Hello everyone!".
 */
 void replace(char* original, char* search, char* replacer) {
 	char* ch;
@@ -614,34 +586,46 @@ void replace(char* original, char* search, char* replacer) {
 		ch = strstr(original, search);
 		strncpy(buffer, original, ch - original);
 		buffer[ch - original] = 0;
-		sprintf(buffer + (ch - original), "%s%s", replacer,
-				ch + strlen(search));
-
+		sprintf(buffer + (ch - original), "%s%s", replacer, ch + strlen(search));
 		original[0] = 0;
 		strcpy(original, buffer);
 	}
 }
 
-void print_ascii(
-	struct info* user_info) { // prints logo (as ascii art) of the given system.
-							  // distributions listed alphabetically.
+/*
+This replaces all terms in a string with another term, case insensitive
+replace("Hello wOrLd!", "WoRlD", "everyone")
+This returns "Hello everyone!".
+*/
+void replace_ignorecase(char* original, char* search, char* replacer) {
+	char* ch;
+	char buffer[1024];
+#ifdef _WIN32
+	#define strcasestr(o, s) strstr(o, s)
+#endif
+	while ((ch = strcasestr(original, search))) {
+		strncpy(buffer, original, ch - original);
+		buffer[ch - original] = 0;
+		sprintf(buffer + (ch - original), "%s%s", replacer, ch + strlen(search));
+		original[0] = 0;
+		strcpy(original, buffer);
+	}
+}
+
+// prints logo (as ascii art) of the given system.
+void print_ascii(struct info* user_info) {
 	printf("\n");
 	FILE* file;
 	char ascii_file[1024];
-	// First tries to get ascii art file from local directory. Good when
-	// modifying these files.
+	// First tries to get ascii art file from local directory. Useful for debugging
 	sprintf(ascii_file, "./res/ascii/%s.txt", user_info->os_name);
 	file = fopen(ascii_file, "r");
-	// Now tries to get file from normal directory
-	if (!file) {
-		if (strcmp(user_info->os_name, "android") == 0) {
-			sprintf(ascii_file,
-					"/data/data/com.termux/files/usr/lib/uwufetch/ascii/%s.txt",
-					user_info->os_name);
-		} else {
-			sprintf(ascii_file, "/usr/lib/uwufetch/ascii/%s.txt",
-					user_info->os_name);
-		}
+	if (!file) { // if the file does not exist in the local directory, open it from the installation directory
+		if (strcmp(user_info->os_name, "android") == 0)
+			sprintf(ascii_file, "/data/data/com.termux/files/usr/lib/uwufetch/ascii/%s.txt", user_info->os_name);
+		else
+			sprintf(ascii_file, "/usr/lib/uwufetch/ascii/%s.txt", user_info->os_name);
+
 		file = fopen(ascii_file, "r");
 		if (!file) {
 			// Prevent infinite loops
@@ -649,97 +633,77 @@ void print_ascii(
 				printf("No\nunknown\nascii\nfile\n\n\n\n");
 				return;
 			}
-			sprintf(user_info->os_name, "unknown");
+			sprintf(user_info->os_name, "unknown"); // current os is not supported
 			return print_ascii(user_info);
 		}
 	}
-	char line[256];
-	while (fgets(line, 256, file)) {
-		replace(line, "{NORMAL}", NORMAL);
-		replace(line, "{BOLD}", BOLD);
-		replace(line, "{BLACK}", BLACK);
-		replace(line, "{RED}", RED);
-		replace(line, "{GREEN}", GREEN);
-		replace(line, "{SPRING_GREEN}", SPRING_GREEN);
-		replace(line, "{YELLOW}", YELLOW);
-		replace(line, "{BLUE}", BLUE);
-		replace(line, "{MAGENTA}", MAGENTA);
-		replace(line, "{CYAN}", CYAN);
-		replace(line, "{WHITE}", WHITE);
-		replace(line, "{PINK}", PINK);
-		replace(line, "{LPINK}", LPINK);
-// For manjaro and amogos and windows
-#ifdef _WIN32
-		replace(line, "{BLOCK}", "\xdc");
-		replace(line, "{BLOCK_VERTICAL}", "\xdb");
-#else  // _WIN32
-		replace(line, "{BLOCK}", "\u2584");
-		replace(line, "{BLOCK_VERTICAL}", "\u2587");
-#endif // _WIN32
-		replace(line, "{BACKGROUND_GREEN}", "\e[0;42m");
-		replace(line, "{BACKGROUND_RED}", "\e[0;41m");
-		replace(line, "{BACKGROUND_WHITE}", "\e[0;47m");
-		printf("%s", line);
+	char buffer[256];				   // line buffer
+	while (fgets(buffer, 256, file)) { // replacing color placecholders
+		replace(buffer, "{NORMAL}", NORMAL);
+		replace(buffer, "{BOLD}", BOLD);
+		replace(buffer, "{BLACK}", BLACK);
+		replace(buffer, "{RED}", RED);
+		replace(buffer, "{GREEN}", GREEN);
+		replace(buffer, "{SPRING_GREEN}", SPRING_GREEN);
+		replace(buffer, "{YELLOW}", YELLOW);
+		replace(buffer, "{BLUE}", BLUE);
+		replace(buffer, "{MAGENTA}", MAGENTA);
+		replace(buffer, "{CYAN}", CYAN);
+		replace(buffer, "{WHITE}", WHITE);
+		replace(buffer, "{PINK}", PINK);
+		replace(buffer, "{LPINK}", LPINK);
+		replace(buffer, "{BLOCK}", BLOCK_CHAR);
+		replace(buffer, "{BLOCK_VERTICAL}", BLOCK_CHAR);
+		replace(buffer, "{BACKGROUND_GREEN}", "\e[0;42m");
+		replace(buffer, "{BACKGROUND_RED}", "\e[0;41m");
+		replace(buffer, "{BACKGROUND_WHITE}", "\e[0;47m");
+		printf("%s", buffer); // print the line after setting the color
 	}
-	// Always set color to NORMAL, so there's no need to do this in every ascii
-	// file.
+	// Always set color to NORMAL, so there's no need to do this in every ascii file.
 	printf(NORMAL);
 	fclose(file);
 }
 
+// prints the info after reading the cache file
 void print_cache(struct configuration* config_flags, struct info* user_info) {
 #ifndef __APPLE__
 	#ifndef _WIN32
 	sysinfo(&user_info->sys); // to get uptime
-	#endif					  // _WIN32
+	#endif
 	FILE* meminfo;
 
 	#ifdef __FREEBSD__
-	meminfo = popen("LANG=EN_us freecolor -om 2> /dev/null", "r");
-	#else  // __FREEBSD__
-	meminfo = popen("LANG=EN_us free -m 2> /dev/null", "r");
-	#endif // __FREEBSD__
+	meminfo = popen("LANG=EN_us freecolor -om 2> /dev/null", "r"); // free alternative
+	#else
+	meminfo = popen("LANG=EN_us free -m 2> /dev/null", "r"); // using free to get
+	#endif
 	char line[256];
-	while (fgets(line, sizeof(line), meminfo))
-		// free command prints like this: "Mem:" total     used    free shared
-		// buff/cache      available
+	while (fgets(line, sizeof(line), meminfo)) // reading free output
+		// free command prints like this: "Mem:" total     used    free shared    buff/cache      available
 		sscanf(line, "Mem: %d %d", &user_info->ram_total, &user_info->ram_used);
 	fclose(meminfo);
 #elif defined(_WIN32)
-	// wmic OS get FreePhysicalMemory
-
 	FILE* mem_used_fp;
-	mem_used_fp = popen("wmic OS GET FreePhysicalMemory", "r");
+	mem_used_fp = popen("wmic OS GET FreePhysicalMemory", "r"); // free does not exist for windows
 	char mem_used_ch[2137];
 	printf("\n\n\n\\\n");
-	while (fgets(mem_used_ch, sizeof(mem_used_ch), mem_used_fp) != NULL) {
-		printf("%s\n", mem_used_ch);
-	}
+	while (fgets(mem_used_ch, sizeof(mem_used_ch), mem_used_fp) != NULL) printf("%s\n", mem_used_ch);
 	pclose(mem_used_fp);
-
 	int mem_used = atoi(mem_used_ch);
-
-	ram_used = mem_used / 1024;
+	ram_used	 = mem_used / 1024;
 
 #else // __APPLE__
 
 	// Used ram
 	FILE *mem_wired_fp, *mem_active_fp, *mem_compressed_fp;
-	mem_wired_fp =
-		popen("vm_stat | awk '/wired/ { printf $4 }' | cut -d '.' -f 1", "r");
-	mem_active_fp =
-		popen("vm_stat | awk '/active/ { printf $3 }' | cut -d '.' -f 1", "r");
-	mem_compressed_fp = popen(
-		"vm_stat | awk '/occupied/ { printf $5 }' | cut -d '.' -f 1", "r");
+	mem_wired_fp	  = popen("vm_stat | awk '/wired/ { printf $4 }' | cut -d '.' -f 1", "r");
+	mem_active_fp	  = popen("vm_stat | awk '/active/ { printf $3 }' | cut -d '.' -f 1", "r");
+	mem_compressed_fp = popen("vm_stat | awk '/occupied/ { printf $5 }' | cut -d '.' -f 1", "r");
 	char mem_wired_ch[2137], mem_active_ch[2137], mem_compressed_ch[2137];
-	while (fgets(mem_wired_ch, sizeof(mem_wired_ch), mem_wired_fp) != NULL) {
-		while (fgets(mem_active_ch, sizeof(mem_active_ch), mem_active_fp) !=
-			   NULL) {
-			while (fgets(mem_compressed_ch, sizeof(mem_compressed_ch),
-						 mem_compressed_fp) != NULL) {
-			}
-		}
-	}
+	while (fgets(mem_wired_ch, sizeof(mem_wired_ch), mem_wired_fp) != NULL)
+		while (fgets(mem_active_ch, sizeof(mem_active_ch), mem_active_fp) != NULL)
+			while (fgets(mem_compressed_ch, sizeof(mem_compressed_ch), mem_compressed_fp) != NULL)
+				;
 
 	pclose(mem_wired_fp);
 	pclose(mem_active_fp);
@@ -759,24 +723,24 @@ void print_cache(struct configuration* config_flags, struct info* user_info) {
 	return;
 }
 
-void truncate_name(char* name, int target_width) {
+// truncates the given string
+void truncate_str(char* string, int target_width) {
 	char arr[target_width];
-
-	for (int i = 0; i < target_width; i++) arr[i] = name[i];
-	name = arr;
+	for (int i = 0; i < target_width; i++) arr[i] = string[i];
+	string = arr;
 }
 
 // remove square brackets (for gpu names)
 void remove_brackets(char* str) {
-	int i = 0, j;
-	while (i < (int)strlen(str)) {
-		if (str[i] == '[' || str[i] == ']') {
+	int i = 0, j = 0;
+	while (i < (int)strlen(str))
+		if (str[i] == '[' || str[i] == ']')
 			for (j = i; j < (int)strlen(str); j++) str[j] = str[j + 1];
-		} else
+		else
 			i++;
-	}
 }
 
+// uwufies kernel name
 void uwu_kernel(char* kernel) {
 #define KERNEL_TO_UWU(str, original, uwufied) \
 	if (strcmp(str, original) == 0) sprintf(str, "%s", uwufied)
@@ -786,13 +750,13 @@ void uwu_kernel(char* kernel) {
 	char splitted[16][128] = {};
 
 	int count = 0;
-	while ((token = strsep(&temp_kernel, " "))) {
+	while ((token = strsep(&temp_kernel, " "))) { // split kernel name
 		strcpy(splitted[count], token);
 		count++;
 	}
 	strcpy(kernel, "");
 	for (int i = 0; i < 16; i++) {
-		// kernel name
+		// replace kernel name with uwufied version
 		KERNEL_TO_UWU(splitted[i], "Linux", "Linuwu");
 		else KERNEL_TO_UWU(splitted[i], "linux", "linuwu");
 		else KERNEL_TO_UWU(splitted[i], "alpine", "Nyalpine");
@@ -812,8 +776,7 @@ void uwu_kernel(char* kernel) {
 		else KERNEL_TO_UWU(splitted[i], "neon", "KDE NeOwOn");
 		else KERNEL_TO_UWU(splitted[i], "nixos", "nixOwOs");
 		else KERNEL_TO_UWU(splitted[i], "opensuse-leap", "OwOpenSUSE Leap");
-		else KERNEL_TO_UWU(splitted[i], "opensuse-tumbleweed",
-						   "OwOpenSUSE Tumbleweed");
+		else KERNEL_TO_UWU(splitted[i], "opensuse-tumbleweed", "OwOpenSUSE Tumbleweed");
 		else KERNEL_TO_UWU(splitted[i], "pop", "PopOwOS");
 		else KERNEL_TO_UWU(splitted[i], "raspbian", "RaspNyan");
 		else KERNEL_TO_UWU(splitted[i], "slackware", "Swackwawe");
@@ -821,15 +784,13 @@ void uwu_kernel(char* kernel) {
 		else KERNEL_TO_UWU(splitted[i], "ubuntu", "Uwuntu");
 		else KERNEL_TO_UWU(splitted[i], "void", "OwOid");
 		else KERNEL_TO_UWU(splitted[i], "xerolinux", "xuwulinux");
-		else KERNEL_TO_UWU(
-			splitted[i], "android",
-			"Nyandroid"); // android at the end because it could be not
-						  // considered as an actual distribution of gnu/linux
+		else KERNEL_TO_UWU(splitted[i], "android", "Nyandroid"); // android at the end because it could be not considered as an actual distribution of gnu/linux
 
 		// BSD
 		else KERNEL_TO_UWU(splitted[i], "freebsd", "FweeBSD");
 		else KERNEL_TO_UWU(splitted[i], "openbsd", "OwOpenBSD");
-		//// Apple family
+
+		// Apple family
 		else KERNEL_TO_UWU(splitted[i], "macos", "macOwOS");
 		else KERNEL_TO_UWU(splitted[i], "ios", "iOwOS");
 
@@ -842,32 +803,11 @@ void uwu_kernel(char* kernel) {
 #undef KERNEL_TO_UWU
 }
 
-void replace_ignorecase(char* original, char* search, char* replacer) {
-	char* ch;
-	char buffer[1024];
-#ifndef _WIN32
-	while ((ch = strcasestr(original, search)))
-#else
-	while ((ch = strstr(original, search)))
-#endif // _WIN32
-	{
-		strncpy(buffer, original, ch - original);
-		buffer[ch - original] = 0;
-		sprintf(buffer + (ch - original), "%s%s", replacer,
-				ch + strlen(search));
-
-		original[0] = 0;
-		strcpy(original, buffer);
-	}
-}
-
 void uwu_hw(char* hwname) {
 #define HW_TO_UWU(original, uwuified) \
 	replace_ignorecase(hwname, original, uwuified);
-
 	HW_TO_UWU("lenovo", "LenOwO")
-	HW_TO_UWU("cpu", "CC\bPUwU"); // for some reasons this caused a segfault,
-								  // using a \b char fixes it
+	HW_TO_UWU("cpu", "CC\bPUwU"); // for some reasons this caused a segfault, using a \b (backspace) char fixes it
 	HW_TO_UWU("gpu", "GG\bPUwU")
 	HW_TO_UWU("graphics", "Gwaphics")
 	HW_TO_UWU("corporation", "COwOpowation")
@@ -883,16 +823,17 @@ void uwu_hw(char* hwname) {
 	HW_TO_UWU("poweredge", "POwOwEdge")
 	HW_TO_UWU("apple", "Nyaa\bpple")
 	HW_TO_UWU("electronic", "ElectrOwOnic")
-
 #undef HW_TO_UWU
 }
 
+// get all necessary info
+// I'LL COMMENT THIS FUNCTION LATER
 #ifdef _WIN32
 struct info get_info(struct configuration* config_flags)
-#else  // _WIN32
+#else
 struct info get_info()
-#endif // _WIN32
-{	   // get all necessary info
+#endif
+{
 	struct info user_info = {0};
 	char line[256]; // var to scan file lines
 
@@ -1084,7 +1025,7 @@ struct info get_info()
 #endif // _WIN32
 
 	// truncate CPU name
-	truncate_name(user_info.cpu_model, user_info.target_width);
+	truncate_str(user_info.cpu_model, user_info.target_width);
 
 // system resources
 #ifndef _WIN32
@@ -1102,10 +1043,10 @@ struct info get_info()
 #endif
 
 #ifndef _WIN32
-	truncate_name(user_info.sys_var.release, user_info.target_width);
+	truncate_str(user_info.sys_var.release, user_info.target_width);
 	sprintf(user_info.kernel, "%s %s %s", user_info.sys_var.sysname,
 			user_info.sys_var.release, user_info.sys_var.machine);
-	truncate_name(user_info.kernel, user_info.target_width);
+	truncate_str(user_info.kernel, user_info.target_width);
 #else  // _WIN32
 	sprintf(user_info.os_name, "windows");
 	FILE* kernel_fp = popen("wmic computersystem get systemtype", "r");
@@ -1246,7 +1187,7 @@ struct info get_info()
 	// truncate GPU name and remove square brackets
 	for (int i = 0; i < gpun; i++) {
 		remove_brackets(user_info.gpu_model[i]);
-		truncate_name(user_info.gpu_model[i], user_info.target_width);
+		truncate_str(user_info.gpu_model[i], user_info.target_width);
 	}
 
 // Resolution
@@ -1276,11 +1217,12 @@ struct info get_info()
 	uwu_hw(user_info.cpu_model);
 	uwu_hw(user_info.host_model);
 	return user_info;
-}
+} // get_info
 
-void list(char* arg) { // prints distribution list
-	// distributions are listed by distribution branch
-	// to make the output easier to understand by the user.
+/* prints distribution list
+distributions are listed by distribution branch
+to make the output easier to understand by the user.*/
+void list(char* arg) {
 	printf("%s -d <options>\n"
 		   "  Available distributions:\n"
 		   "    %sArch linux %sbased:\n"
@@ -1294,15 +1236,14 @@ void list(char* arg) { // prints distribution list
 		   "    %sOther/spare distributions:\n"
 		   "      %salpine, %sfedora, %sgentoo, %sslackware, %ssolus, %svoid, "
 		   "opensuse-leap, android, %sgnu, guix, %swindows, %sunknown\n\n",
-		   arg, BLUE, NORMAL, BLUE, MAGENTA, GREEN, BLUE, // Arch based colors
-		   RED, YELLOW, NORMAL, RED, GREEN, BLUE, RED,
-		   YELLOW, // Debian based colors
-		   RED, NORMAL, RED, YELLOW, GREEN, YELLOW, RED, PINK, BLUE,
-		   WHITE, // BSD/Apple colors
+		   arg, BLUE, NORMAL, BLUE, MAGENTA, GREEN, BLUE,					// Arch based colors
+		   RED, YELLOW, NORMAL, RED, GREEN, BLUE, RED, YELLOW,				// Debian based colors
+		   RED, NORMAL, RED, YELLOW, GREEN, YELLOW, RED, PINK, BLUE, WHITE, // BSD/Apple colors
 		   NORMAL, BLUE, BLUE, PINK, MAGENTA, WHITE, GREEN, YELLOW, BLUE,
 		   WHITE); // Other/spare distributions colors
 }
 
+// prints the usage
 void usage(char* arg) {
 	printf("Usage: %s <args>\n"
 		   "    -a, --ascii         prints logo as ascii text (default)\n"
@@ -1310,20 +1251,16 @@ void usage(char* arg) {
 		   "    -d, --distro        lets you choose the logo to print\n"
 		   "    -h, --help          prints this help page\n"
 #ifndef __IPHONE__
-		   "    -i, --image         prints logo as image and use a custom "
-		   "image if provided\n"
+		   "    -i, --image         prints logo as image and use a custom image if provided\n"
 		   "                        %sworks in most terminals\n"
 #else
-		   "    -i, --image         prints logo as image and use a custom "
-		   "image if provided\n"
+		   "    -i, --image         prints logo as image and use a custom image if provided\n"
 		   "                        %sdisabled under iOS\n"
 #endif
 		   "                        read README.md for more info%s\n"
 		   "    -l, --list          lists all supported distributions\n"
-		   "    -w, --write-cache   writes to the cache file "
-		   "(~/.cache/uwufetch.cache)\n"
-		   "    using the cache     set $UWUFETCH_CACHE_ENABLED to TRUE, true "
-		   "or 1\n",
+		   "    -w, --write-cache   writes to the cache file (~/.cache/uwufetch.cache)\n"
+		   "    using the cache     set $UWUFETCH_CACHE_ENABLED to TRUE, true or 1\n",
 		   arg,
 #ifndef __IPHONE__
 		   BLUE,
@@ -1339,82 +1276,78 @@ void usage(char* arg) {
 char* strsep(char** stringp, const char* delim) {
 	char* start = *stringp;
 	char* p;
-
 	p = (start != NULL) ? strpbrk(start, delim) : NULL;
-
 	if (p == NULL)
 		*stringp = NULL;
 	else {
 		*p		 = '\0';
 		*stringp = p + 1;
 	}
-
 	return start;
 }
 #endif
 
 // the main function is on the bottom of the file to avoid double function declarations
 int main(int argc, char* argv[]) {
-	char* cache_env = getenv("UWUFETCH_CACHE_ENABLED");
+	char* cache_env = getenv("UWUFETCH_CACHE_ENABLED"); // getting cache env variable
 	struct configuration config_flags;
 	struct info user_info = {0};
-	if (cache_env != NULL) {
+	if (cache_env != NULL) { // if cache env variable is set, read itz value
 		int cache_enabled = 0;
 		char buffer[128];
 
 		sscanf(cache_env, "%4[TRUEtrue1]", buffer);
-		cache_enabled =
-			(strcmp(buffer, "true") == 0 || strcmp(buffer, "TRUE") == 0 ||
-			 strcmp(buffer, "1") == 0);
+		cache_enabled = (strcmp(buffer, "true") == 0 || strcmp(buffer, "TRUE") == 0 || strcmp(buffer, "1") == 0); // enable the cache if necessary
 		if (cache_enabled) {
 			// if no cache file found write to it
 			if (!read_cache(&user_info)) {
 				user_info = get_info(&config_flags);
 				write_cache(&user_info);
 			}
-			config_flags = parse_config(&user_info);
+			config_flags = parse_config(&user_info); // reading the config
 			print_cache(&config_flags, &user_info);
 			return 0;
 		}
 	}
 #ifdef _WIN32
-	// packages disabled by default because chocolatey is slow
+	// packages disabled by default because chocolatey is too slow
 	config_flags.show_pkgs = 0;
 #endif
 
-	int opt								= 0;
-	static struct option long_options[] = {
-		{"ascii", no_argument, NULL, 'a'},
-		{"config", required_argument, NULL, 'c'},
-		// {"cache", no_argument, NULL, 'C'},
-		{"distro", required_argument, NULL, 'd'},
-		{"write-cache", no_argument, NULL, 'w'},
-		{"help", no_argument, NULL, 'h'},
-		{"image", optional_argument, NULL, 'i'},
-		{"list", no_argument, NULL, 'l'},
-		{NULL, 0, NULL, 0}};
-	user_info	 = get_info(&config_flags);
-	config_flags = parse_config(&user_info);
-	while ((opt = getopt_long(argc, argv, "ac:d:hi::lw", long_options, NULL)) !=
-		   -1) {
+	int opt = 0;
+	static struct option long_options[] =
+		{{"ascii", no_argument, NULL, 'a'},
+		 {"config", required_argument, NULL, 'c'},
+		 // {"cache", no_argument, NULL, 'C'}, // using an environment variable is not a good idea, maybe some time in the future, uwufetch will use a command line option
+		 {"distro", required_argument, NULL, 'd'},
+		 {"write-cache", no_argument, NULL, 'w'},
+		 {"help", no_argument, NULL, 'h'},
+		 {"image", optional_argument, NULL, 'i'},
+		 {"list", no_argument, NULL, 'l'},
+		 {NULL, 0, NULL, 0}};
+	user_info	 = get_info(&config_flags);	 // get the info to modify it with cmdline options
+	config_flags = parse_config(&user_info); // same as user_info
+
+	// reading cmdline options
+	while ((opt = getopt_long(argc, argv, "ac:d:hi::lw", long_options, NULL)) != -1) {
 		switch (opt) {
-		case 'a':
+		case 'a': // set ascii logo as output
 			config_flags.ascii_image_flag = 0;
 			break;
-		case 'c':
+		case 'c': // set the config directory
 			user_info.config_directory = optarg;
 			break;
-		case 'd':
+		case 'd': // set the distribution name
 			if (optarg) sprintf(user_info.os_name, "%s", optarg);
 			break;
 		case 'h':
 			usage(argv[0]);
 			return 0;
-		case 'i':
+		case 'i': // set ascii logo as output
 			config_flags.ascii_image_flag = 1;
-			if (!optarg && argv[optind] != NULL && argv[optind][0] != '-')
+			if (!optarg && argv[optind] != NULL && argv[optind][0] != '-') // set default image name
 				sprintf(user_info.image_name, "%s", argv[optind++]);
-			else if (optarg)
+			else if (optarg) // set user-defined image name
 				sprintf(user_info.image_name, "%s", optarg);
 			break;
 		case 'l':
@@ -1428,13 +1361,10 @@ int main(int argc, char* argv[]) {
 			break;
 		}
 	}
-	if ((argc == 1 && config_flags.ascii_image_flag == 0) ||
-		(argc > 1 && config_flags.ascii_image_flag == 0)) {
-		printf("\n");	   // print a new line
-		printf("\033[1A"); // go up one line if possible
+	if ((argc == 1 && config_flags.ascii_image_flag == 0) || (argc > 1 && config_flags.ascii_image_flag == 0))
 		print_ascii(&user_info);
-	} else if (config_flags.ascii_image_flag == 1)
+	else if (config_flags.ascii_image_flag == 1)
 		print_image(&user_info);
-
 	print_info(&config_flags, &user_info);
+	return 0;
 }
