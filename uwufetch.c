@@ -145,7 +145,11 @@ struct info {
 #endif // _WIN32
 };
 
-char* MOVE_CURSOR = "\033[18C"; // moves the cursor after printing the image or the ascii logo
+#ifdef _WIN32
+char* MOVE_CURSOR = "\033[21C"; // moves the cursor after printing the image or the ascii logo
+#else
+char* MOVE_CURSOR = "\033[18C";
+#endif
 
 // reads the config file
 struct configuration parse_config(struct info* user_info) {
@@ -510,7 +514,7 @@ void write_cache(struct info* user_info) {
 		fprintf(stderr, "Failed to write to %s!", cache_file);
 		return;
 	}
-	// writing all info to the cache file
+// writing all info to the cache file
 #ifdef __APPLE__
 	user_info->uptime = uptime_apple();
 #else
@@ -738,6 +742,23 @@ void remove_brackets(char* str) {
 		else
 			i++;
 }
+
+#ifdef _WIN32
+// windows sucks and hasn't a strstep, so I copied one from
+// https://stackoverflow.com/questions/8512958/is-there-a-windows-variant-of-strsep-function
+char* strsep(char** stringp, const char* delim) {
+	char* start = *stringp;
+	char* p;
+	p = (start != NULL) ? strpbrk(start, delim) : NULL;
+	if (p == NULL)
+		*stringp = NULL;
+	else {
+		*p		 = '\0';
+		*stringp = p + 1;
+	}
+	return start;
+}
+#endif
 
 // uwufies kernel name
 void uwu_kernel(char* kernel) {
@@ -1228,23 +1249,6 @@ void usage(char* arg) {
 #endif
 		   NORMAL);
 }
-
-#ifdef _WIN32
-// windows sucks and hasn't a strstep, so I copied one from
-// https://stackoverflow.com/questions/8512958/is-there-a-windows-variant-of-strsep-function
-char* strsep(char** stringp, const char* delim) {
-	char* start = *stringp;
-	char* p;
-	p = (start != NULL) ? strpbrk(start, delim) : NULL;
-	if (p == NULL)
-		*stringp = NULL;
-	else {
-		*p		 = '\0';
-		*stringp = p + 1;
-	}
-	return start;
-}
-#endif
 
 // the main function is on the bottom of the file to avoid double function declarations
 int main(int argc, char* argv[]) {
