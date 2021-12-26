@@ -683,12 +683,29 @@ int print_cache(struct configuration* config_flags, struct info* user_info) {
 	#ifdef __FREEBSD__
 	meminfo = popen("LANG=EN_us freecolor -om 2> /dev/null", "r"); // free alternative
 	#else
-	meminfo = popen("LANG=EN_us free -m 2> /dev/null", "r"); // using free to get
+	// getting memory info from /proc/meminfo: https://github.com/KittyKatt/screenFetch/issues/386#issuecomment-249312716
+	meminfo = fopen("/proc/meminfo", "r"); // popen("LANG=EN_us free -m 2> /dev/null", "r"); // get ram info with free
 	#endif
-	char line[256];
-	while (fgets(line, sizeof(line), meminfo)) // reading free output
-		// free command prints like this: "Mem:" total     used    free shared    buff/cache      available
-		sscanf(line, "Mem: %d %d", &user_info->ram_total, &user_info->ram_used);
+	// brackets are here to restrict the access to this int variables, which are temporary
+	{
+		char buffer[256];
+		int memtotal = 0, shmem = 0, memfree = 0, buffers = 0, cached = 0, sreclaimable = 0;
+		while (fgets(buffer, sizeof(buffer), meminfo)) {
+			sscanf(buffer, "MemTotal:       %d", &memtotal);
+			sscanf(buffer, "Shmem:             %d", &shmem);
+			sscanf(buffer, "MemFree:        %d", &memfree);
+			sscanf(buffer, "Buffers:          %d", &buffers);
+			sscanf(buffer, "Cached:          %d", &cached);
+			sscanf(buffer, "SReclaimable:     %d", &sreclaimable);
+		}
+		user_info->ram_total = memtotal / 1024;
+		user_info->ram_used	 = ((memtotal + shmem) - (memfree + buffers + cached + sreclaimable)) / 1024;
+	}
+
+	// char line[256];
+	// while (fgets(line, sizeof(line), meminfo)) // old way to get ram usage that uses the "free" command
+	// 	// free command prints like this: "Mem:" total     used    free shared    buff/cache      available
+	// 	sscanf(line, "Mem: %d %d", &user_info->ram_total, &user_info->ram_used);
 	fclose(meminfo);
 #elif defined(_WIN32)
 	FILE* mem_used_fp;
@@ -1114,11 +1131,27 @@ struct info get_info()
 		#ifdef __FREEBSD__
 	meminfo = popen("LANG=EN_us freecolor -om 2> /dev/null", "r"); // free alternative for freebsd
 		#else
-	meminfo = popen("LANG=EN_us free -m 2> /dev/null", "r"); // get ram info with free
+	// getting memory info from /proc/meminfo: https://github.com/KittyKatt/screenFetch/issues/386#issuecomment-249312716
+	meminfo = fopen("/proc/meminfo", "r"); // popen("LANG=EN_us free -m 2> /dev/null", "r"); // get ram info with free
 		#endif
-	while (fgets(buffer, sizeof(buffer), meminfo))
-		// free command prints like this: "Mem:" total     used    free shared    buff/cache      available
-		sscanf(buffer, "Mem: %d %d", &user_info.ram_total, &user_info.ram_used);
+	// brackets are here to restrict the access to this int variables, which are temporary
+	{
+		int memtotal = 0, shmem = 0, memfree = 0, buffers = 0, cached = 0, sreclaimable = 0;
+		while (fgets(buffer, sizeof(buffer), meminfo)) {
+			sscanf(buffer, "MemTotal:       %d", &memtotal);
+			sscanf(buffer, "Shmem:             %d", &shmem);
+			sscanf(buffer, "MemFree:        %d", &memfree);
+			sscanf(buffer, "Buffers:          %d", &buffers);
+			sscanf(buffer, "Cached:          %d", &cached);
+			sscanf(buffer, "SReclaimable:     %d", &sreclaimable);
+		}
+		user_info.ram_total = memtotal / 1024;
+		user_info.ram_used	= ((memtotal + shmem) - (memfree + buffers + cached + sreclaimable)) / 1024;
+	}
+
+	// while (fgets(buffer, sizeof(buffer), meminfo)) // old way to get ram usage that uses the "free" command
+	// 	// free command prints like this: "Mem:" total     used    free shared    buff/cache      available
+	// 	sscanf(buffer, "Mem: %d %d", &user_info.ram_total, &user_info.ram_used);
 	fclose(meminfo);
 	#endif
 #else // if __APPLE__
