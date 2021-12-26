@@ -407,14 +407,16 @@ void uwu_name(struct configuration* config_flags, struct info* user_info) {
 #undef STRING_TO_UWU
 }
 
-// prints all the collected info
-void print_info(struct configuration* config_flags, struct info* user_info) {
+// prints all the collected info and returns the number of printed lines
+int print_info(struct configuration* config_flags, struct info* user_info) {
+	int line_count = 0;
 #ifdef _WIN32
 	// prints without overflowing the terminal width
 	#define responsively_printf(buf, format, ...)         \
 		{                                                 \
 			sprintf(buf, format, __VA_ARGS__);            \
 			printf("%.*s\n", user_info->ws_col - 1, buf); \
+			line_count++;                                 \
 		}
 #else // _WIN32
 	// prints without overflowing the terminal width
@@ -422,6 +424,7 @@ void print_info(struct configuration* config_flags, struct info* user_info) {
 		{                                                     \
 			sprintf(buf, format, __VA_ARGS__);                \
 			printf("%.*s\n", user_info->win.ws_col - 1, buf); \
+			line_count++;                                     \
 		}
 #endif					  // _WIN32
 	char print_buf[1024]; // for responsively print
@@ -504,6 +507,7 @@ void print_info(struct configuration* config_flags, struct info* user_info) {
 			   BLOCK_CHAR, BLOCK_CHAR, BLUE, BLOCK_CHAR, BLOCK_CHAR, MAGENTA,
 			   BLOCK_CHAR, BLOCK_CHAR, CYAN, BLOCK_CHAR, BLOCK_CHAR, WHITE,
 			   BLOCK_CHAR, BLOCK_CHAR, NORMAL);
+	return line_count;
 }
 
 // writes cache to cache file
@@ -978,8 +982,8 @@ struct info get_info()
 				sprintf(user_info.user, "unknown");
 			fclose(whoami);
 			// model name
-			//model_fp = popen("getprop ro.product.model", "r");
-			//while (fgets(buffer, sizeof(buffer), model_fp) && !sscanf(buffer, "%[^\n]", user_info.model))
+			// model_fp = popen("getprop ro.product.model", "r");
+			// while (fgets(buffer, sizeof(buffer), model_fp) && !sscanf(buffer, "%[^\n]", user_info.model))
 			//	;
 #ifndef __FREEBSD__
 			while (fgets(buffer, sizeof(buffer), cpuinfo) && !sscanf(buffer, "Hardware        : %[^\n]", user_info.cpu_model))
@@ -1354,6 +1358,9 @@ int main(int argc, char* argv[]) {
 		print_ascii(&user_info);
 	else if (config_flags.ascii_image_flag == 1)
 		print_image(&user_info);
-	print_info(&config_flags, &user_info);
+
+	// if the number of printed lines is too small, move the cursor down
+	if (print_info(&config_flags, &user_info) < 7)
+		printf("\033[3B");
 	return 0;
 }
