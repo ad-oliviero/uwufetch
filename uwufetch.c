@@ -436,6 +436,7 @@ void print_info(struct configuration* config_flags, struct info* user_info) {
 		responsively_printf(print_buf, "%s%s%sOWOS        %s%s",
 							MOVE_CURSOR, NORMAL, BOLD, NORMAL,
 							user_info->os_name);
+	// Comment this section, to get rid of the ¨To Be Filled By O.E.M.¨ text, if your computer hasn't had any OEM distributor filled in.
 	if (config_flags->show_host)
 		responsively_printf(print_buf, "%s%s%sMOWODEL     %s%s",
 							MOVE_CURSOR, NORMAL, BOLD, NORMAL,
@@ -977,9 +978,9 @@ struct info get_info()
 				sprintf(user_info.user, "unknown");
 			fclose(whoami);
 			// model name
-			model_fp = popen("getprop ro.product.model", "r");
-			while (fgets(buffer, sizeof(buffer), model_fp) && !sscanf(buffer, "%[^\n]", user_info.model))
-				;
+			//model_fp = popen("getprop ro.product.model", "r");
+			//while (fgets(buffer, sizeof(buffer), model_fp) && !sscanf(buffer, "%[^\n]", user_info.model))
+			//	;
 #ifndef __FREEBSD__
 			while (fgets(buffer, sizeof(buffer), cpuinfo) && !sscanf(buffer, "Hardware        : %[^\n]", user_info.cpu_model))
 				;
