@@ -672,8 +672,8 @@ void print_ascii(struct info* user_info) {
 	fclose(file);
 }
 
-// prints the info after reading the cache file
-void print_cache(struct configuration* config_flags, struct info* user_info) {
+// prints the info after reading the cache file and returns the count of printed lines
+int print_cache(struct configuration* config_flags, struct info* user_info) {
 #ifndef __APPLE__
 	#ifndef _WIN32
 	sysinfo(&user_info->sys); // to get uptime
@@ -727,8 +727,7 @@ void print_cache(struct configuration* config_flags, struct info* user_info) {
 
 #endif // __APPLE__
 	print_ascii(user_info);
-	print_info(config_flags, user_info);
-	return;
+	return print_info(config_flags, user_info);
 }
 
 // truncates the given string
@@ -1293,7 +1292,8 @@ int main(int argc, char* argv[]) {
 				write_cache(&user_info);
 			}
 			config_flags = parse_config(&user_info); // reading the config
-			print_cache(&config_flags, &user_info);
+			if (print_cache(&config_flags, &user_info) < 7)
+				printf("\033[3B");
 			return 0;
 		}
 	}
@@ -1348,7 +1348,8 @@ int main(int argc, char* argv[]) {
 			return 0;
 		case 'w':
 			write_cache(&user_info);
-			print_cache(&config_flags, &user_info);
+			if (print_cache(&config_flags, &user_info) < 7)
+				printf("\033[3B");
 			return 0;
 		default:
 			break;
