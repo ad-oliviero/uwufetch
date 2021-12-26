@@ -229,7 +229,7 @@ int pkgman(struct info* user_info)
 	struct package_manager pkgmans[] =
 		{{"apt list --installed 2> /dev/null | wc -l", "(apt)"},
 		 {"apk info 2> /dev/null | wc -l", "(apk)"},
-		 {"dnf list installed 2> /dev/null | wc -l", "(dnf)"},
+		 //  {"dnf list installed 2> /dev/null | wc -l", "(dnf)"}, // according to https://stackoverflow.com/questions/48570019/advantages-of-dnf-vs-rpm-on-fedora, dnf and rpm return the same number of packages
 		 {"qlist -I 2> /dev/null | wc -l", "(emerge)"},
 		 {"flatpak list 2> /dev/null | wc -l", "(flatpak)"},
 		 {"snap list 2> /dev/null | wc -l", "(snap)"},
