@@ -2,6 +2,10 @@
 
 A meme system info tool for (almost) all your Linux/Unix-based systems, based on the nyan/UwU trend on r/linuxmasterrace.
 
+## Contributing
+
+All kinds of contributions are welcome, but before contributing **please** read [CONTRIBUTING.md](/CONTRIBUTING.md).
+
 ## Currently supported distros
 
 ### Full support (Both ASCII art + images are provided for the given distribution)
@@ -98,7 +102,3 @@ See [COPYRIGHT.md](/res/COPYRIGHT.md).
 ## License
 
 This program is provided under the [GPL-3.0 License](/LICENSE).
-
-## Contributing
-
-All kinds of contributions are welcome, but before contributing please read [CONTRIBUTING.md](/CONTRIBUTING.md).

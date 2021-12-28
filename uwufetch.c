@@ -998,9 +998,9 @@ struct info get_info()
 				sprintf(user_info.user, "unknown");
 			fclose(whoami);
 			// model name
-			// model_fp = popen("getprop ro.product.model", "r");
-			// while (fgets(buffer, sizeof(buffer), model_fp) && !sscanf(buffer, "%[^\n]", user_info.model))
-			//	;
+			model_fp = popen("getprop ro.product.model", "r");
+			while (fgets(buffer, sizeof(buffer), model_fp) && !sscanf(buffer, "%[^\n]", user_info.model))
+				;
 #ifndef __FREEBSD__
 			while (fgets(buffer, sizeof(buffer), cpuinfo) && !sscanf(buffer, "Hardware        : %[^\n]", user_info.cpu_model))
 				;
