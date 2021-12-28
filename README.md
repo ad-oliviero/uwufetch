@@ -87,19 +87,9 @@ If not supported by the current terminal, `viu` uses the fallback Unicode half-b
 
 ### `MOWODEL` showing `To Be Filled By O.E.M.`
 
-This happen when your computer hasn't had any [OEM info filled in](https://www.investopedia.com/terms/o/oem.asp) (Habitually, by the original company you could have buy your preconfigured computer from, or from which company prepared it).
+This happens when your computer hasn't had any [OEM info filled in](https://www.investopedia.com/terms/o/oem.asp) (habitually by the manufacturer).
 While you could fill it yourself with your own custom info too, you can also disable the part of uwufetch which display this line.
-Edit [`uwufetch.c`](https://github.com/TheDarkBug/uwufetch/blob/main/uwufetch.c) and search for the line `if (config_flags->show_host)`.
-Once found, simply comment it out using `//` until the next `if` statement.
-For example : 
-```C
-//	if (config_flags->show_host)
-//		responsively_printf(print_buf, "%s%s%sMOWODEL     %s%s",
-//							MOVE_CURSOR, NORMAL, BOLD, NORMAL,
-//							user_info->model);
-	if (config_flags->show_kernel)
-```
-Then, build your edited uwufetch executable as normal.
+Edit [`.config/uwufetch/config`] and add `host=false`.
 
 ### For copyright and logos info
 
