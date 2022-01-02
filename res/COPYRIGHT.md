@@ -402,7 +402,7 @@ I am not a copyright expert, and maybe I am doing all wrong things, please corre
 
 ## OpenBSD
 
-<img title="Nyandroid" src="https://raw.githubusercontent.com/Hanjingxue-Boling/uwufetch/main/res/openbsd-zh.jpg" alt="image" width="100">
+<img title="Nyandroid" src="https://raw.githubusercontent.com/TheDarkBug/uwufetch/main/res/openbsd-zh.jpg" alt="image" width="100">
 
 <font size="1">The OpenBSD project produces a FREE, multi-platform 4.4BSD-based UNIX-like operating system.</font>
 
