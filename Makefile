@@ -33,7 +33,7 @@ debug:
 	$(CC) $(CFLAGS_DEBUG) -o $(NAME) $(FILES)
 	./$(NAME)
 
-install:
+install: build
 	mkdir -p $(DESTDIR)/$(PREFIX) $(DESTDIR)/$(LIBDIR)/uwufetch $(DESTDIR)/$(MANDIR)
 	cp $(NAME) $(DESTDIR)/$(PREFIX)/$(NAME)
 	cp -r res/* $(DESTDIR)/$(LIBDIR)/uwufetch
