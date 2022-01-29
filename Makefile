@@ -4,22 +4,28 @@ CFLAGS = -O3
 CFLAGS_DEBUG = -Wall -Wextra -g -pthread
 CC = cc
 DESTDIR = /usr
+PLATFORM = $(shell uname -o)
 
-ifeq ($(shell uname), Linux)
+ifeq ($(PLATFORM), GNU/Linux)
 	PREFIX		= bin
 	LIBDIR		= lib
 	MANDIR		= share/man/man1
-else ifeq ($(shell uname), Darwin)
+else ifeq ($(PLATFORM), Android)
+	PREFIX		= bin
+	LIBDIR		= lib
+	MANDIR		= share/man/man1
+	DESTDIR		= /data/data/com.termux/file
+else ifeq ($(PLATFORM), Darwin)
 	PREFIX		= local/bin
 	LIBDIR		= local/lib
 	MANDIR		= local/share/man/man1
-else ifeq ($(shell uname), FreeBSD)
+else ifeq ($(PLATFORM), FreeBSD)
 	CFLAGS += -D__FREEBSD__
 	CFLAGS_DEBUG += -D__FREEBSD__
 	PREFIX		= bin
 	LIBDIR		= lib
 	MANDIR		= share/man/man1
-else ifeq ($(shell uname), windows32)
+else ifeq ($(PLATFORM), windows32)
 	CC 			= gcc
 	PREFIX		= "C:\Program Files"
 	LIBDIR		=
@@ -43,15 +49,6 @@ uninstall:
 	rm -f $(DESTDIR)/$(PREFIX)/$(NAME)
 	rm -rf $(DESTDIR)/$(LIBDIR)/uwufetch
 	rm -f $(DESTDIR)/$(MANDIR)/$(NAME).1.gz
-
-termux: build
-	cp $(NAME) $(DESTDIR)/data/data/com.termux/files$(PREFIX)/$(NAME)
-	ls $(DESTDIR)/data/data/com.termux/files/usr/lib/uwufetch/ > /dev/null || mkdir $(DESTDIR)/data/data/com.termux/files/usr/lib/uwufetch/
-	cp -r res/* /data/data/com.termux/files/usr/lib/uwufetch/
-
-termux_uninstall:
-	rm -rf $(DESTDIR)/data/data/com.termux/files$(PREFIX)/$(NAME)
-	rm -rf $(DESTDIR)/data/data/com.termux/files/usr/lib/uwufetch/
 
 clean:
 	rm $(NAME)
