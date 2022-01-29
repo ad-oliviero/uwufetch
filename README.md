@@ -55,7 +55,7 @@ To install UwUfetch from the source, type these commands in the terminal:
 git clone https://github.com/TheDarkBug/uwufetch.git
 cd uwufetch
 make build # add "CFLAGS+=-D__IPHONE__" if you are building for iOS
-sudo make install       # for termux, use `make termux`
+sudo make install
 ```
 
 To uninstall:
@@ -72,8 +72,6 @@ make build              # builds uwufetch
 make debug              # use for debug
 make install            # installs uwufetch (needs root permissons)
 make uninstall          # uninstalls uwufetch (needs root permissons)
-make termux             # build and install for termux
-make termux_uninstall   # uninstall for termux
 ```
 
 ## Images and copyright info
