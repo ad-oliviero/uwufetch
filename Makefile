@@ -6,8 +6,8 @@ CC = cc
 DESTDIR = /usr
 
 ifeq ($(shell uname), Linux)
-	PREFIX		= bin
-	LIBDIR		= lib
+	PREFIX		= local/bin
+	LIBDIR		= local/lib
 	MANDIR		= share/man/man1
 else ifeq ($(shell uname), Darwin)
 	PREFIX		= local/bin
@@ -16,8 +16,8 @@ else ifeq ($(shell uname), Darwin)
 else ifeq ($(shell uname), FreeBSD)
 	CFLAGS += -D__FREEBSD__
 	CFLAGS_DEBUG += -D__FREEBSD__
-	PREFIX		= bin
-	LIBDIR		= lib
+	PREFIX		= local/bin
+	LIBDIR		= local/lib
 	MANDIR		= share/man/man1
 else ifeq ($(shell uname), windows32)
 	CC 			= gcc
@@ -52,6 +52,9 @@ termux: build
 termux_uninstall:
 	rm -rf $(DESTDIR)/data/data/com.termux/files$(PREFIX)/$(NAME)
 	rm -rf $(DESTDIR)/data/data/com.termux/files/usr/lib/uwufetch/
+
+clean:
+	rm $(NAME)
 
 man:
 	gzip --keep $(NAME).1

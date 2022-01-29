@@ -326,7 +326,7 @@ void print_image(struct info* user_info) {
 		if (strcmp(user_info->os_name, "android") == 0)
 			sprintf(command, "viu -t -w 18 -h 8 /data/data/com.termux/files/usr/lib/uwufetch/%s.png 2> /dev/null", user_info->os_name); // image command for android
 		else
-			sprintf(command, "viu -t -w 18 -h 8 /usr/lib/uwufetch/%s.png 2> /dev/null", user_info->os_name); // image command for other systems
+			sprintf(command, "viu -t -w 18 -h 8 /usr/local/lib/uwufetch/%s.png 2> /dev/null", user_info->os_name); // image command for other systems
 	}
 	printf("\n");
 	if (system(command) != 0) // if viu is not installed or the image is missing
@@ -632,7 +632,7 @@ void print_ascii(struct info* user_info) {
 		if (strcmp(user_info->os_name, "android") == 0)
 			sprintf(ascii_file, "/data/data/com.termux/files/usr/lib/uwufetch/ascii/%s.txt", user_info->os_name);
 		else
-			sprintf(ascii_file, "/usr/lib/uwufetch/ascii/%s.txt", user_info->os_name);
+			sprintf(ascii_file, "/usr/local/lib/uwufetch/ascii/%s.txt", user_info->os_name);
 
 		file = fopen(ascii_file, "r");
 		if (!file) {
