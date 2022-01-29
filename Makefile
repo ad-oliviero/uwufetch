@@ -6,8 +6,8 @@ CC = cc
 DESTDIR = /usr
 
 ifeq ($(shell uname), Linux)
-	PREFIX		= local/bin
-	LIBDIR		= local/lib
+	PREFIX		= bin
+	LIBDIR		= lib
 	MANDIR		= share/man/man1
 else ifeq ($(shell uname), Darwin)
 	PREFIX		= local/bin
@@ -16,8 +16,8 @@ else ifeq ($(shell uname), Darwin)
 else ifeq ($(shell uname), FreeBSD)
 	CFLAGS += -D__FREEBSD__
 	CFLAGS_DEBUG += -D__FREEBSD__
-	PREFIX		= local/bin
-	LIBDIR		= local/lib
+	PREFIX		= bin
+	LIBDIR		= lib
 	MANDIR		= share/man/man1
 else ifeq ($(shell uname), windows32)
 	CC 			= gcc
