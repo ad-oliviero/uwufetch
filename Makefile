@@ -4,29 +4,27 @@ CFLAGS = -O3
 CFLAGS_DEBUG = -Wall -Wextra -g -pthread
 CC = cc
 DESTDIR = /usr
-PLATFORM = $(shell uname -o)
+PLATFORM = $(shell uname)
 
-ifeq ($(PLATFORM), GNU/Linux)
+ifeq ($(PLATFORM), Linux)
 	PREFIX		= bin
 	LIBDIR		= lib
 	MANDIR		= share/man/man1
-else ifeq ($(PLATFORM), Android)
-	PREFIX		= bin
-	LIBDIR		= lib
-	MANDIR		= share/man/man1
-	DESTDIR		= /data/data/com.termux/file
+	ifeq ($(shell uname -o), Android)
+		DESTDIR	= /data/data/com.termux/file
+	endif
 else ifeq ($(PLATFORM), Darwin)
 	PREFIX		= local/bin
 	LIBDIR		= local/lib
 	MANDIR		= local/share/man/man1
 else ifeq ($(PLATFORM), FreeBSD)
-	CFLAGS += -D__FREEBSD__
+	CFLAGS		+= -D__FREEBSD__
 	CFLAGS_DEBUG += -D__FREEBSD__
 	PREFIX		= bin
 	LIBDIR		= lib
 	MANDIR		= share/man/man1
 else ifeq ($(PLATFORM), windows32)
-	CC 			= gcc
+	CC		= gcc
 	PREFIX		= "C:\Program Files"
 	LIBDIR		=
 	MANDIR		=
