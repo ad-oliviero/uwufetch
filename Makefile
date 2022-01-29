@@ -33,7 +33,7 @@ debug:
 	$(CC) $(CFLAGS_DEBUG) -o $(NAME) $(FILES)
 	./$(NAME)
 
-install:
+install: build
 	mkdir -p $(DESTDIR)/$(PREFIX) $(DESTDIR)/$(LIBDIR)/uwufetch $(DESTDIR)/$(MANDIR)
 	cp $(NAME) $(DESTDIR)/$(PREFIX)/$(NAME)
 	cp -r res/* $(DESTDIR)/$(LIBDIR)/uwufetch
@@ -52,6 +52,9 @@ termux: build
 termux_uninstall:
 	rm -rf $(DESTDIR)/data/data/com.termux/files$(PREFIX)/$(NAME)
 	rm -rf $(DESTDIR)/data/data/com.termux/files/usr/lib/uwufetch/
+
+clean:
+	rm $(NAME)
 
 man:
 	gzip --keep $(NAME).1
