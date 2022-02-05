@@ -949,6 +949,11 @@ struct info get_info()
 	if (os_release) { // get normal vars if os_release exists
 		while (fgets(buffer, sizeof(buffer), os_release) && !(sscanf(buffer, "\nID=\"%s\"", user_info.os_name) || sscanf(buffer, "\nID=%s", user_info.os_name)))
 			;
+		// sometimes for some reason sscanf reads the last '\"' too
+		int os_name_len = strlen(user_info.os_name);
+		if (user_info.os_name[os_name_len - 1] == '\"') {
+			user_info.os_name[os_name_len - 1] = '\0';
+		}
 		/* trying to detect amogos because in its os-release file ID value is just "debian",
 		will be removed when amogos will have an os-release file with ID=amogos */
 		if (strcmp(user_info.os_name, "debian") == 0 || strcmp(user_info.os_name, "raspbian") == 0) {
