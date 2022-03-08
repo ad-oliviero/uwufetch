@@ -44,7 +44,7 @@ install: build
 	mkdir -p $(DESTDIR)/$(PREFIX) $(DESTDIR)/$(LIBDIR)/uwufetch $(DESTDIR)/$(MANDIR) $(ETC_DIR)/uwufetch
 	cp $(NAME) $(DESTDIR)/$(PREFIX)/$(NAME)
 	cp -r res/* $(DESTDIR)/$(LIBDIR)/uwufetch
-	cp default.config $(ETC_DIR)/uwufetch
+	cp default.config $(ETC_DIR)/uwufetch/config
 	cp ./$(NAME).1.gz $(DESTDIR)/$(MANDIR)/
 
 uninstall:
