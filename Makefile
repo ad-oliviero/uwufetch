@@ -9,6 +9,7 @@ PLATFORM = $(shell uname)
 ifeq ($(PLATFORM), Linux)
 	PREFIX		= bin
 	LIBDIR		= lib
+	ETC_DIR		= /etc
 	MANDIR		= share/man/man1
 	ifeq ($(shell uname -o), Android)
 		DESTDIR	= /data/data/com.termux/files/usr
@@ -16,12 +17,14 @@ ifeq ($(PLATFORM), Linux)
 else ifeq ($(PLATFORM), Darwin)
 	PREFIX		= local/bin
 	LIBDIR		= local/lib
+	ETC_DIR		= /etc
 	MANDIR		= local/share/man/man1
 else ifeq ($(PLATFORM), FreeBSD)
 	CFLAGS		+= -D__FREEBSD__
 	CFLAGS_DEBUG += -D__FREEBSD__
 	PREFIX		= bin
 	LIBDIR		= lib
+	ETC_DIR		= /etc
 	MANDIR		= share/man/man1
 else ifeq ($(PLATFORM), windows32)
 	CC		= gcc
@@ -38,9 +41,10 @@ debug:
 	./$(NAME)
 
 install: build
-	mkdir -p $(DESTDIR)/$(PREFIX) $(DESTDIR)/$(LIBDIR)/uwufetch $(DESTDIR)/$(MANDIR)
+	mkdir -p $(DESTDIR)/$(PREFIX) $(DESTDIR)/$(LIBDIR)/uwufetch $(DESTDIR)/$(MANDIR) $(ETC_DIR)/uwufetch
 	cp $(NAME) $(DESTDIR)/$(PREFIX)/$(NAME)
 	cp -r res/* $(DESTDIR)/$(LIBDIR)/uwufetch
+	cp default.config $(ETC_DIR)/uwufetch
 	cp ./$(NAME).1.gz $(DESTDIR)/$(MANDIR)/
 
 uninstall:
