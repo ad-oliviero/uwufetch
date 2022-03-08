@@ -253,7 +253,7 @@ int pkgman(struct info* user_info)
 		unsigned int pkg_count = 0;
 
 		if (fscanf(fp, "%u", &pkg_count) == 3) continue; // if a number is found, continue the loop
-		fclose(fp);
+		pclose(fp);
 
 		// adding a package manager with its package count to user_info->pkgman_name
 		total += pkg_count;
@@ -1007,7 +1007,7 @@ struct info get_info()
 			FILE* whoami = popen("whoami", "r");
 			if (fscanf(whoami, "%s", user_info.user) == 3)
 				sprintf(user_info.user, "unknown");
-			fclose(whoami);
+			pclose(whoami);
 			// model name
 			model_fp = popen("getprop ro.product.model", "r");
 			while (fgets(buffer, sizeof(buffer), model_fp) && !sscanf(buffer, "%[^\n]", user_info.model))
