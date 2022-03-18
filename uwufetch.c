@@ -528,7 +528,7 @@ void write_cache(struct info* user_info) {
 	user_info->uptime = uptime_apple();
 #else
 	#ifdef __FREEBSD__
-	uptime = uptime_freebsd();
+	user_info->uptime = uptime_freebsd();
 	#else
 		#ifndef _WIN32
 	user_info->uptime = user_info->sys.uptime;
@@ -682,7 +682,9 @@ void print_ascii(struct info* user_info) {
 int print_cache(struct configuration* config_flags, struct info* user_info) {
 #ifndef __APPLE__
 	#ifndef _WIN32
-	sysinfo(&user_info->sys); // to get uptime
+		#ifndef __FREEBSD__
+		sysinfo(&user_info->sys); // to get uptime
+		#endif
 	#endif
 	FILE* meminfo;
 
@@ -982,11 +984,12 @@ struct info get_info()
 		while (fgets(buffer, sizeof(buffer), cpuinfo)) {
 #ifdef __FREEBSD__
 			if (sscanf(buffer, "hw.model: %[^\n]", user_info.cpu_model))
+			    break;
 #else
 			if (sscanf(buffer, "model name    : %[^\n]", user_info.cpu_model))
 				break;
 #endif // __FREEBSD__
-		}
+	}
 		// getting username
 		char* tmp_user = getenv("USER");
 		if (tmp_user == NULL)
