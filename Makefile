@@ -13,6 +13,7 @@ ifeq ($(PLATFORM), Linux)
 	MANDIR		= share/man/man1
 	ifeq ($(shell uname -o), Android)
 		DESTDIR	= /data/data/com.termux/files/usr
+		ETC_DIR = $(DESTDIR)/etc
 	endif
 else ifeq ($(PLATFORM), Darwin)
 	PREFIX		= local/bin

@@ -162,8 +162,14 @@ struct configuration parse_config(struct info* user_info) {
 			char homedir[512];
 			sprintf(homedir, "%s/.config/uwufetch/config", getenv("HOME"));
 			config = fopen(homedir, "r");
-			if (!config)
-				config = fopen("/etc/uwufetch/config", "r");
+			if (!config) {
+				if(getenv("PREFIX") != NULL) {
+					char prefixed_etc[512];
+					sprintf(prefixed_etc, "%s/etc/uwufetch/config", getenv("PREFIX"));
+					config = fopen(prefixed_etc, "r");
+				} else
+					config = fopen("/etc/uwufetch/config", "r");
+			}
 		}
 	} else
 		config = fopen(user_info->config_directory, "r");
