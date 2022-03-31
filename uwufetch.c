@@ -13,6 +13,10 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#ifndef UWUFETCH_VERSION
+	#define UWUFETCH_VERSION "unkown" // needs to be changed by the build script
+#endif
+
 #define _GNU_SOURCE // for strcasestr
 
 #ifdef __APPLE__
@@ -163,7 +167,7 @@ struct configuration parse_config(struct info* user_info) {
 			sprintf(homedir, "%s/.config/uwufetch/config", getenv("HOME"));
 			config = fopen(homedir, "r");
 			if (!config) {
-				if(getenv("PREFIX") != NULL) {
+				if (getenv("PREFIX") != NULL) {
 					char prefixed_etc[512];
 					sprintf(prefixed_etc, "%s/etc/uwufetch/config", getenv("PREFIX"));
 					config = fopen(prefixed_etc, "r");
@@ -689,7 +693,7 @@ int print_cache(struct configuration* config_flags, struct info* user_info) {
 #ifndef __APPLE__
 	#ifndef _WIN32
 		#ifndef __FREEBSD__
-		sysinfo(&user_info->sys); // to get uptime
+	sysinfo(&user_info->sys); // to get uptime
 		#endif
 	#endif
 	FILE* meminfo;
@@ -990,12 +994,12 @@ struct info get_info()
 		while (fgets(buffer, sizeof(buffer), cpuinfo)) {
 #ifdef __FREEBSD__
 			if (sscanf(buffer, "hw.model: %[^\n]", user_info.cpu_model))
-			    break;
+				break;
 #else
 			if (sscanf(buffer, "model name    : %[^\n]", user_info.cpu_model))
 				break;
 #endif // __FREEBSD__
-	}
+		}
 		// getting username
 		char* tmp_user = getenv("USER");
 		if (tmp_user == NULL)
@@ -1312,6 +1316,7 @@ void usage(char* arg) {
 #endif
 		   "                        read README.md for more info%s\n"
 		   "    -l, --list          lists all supported distributions\n"
+		   "    -v, --version       prints the current uwufetch version\n"
 		   "    -w, --write-cache   writes to the cache file (~/.cache/uwufetch.cache)\n"
 		   "    using the cache     set $UWUFETCH_CACHE_ENABLED to TRUE, true or 1\n",
 		   arg,
@@ -1361,10 +1366,11 @@ int main(int argc, char* argv[]) {
 		 {"config", required_argument, NULL, 'c'},
 		 // {"cache", no_argument, NULL, 'C'}, // using an environment variable is not a good idea, maybe some time in the future, uwufetch will use a command line option
 		 {"distro", required_argument, NULL, 'd'},
-		 {"write-cache", no_argument, NULL, 'w'},
 		 {"help", no_argument, NULL, 'h'},
 		 {"image", optional_argument, NULL, 'i'},
 		 {"list", no_argument, NULL, 'l'},
+		 {"version", no_argument, NULL, 'v'},
+		 {"write-cache", no_argument, NULL, 'w'},
 		 {NULL, 0, NULL, 0}};
 
 #ifdef _WIN32
@@ -1375,7 +1381,7 @@ int main(int argc, char* argv[]) {
 	config_flags = parse_config(&user_info); // same as user_info
 
 	// reading cmdline options
-	while ((opt = getopt_long(argc, argv, "ac:d:hi::lw", long_options, NULL)) != -1) {
+	while ((opt = getopt_long(argc, argv, "ac:d:hi::lvw", long_options, NULL)) != -1) {
 		switch (opt) {
 		case 'a': // set ascii logo as output
 			config_flags.ascii_image_flag = 0;
@@ -1398,6 +1404,9 @@ int main(int argc, char* argv[]) {
 			break;
 		case 'l':
 			list(argv[0]);
+			return 0;
+		case 'v':
+			printf("UwUfetch version %s\n", UWUFETCH_VERSION);
 			return 0;
 		case 'w':
 			write_cache(&user_info);

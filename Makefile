@@ -1,7 +1,8 @@
 NAME = uwufetch
 FILES = uwufetch.c
-CFLAGS = -O3
-CFLAGS_DEBUG = -Wall -Wextra -g -pthread
+UWUFETCH_VERSION = UWUFETCH_VERSION="\"$(shell git describe --tags)\""
+CFLAGS = -O3 -D$(UWUFETCH_VERSION)
+CFLAGS_DEBUG = -Wall -Wextra -g -pthread -D$(UWUFETCH_VERSION)
 CC = cc
 DESTDIR = /usr
 PLATFORM = $(shell uname)
