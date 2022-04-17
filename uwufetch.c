@@ -93,13 +93,16 @@ struct package_manager {
 
 // all configuration flags available
 struct configuration {
-	int ascii_image_flag, // when (0) ascii is printed, when (1) image is printed
-		show_user_info,	  // all the following flags are 1 (true) by default
+	int
+		// when (0) ascii is printed, when (1) image is printed
+		ascii_image_flag,
+		show_user_info, // all the following flags are 1 (true) by default
 		show_os,
 		show_host,
 		show_kernel,
 		show_cpu,
-		show_gpu,
+		// if show_gpu[0] == -2, all gpus are shown, if == -3 no gpu is shown
+		show_gpu[256],
 		show_ram,
 		show_resolution,
 		show_shell,
@@ -157,8 +160,13 @@ char* MOVE_CURSOR = "\033[18C";
 
 // reads the config file
 struct configuration parse_config(struct info* user_info) {
-	char buffer[256];															 // buffer for the current line
-	struct configuration config_flags = {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}; // enabling all flags by default
+	char buffer[256]; // buffer for the current line
+	// enabling all flags by default
+	struct configuration config_flags;
+	memset(&config_flags, 1, sizeof(config_flags));
+	memset(&config_flags.show_gpu, -1, 256 * sizeof(int)); // -1 means 'undefined'
+	config_flags.show_gpu[0]	  = -2;					   // show all gpus
+	config_flags.ascii_image_flag = 0;
 
 	FILE* config = NULL;					   // config file pointer
 	if (user_info->config_directory == NULL) { // if config directory is not set, try to open the default
@@ -178,6 +186,8 @@ struct configuration parse_config(struct info* user_info) {
 	} else
 		config = fopen(user_info->config_directory, "r");
 	if (config == NULL) return config_flags; // if config file does not exist, return the defaults
+
+	int gpu_cfg_count = 0;
 
 	// reading the config file
 	while (fgets(buffer, sizeof(buffer), config)) {
@@ -206,8 +216,12 @@ struct configuration parse_config(struct info* user_info) {
 			config_flags.show_kernel = strcmp(buffer, "false");
 		if (sscanf(buffer, "cpu=%[truefalse]", buffer))
 			config_flags.show_cpu = strcmp(buffer, "false");
-		if (sscanf(buffer, "gpu=%[truefalse]", buffer))
-			config_flags.show_gpu = strcmp(buffer, "false");
+		if (sscanf(buffer, "gpu=%d", &config_flags.show_gpu[gpu_cfg_count])) // enabling single gpu
+			gpu_cfg_count++;
+		if (sscanf(buffer, "gpu=%[truefalse]", buffer)) { // enabling all gpus
+			if (strcmp(buffer, "false") == 0)
+				config_flags.show_gpu[0] = -3; // disable all gpus
+		}
 		if (sscanf(buffer, "ram=%[truefalse]", buffer))
 			config_flags.show_ram = strcmp(buffer, "false");
 		if (sscanf(buffer, "resolution=%[truefalse]", buffer))
@@ -453,7 +467,6 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
 		responsively_printf(print_buf, "%s%s%sOWOS        %s%s",
 							MOVE_CURSOR, NORMAL, BOLD, NORMAL,
 							user_info->os_name);
-	// Comment this section, to get rid of the ¨To Be Filled By O.E.M.¨ text, if your computer hasn't had any OEM distributor filled in.
 	if (config_flags->show_host)
 		responsively_printf(print_buf, "%s%s%sMOWODEL     %s%s",
 							MOVE_CURSOR, NORMAL, BOLD, NORMAL,
@@ -467,10 +480,17 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
 							MOVE_CURSOR, NORMAL, BOLD, NORMAL,
 							user_info->cpu_model);
 
-	// print the gpus
-	if (config_flags->show_gpu)
-		for (int i = 0; user_info->gpu_model[i][0]; i++)
+	if (config_flags->show_gpu[0] == -2) { // print all gpu models
+		for (int i = 0; i < 256 && user_info->gpu_model[i][0]; i++) {
 			responsively_printf(print_buf, "%s%s%sGPUWU       %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->gpu_model[i]);
+		}
+	} else if (config_flags->show_gpu[0] != -3) { // print only the configured gpu models
+		for (int i = 0; i < 256; i++) {
+			if (config_flags->show_gpu[i] >= 0)
+				if (user_info->gpu_model[config_flags->show_gpu[i]][0])
+					responsively_printf(print_buf, "%s%s%sGPUWU       %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->gpu_model[config_flags->show_gpu[i]]);
+		}
+	}
 
 	if (config_flags->show_ram) // print ram
 		responsively_printf(print_buf, "%s%s%sWAM         %s%i MiB/%i MiB", MOVE_CURSOR, NORMAL, BOLD, NORMAL, (user_info->ram_used), user_info->ram_total);
