@@ -496,7 +496,7 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
 		responsively_printf(print_buf, "%s%s%sWAM         %s%i MiB/%i MiB", MOVE_CURSOR, NORMAL, BOLD, NORMAL, (user_info->ram_used), user_info->ram_total);
 	if (config_flags->show_resolution) // print resolution
 		if (user_info->screen_width != 0 || user_info->screen_height != 0)
-			responsively_printf(print_buf, "%s%s%sRESOWUTION%s  %dx%d", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->screen_width, user_info->screen_height);
+			responsively_printf(print_buf, "%s%s%sWESOWUTION%s  %dx%d", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->screen_width, user_info->screen_height);
 	if (config_flags->show_shell) // print shell name
 		responsively_printf(print_buf, "%s%s%sSHEWW       %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->shell);
 #if defined(__APPLE__) && !defined(__IPHONE__) // some time ago __IPHONE__ was defined as TARGET_OS_IPHONE, but it was defined also in m1 macs, so I changed it
