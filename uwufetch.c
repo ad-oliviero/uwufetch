@@ -933,7 +933,11 @@ struct info get_info()
 #endif // _WIN32
 
 	// os version, cpu and board info
+#ifdef __OPENBSD__
+	FILE* os_release = popen("echo ID=openbsd", "r"); // os-release does not exist in OpenBSD
+#else
 	FILE* os_release = fopen("/etc/os-release", "r"); // os name file
+#endif
 #ifndef __BSD__
 	FILE* cpuinfo = fopen("/proc/cpuinfo", "r"); // cpu name file for not-freebsd systems
 #else
