@@ -270,6 +270,7 @@ int pkgman(struct info* user_info)
 		 {"nix-store -q --requisites /run/current-system/sw 2> /dev/null | wc -l", "(nix)"},
 		 {"pacman -Qq 2> /dev/null | wc -l", "(pacman)"},
 		 {"pkg info 2>/dev/null | wc -l", "(pkg)"},
+		 {"pkg_info 2>/dev/null | wc -l | sed \"s/ //g\"", "(pkg)"},
 		 {"port installed 2> /dev/null | tail -n +2 | wc -l", "(port)"},
 		 {"brew list 2> /dev/null | wc -l", "(brew)"},
 		 {"rpm -qa --last 2> /dev/null | wc -l", "(rpm)"},
