@@ -28,19 +28,26 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#if defined(__APPLE__) || defined(__FREEBSD__)
+#if defined(__APPLE__) || defined(__BSD__)
 	#include <sys/sysctl.h>
-	#include <time.h>
-#else // defined(__APPLE__) || defined(__FREEBSD__)
-	#ifdef __FREEBSD__
-	#else // defined(__FREEBSD__) || defined(_WIN32)
+	#if defined(__OPENBSD__)
+		#include <sys/time.h>
+	#else
+		#include <time.h>
+	#endif // defined(__OPENBSD__)
+#else	   // defined(__APPLE__) || defined(__BSD__)
+	#ifdef __BSD__
+	#else // defined(__BSD__) || defined(_WIN32)
 		#ifndef _WIN32
-			#include <sys/sysinfo.h>
-		#else // _WIN32
+			#ifndef __OPENBSD__
+				#include <sys/sysinfo.h>
+			#else  // __OPENBSD__
+			#endif // __OPENBSD__
+		#else	   // _WIN32
 			#include <sysinfoapi.h>
 		#endif // _WIN32
-	#endif	   // defined(__FREEBSD__) || defined(_WIN32)
-#endif		   // defined(__APPLE__) || defined(__FREEBSD__)
+	#endif	   // defined(__BSD__) || defined(_WIN32)
+#endif		   // defined(__APPLE__) || defined(__BSD__)
 #ifndef _WIN32
 	#include <sys/ioctl.h>
 	#include <sys/utsname.h>
@@ -263,6 +270,7 @@ int pkgman(struct info* user_info)
 		 {"nix-store -q --requisites /run/current-system/sw 2> /dev/null | wc -l", "(nix)"},
 		 {"pacman -Qq 2> /dev/null | wc -l", "(pacman)"},
 		 {"pkg info 2>/dev/null | wc -l", "(pkg)"},
+		 {"pkg_info 2>/dev/null | wc -l | sed \"s/ //g\"", "(pkg)"},
 		 {"port installed 2> /dev/null | tail -n +2 | wc -l", "(port)"},
 		 {"brew list 2> /dev/null | wc -l", "(brew)"},
 		 {"rpm -qa --last 2> /dev/null | wc -l", "(rpm)"},
@@ -327,7 +335,7 @@ int uptime_apple() {
 }
 #endif
 
-#ifdef __FREEBSD__
+#ifdef __BSD__
 // gets the uptime for freebsd
 int uptime_freebsd() { // this code is from coreutils uptime: https://github.com/coreutils/coreutils/blob/master/src/uptime.c
 	int boot_time		  = 0;
@@ -512,7 +520,7 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
 #ifdef __APPLE__
 			user_info->uptime = uptime_apple();
 #else
-	#ifdef __FREEBSD__
+	#ifdef __BSD__
 			user_info->uptime = uptime_freebsd();
 	#else
 		#ifdef _WIN32
@@ -553,11 +561,11 @@ void write_cache(struct info* user_info) {
 		fprintf(stderr, "Failed to write to %s!", cache_file);
 		return;
 	}
-// writing all info to the cache file
+	// writing all info to the cache file
 #ifdef __APPLE__
 	user_info->uptime = uptime_apple();
 #else
-	#ifdef __FREEBSD__
+	#ifdef __BSD__
 	user_info->uptime = uptime_freebsd();
 	#else
 		#ifndef _WIN32
@@ -580,9 +588,9 @@ void write_cache(struct info* user_info) {
 
 #ifdef __APPLE__
 		/* char brew_command[2048];
-	sprintf(brew_command, "ls $(brew --cellar) | wc -l | awk -F' ' '{print \"
-	\x1b[34mw         w     \x1b[0m\x1b[1mPKGS\x1b[0m        \"$1 \" (brew)\"}'
-	> %s", cache_file); system(brew_command); */
+		 sprintf(brew_command, "ls $(brew --cellar) | wc -l | awk -F' ' '{print \"
+		 \x1b[34mw         w     \x1b[0m\x1b[1mPKGS\x1b[0m        \"$1 \" (brew)\"}'
+		 > %s", cache_file); system(brew_command); */
 #endif
 	fclose(cache_fp);
 	return;
@@ -617,10 +625,10 @@ int read_cache(struct info* user_info) {
 }
 
 /*
-This replaces all terms in a string with another term.
-replace("Hello World!", "World", "everyone")
-This returns "Hello everyone!".
-*/
+	 This replaces all terms in a string with another term.
+	 replace("Hello World!", "World", "everyone")
+	 This returns "Hello everyone!".
+	 */
 void replace(char* original, char* search, char* replacer) {
 	char* ch;
 	char buffer[1024];
@@ -635,10 +643,10 @@ void replace(char* original, char* search, char* replacer) {
 }
 
 /*
-This replaces all terms in a string with another term, case insensitive
-replace("Hello wOrLd!", "WoRlD", "everyone")
-This returns "Hello everyone!".
-*/
+	 This replaces all terms in a string with another term, case insensitive
+	 replace("Hello wOrLd!", "WoRlD", "everyone")
+	 This returns "Hello everyone!".
+	 */
 void replace_ignorecase(char* original, char* search, char* replacer) {
 	char* ch;
 	char buffer[1024];
@@ -712,13 +720,13 @@ void print_ascii(struct info* user_info) {
 int print_cache(struct configuration* config_flags, struct info* user_info) {
 #ifndef __APPLE__
 	#ifndef _WIN32
-		#ifndef __FREEBSD__
+		#ifndef __BSD__
 	sysinfo(&user_info->sys); // to get uptime
 		#endif
 	#endif
 	FILE* meminfo;
 
-	#ifdef __FREEBSD__
+	#ifdef __BSD__
 	meminfo = popen("LANG=EN_us freecolor -om 2> /dev/null", "r"); // free alternative
 	#else
 	// getting memory info from /proc/meminfo: https://github.com/KittyKatt/screenFetch/issues/386#issuecomment-249312716
@@ -915,7 +923,7 @@ struct info get_info()
 	struct info user_info = {0};
 	char buffer[256]; // line buffer
 
-// get terminal width used to truncate long names
+	// get terminal width used to truncate long names
 #ifndef _WIN32
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &user_info.win);
 	user_info.target_width = user_info.win.ws_col - 30;
@@ -926,11 +934,15 @@ struct info get_info()
 #endif // _WIN32
 
 	// os version, cpu and board info
-	FILE* os_release = fopen("/etc/os-release", "r"); // os name file
-#ifndef __FREEBSD__
+#ifdef __OPENBSD__
+	FILE* os_release = popen("echo ID=openbsd", "r"); // os-release does not exist in OpenBSD
+#else
+	FILE* os_release  = fopen("/etc/os-release", "r");	 // os name file
+#endif
+#ifndef __BSD__
 	FILE* cpuinfo = fopen("/proc/cpuinfo", "r"); // cpu name file for not-freebsd systems
 #else
-	FILE* cpuinfo	  = popen("sysctl -a | egrep -i 'hw.model'", "r"); // cpu name command for freebsd
+	FILE* cpuinfo	  = popen("sysctl hw.model", "r"); // cpu name command for freebsd
 #endif
 	// trying to get some kind of information about the name of the computer (hopefully a product full name)
 	FILE* model_fp /* = fopen("/sys/devices/virtual/dmi/id/product_version", "r") */; // trying to get product version
@@ -970,15 +982,23 @@ struct info get_info()
 			break;
 		}
 	}
-#elif defined(__FREEBSD__) || defined(__APPLE__)
-	#if defined(__FREEBSD__)
+#elif defined(__BSD__) || defined(__APPLE__)
+	#if defined(__BSD__) && !defined(__OPENBSD__)
 		#define HOSTCTL "hw.hv_vendor"
 	#elif defined(__APPLE__)
 		#define HOSTCTL "hw.model"
+	#elif defined(__OPENBSD__)
+		#define HOSTCTL "hw.product"
 	#endif
-	model_fp		  = popen("sysctl -a " HOSTCTL, "r");
+	model_fp		  = popen("sysctl " HOSTCTL, "r");
 	while (fgets(buffer, sizeof(buffer), model_fp))
-		if (sscanf(buffer, HOSTCTL ": %[^\n]", user_info.model)) break;
+		if (sscanf(buffer, HOSTCTL
+#ifndef __OPENBSD__
+					": "
+#else
+					"="
+#endif
+					"%[^\n]", user_info.model)) break;
 #endif				  // _WIN32
 	if (os_release) { // get normal vars if os_release exists
 		while (fgets(buffer, sizeof(buffer), os_release) && !(sscanf(buffer, "\nID=\"%s\"", user_info.os_name) || sscanf(buffer, "\nID=%s", user_info.os_name)))
@@ -989,7 +1009,7 @@ struct info get_info()
 			user_info.os_name[os_name_len - 1] = '\0';
 		}
 		/* trying to detect amogos because in its os-release file ID value is just "debian",
-		will be removed when amogos will have an os-release file with ID=amogos */
+			 will be removed when amogos will have an os-release file with ID=amogos */
 		if (strcmp(user_info.os_name, "debian") == 0 || strcmp(user_info.os_name, "raspbian") == 0) {
 			DIR* amogos_plymouth = opendir("/usr/share/plymouth/themes/amogos");
 			if (amogos_plymouth) {
@@ -998,27 +1018,33 @@ struct info get_info()
 			}
 		}
 		/* if (model_fp) { // what the fuck is this? I don't remember writing this code
-			while (fgets(buffer, sizeof(buffer), model_fp) && !(sscanf(buffer, "%[^\n]", user_info.model)))
-				;
-			char version[32];
-			while (fgets(buffer, sizeof(buffer), model_fp)) {
-				if (sscanf(buffer, "%[^\n]", version)) {
-					strcat(user_info.model, " ");
-					strcat(user_info.model, version);
-					break;
-				}
-			}
-		} */
+			 while (fgets(buffer, sizeof(buffer), model_fp) && !(sscanf(buffer, "%[^\n]", user_info.model)))
+			 ;
+			 char version[32];
+			 while (fgets(buffer, sizeof(buffer), model_fp)) {
+			 if (sscanf(buffer, "%[^\n]", version)) {
+			 strcat(user_info.model, " ");
+			 strcat(user_info.model, version);
+			 break;
+			 }
+			 }
+			 } */
 
 		// getting cpu name
 		while (fgets(buffer, sizeof(buffer), cpuinfo)) {
+#ifdef __BSD__
+			if (sscanf(buffer, "hw.model"
 #ifdef __FREEBSD__
-			if (sscanf(buffer, "hw.model: %[^\n]", user_info.cpu_model))
+						": "
+#elif defined(__OPENBSD__)
+						"="
+#endif
+						"%[^\n]", user_info.cpu_model))
 				break;
 #else
 			if (sscanf(buffer, "model name    : %[^\n]", user_info.cpu_model))
 				break;
-#endif // __FREEBSD__
+#endif // __BSD__
 		}
 		// getting username
 		char* tmp_user = getenv("USER");
@@ -1045,7 +1071,7 @@ struct info get_info()
 			model_fp = popen("getprop ro.product.model", "r");
 			while (fgets(buffer, sizeof(buffer), model_fp) && !sscanf(buffer, "%[^\n]", user_info.model))
 				;
-#ifndef __FREEBSD__
+#ifndef __BSD__
 			while (fgets(buffer, sizeof(buffer), cpuinfo) && !sscanf(buffer, "Hardware        : %[^\n]", user_info.cpu_model))
 				;
 #endif
@@ -1063,7 +1089,7 @@ struct info get_info()
 		} else
 			sprintf(user_info.os_name, "unknown"); // if no option before is working, the system is unknown
 	}
-#ifndef __FREEBSD__
+#ifndef __BSD__
 	fclose(cpuinfo);
 #endif
 #ifndef _WIN32
@@ -1073,8 +1099,10 @@ struct info get_info()
 		sprintf(user_info.shell, "%s", "");
 	else
 		sprintf(user_info.shell, "%s", tmp_shell);
-	if (strlen(user_info.shell) > 16) // android shell was too long, this works only for termux
+	#ifdef __linux__
+	if (strlen(user_info.shell) > 16) // android shell name was too long
 		memmove(&user_info.shell, &user_info.shell[27], strlen(user_info.shell));
+	#endif
 #else  // if _WIN32
 	// cpu name
 	cpuinfo = popen("wmic cpu get caption", "r");
@@ -1109,12 +1137,12 @@ struct info get_info()
 #endif // _WIN32
 	truncate_str(user_info.cpu_model, user_info.target_width);
 
-// system resources
+	// system resources
 #ifndef _WIN32
 	uname(&user_info.sys_var);
 #endif // _WIN32
 #ifndef __APPLE__
-	#ifndef __FREEBSD__
+	#ifndef __BSD__
 		#ifndef _WIN32
 	sysinfo(&user_info.sys); // somehow this function has to be called again in print_info()
 		#else
@@ -1143,7 +1171,7 @@ struct info get_info()
 	if (kernel_fp) pclose(kernel_fp);
 #endif // _WIN32
 
-// ram
+	// ram
 #ifndef __APPLE__
 	#ifdef _WIN32
 	FILE* mem_used_fp	   = popen("wmic os get freevirtualmemory", "r");	   // free memory
@@ -1172,25 +1200,37 @@ struct info get_info()
 	#else // if not _WIN32
 	FILE* meminfo;
 
-		#ifdef __FREEBSD__
+		#ifdef __BSD__
+			#ifndef __OPENBSD__
 	meminfo = popen("LANG=EN_us freecolor -om 2> /dev/null", "r"); // free alternative for freebsd
+			#else
+	meminfo = popen("LANG=EN_us vmstat 2> /dev/null | grep -v 'procs' | grep -v 'r' | awk '{print $3 \" / \" $4}'", "r"); // free alternative for openbsd
+			#endif
 		#else
 	// getting memory info from /proc/meminfo: https://github.com/KittyKatt/screenFetch/issues/386#issuecomment-249312716
 	meminfo = fopen("/proc/meminfo", "r"); // popen("LANG=EN_us free -m 2> /dev/null", "r"); // get ram info with free
 		#endif
 	// brackets are here to restrict the access to this int variables, which are temporary
 	{
+		#ifndef __OPENBSD__
 		int memtotal = 0, shmem = 0, memfree = 0, buffers = 0, cached = 0, sreclaimable = 0;
+		#endif
 		while (fgets(buffer, sizeof(buffer), meminfo)) {
+		#ifndef __OPENBSD__
 			sscanf(buffer, "MemTotal:       %d", &memtotal);
 			sscanf(buffer, "Shmem:             %d", &shmem);
 			sscanf(buffer, "MemFree:        %d", &memfree);
 			sscanf(buffer, "Buffers:          %d", &buffers);
 			sscanf(buffer, "Cached:          %d", &cached);
 			sscanf(buffer, "SReclaimable:     %d", &sreclaimable);
+		#else
+			sscanf(buffer, "%dM / %dM", &user_info.ram_used, &user_info.ram_total);
+		#endif
 		}
+		#ifndef __OPENBSD__
 		user_info.ram_total = memtotal / 1024;
 		user_info.ram_used	= ((memtotal + shmem) - (memfree + buffers + cached + sreclaimable)) / 1024;
+		#endif
 	}
 
 	// while (fgets(buffer, sizeof(buffer), meminfo)) // old way to get ram usage that uses the "free" command
@@ -1271,7 +1311,7 @@ struct info get_info()
 		truncate_str(user_info.gpu_model[i], user_info.target_width);
 	}
 
-// Resolution
+	// Resolution
 #ifndef _WIN32
 	FILE* resolution = popen("xwininfo -root 2> /dev/null | grep -E 'Width|Height'", "r");
 	while (fgets(buffer, sizeof(buffer), resolution)) {
@@ -1281,7 +1321,7 @@ struct info get_info()
 #endif
 	if (strcmp(user_info.os_name, "windows")) MOVE_CURSOR = "\033[21C"; // to print windows logo on not windows systems
 
-// package count
+		// package count
 #ifdef _WIN32
 	user_info.pkgs = pkgman(&user_info, config_flags);
 #else  // _WIN32
@@ -1297,8 +1337,8 @@ struct info get_info()
 }
 
 /* prints distribution list
-distributions are listed by distribution branch
-to make the output easier to understand by the user.*/
+	 distributions are listed by distribution branch
+	 to make the output easier to understand by the user.*/
 void list(char* arg) {
 	printf("%s -d <options>\n"
 		   "  Available distributions:\n"

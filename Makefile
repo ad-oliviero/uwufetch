@@ -22,8 +22,15 @@ else ifeq ($(PLATFORM), Darwin)
 	ETC_DIR		= /etc
 	MANDIR		= local/share/man/man1
 else ifeq ($(PLATFORM), FreeBSD)
-	CFLAGS		+= -D__FREEBSD__
-	CFLAGS_DEBUG += -D__FREEBSD__
+	CFLAGS		+= -D__FREEBSD__ -D__BSD__
+	CFLAGS_DEBUG += -D__FREEBSD__ -D__BSD__
+	PREFIX		= bin
+	LIBDIR		= lib
+	ETC_DIR		= /etc
+	MANDIR		= share/man/man1
+else ifeq ($(PLATFORM), OpenBSD)
+	CFLAGS		+= -D__OPENBSD__ -D__BSD__
+	CFLAGS_DEBUG += -D__OPENBSD__ -D__BSD__
 	PREFIX		= bin
 	LIBDIR		= lib
 	ETC_DIR		= /etc
