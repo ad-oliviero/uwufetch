@@ -1180,24 +1180,36 @@ struct info get_info()
 	FILE* meminfo;
 
 		#ifdef __BSD__
+			#ifndef __OPENBSD__
 	meminfo = popen("LANG=EN_us freecolor -om 2> /dev/null", "r"); // free alternative for freebsd
+			#else
+	meminfo = popen("LANG=EN_us vmstat 2> /dev/null | grep -v 'procs' | grep -v 'r' | awk '{print $3 \" / \" $4}'", "r"); // free alternative for openbsd
+			#endif
 		#else
 	// getting memory info from /proc/meminfo: https://github.com/KittyKatt/screenFetch/issues/386#issuecomment-249312716
 	meminfo = fopen("/proc/meminfo", "r"); // popen("LANG=EN_us free -m 2> /dev/null", "r"); // get ram info with free
 		#endif
 	// brackets are here to restrict the access to this int variables, which are temporary
 	{
+		#ifndef __OPENBSD__
 		int memtotal = 0, shmem = 0, memfree = 0, buffers = 0, cached = 0, sreclaimable = 0;
+		#endif
 		while (fgets(buffer, sizeof(buffer), meminfo)) {
+		#ifndef __OPENBSD__
 			sscanf(buffer, "MemTotal:       %d", &memtotal);
 			sscanf(buffer, "Shmem:             %d", &shmem);
 			sscanf(buffer, "MemFree:        %d", &memfree);
 			sscanf(buffer, "Buffers:          %d", &buffers);
 			sscanf(buffer, "Cached:          %d", &cached);
 			sscanf(buffer, "SReclaimable:     %d", &sreclaimable);
+		#else
+			sscanf(buffer, "%dM / %dM", &user_info.ram_used, &user_info.ram_total);
+		#endif
 		}
+		#ifndef __OPENBSD__
 		user_info.ram_total = memtotal / 1024;
 		user_info.ram_used	= ((memtotal + shmem) - (memfree + buffers + cached + sreclaimable)) / 1024;
+		#endif
 	}
 
 	// while (fgets(buffer, sizeof(buffer), meminfo)) // old way to get ram usage that uses the "free" command
