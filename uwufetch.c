@@ -936,7 +936,7 @@ struct info get_info()
 #ifdef __OPENBSD__
 	FILE* os_release = popen("echo ID=openbsd", "r"); // os-release does not exist in OpenBSD
 #else
-	FILE* os_release = fopen("/etc/os-release", "r"); // os name file
+	FILE* os_release  = fopen("/etc/os-release", "r");				   // os name file
 #endif
 #ifndef __BSD__
 	FILE* cpuinfo = fopen("/proc/cpuinfo", "r"); // cpu name file for not-freebsd systems
@@ -1084,8 +1084,10 @@ struct info get_info()
 		sprintf(user_info.shell, "%s", "");
 	else
 		sprintf(user_info.shell, "%s", tmp_shell);
-	if (strlen(user_info.shell) > 16) // android shell was too long, this works only for termux
+	#ifdef __linux__
+	if (strlen(user_info.shell) > 16) // android shell name was too long
 		memmove(&user_info.shell, &user_info.shell[27], strlen(user_info.shell));
+	#endif
 #else  // if _WIN32
 	// cpu name
 	cpuinfo = popen("wmic cpu get caption", "r");
