@@ -28,16 +28,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#if defined(__APPLE__) || defined(__FREEBSD__)
+#if defined(__APPLE__) || defined(__BSD__)
 	#include <sys/sysctl.h>
 	#if defined(__OPENBSD__)
 		#include <sys/time.h>
 	#else
 		#include <time.h>
 	#endif // defined(__OPENBSD__)
-#else	   // defined(__APPLE__) || defined(__FREEBSD__)
-	#ifdef __FREEBSD__
-	#else // defined(__FREEBSD__) || defined(_WIN32)
+#else	   // defined(__APPLE__) || defined(__BSD__)
+	#ifdef __BSD__
+	#else // defined(__BSD__) || defined(_WIN32)
 		#ifndef _WIN32
 			#ifndef __OPENBSD__
 				#include <sys/sysinfo.h>
@@ -46,8 +46,8 @@
 		#else	   // _WIN32
 			#include <sysinfoapi.h>
 		#endif // _WIN32
-	#endif	   // defined(__FREEBSD__) || defined(_WIN32)
-#endif		   // defined(__APPLE__) || defined(__FREEBSD__)
+	#endif	   // defined(__BSD__) || defined(_WIN32)
+#endif		   // defined(__APPLE__) || defined(__BSD__)
 #ifndef _WIN32
 	#include <sys/ioctl.h>
 	#include <sys/utsname.h>
@@ -334,7 +334,7 @@ int uptime_apple() {
 }
 #endif
 
-#ifdef __FREEBSD__
+#ifdef __BSD__
 // gets the uptime for freebsd
 int uptime_freebsd() { // this code is from coreutils uptime: https://github.com/coreutils/coreutils/blob/master/src/uptime.c
 	int boot_time		  = 0;
@@ -519,7 +519,7 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
 #ifdef __APPLE__
 			user_info->uptime = uptime_apple();
 #else
-	#ifdef __FREEBSD__
+	#ifdef __BSD__
 			user_info->uptime = uptime_freebsd();
 	#else
 		#ifdef _WIN32
@@ -564,7 +564,7 @@ void write_cache(struct info* user_info) {
 #ifdef __APPLE__
 	user_info->uptime = uptime_apple();
 #else
-	#ifdef __FREEBSD__
+	#ifdef __BSD__
 	user_info->uptime = uptime_freebsd();
 	#else
 		#ifndef _WIN32
@@ -719,13 +719,13 @@ void print_ascii(struct info* user_info) {
 int print_cache(struct configuration* config_flags, struct info* user_info) {
 #ifndef __APPLE__
 	#ifndef _WIN32
-		#ifndef __FREEBSD__
+		#ifndef __BSD__
 	sysinfo(&user_info->sys); // to get uptime
 		#endif
 	#endif
 	FILE* meminfo;
 
-	#ifdef __FREEBSD__
+	#ifdef __BSD__
 	meminfo = popen("LANG=EN_us freecolor -om 2> /dev/null", "r"); // free alternative
 	#else
 	// getting memory info from /proc/meminfo: https://github.com/KittyKatt/screenFetch/issues/386#issuecomment-249312716
@@ -934,7 +934,7 @@ struct info get_info()
 
 	// os version, cpu and board info
 	FILE* os_release = fopen("/etc/os-release", "r"); // os name file
-#ifndef __FREEBSD__
+#ifndef __BSD__
 	FILE* cpuinfo = fopen("/proc/cpuinfo", "r"); // cpu name file for not-freebsd systems
 #else
 	FILE* cpuinfo	  = popen("sysctl -a | egrep -i 'hw.model'", "r"); // cpu name command for freebsd
@@ -977,8 +977,8 @@ struct info get_info()
 			break;
 		}
 	}
-#elif defined(__FREEBSD__) || defined(__APPLE__)
-	#if defined(__FREEBSD__)
+#elif defined(__BSD__) || defined(__APPLE__)
+	#if defined(__BSD__)
 		#define HOSTCTL "hw.hv_vendor"
 	#elif defined(__APPLE__)
 		#define HOSTCTL "hw.model"
@@ -1019,13 +1019,13 @@ struct info get_info()
 
 		// getting cpu name
 		while (fgets(buffer, sizeof(buffer), cpuinfo)) {
-#ifdef __FREEBSD__
+#ifdef __BSD__
 			if (sscanf(buffer, "hw.model: %[^\n]", user_info.cpu_model))
 				break;
 #else
 			if (sscanf(buffer, "model name    : %[^\n]", user_info.cpu_model))
 				break;
-#endif // __FREEBSD__
+#endif // __BSD__
 		}
 		// getting username
 		char* tmp_user = getenv("USER");
@@ -1052,7 +1052,7 @@ struct info get_info()
 			model_fp = popen("getprop ro.product.model", "r");
 			while (fgets(buffer, sizeof(buffer), model_fp) && !sscanf(buffer, "%[^\n]", user_info.model))
 				;
-#ifndef __FREEBSD__
+#ifndef __BSD__
 			while (fgets(buffer, sizeof(buffer), cpuinfo) && !sscanf(buffer, "Hardware        : %[^\n]", user_info.cpu_model))
 				;
 #endif
@@ -1070,7 +1070,7 @@ struct info get_info()
 		} else
 			sprintf(user_info.os_name, "unknown"); // if no option before is working, the system is unknown
 	}
-#ifndef __FREEBSD__
+#ifndef __BSD__
 	fclose(cpuinfo);
 #endif
 #ifndef _WIN32
@@ -1121,7 +1121,7 @@ struct info get_info()
 	uname(&user_info.sys_var);
 #endif // _WIN32
 #ifndef __APPLE__
-	#ifndef __FREEBSD__
+	#ifndef __BSD__
 		#ifndef _WIN32
 	sysinfo(&user_info.sys); // somehow this function has to be called again in print_info()
 		#else
@@ -1179,7 +1179,7 @@ struct info get_info()
 	#else // if not _WIN32
 	FILE* meminfo;
 
-		#ifdef __FREEBSD__
+		#ifdef __BSD__
 	meminfo = popen("LANG=EN_us freecolor -om 2> /dev/null", "r"); // free alternative for freebsd
 		#else
 	// getting memory info from /proc/meminfo: https://github.com/KittyKatt/screenFetch/issues/386#issuecomment-249312716
