@@ -937,12 +937,12 @@ struct info get_info()
 #ifdef __OPENBSD__
 	FILE* os_release = popen("echo ID=openbsd", "r"); // os-release does not exist in OpenBSD
 #else
-	FILE* os_release  = fopen("/etc/os-release", "r");				   // os name file
+	FILE* os_release  = fopen("/etc/os-release", "r");	 // os name file
 #endif
 #ifndef __BSD__
 	FILE* cpuinfo = fopen("/proc/cpuinfo", "r"); // cpu name file for not-freebsd systems
 #else
-	FILE* cpuinfo	  = popen("sysctl -a | egrep -i 'hw.model'", "r"); // cpu name command for freebsd
+	FILE* cpuinfo	  = popen("sysctl 'hw.model'", "r"); // cpu name command for freebsd
 #endif
 	// trying to get some kind of information about the name of the computer (hopefully a product full name)
 	FILE* model_fp /* = fopen("/sys/devices/virtual/dmi/id/product_version", "r") */; // trying to get product version
@@ -983,14 +983,18 @@ struct info get_info()
 		}
 	}
 #elif defined(__BSD__) || defined(__APPLE__)
-	#if defined(__BSD__)
+	#if defined(__BSD__) && !defined(__OPENBSD__)
 		#define HOSTCTL "hw.hv_vendor"
-	#elif defined(__APPLE__)
+	#elif defined(__APPLE__) || defined(__OPENBSD__)
 		#define HOSTCTL "hw.model"
 	#endif
-	model_fp		  = popen("sysctl -a " HOSTCTL, "r");
+	model_fp		  = popen("sysctl " HOSTCTL, "r");
 	while (fgets(buffer, sizeof(buffer), model_fp))
+	#if defined(__FREEBSD__) || defined(__APPLE__)
 		if (sscanf(buffer, HOSTCTL ": %[^\n]", user_info.model)) break;
+	#elif defined(__OPENBSD__)
+		if (sscanf(buffer, HOSTCTL "=%[^\n]", user_info.model)) break;
+	#endif
 #endif				  // _WIN32
 	if (os_release) { // get normal vars if os_release exists
 		while (fgets(buffer, sizeof(buffer), os_release) && !(sscanf(buffer, "\nID=\"%s\"", user_info.os_name) || sscanf(buffer, "\nID=%s", user_info.os_name)))
