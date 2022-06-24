@@ -30,13 +30,20 @@
 #include <unistd.h>
 #if defined(__APPLE__) || defined(__FREEBSD__)
 	#include <sys/sysctl.h>
-	#include <time.h>
-#else // defined(__APPLE__) || defined(__FREEBSD__)
+	#if defined(__OPENBSD__)
+		#include <sys/time.h>
+	#else
+		#include <time.h>
+	#endif // defined(__OPENBSD__)
+#else	   // defined(__APPLE__) || defined(__FREEBSD__)
 	#ifdef __FREEBSD__
 	#else // defined(__FREEBSD__) || defined(_WIN32)
 		#ifndef _WIN32
-			#include <sys/sysinfo.h>
-		#else // _WIN32
+			#ifndef __OPENBSD__
+				#include <sys/sysinfo.h>
+			#else  // __OPENBSD__
+			#endif // __OPENBSD__
+		#else	   // _WIN32
 			#include <sysinfoapi.h>
 		#endif // _WIN32
 	#endif	   // defined(__FREEBSD__) || defined(_WIN32)
@@ -553,7 +560,7 @@ void write_cache(struct info* user_info) {
 		fprintf(stderr, "Failed to write to %s!", cache_file);
 		return;
 	}
-// writing all info to the cache file
+	// writing all info to the cache file
 #ifdef __APPLE__
 	user_info->uptime = uptime_apple();
 #else
@@ -580,9 +587,9 @@ void write_cache(struct info* user_info) {
 
 #ifdef __APPLE__
 		/* char brew_command[2048];
-	sprintf(brew_command, "ls $(brew --cellar) | wc -l | awk -F' ' '{print \"
-	\x1b[34mw         w     \x1b[0m\x1b[1mPKGS\x1b[0m        \"$1 \" (brew)\"}'
-	> %s", cache_file); system(brew_command); */
+		 sprintf(brew_command, "ls $(brew --cellar) | wc -l | awk -F' ' '{print \"
+		 \x1b[34mw         w     \x1b[0m\x1b[1mPKGS\x1b[0m        \"$1 \" (brew)\"}'
+		 > %s", cache_file); system(brew_command); */
 #endif
 	fclose(cache_fp);
 	return;
@@ -617,10 +624,10 @@ int read_cache(struct info* user_info) {
 }
 
 /*
-This replaces all terms in a string with another term.
-replace("Hello World!", "World", "everyone")
-This returns "Hello everyone!".
-*/
+	 This replaces all terms in a string with another term.
+	 replace("Hello World!", "World", "everyone")
+	 This returns "Hello everyone!".
+	 */
 void replace(char* original, char* search, char* replacer) {
 	char* ch;
 	char buffer[1024];
@@ -635,10 +642,10 @@ void replace(char* original, char* search, char* replacer) {
 }
 
 /*
-This replaces all terms in a string with another term, case insensitive
-replace("Hello wOrLd!", "WoRlD", "everyone")
-This returns "Hello everyone!".
-*/
+	 This replaces all terms in a string with another term, case insensitive
+	 replace("Hello wOrLd!", "WoRlD", "everyone")
+	 This returns "Hello everyone!".
+	 */
 void replace_ignorecase(char* original, char* search, char* replacer) {
 	char* ch;
 	char buffer[1024];
@@ -915,7 +922,7 @@ struct info get_info()
 	struct info user_info = {0};
 	char buffer[256]; // line buffer
 
-// get terminal width used to truncate long names
+	// get terminal width used to truncate long names
 #ifndef _WIN32
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &user_info.win);
 	user_info.target_width = user_info.win.ws_col - 30;
@@ -989,7 +996,7 @@ struct info get_info()
 			user_info.os_name[os_name_len - 1] = '\0';
 		}
 		/* trying to detect amogos because in its os-release file ID value is just "debian",
-		will be removed when amogos will have an os-release file with ID=amogos */
+			 will be removed when amogos will have an os-release file with ID=amogos */
 		if (strcmp(user_info.os_name, "debian") == 0 || strcmp(user_info.os_name, "raspbian") == 0) {
 			DIR* amogos_plymouth = opendir("/usr/share/plymouth/themes/amogos");
 			if (amogos_plymouth) {
@@ -998,17 +1005,17 @@ struct info get_info()
 			}
 		}
 		/* if (model_fp) { // what the fuck is this? I don't remember writing this code
-			while (fgets(buffer, sizeof(buffer), model_fp) && !(sscanf(buffer, "%[^\n]", user_info.model)))
-				;
-			char version[32];
-			while (fgets(buffer, sizeof(buffer), model_fp)) {
-				if (sscanf(buffer, "%[^\n]", version)) {
-					strcat(user_info.model, " ");
-					strcat(user_info.model, version);
-					break;
-				}
-			}
-		} */
+			 while (fgets(buffer, sizeof(buffer), model_fp) && !(sscanf(buffer, "%[^\n]", user_info.model)))
+			 ;
+			 char version[32];
+			 while (fgets(buffer, sizeof(buffer), model_fp)) {
+			 if (sscanf(buffer, "%[^\n]", version)) {
+			 strcat(user_info.model, " ");
+			 strcat(user_info.model, version);
+			 break;
+			 }
+			 }
+			 } */
 
 		// getting cpu name
 		while (fgets(buffer, sizeof(buffer), cpuinfo)) {
@@ -1109,7 +1116,7 @@ struct info get_info()
 #endif // _WIN32
 	truncate_str(user_info.cpu_model, user_info.target_width);
 
-// system resources
+	// system resources
 #ifndef _WIN32
 	uname(&user_info.sys_var);
 #endif // _WIN32
@@ -1143,7 +1150,7 @@ struct info get_info()
 	if (kernel_fp) pclose(kernel_fp);
 #endif // _WIN32
 
-// ram
+	// ram
 #ifndef __APPLE__
 	#ifdef _WIN32
 	FILE* mem_used_fp	   = popen("wmic os get freevirtualmemory", "r");	   // free memory
@@ -1271,7 +1278,7 @@ struct info get_info()
 		truncate_str(user_info.gpu_model[i], user_info.target_width);
 	}
 
-// Resolution
+	// Resolution
 #ifndef _WIN32
 	FILE* resolution = popen("xwininfo -root 2> /dev/null | grep -E 'Width|Height'", "r");
 	while (fgets(buffer, sizeof(buffer), resolution)) {
@@ -1281,7 +1288,7 @@ struct info get_info()
 #endif
 	if (strcmp(user_info.os_name, "windows")) MOVE_CURSOR = "\033[21C"; // to print windows logo on not windows systems
 
-// package count
+		// package count
 #ifdef _WIN32
 	user_info.pkgs = pkgman(&user_info, config_flags);
 #else  // _WIN32
@@ -1297,8 +1304,8 @@ struct info get_info()
 }
 
 /* prints distribution list
-distributions are listed by distribution branch
-to make the output easier to understand by the user.*/
+	 distributions are listed by distribution branch
+	 to make the output easier to understand by the user.*/
 void list(char* arg) {
 	printf("%s -d <options>\n"
 		   "  Available distributions:\n"

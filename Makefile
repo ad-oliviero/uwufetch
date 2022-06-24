@@ -28,6 +28,13 @@ else ifeq ($(PLATFORM), FreeBSD)
 	LIBDIR		= lib
 	ETC_DIR		= /etc
 	MANDIR		= share/man/man1
+else ifeq ($(PLATFORM), BSD)
+	CFLAGS		+= -D__OPENBSD__
+	CFLAGS_DEBUG += -D__OPENBSD__
+	PREFIX		= bin
+	LIBDIR		= lib
+	ETC_DIR		= /etc
+	MANDIR		= share/man/man1
 else ifeq ($(PLATFORM), windows32)
 	CC		= gcc
 	PREFIX		= "C:\Program Files"
