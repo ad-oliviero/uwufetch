@@ -59,6 +59,7 @@ install: build
 uninstall:
 	rm -f $(DESTDIR)/$(PREFIX)/$(NAME)
 	rm -rf $(DESTDIR)/$(LIBDIR)/uwufetch
+	rm -rf $(ETC_DIR)/uwufetch
 	rm -f $(DESTDIR)/$(MANDIR)/$(NAME).1.gz
 
 clean:
