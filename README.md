@@ -30,6 +30,11 @@ KDE NeOwOn, nixOwOs, xuwulinux; Plus FweeBSD, OwOpenBSD, macOwOS and iOwOS; Plus
 
 ### Via package manager
 
+Arch (Official Repos)
+
+[![uwufetch](https://img.shields.io/archlinux/v/community/x86_64/uwufetch?label=uwufetch&logo=arch-linux&style=for-the-badge)](https://archlinux.org/packages/community/x86_64/uwufetch/)
+
+
 From the AUR
 
 [![uwufetch](https://img.shields.io/aur/version/uwufetch?color=1793d1&label=uwufetch&logo=arch-linux&style=for-the-badge)](https://aur.archlinux.org/packages/uwufetch/)
