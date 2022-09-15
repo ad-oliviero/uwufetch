@@ -22,6 +22,8 @@ KDE NeOwOn, nixOwOs, xuwulinux; Plus FweeBSD, OwOpenBSD, macOwOS and iOwOS; Plus
 
 - [freecolor](http://www.rkeene.org/oss/freecolor/) to get ram usage on FreeBSD.
 
+- [musl libc](https://www.musl-libc.org/) if you are on a non-gnu system (such as [alpine linux](https://pkgs.alpinelinux.org/package/edge/main/x86_64/musl-dev))
+
 - [xwininfo](https://github.com/freedesktop/xorg-xwininfo) to get screen resolution.
 
 - [viu](https://github.com/atanunq/viu) (optional) to use images instead of ascii art (see [How to use images](#how-to-use-images) below).
