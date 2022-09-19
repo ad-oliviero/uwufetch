@@ -1,9 +1,11 @@
 NAME = uwufetch
-FILES = uwufetch.c
+BIN_FILES = uwufetch.c
+LIB_FILES = fetch.c
 UWUFETCH_VERSION = UWUFETCH_VERSION="\"$(shell git describe --tags)\""
 CFLAGS = -O3 -D$(UWUFETCH_VERSION)
 CFLAGS_DEBUG = -Wall -Wextra -g -pthread -D$(UWUFETCH_VERSION)
 CC = cc
+AR = ar
 DESTDIR = /usr
 PLATFORM = $(shell uname)
 
@@ -42,11 +44,16 @@ else ifeq ($(PLATFORM), windows32)
 	MANDIR		=
 endif
 
-build: $(FILES)
-	$(CC) $(CFLAGS) -o $(NAME) $(FILES)
+build: $(BIN_FILES) lib
+	$(CC) $(CFLAGS) -o $(NAME) $(BIN_FILES) lib$(LIB_FILES:.c=.a)
+
+lib: $(LIB_FILES)
+	$(CC) $(CFLAGS) -fPIC -c -o $(LIB_FILES:.c=.o) $(LIB_FILES)
+	$(AR) rcs lib$(LIB_FILES:.c=.a) $(LIB_FILES:.c=.o)
+	$(CC) $(CFLAGS) -shared -o lib$(LIB_FILES:.c=.so) $(LIB_FILES:.c=.o)
 
 debug:
-	$(CC) $(CFLAGS_DEBUG) -o $(NAME) $(FILES)
+	$(CC) $(CFLAGS_DEBUG) -o $(NAME) $(BIN_FILES)
 	./$(NAME)
 
 install: build
@@ -63,7 +70,7 @@ uninstall:
 	rm -f $(DESTDIR)/$(MANDIR)/$(NAME).1.gz
 
 clean:
-	rm $(NAME)
+	rm $(NAME) *.o *.so *.a
 
 man:
 	gzip --keep $(NAME).1
