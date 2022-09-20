@@ -52,8 +52,8 @@ lib: $(LIB_FILES)
 	$(AR) rcs lib$(LIB_FILES:.c=.a) $(LIB_FILES:.c=.o)
 	$(CC) $(CFLAGS) -shared -o lib$(LIB_FILES:.c=.so) $(LIB_FILES:.c=.o)
 
-debug:
-	$(CC) $(CFLAGS_DEBUG) -o $(NAME) $(BIN_FILES)
+debug: CFLAGS = $(CFLAGS_DEBUG)
+debug: build
 	./$(NAME)
 
 install: build

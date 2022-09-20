@@ -40,23 +40,20 @@
 #ifdef _WIN32
 	#define BLOCK_CHAR "\xdb"	// block char for colors
 char* MOVE_CURSOR = "\033[21C"; // moves the cursor after printing the image or the ascii logo
-#else							// _WIN32
+#else
 	#define BLOCK_CHAR "\u2587"
 char* MOVE_CURSOR = "\033[18C";
 #endif // _WIN32
 
 // all configuration flags available
 struct configuration {
-	int
-		// when (0) ascii is printed, when (1) image is printed
-		ascii_image_flag,
-		show_user_info, // all the following flags are 1 (true) by default
+	int ascii_image_flag, // when (0) ascii is printed, when (1) image is printed
+		show_user_info,	  // all the following flags are 1 (true) by default
 		show_os,
 		show_host,
 		show_kernel,
 		show_cpu,
-		// if show_gpu[0] == -2, all gpus are shown, if == -3 no gpu is shown
-		show_gpu[256],
+		show_gpu[256], // if show_gpu[0] == -2, all gpus are shown, if == -3 no gpu is shown
 		show_ram,
 		show_resolution,
 		show_shell,
@@ -184,6 +181,44 @@ void print_image(struct info* user_info) {
 #endif
 }
 
+/*
+	This replaces all terms in a string with another term.
+	replace("Hello World!", "World", "everyone")
+	This returns "Hello everyone!".
+*/
+void replace(char* original, char* search, char* replacer) {
+	char* ch;
+	char buffer[1024];
+	while ((ch = strstr(original, search))) {
+		ch = strstr(original, search);
+		strncpy(buffer, original, ch - original);
+		buffer[ch - original] = 0;
+		sprintf(buffer + (ch - original), "%s%s", replacer, ch + strlen(search));
+		original[0] = 0;
+		strcpy(original, buffer);
+	}
+}
+
+/*
+	This replaces all terms in a string with another term, case insensitive
+	replace("Hello wOrLd!", "WoRlD", "everyone")
+	This returns "Hello everyone!".
+*/
+void replace_ignorecase(char* original, char* search, char* replacer) {
+	char* ch;
+	char buffer[1024];
+#ifdef _WIN32
+	#define strcasestr(o, s) strstr(o, s)
+#endif
+	while ((ch = strcasestr(original, search))) {
+		strncpy(buffer, original, ch - original);
+		buffer[ch - original] = 0;
+		sprintf(buffer + (ch - original), "%s%s", replacer, ch + strlen(search));
+		original[0] = 0;
+		strcpy(original, buffer);
+	}
+}
+
 // uwufies distro name
 void uwu_name(struct configuration* config_flags, struct info* user_info) {
 #define STRING_TO_UWU(original, uwufied)           \
@@ -237,6 +272,102 @@ void uwu_name(struct configuration* config_flags, struct info* user_info) {
 		}
 	}
 #undef STRING_TO_UWU
+}
+
+// uwufies kernel name
+void uwu_kernel(char* kernel) {
+#define KERNEL_TO_UWU(str, original, uwufied) \
+	if (strcmp(str, original) == 0) sprintf(str, "%s", uwufied)
+
+	char* temp_kernel = kernel;
+	char* token;
+	char splitted[16][128] = {};
+
+	int count = 0;
+	while ((token = strsep(&temp_kernel, " "))) { // split kernel name
+		strcpy(splitted[count], token);
+		count++;
+	}
+	strcpy(kernel, "");
+	for (int i = 0; i < 16; i++) {
+		// replace kernel name with uwufied version
+		KERNEL_TO_UWU(splitted[i], "Linux", "Linuwu");
+		else KERNEL_TO_UWU(splitted[i], "linux", "linuwu");
+		else KERNEL_TO_UWU(splitted[i], "alpine", "Nyalpine");
+		else KERNEL_TO_UWU(splitted[i], "amogos", "AmogOwOS");
+		else KERNEL_TO_UWU(splitted[i], "arch", "Nyarch Linuwu");
+		else KERNEL_TO_UWU(splitted[i], "artix", "Nyartix Linuwu");
+		else KERNEL_TO_UWU(splitted[i], "debian", "Debinyan");
+		else KERNEL_TO_UWU(splitted[i], "endeavouros", "endeavOwO");
+		else KERNEL_TO_UWU(splitted[i], "EndeavourOS", "endeavOwO");
+		else KERNEL_TO_UWU(splitted[i], "fedora", "Fedowa");
+		else KERNEL_TO_UWU(splitted[i], "gentoo", "GentOwO");
+		else KERNEL_TO_UWU(splitted[i], "gnu", "gnUwU");
+		else KERNEL_TO_UWU(splitted[i], "guix", "gnUwU gUwUix");
+		else KERNEL_TO_UWU(splitted[i], "linuxmint", "LinUWU Miwint");
+		else KERNEL_TO_UWU(splitted[i], "manjaro", "Myanjawo");
+		else KERNEL_TO_UWU(splitted[i], "manjaro-arm", "Myanjawo AWM");
+		else KERNEL_TO_UWU(splitted[i], "neon", "KDE NeOwOn");
+		else KERNEL_TO_UWU(splitted[i], "nixos", "nixOwOs");
+		else KERNEL_TO_UWU(splitted[i], "opensuse-leap", "OwOpenSUSE Leap");
+		else KERNEL_TO_UWU(splitted[i], "opensuse-tumbleweed", "OwOpenSUSE Tumbleweed");
+		else KERNEL_TO_UWU(splitted[i], "pop", "PopOwOS");
+		else KERNEL_TO_UWU(splitted[i], "raspbian", "RaspNyan");
+		else KERNEL_TO_UWU(splitted[i], "slackware", "Swackwawe");
+		else KERNEL_TO_UWU(splitted[i], "solus", "sOwOlus");
+		else KERNEL_TO_UWU(splitted[i], "ubuntu", "Uwuntu");
+		else KERNEL_TO_UWU(splitted[i], "void", "OwOid");
+		else KERNEL_TO_UWU(splitted[i], "xerolinux", "xuwulinux");
+		else KERNEL_TO_UWU(splitted[i], "android", "Nyandroid"); // android at the end because it could be not considered as an actual distribution of gnu/linux
+
+		// BSD
+		else KERNEL_TO_UWU(splitted[i], "freebsd", "FweeBSD");
+		else KERNEL_TO_UWU(splitted[i], "openbsd", "OwOpenBSD");
+
+		// Apple family
+		else KERNEL_TO_UWU(splitted[i], "macos", "macOwOS");
+		else KERNEL_TO_UWU(splitted[i], "ios", "iOwOS");
+
+		// Windows
+		else KERNEL_TO_UWU(splitted[i], "windows", "WinyandOwOws");
+
+		if (i != 0) strcat(kernel, " ");
+		strcat(kernel, splitted[i]);
+	}
+#undef KERNEL_TO_UWU
+}
+
+// uwufies hardware names
+void uwu_hw(char* hwname) {
+#define HW_TO_UWU(original, uwuified) \
+	replace_ignorecase(hwname, original, uwuified);
+	HW_TO_UWU("lenovo", "LenOwO")
+	HW_TO_UWU("cpu", "CC\bPUwU"); // for some reasons this caused a segfault, using a \b (backspace) char fixes it
+	HW_TO_UWU("gpu", "GG\bPUwU")
+	HW_TO_UWU("graphics", "Gwaphics")
+	HW_TO_UWU("corporation", "COwOpowation")
+	HW_TO_UWU("nvidia", "NyaVIDIA")
+	HW_TO_UWU("mobile", "Mwobile")
+	HW_TO_UWU("intel", "Inteww")
+	HW_TO_UWU("radeon", "Radenyan")
+	HW_TO_UWU("geforce", "GeFOwOce")
+	HW_TO_UWU("raspberry", "Nyasberry")
+	HW_TO_UWU("broadcom", "Bwoadcom")
+	HW_TO_UWU("motorola", "MotOwOwa")
+	HW_TO_UWU("proliant", "ProLinyant")
+	HW_TO_UWU("poweredge", "POwOwEdge")
+	HW_TO_UWU("apple", "Nyaa\bpple")
+	HW_TO_UWU("electronic", "ElectrOwOnic")
+#undef HW_TO_UWU
+}
+
+// uwufies everything
+void uwufy_all(struct info* user_info) {
+	if (strcmp(user_info->os_name, "windows")) MOVE_CURSOR = "\033[21C"; // to print windows logo on not windows systems
+	uwu_kernel(user_info->kernel);
+	for (int i = 0; user_info->gpu_model[i][0]; i++) uwu_hw(user_info->gpu_model[i]);
+	uwu_hw(user_info->cpu_model);
+	uwu_hw(user_info->model);
 }
 
 // prints all the collected info and returns the number of printed lines
@@ -420,44 +551,6 @@ int read_cache(struct info* user_info) {
 	return 1;
 }
 
-/*
-	 This replaces all terms in a string with another term.
-	 replace("Hello World!", "World", "everyone")
-	 This returns "Hello everyone!".
-	 */
-void replace(char* original, char* search, char* replacer) {
-	char* ch;
-	char buffer[1024];
-	while ((ch = strstr(original, search))) {
-		ch = strstr(original, search);
-		strncpy(buffer, original, ch - original);
-		buffer[ch - original] = 0;
-		sprintf(buffer + (ch - original), "%s%s", replacer, ch + strlen(search));
-		original[0] = 0;
-		strcpy(original, buffer);
-	}
-}
-
-/*
-	 This replaces all terms in a string with another term, case insensitive
-	 replace("Hello wOrLd!", "WoRlD", "everyone")
-	 This returns "Hello everyone!".
-	 */
-void replace_ignorecase(char* original, char* search, char* replacer) {
-	char* ch;
-	char buffer[1024];
-#ifdef _WIN32
-	#define strcasestr(o, s) strstr(o, s)
-#endif
-	while ((ch = strcasestr(original, search))) {
-		strncpy(buffer, original, ch - original);
-		buffer[ch - original] = 0;
-		sprintf(buffer + (ch - original), "%s%s", replacer, ch + strlen(search));
-		original[0] = 0;
-		strcpy(original, buffer);
-	}
-}
-
 // prints logo (as ascii art) of the given system.
 void print_ascii(struct info* user_info) {
 	printf("\n");
@@ -589,92 +682,6 @@ int print_cache(struct configuration* config_flags, struct info* user_info) {
 	return print_info(config_flags, user_info);
 }
 
-// uwufies kernel name
-void uwu_kernel(char* kernel) {
-#define KERNEL_TO_UWU(str, original, uwufied) \
-	if (strcmp(str, original) == 0) sprintf(str, "%s", uwufied)
-
-	char* temp_kernel = kernel;
-	char* token;
-	char splitted[16][128] = {};
-
-	int count = 0;
-	while ((token = strsep(&temp_kernel, " "))) { // split kernel name
-		strcpy(splitted[count], token);
-		count++;
-	}
-	strcpy(kernel, "");
-	for (int i = 0; i < 16; i++) {
-		// replace kernel name with uwufied version
-		KERNEL_TO_UWU(splitted[i], "Linux", "Linuwu");
-		else KERNEL_TO_UWU(splitted[i], "linux", "linuwu");
-		else KERNEL_TO_UWU(splitted[i], "alpine", "Nyalpine");
-		else KERNEL_TO_UWU(splitted[i], "amogos", "AmogOwOS");
-		else KERNEL_TO_UWU(splitted[i], "arch", "Nyarch Linuwu");
-		else KERNEL_TO_UWU(splitted[i], "artix", "Nyartix Linuwu");
-		else KERNEL_TO_UWU(splitted[i], "debian", "Debinyan");
-		else KERNEL_TO_UWU(splitted[i], "endeavouros", "endeavOwO");
-		else KERNEL_TO_UWU(splitted[i], "EndeavourOS", "endeavOwO");
-		else KERNEL_TO_UWU(splitted[i], "fedora", "Fedowa");
-		else KERNEL_TO_UWU(splitted[i], "gentoo", "GentOwO");
-		else KERNEL_TO_UWU(splitted[i], "gnu", "gnUwU");
-		else KERNEL_TO_UWU(splitted[i], "guix", "gnUwU gUwUix");
-		else KERNEL_TO_UWU(splitted[i], "linuxmint", "LinUWU Miwint");
-		else KERNEL_TO_UWU(splitted[i], "manjaro", "Myanjawo");
-		else KERNEL_TO_UWU(splitted[i], "manjaro-arm", "Myanjawo AWM");
-		else KERNEL_TO_UWU(splitted[i], "neon", "KDE NeOwOn");
-		else KERNEL_TO_UWU(splitted[i], "nixos", "nixOwOs");
-		else KERNEL_TO_UWU(splitted[i], "opensuse-leap", "OwOpenSUSE Leap");
-		else KERNEL_TO_UWU(splitted[i], "opensuse-tumbleweed", "OwOpenSUSE Tumbleweed");
-		else KERNEL_TO_UWU(splitted[i], "pop", "PopOwOS");
-		else KERNEL_TO_UWU(splitted[i], "raspbian", "RaspNyan");
-		else KERNEL_TO_UWU(splitted[i], "slackware", "Swackwawe");
-		else KERNEL_TO_UWU(splitted[i], "solus", "sOwOlus");
-		else KERNEL_TO_UWU(splitted[i], "ubuntu", "Uwuntu");
-		else KERNEL_TO_UWU(splitted[i], "void", "OwOid");
-		else KERNEL_TO_UWU(splitted[i], "xerolinux", "xuwulinux");
-		else KERNEL_TO_UWU(splitted[i], "android", "Nyandroid"); // android at the end because it could be not considered as an actual distribution of gnu/linux
-
-		// BSD
-		else KERNEL_TO_UWU(splitted[i], "freebsd", "FweeBSD");
-		else KERNEL_TO_UWU(splitted[i], "openbsd", "OwOpenBSD");
-
-		// Apple family
-		else KERNEL_TO_UWU(splitted[i], "macos", "macOwOS");
-		else KERNEL_TO_UWU(splitted[i], "ios", "iOwOS");
-
-		// Windows
-		else KERNEL_TO_UWU(splitted[i], "windows", "WinyandOwOws");
-
-		if (i != 0) strcat(kernel, " ");
-		strcat(kernel, splitted[i]);
-	}
-#undef KERNEL_TO_UWU
-}
-
-void uwu_hw(char* hwname) {
-#define HW_TO_UWU(original, uwuified) \
-	replace_ignorecase(hwname, original, uwuified);
-	HW_TO_UWU("lenovo", "LenOwO")
-	HW_TO_UWU("cpu", "CC\bPUwU"); // for some reasons this caused a segfault, using a \b (backspace) char fixes it
-	HW_TO_UWU("gpu", "GG\bPUwU")
-	HW_TO_UWU("graphics", "Gwaphics")
-	HW_TO_UWU("corporation", "COwOpowation")
-	HW_TO_UWU("nvidia", "NyaVIDIA")
-	HW_TO_UWU("mobile", "Mwobile")
-	HW_TO_UWU("intel", "Inteww")
-	HW_TO_UWU("radeon", "Radenyan")
-	HW_TO_UWU("geforce", "GeFOwOce")
-	HW_TO_UWU("raspberry", "Nyasberry")
-	HW_TO_UWU("broadcom", "Bwoadcom")
-	HW_TO_UWU("motorola", "MotOwOwa")
-	HW_TO_UWU("proliant", "ProLinyant")
-	HW_TO_UWU("poweredge", "POwOwEdge")
-	HW_TO_UWU("apple", "Nyaa\bpple")
-	HW_TO_UWU("electronic", "ElectrOwOnic")
-#undef HW_TO_UWU
-}
-
 /* prints distribution list
 	 distributions are listed by distribution branch
 	 to make the output easier to understand by the user.*/
@@ -746,6 +753,7 @@ int main(int argc, char* argv[]) {
 #else
 				user_info = get_info();
 #endif
+				uwufy_all(&user_info);
 				write_cache(&user_info);
 			}
 			config_flags = parse_config(&user_info); // reading the config
@@ -777,13 +785,7 @@ int main(int argc, char* argv[]) {
 #else
 	user_info = get_info();
 #endif
-	// TODO
-	if (strcmp(user_info.os_name, "windows")) MOVE_CURSOR = "\033[21C"; // to print windows logo on not windows systems
-	uwu_kernel(user_info.kernel);
-	for (int i = 0; user_info.gpu_model[i][0]; i++) uwu_hw(user_info.gpu_model[i]);
-	uwu_hw(user_info.cpu_model);
-	uwu_hw(user_info.model);
-
+	uwufy_all(&user_info);
 	config_flags = parse_config(&user_info); // same as user_info
 
 	// reading cmdline options
