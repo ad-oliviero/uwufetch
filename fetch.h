@@ -98,10 +98,6 @@ struct info {
 };
 
 // Retrieves system information
-#ifdef _WIN32
-struct info get_info(struct configuration* config_flags);
-#else
 struct info get_info();
-#endif
 
 #endif // _FETCH_H_

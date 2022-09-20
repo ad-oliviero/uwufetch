@@ -53,8 +53,8 @@ CONSOLE_SCREEN_BUFFER_INFO csbi;
 #include "fetch.h"
 
 #ifdef __APPLE__
-	// buffers where data fetched from sysctl are stored
-	// CPU
+// buffers where data fetched from sysctl are stored
+// CPU
 	#define CPUBUFFERLEN 128
 
 char cpu_buffer[CPUBUFFERLEN];
@@ -73,82 +73,6 @@ struct package_manager {
 	char command_string[128]; // command to get number of packages installed
 	char pkgman_name[16];	  // name of the package manager
 };
-
-// gets the installed package count and package managers name
-#ifdef _WIN32
-int pkgman(struct info* user_info, struct configuration* config_flags)
-#else // _WIN32
-int pkgman(struct info* user_info)
-#endif
-{ // this is just a function that returns the total of installed packages
-	int total = 0;
-
-#ifndef __APPLE__
-	// this function is not used on mac os because it causes lots of problems
-	#ifndef _WIN32
-	// all supported package managers
-	struct package_manager pkgmans[] =
-		{{"apt list --installed 2> /dev/null | wc -l", "(apt)"},
-		 {"apk info 2> /dev/null | wc -l", "(apk)"},
-		 //  {"dnf list installed 2> /dev/null | wc -l", "(dnf)"}, // according to https://stackoverflow.com/questions/48570019/advantages-of-dnf-vs-rpm-on-fedora, dnf and rpm return the same number of packages
-		 {"qlist -I 2> /dev/null | wc -l", "(emerge)"},
-		 {"flatpak list 2> /dev/null | wc -l", "(flatpak)"},
-		 {"snap list 2> /dev/null | wc -l", "(snap)"},
-		 {"guix package --list-installed 2> /dev/null | wc -l", "(guix)"},
-		 {"nix-store -q --requisites /run/current-system/sw 2> /dev/null | wc -l", "(nix)"},
-		 {"pacman -Qq 2> /dev/null | wc -l", "(pacman)"},
-		 {"pkg info 2>/dev/null | wc -l", "(pkg)"},
-		 {"pkg_info 2>/dev/null | wc -l | sed \"s/ //g\"", "(pkg)"},
-		 {"port installed 2> /dev/null | tail -n +2 | wc -l", "(port)"},
-		 {"brew list 2> /dev/null | wc -l", "(brew)"},
-		 {"rpm -qa --last 2> /dev/null | wc -l", "(rpm)"},
-		 {"xbps-query -l 2> /dev/null | wc -l", "(xbps)"},
-		 {"zypper -q se --installed-only 2> /dev/null | wc -l", "(zypper)"}};
-	const int pkgman_count = sizeof(pkgmans) / sizeof(pkgmans[0]); // number of package managers
-	int comma_separator	   = 0;
-	for (int i = 0; i < pkgman_count; i++) {
-		struct package_manager* current = &pkgmans[i]; // pointer to current package manager
-
-		FILE* fp			   = popen(current->command_string, "r"); // trying current package manager
-		unsigned int pkg_count = 0;
-
-		if (fscanf(fp, "%u", &pkg_count) == 3) continue; // if a number is found, continue the loop
-		pclose(fp);
-
-		// adding a package manager with its package count to user_info->pkgman_name
-		total += pkg_count;
-		if (pkg_count > 0) {
-			if (comma_separator++) strcat(user_info->pkgman_name, ", ");
-			char spkg_count[16];
-			sprintf(spkg_count, "%u", pkg_count);
-			strcat(user_info->pkgman_name, spkg_count);
-			strcat(user_info->pkgman_name, " ");
-			strcat(user_info->pkgman_name, current->pkgman_name);
-		}
-	}
-	#else  // _WIN32
-	// chocolatey for windows
-	if (config_flags->show_pkgs) {
-		FILE* fp = popen("choco list -l --no-color 2> nul", "r");
-		unsigned int pkg_count;
-		char buffer[7562] = {0};
-		while (fgets(buffer, sizeof(buffer), fp)) {
-			sscanf(buffer, "%u packages installed.", &pkg_count);
-		}
-		if (fp) pclose(fp);
-
-		total = pkg_count;
-		char spkg_count[16];
-		sprintf(spkg_count, "%u", pkg_count);
-		strcat(user_info->pkgman_name, spkg_count);
-		strcat(user_info->pkgman_name, " ");
-		strcat(user_info->pkgman_name, "(chocolatey)");
-	}
-	#endif // _WIN32
-
-#endif
-	return total;
-}
 
 #ifdef __APPLE__
 // gets the uptime for mac os
@@ -212,15 +136,235 @@ char* strsep(char** stringp, const char* delim) {
 }
 #endif
 
-// Retrieves system information
-#ifdef _WIN32
-struct info get_info(struct configuration* config_flags)
-#else
-struct info get_info()
+// tries to get memory usage
+void get_ram(char* buffer, int buf_sz, struct info* user_info) {
+#ifndef __APPLE__
+	#ifdef _WIN32
+	FILE* mem_used_fp	   = popen("wmic os get freevirtualmemory", "r");	   // free memory
+	FILE* mem_total_fp	   = popen("wmic os get totalvirtualmemorysize", "r"); // total memory
+	char mem_used_ch[2137] = {0}, mem_total_ch[2137] = {0};
+
+	while (fgets(mem_total_ch, sizeof(mem_total_ch), mem_total_fp) != NULL) {
+		if (strstr(mem_total_ch, "TotalVirtualMemorySize") != 0)
+			continue;
+		else if (strstr(mem_total_ch, "  ") == 0)
+			continue;
+		else
+			user_info->ram_total = atoi(mem_total_ch) / 1024;
+	}
+	while (fgets(mem_used_ch, sizeof(mem_used_ch), mem_used_fp) != NULL) {
+		if (strstr(mem_used_ch, "FreeVirtualMemory") != 0)
+			continue;
+		else if (strstr(mem_used_ch, "  ") == 0)
+			continue;
+		else
+			user_info->ram_used =
+				user_info->ram_total - (atoi(mem_used_ch) / 1024);
+	}
+	pclose(mem_used_fp);
+	pclose(mem_total_fp);
+	#else // if not _WIN32
+	FILE* meminfo;
+
+		#ifdef __BSD__
+			#ifndef __OPENBSD__
+	meminfo = popen("LANG=EN_us freecolor -om 2> /dev/null", "r"); // free alternative for freebsd
+			#else
+	meminfo = popen("LANG=EN_us vmstat 2> /dev/null | grep -v 'procs' | grep -v 'r' | awk '{print $3 \" / \" $4}'", "r"); // free alternative for openbsd
+			#endif
+		#else
+	// getting memory info from /proc/meminfo: https://github.com/KittyKatt/screenFetch/issues/386#issuecomment-249312716
+	meminfo = fopen("/proc/meminfo", "r"); // popen("LANG=EN_us free -m 2> /dev/null", "r"); // get ram info with free
+		#endif
+	// brackets are here to restrict the access to this int variables, which are temporary
+	{
+		#ifndef __OPENBSD__
+		int memtotal = 0, shmem = 0, memfree = 0, buffers = 0, cached = 0, sreclaimable = 0;
+		#endif
+		while (fgets(buffer, buf_sz, meminfo)) {
+		#ifndef __OPENBSD__
+			sscanf(buffer, "MemTotal:       %d", &memtotal);
+			sscanf(buffer, "Shmem:             %d", &shmem);
+			sscanf(buffer, "MemFree:        %d", &memfree);
+			sscanf(buffer, "Buffers:          %d", &buffers);
+			sscanf(buffer, "Cached:          %d", &cached);
+			sscanf(buffer, "SReclaimable:     %d", &sreclaimable);
+		#else
+			sscanf(buffer, "%dM / %dM", &user_info->ram_used, &user_info->ram_total);
+		#endif
+		}
+		#ifndef __OPENBSD__
+		user_info->ram_total = memtotal / 1024;
+		user_info->ram_used	 = ((memtotal + shmem) - (memfree + buffers + cached + sreclaimable)) / 1024;
+		#endif
+	}
+
+	// while (fgets(buffer, buf_sz, meminfo)) // old way to get ram usage that uses the "free" command
+	// 	// free command prints like this: "Mem:" total     used    free shared    buff/cache      available
+	// 	sscanf(buffer, "Mem: %d %d", &user_info->ram_total, &user_info->ram_used);
+	fclose(meminfo);
+	#endif
+#else // if __APPLE__
+	  // Used
+	FILE *mem_wired_fp,
+		*mem_active_fp, *mem_compressed_fp;
+	mem_wired_fp	  = popen("vm_stat | awk '/wired/ { printf $4 }' | cut -d '.' -f 1", "r");
+	mem_active_fp	  = popen("vm_stat | awk '/active/ { printf $3 }' | cut -d '.' -f 1", "r");
+	mem_compressed_fp = popen("vm_stat | awk '/occupied/ { printf $5 }' | cut -d '.' -f 1", "r");
+	char mem_wired_ch[2137], mem_active_ch[2137], mem_compressed_ch[2137];
+	while (fgets(mem_wired_ch, sizeof(mem_wired_ch), mem_wired_fp) != NULL)
+		while (fgets(mem_active_ch, sizeof(mem_active_ch), mem_active_fp) != NULL)
+			while (fgets(mem_compressed_ch, sizeof(mem_compressed_ch), mem_compressed_fp) != NULL)
+				;
+
+	pclose(mem_wired_fp);
+	pclose(mem_active_fp);
+	pclose(mem_compressed_fp);
+
+	int mem_wired	   = atoi(mem_wired_ch);
+	int mem_active	   = atoi(mem_active_ch);
+	int mem_compressed = atoi(mem_compressed_ch);
+
+	// Total
+	sysctlbyname("hw.memsize", &mem_buffer, &mem_buffer_len, NULL, 0);
+	user_info->ram_used	 = ((mem_wired + mem_active + mem_compressed) * 4 / 1024);
+	user_info->ram_total = mem_buffer / 1024 / 1024;
 #endif
-{
+}
+
+// tries to get installed gpu(s)
+void get_gpu(char* buffer, int buf_sz, struct info* user_info) {
+	int gpuc = 0; // gpu counter
+#ifndef _WIN32
+	setenv("LANG", "en_US", 1); // force language to english
+#endif
+	FILE* gpu;
+#ifndef _WIN32
+	gpu = popen("lshw -class display 2> /dev/null", "r");
+
+	// add all gpus to the array gpu_model
+	while (fgets(buffer, buf_sz, gpu))
+		if (sscanf(buffer, "    product: %[^\n]", user_info->gpu_model[gpuc]))
+			gpuc++;
+#endif
+
+	if (strlen(user_info->gpu_model[0]) < 2) {
+		// get gpus with lspci command
+		if (strcmp(user_info->os_name, "android") != 0) {
+#ifndef __APPLE__
+	#ifdef _WIN32
+			gpu = popen("wmic PATH Win32_VideoController GET Name", "r");
+	#else
+			gpu = popen("lspci -mm 2> /dev/null | grep \"VGA\" | awk -F '\"' '{print $4 $5 $6}'", "r");
+	#endif
+#else
+			gpu = popen("system_profiler SPDisplaysDataType | awk -F ': ' '/Chipset Model: /{ print $2 }'", "r");
+#endif
+		} else
+			gpu = popen("getprop ro.hardware.vulkan 2> /dev/null", "r"); // for android
+	}
+
+	// get all the gpus
+	while (fgets(buffer, buf_sz, gpu)) {
+		// windows
+		if (strstr(buffer, "Name") || (strlen(buffer) == 2))
+			continue;
+		else if (sscanf(buffer, "%[^\n]", user_info->gpu_model[gpuc]))
+			gpuc++;
+	}
+	fclose(gpu);
+
+	// format gpu names
+	for (int i = 0; i < gpuc; i++) {
+		remove_brackets(user_info->gpu_model[i]);
+		truncate_str(user_info->gpu_model[i], user_info->target_width);
+	}
+}
+
+// tries to get screen resolution
+void get_res(char* buffer, int buf_sz, struct info* user_info) {
+#ifndef _WIN32
+	FILE* resolution = popen("xwininfo -root 2> /dev/null | grep -E 'Width|Height'", "r");
+	while (fgets(buffer, buf_sz, resolution)) {
+		sscanf(buffer, "  Width: %d", &user_info->screen_width);
+		sscanf(buffer, "  Height: %d", &user_info->screen_height);
+	}
+#else
+	// TODO: get resolution on windows
+#endif
+}
+
+// tries to get the installed package count and package managers name
+void get_pkg(struct info* user_info) { // this is just a function that returns the total of installed packages
+	user_info->pkgs = 0;
+#ifndef __APPLE__
+	// this function is not used on mac os because it causes lots of problems
+	#ifndef _WIN32
+	// all supported package managers
+	struct package_manager pkgmans[] =
+		{{"apt list --installed 2> /dev/null | wc -l", "(apt)"},
+		 {"apk info 2> /dev/null | wc -l", "(apk)"},
+		 //  {"dnf list installed 2> /dev/null | wc -l", "(dnf)"}, // according to https://stackoverflow.com/questions/48570019/advantages-of-dnf-vs-rpm-on-fedora, dnf and rpm return the same number of packages
+		 {"qlist -I 2> /dev/null | wc -l", "(emerge)"},
+		 {"flatpak list 2> /dev/null | wc -l", "(flatpak)"},
+		 {"snap list 2> /dev/null | wc -l", "(snap)"},
+		 {"guix package --list-installed 2> /dev/null | wc -l", "(guix)"},
+		 {"nix-store -q --requisites /run/current-system/sw 2> /dev/null | wc -l", "(nix)"},
+		 {"pacman -Qq 2> /dev/null | wc -l", "(pacman)"},
+		 {"pkg info 2>/dev/null | wc -l", "(pkg)"},
+		 {"pkg_info 2>/dev/null | wc -l | sed \"s/ //g\"", "(pkg)"},
+		 {"port installed 2> /dev/null | tail -n +2 | wc -l", "(port)"},
+		 {"brew list 2> /dev/null | wc -l", "(brew)"},
+		 {"rpm -qa --last 2> /dev/null | wc -l", "(rpm)"},
+		 {"xbps-query -l 2> /dev/null | wc -l", "(xbps)"},
+		 {"zypper -q se --installed-only 2> /dev/null | wc -l", "(zypper)"}};
+	const int pkgman_count = sizeof(pkgmans) / sizeof(pkgmans[0]); // number of package managers
+	int comma_separator	   = 0;
+	for (int i = 0; i < pkgman_count; i++) {
+		struct package_manager* current = &pkgmans[i]; // pointer to current package manager
+
+		FILE* fp			   = popen(current->command_string, "r"); // trying current package manager
+		unsigned int pkg_count = 0;
+
+		if (fscanf(fp, "%u", &pkg_count) == 3) continue; // if a number is found, continue the loop
+		pclose(fp);
+
+		// adding a package manager with its package count to user_info->pkgman_name
+		user_info->pkgs += pkg_count;
+		if (pkg_count > 0) {
+			if (comma_separator++) strcat(user_info->pkgman_name, ", ");
+			char spkg_count[16];
+			sprintf(spkg_count, "%u", pkg_count);
+			strcat(user_info->pkgman_name, spkg_count);
+			strcat(user_info->pkgman_name, " ");
+			strcat(user_info->pkgman_name, current->pkgman_name);
+		}
+	}
+	#else  // _WIN32
+	// chocolatey for windows
+	FILE* fp = popen("choco list -l --no-color 2> nul", "r");
+	unsigned int pkg_count;
+	char buffer[7562] = {0};
+	while (fgets(buffer, sizeof(buffer), fp)) {
+		sscanf(buffer, "%u packages installed.", &pkg_count);
+	}
+	if (fp) pclose(fp);
+
+	user_info->pkgs = pkg_count;
+	char spkg_count[16];
+	sprintf(spkg_count, "%u", pkg_count);
+	strcat(user_info->pkgman_name, spkg_count);
+	strcat(user_info->pkgman_name, " ");
+	strcat(user_info->pkgman_name, "(chocolatey)");
+	#endif // _WIN32
+#endif
+}
+
+// Retrieves system information
+struct info get_info() {
 	struct info user_info = {0};
-	char buffer[256]; // line buffer
+	int buf_sz			  = 256;
+	char buffer[buf_sz]; // line buffer
 
 	// get terminal width used to truncate long names
 #ifndef _WIN32
@@ -318,19 +462,6 @@ struct info get_info()
 				sprintf(user_info.os_name, "amogos");
 			}
 		}
-		/* if (model_fp) { // what the fuck is this? I don't remember writing this code
-			 while (fgets(buffer, sizeof(buffer), model_fp) && !(sscanf(buffer, "%[^\n]", user_info.model)))
-			 ;
-			 char version[32];
-			 while (fgets(buffer, sizeof(buffer), model_fp)) {
-			 if (sscanf(buffer, "%[^\n]", version)) {
-			 strcat(user_info.model, " ");
-			 strcat(user_info.model, version);
-			 break;
-			 }
-			 }
-			 } */
-
 		// getting cpu name
 		while (fgets(buffer, sizeof(buffer), cpuinfo)) {
 #ifdef __BSD__
@@ -472,160 +603,9 @@ struct info get_info()
 	}
 	if (kernel_fp) pclose(kernel_fp);
 #endif // _WIN32
-
-	// ram
-#ifndef __APPLE__
-	#ifdef _WIN32
-	FILE* mem_used_fp	   = popen("wmic os get freevirtualmemory", "r");	   // free memory
-	FILE* mem_total_fp	   = popen("wmic os get totalvirtualmemorysize", "r"); // total memory
-	char mem_used_ch[2137] = {0}, mem_total_ch[2137] = {0};
-
-	while (fgets(mem_total_ch, sizeof(mem_total_ch), mem_total_fp) != NULL) {
-		if (strstr(mem_total_ch, "TotalVirtualMemorySize") != 0)
-			continue;
-		else if (strstr(mem_total_ch, "  ") == 0)
-			continue;
-		else
-			user_info.ram_total = atoi(mem_total_ch) / 1024;
-	}
-	while (fgets(mem_used_ch, sizeof(mem_used_ch), mem_used_fp) != NULL) {
-		if (strstr(mem_used_ch, "FreeVirtualMemory") != 0)
-			continue;
-		else if (strstr(mem_used_ch, "  ") == 0)
-			continue;
-		else
-			user_info.ram_used =
-				user_info.ram_total - (atoi(mem_used_ch) / 1024);
-	}
-	pclose(mem_used_fp);
-	pclose(mem_total_fp);
-	#else // if not _WIN32
-	FILE* meminfo;
-
-		#ifdef __BSD__
-			#ifndef __OPENBSD__
-	meminfo = popen("LANG=EN_us freecolor -om 2> /dev/null", "r"); // free alternative for freebsd
-			#else
-	meminfo = popen("LANG=EN_us vmstat 2> /dev/null | grep -v 'procs' | grep -v 'r' | awk '{print $3 \" / \" $4}'", "r"); // free alternative for openbsd
-			#endif
-		#else
-	// getting memory info from /proc/meminfo: https://github.com/KittyKatt/screenFetch/issues/386#issuecomment-249312716
-	meminfo = fopen("/proc/meminfo", "r"); // popen("LANG=EN_us free -m 2> /dev/null", "r"); // get ram info with free
-		#endif
-	// brackets are here to restrict the access to this int variables, which are temporary
-	{
-		#ifndef __OPENBSD__
-		int memtotal = 0, shmem = 0, memfree = 0, buffers = 0, cached = 0, sreclaimable = 0;
-		#endif
-		while (fgets(buffer, sizeof(buffer), meminfo)) {
-		#ifndef __OPENBSD__
-			sscanf(buffer, "MemTotal:       %d", &memtotal);
-			sscanf(buffer, "Shmem:             %d", &shmem);
-			sscanf(buffer, "MemFree:        %d", &memfree);
-			sscanf(buffer, "Buffers:          %d", &buffers);
-			sscanf(buffer, "Cached:          %d", &cached);
-			sscanf(buffer, "SReclaimable:     %d", &sreclaimable);
-		#else
-			sscanf(buffer, "%dM / %dM", &user_info.ram_used, &user_info.ram_total);
-		#endif
-		}
-		#ifndef __OPENBSD__
-		user_info.ram_total = memtotal / 1024;
-		user_info.ram_used	= ((memtotal + shmem) - (memfree + buffers + cached + sreclaimable)) / 1024;
-		#endif
-	}
-
-	// while (fgets(buffer, sizeof(buffer), meminfo)) // old way to get ram usage that uses the "free" command
-	// 	// free command prints like this: "Mem:" total     used    free shared    buff/cache      available
-	// 	sscanf(buffer, "Mem: %d %d", &user_info.ram_total, &user_info.ram_used);
-	fclose(meminfo);
-	#endif
-#else // if __APPLE__
-	// Used
-	FILE *mem_wired_fp, *mem_active_fp, *mem_compressed_fp;
-	mem_wired_fp	  = popen("vm_stat | awk '/wired/ { printf $4 }' | cut -d '.' -f 1", "r");
-	mem_active_fp	  = popen("vm_stat | awk '/active/ { printf $3 }' | cut -d '.' -f 1", "r");
-	mem_compressed_fp = popen("vm_stat | awk '/occupied/ { printf $5 }' | cut -d '.' -f 1", "r");
-	char mem_wired_ch[2137], mem_active_ch[2137], mem_compressed_ch[2137];
-	while (fgets(mem_wired_ch, sizeof(mem_wired_ch), mem_wired_fp) != NULL)
-		while (fgets(mem_active_ch, sizeof(mem_active_ch), mem_active_fp) != NULL)
-			while (fgets(mem_compressed_ch, sizeof(mem_compressed_ch), mem_compressed_fp) != NULL)
-				;
-
-	pclose(mem_wired_fp);
-	pclose(mem_active_fp);
-	pclose(mem_compressed_fp);
-
-	int mem_wired	   = atoi(mem_wired_ch);
-	int mem_active	   = atoi(mem_active_ch);
-	int mem_compressed = atoi(mem_compressed_ch);
-
-	// Total
-	sysctlbyname("hw.memsize", &mem_buffer, &mem_buffer_len, NULL, 0);
-	user_info.ram_used	= ((mem_wired + mem_active + mem_compressed) * 4 / 1024);
-	user_info.ram_total = mem_buffer / 1024 / 1024;
-#endif
-
-	// gpus
-	int gpuc = 0; // gpu counter
-#ifndef _WIN32
-	setenv("LANG", "en_US", 1); // force language to english
-#endif
-	FILE* gpu;
-#ifndef _WIN32
-	gpu = popen("lshw -class display 2> /dev/null", "r");
-
-	// add all gpus to the array gpu_model
-	while (fgets(buffer, sizeof(buffer), gpu))
-		if (sscanf(buffer, "    product: %[^\n]", user_info.gpu_model[gpuc]))
-			gpuc++;
-#endif
-
-	if (strlen(user_info.gpu_model[0]) < 2) {
-		// get gpus with lspci command
-		if (strcmp(user_info.os_name, "android") != 0) {
-#ifndef __APPLE__
-	#ifdef _WIN32
-			gpu = popen("wmic PATH Win32_VideoController GET Name", "r");
-	#else
-			gpu = popen("lspci -mm 2> /dev/null | grep \"VGA\" | awk -F '\"' '{print $4 $5 $6}'", "r");
-	#endif
-#else
-			gpu = popen("system_profiler SPDisplaysDataType | awk -F ': ' '/Chipset Model: /{ print $2 }'", "r");
-#endif
-		} else
-			gpu = popen("getprop ro.hardware.vulkan 2> /dev/null", "r"); // for android
-	}
-
-	// get all the gpus
-	while (fgets(buffer, sizeof(buffer), gpu)) {
-		// windows
-		if (strstr(buffer, "Name") || (strlen(buffer) == 2))
-			continue;
-		else if (sscanf(buffer, "%[^\n]", user_info.gpu_model[gpuc]))
-			gpuc++;
-	}
-	fclose(gpu);
-
-	// format gpu names
-	for (int i = 0; i < gpuc; i++) {
-		remove_brackets(user_info.gpu_model[i]);
-		truncate_str(user_info.gpu_model[i], user_info.target_width);
-	}
-
-	// Resolution
-#ifndef _WIN32
-	FILE* resolution = popen("xwininfo -root 2> /dev/null | grep -E 'Width|Height'", "r");
-	while (fgets(buffer, sizeof(buffer), resolution)) {
-		sscanf(buffer, "  Width: %d", &user_info.screen_width);
-		sscanf(buffer, "  Height: %d", &user_info.screen_height);
-	}
-#endif
-	// package count
-#ifdef _WIN32
-	user_info.pkgs = pkgman(&user_info, config_flags);
-#else  // _WIN32
-	user_info.pkgs = pkgman(&user_info);
-#endif // _WIN32
+	get_ram(buffer, buf_sz, &user_info);
+	get_gpu(buffer, buf_sz, &user_info);
+	get_res(buffer, buf_sz, &user_info);
+	get_pkg(&user_info);
 	return user_info;
 }
