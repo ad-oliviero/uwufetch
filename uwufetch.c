@@ -226,6 +226,23 @@ void replace_ignorecase(char* original, char* search, char* replacer) {
 	}
 }
 
+#ifdef _WIN32
+// windows sucks and hasn't a strstep, so I copied one from
+// https://stackoverflow.com/questions/8512958/is-there-a-windows-variant-of-strsep-function
+char* strsep(char** stringp, const char* delim) {
+	char* start = *stringp;
+	char* p;
+	p = (start != NULL) ? strpbrk(start, delim) : NULL;
+	if (p == NULL)
+		*stringp = NULL;
+	else {
+		*p		 = '\0';
+		*stringp = p + 1;
+	}
+	return start;
+}
+#endif
+
 // uwufies distro name
 void uwu_name(struct configuration* config_flags, struct info* user_info) {
 #define STRING_TO_UWU(original, uwufied)           \
