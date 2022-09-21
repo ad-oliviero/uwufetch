@@ -1,9 +1,9 @@
 NAME = uwufetch
 BIN_FILES = uwufetch.c
 LIB_FILES = fetch.c
-UWUFETCH_VERSION = UWUFETCH_VERSION="\"$(shell git describe --tags)\""
-CFLAGS = -O3 -D$(UWUFETCH_VERSION)
-CFLAGS_DEBUG = -Wall -Wextra -g -pthread -D$(UWUFETCH_VERSION)
+UWUFETCH_VERSION = $(shell git describe --tags)
+CFLAGS = -O3 -DUWUFETCH_VERSION=\"$(UWUFETCH_VERSION)\"
+CFLAGS_DEBUG = -Wall -Wextra -g -pthread -DUWUFETCH_VERSION=\"$(UWUFETCH_VERSION)\"
 CC = cc
 AR = ar
 DESTDIR = /usr
@@ -52,18 +52,29 @@ lib: $(LIB_FILES)
 	$(AR) rcs lib$(LIB_FILES:.c=.a) $(LIB_FILES:.c=.o)
 	$(CC) $(CFLAGS) -shared -o lib$(LIB_FILES:.c=.so) $(LIB_FILES:.c=.o)
 
+release: build
+	mkdir -pv $(NAME)_$(UWUFETCH_VERSION)
+	cp release_scripts/* $(NAME)_$(UWUFETCH_VERSION)
+	cp -r res $(NAME)_$(UWUFETCH_VERSION)
+	cp $(NAME) $(NAME)_$(UWUFETCH_VERSION)
+	cp $(NAME).1.gz $(NAME)_$(UWUFETCH_VERSION)
+	cp lib$(LIB_FILES:.c=.so) $(NAME)_$(UWUFETCH_VERSION)
+	cp $(LIB_FILES:.c=.h) $(NAME)_$(UWUFETCH_VERSION)
+	cp default.config $(NAME)_$(UWUFETCH_VERSION)
+	tar -cvzf $(NAME)_$(UWUFETCH_VERSION).tar.gz $(NAME)_$(UWUFETCH_VERSION)
+
 debug: CFLAGS = $(CFLAGS_DEBUG)
 debug: build
 	./$(NAME) $(ARGS)
 
 install: build
-	mkdir -p $(DESTDIR)/$(PREFIX) $(DESTDIR)/$(LIBDIR)/uwufetch $(DESTDIR)/$(MANDIR) $(ETC_DIR)/uwufetch
-	cp $(NAME) $(DESTDIR)/$(PREFIX)/$(NAME)
-	cp lib$(LIB_FILES:.c=.so) $(DESTDIR)/$(LIBDIR)/lib$(LIB_FILES:.c=.so)
-	cp $(LIB_FILES:.c=.h) $(DESTDIR)/include/$(LIB_FILES:.c=.h)
-	cp -r res/* $(DESTDIR)/$(LIBDIR)/uwufetch
-	cp default.config $(ETC_DIR)/uwufetch/config
-	cp ./$(NAME).1.gz $(DESTDIR)/$(MANDIR)/
+	mkdir -pv $(DESTDIR)/$(PREFIX) $(DESTDIR)/$(LIBDIR)/$(NAME) $(DESTDIR)/$(MANDIR) $(ETC_DIR)/$(NAME)
+	cp $(NAME) $(DESTDIR)/$(PREFIX)
+	cp lib$(LIB_FILES:.c=.so) $(DESTDIR)/$(LIBDIR)
+	cp $(LIB_FILES:.c=.h) $(DESTDIR)/include
+	cp -r res/* $(DESTDIR)/$(LIBDIR)/$(NAME)
+	cp default.config $(ETC_DIR)/$(NAME)/config
+	cp ./$(NAME).1.gz $(DESTDIR)/$(MANDIR)
 
 uninstall:
 	rm -f $(DESTDIR)/$(PREFIX)/$(NAME)
@@ -74,7 +85,7 @@ uninstall:
 	rm -f $(DESTDIR)/$(MANDIR)/$(NAME).1.gz
 
 clean:
-	rm $(NAME) *.o *.so *.a
+	rm -rf $(NAME) $(NAME)_* *.o *.so *.a
 
 man:
 	gzip --keep $(NAME).1
