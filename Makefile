@@ -59,6 +59,8 @@ debug: build
 install: build
 	mkdir -p $(DESTDIR)/$(PREFIX) $(DESTDIR)/$(LIBDIR)/uwufetch $(DESTDIR)/$(MANDIR) $(ETC_DIR)/uwufetch
 	cp $(NAME) $(DESTDIR)/$(PREFIX)/$(NAME)
+	cp lib$(LIB_FILES:.c=.so) $(DESTDIR)/$(LIBDIR)/lib$(LIB_FILES:.c=.so)
+	cp $(LIB_FILES:.c=.h) $(DESTDIR)/include/$(LIB_FILES:.c=.h)
 	cp -r res/* $(DESTDIR)/$(LIBDIR)/uwufetch
 	cp default.config $(ETC_DIR)/uwufetch/config
 	cp ./$(NAME).1.gz $(DESTDIR)/$(MANDIR)/

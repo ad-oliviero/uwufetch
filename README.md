@@ -52,7 +52,7 @@ Build requisites:
 
 - Make
 - A C compiler
-    - A iOS patched SDK (if you build UwUfetch under iOS device)
+  - A iOS patched SDK (if you build UwUfetch under iOS device)
 
 To install UwUfetch from the source, type these commands in the terminal:
 
@@ -73,10 +73,14 @@ sudo make uninstall
 #### Available Make targets
 
 ```shell
-make build              # builds uwufetch
+make build              # builds uwufetch and libfetch
+make lib                # builds only libfetch
 make debug              # use for debug
 make install            # installs uwufetch (needs root permissons)
 make uninstall          # uninstalls uwufetch (needs root permissons)
+make clean              # removes all build output
+make man                # compiles man page
+make man_debug          # compiles man page and shows 'man' output
 ```
 
 ## Images and copyright info
@@ -89,6 +93,33 @@ First of all, you will need `viu`, which you can install by following the [guide
 
 `viu` supports [kitty](https://github.com/kovidgoyal/kitty) and [iTerm](https://iterm2.com/)'s image protocols.
 If not supported by the current terminal, `viu` uses the fallback Unicode half-block mode (images will look "blocky"), that is the case in many terminal emulators (gnome-terminal, Konsole, etc.). See also: [viu's README](https://github.com/atanunq/viu#description).
+
+## LibFetch
+
+### How to use
+
+The first thing needed is to compile the library ([same instructions as the simple binary](https://github.com/TheDarkBug/uwufetch#from-source)).
+Now you can use the library just as in the example:
+
+#### **`superfetch.c`**
+
+```c
+#include <fetch.h>
+#include <stdio.h>
+
+int main() {
+    printf("%s\n", get_info().cpu_model);
+}
+```
+
+And then compile and run with
+
+```bash
+$ gcc superfetch.c -lfetch -o superfetch
+$ ./superfetch
+
+Intel(R) Core(TM) i7-1065G7 CPU @ 1.30GHz
+```
 
 ## Issues
 
