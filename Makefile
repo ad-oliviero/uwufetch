@@ -54,7 +54,7 @@ lib: $(LIB_FILES)
 
 debug: CFLAGS = $(CFLAGS_DEBUG)
 debug: build
-	./$(NAME)
+	./$(NAME) $(ARGS)
 
 install: build
 	mkdir -p $(DESTDIR)/$(PREFIX) $(DESTDIR)/$(LIBDIR)/uwufetch $(DESTDIR)/$(MANDIR) $(ETC_DIR)/uwufetch

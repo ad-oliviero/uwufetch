@@ -66,6 +66,7 @@ struct configuration {
 struct user_config {
 	char *config_directory, // configuration directory name
 		*cache_content;		// cache file content
+	int cache_enabled;
 };
 
 // reads the config file
@@ -730,6 +731,7 @@ void usage(char* arg) {
 		   "    -l, --list          lists all supported distributions\n"
 		   "    -v, --version       prints the current uwufetch version\n"
 		   "    -w, --write-cache   writes to the cache file (~/.cache/uwufetch.cache)\n"
+		   "    -r, --read-cache    reads from the cache file (~/.cache/uwufetch.cache)\n"
 		   "    using the cache     set $UWUFETCH_CACHE_ENABLED to TRUE, true or 1\n",
 		   arg,
 #ifndef __IPHONE__
@@ -742,49 +744,49 @@ void usage(char* arg) {
 
 // the main function is on the bottom of the file to avoid double function declarations
 int main(int argc, char* argv[]) {
-	char* cache_env = getenv("UWUFETCH_CACHE_ENABLED"); // getting cache env variable
 	struct user_config user_config_file;
 	struct configuration config_flags;
 	struct info user_info = {0};
-	if (cache_env != NULL) { // if cache env variable is set, read itz value
-		int cache_enabled = 0;
-		char buffer[128];
 
-		sscanf(cache_env, "%4[TRUEtrue1]", buffer);
-		cache_enabled = (strcmp(buffer, "true") == 0 || strcmp(buffer, "TRUE") == 0 || strcmp(buffer, "1") == 0); // enable the cache if necessary
-		if (cache_enabled) {
-			// if no cache file found write to it
-			if (!read_cache(&user_info)) {
+	// search for the read-cache flag
+	for (int i = 0; i < argc; i++)
+		if (argv[i][0] == '-')
+			for (int j = 1; argv[i][j]; j++)
+				user_config_file.cache_enabled = (argv[i][j] == 'r');
+
+	if (user_config_file.cache_enabled) {
+		// if no cache file found write to it
+		if (!read_cache(&user_info)) {
 #ifdef _WIN32
-				user_info = get_info(&config_flags);
+			user_info = get_info(&config_flags);
 #else
-				user_info = get_info();
+			user_info = get_info();
 #endif
-				uwufy_all(&user_info);
-				write_cache(&user_info);
-			}
-			config_flags = parse_config(&user_info, &user_config_file); // reading the config
-			if (print_cache(&config_flags, &user_info) < 7)
-				printf("\033[3B");
-			return 0;
+			uwufy_all(&user_info);
+			write_cache(&user_info);
 		}
+		config_flags = parse_config(&user_info, &user_config_file); // reading the config
+		if (print_cache(&config_flags, &user_info) < 7)
+			printf("\033[3B");
+		return 0;
 	}
 #ifdef _WIN32
 	// packages disabled by default because chocolatey is too slow
 	config_flags.show_pkgs = 0;
 #endif
 
+	// TODO: change option parsing
 	int opt = 0;
 	static struct option long_options[] =
 		{{"ascii", no_argument, NULL, 'a'},
 		 {"config", required_argument, NULL, 'c'},
-		 // {"cache", no_argument, NULL, 'C'}, // using an environment variable is not a good idea, maybe some time in the future, uwufetch will use a command line option
 		 {"distro", required_argument, NULL, 'd'},
 		 {"help", no_argument, NULL, 'h'},
 		 {"image", optional_argument, NULL, 'i'},
 		 {"list", no_argument, NULL, 'l'},
 		 {"version", no_argument, NULL, 'v'},
 		 {"write-cache", no_argument, NULL, 'w'},
+		 {"read-cache", no_argument, NULL, 'r'},
 		 {NULL, 0, NULL, 0}};
 
 #ifdef _WIN32
