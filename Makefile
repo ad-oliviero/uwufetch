@@ -1,9 +1,11 @@
 NAME = uwufetch
-FILES = uwufetch.c
+BIN_FILES = uwufetch.c
+LIB_FILES = fetch.c
 UWUFETCH_VERSION = UWUFETCH_VERSION="\"$(shell git describe --tags)\""
 CFLAGS = -O3 -D$(UWUFETCH_VERSION)
 CFLAGS_DEBUG = -Wall -Wextra -g -pthread -D$(UWUFETCH_VERSION)
 CC = cc
+AR = ar
 DESTDIR = /usr
 PLATFORM = $(shell uname)
 
@@ -42,16 +44,23 @@ else ifeq ($(PLATFORM), windows32)
 	MANDIR		=
 endif
 
-build: $(FILES)
-	$(CC) $(CFLAGS) -o $(NAME) $(FILES)
+build: $(BIN_FILES) lib
+	$(CC) $(CFLAGS) -o $(NAME) $(BIN_FILES) lib$(LIB_FILES:.c=.a)
 
-debug:
-	$(CC) $(CFLAGS_DEBUG) -o $(NAME) $(FILES)
-	./$(NAME)
+lib: $(LIB_FILES)
+	$(CC) $(CFLAGS) -fPIC -c -o $(LIB_FILES:.c=.o) $(LIB_FILES)
+	$(AR) rcs lib$(LIB_FILES:.c=.a) $(LIB_FILES:.c=.o)
+	$(CC) $(CFLAGS) -shared -o lib$(LIB_FILES:.c=.so) $(LIB_FILES:.c=.o)
+
+debug: CFLAGS = $(CFLAGS_DEBUG)
+debug: build
+	./$(NAME) $(ARGS)
 
 install: build
 	mkdir -p $(DESTDIR)/$(PREFIX) $(DESTDIR)/$(LIBDIR)/uwufetch $(DESTDIR)/$(MANDIR) $(ETC_DIR)/uwufetch
 	cp $(NAME) $(DESTDIR)/$(PREFIX)/$(NAME)
+	cp lib$(LIB_FILES:.c=.so) $(DESTDIR)/$(LIBDIR)/lib$(LIB_FILES:.c=.so)
+	cp $(LIB_FILES:.c=.h) $(DESTDIR)/include/$(LIB_FILES:.c=.h)
 	cp -r res/* $(DESTDIR)/$(LIBDIR)/uwufetch
 	cp default.config $(ETC_DIR)/uwufetch/config
 	cp ./$(NAME).1.gz $(DESTDIR)/$(MANDIR)/
@@ -59,11 +68,13 @@ install: build
 uninstall:
 	rm -f $(DESTDIR)/$(PREFIX)/$(NAME)
 	rm -rf $(DESTDIR)/$(LIBDIR)/uwufetch
+	rm -f $(DESTDIR)/$(LIBDIR)/lib$(LIB_FILES:.c=.so)
+	rm -f $(DESTDIR)/include/$(LIB_FILES:.c=.h)
 	rm -rf $(ETC_DIR)/uwufetch
 	rm -f $(DESTDIR)/$(MANDIR)/$(NAME).1.gz
 
 clean:
-	rm $(NAME)
+	rm $(NAME) *.o *.so *.a
 
 man:
 	gzip --keep $(NAME).1

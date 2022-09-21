@@ -6,3 +6,6 @@ uwufetch
 .DS_STORE
 .prettierrc
 *.exe
+*.o
+*.so
+*.a
