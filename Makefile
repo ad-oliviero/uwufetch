@@ -68,6 +68,8 @@ install: build
 uninstall:
 	rm -f $(DESTDIR)/$(PREFIX)/$(NAME)
 	rm -rf $(DESTDIR)/$(LIBDIR)/uwufetch
+	rm -f $(DESTDIR)/$(LIBDIR)/lib$(LIB_FILES:.c=.so)
+	rm -f $(DESTDIR)/include/$(LIB_FILES:.c=.h)
 	rm -rf $(ETC_DIR)/uwufetch
 	rm -f $(DESTDIR)/$(MANDIR)/$(NAME).1.gz
 

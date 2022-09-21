@@ -67,10 +67,8 @@ struct info {
 		cpu_model[256],
 		gpu_model[64][256],
 		pkgman_name[64], // package managers string
-		image_name[128],
-		*config_directory, // configuration directory name
-		*cache_content;	   // cache file content
-	int target_width,	   // for the truncate_str function
+		image_name[128];
+	int target_width, // for the truncate_str function
 		screen_width,
 		screen_height,
 		ram_total,
