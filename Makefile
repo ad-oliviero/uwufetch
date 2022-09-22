@@ -7,6 +7,7 @@ CFLAGS_DEBUG = -Wall -Wextra -g -pthread -DUWUFETCH_VERSION=\"$(UWUFETCH_VERSION
 CC = cc
 AR = ar
 DESTDIR = /usr
+RELEASE_SCRIPTS = release_scripts/*.sh
 PLATFORM = $(shell uname)
 
 ifeq ($(PLATFORM), Linux)
@@ -38,10 +39,18 @@ else ifeq ($(PLATFORM), OpenBSD)
 	ETC_DIR		= /etc
 	MANDIR		= share/man/man1
 else ifeq ($(PLATFORM), windows32)
-	CC		= gcc
-	PREFIX		= "C:\Program Files"
-	LIBDIR		=
-	MANDIR		=
+	CC				= gcc
+	PREFIX			= "C:\Program Files"
+	LIBDIR			=
+	MANDIR			=
+	RELEASE_SCRIPTS = release_scripts/*.ps1
+else ifeq ($(PLATFORM), linux4win)
+	CC				= x86_64-w64-mingw32-gcc
+	PREFIX			=
+	CFLAGS			+= -D_WIN32
+	LIBDIR			=
+	MANDIR			=
+	RELEASE_SCRIPTS = release_scripts/*.ps1
 endif
 
 build: $(BIN_FILES) lib
@@ -54,14 +63,14 @@ lib: $(LIB_FILES)
 
 release: build
 	mkdir -pv $(NAME)_$(UWUFETCH_VERSION)
-	cp release_scripts/* $(NAME)_$(UWUFETCH_VERSION)
+	cp $(RELEASE_SCRIPTS) $(NAME)_$(UWUFETCH_VERSION)
 	cp -r res $(NAME)_$(UWUFETCH_VERSION)
 	cp $(NAME) $(NAME)_$(UWUFETCH_VERSION)
 	cp $(NAME).1.gz $(NAME)_$(UWUFETCH_VERSION)
 	cp lib$(LIB_FILES:.c=.so) $(NAME)_$(UWUFETCH_VERSION)
 	cp $(LIB_FILES:.c=.h) $(NAME)_$(UWUFETCH_VERSION)
 	cp default.config $(NAME)_$(UWUFETCH_VERSION)
-	tar -cvzf $(NAME)_$(UWUFETCH_VERSION).tar.gz $(NAME)_$(UWUFETCH_VERSION)
+	tar -czf $(NAME)_$(UWUFETCH_VERSION).tar.gz $(NAME)_$(UWUFETCH_VERSION)
 
 debug: CFLAGS = $(CFLAGS_DEBUG)
 debug: build
@@ -85,7 +94,7 @@ uninstall:
 	rm -f $(DESTDIR)/$(MANDIR)/$(NAME).1.gz
 
 clean:
-	rm -rf $(NAME) $(NAME)_* *.o *.so *.a
+	rm -rf $(NAME) $(NAME)_* *.o *.so *.a *.exe
 
 man:
 	gzip --keep $(NAME).1
