@@ -9,21 +9,25 @@ AR = ar
 DESTDIR = /usr
 RELEASE_SCRIPTS = release_scripts/*.sh
 PLATFORM = $(shell uname)
+PLATFORM_ABBR = $(PLATFORM)
 
 ifeq ($(PLATFORM), Linux)
 	PREFIX		= bin
 	LIBDIR		= lib
 	ETC_DIR		= /etc
 	MANDIR		= share/man/man1
+	PLATFORM_ABBR = linux
 	ifeq ($(shell uname -o), Android)
 		DESTDIR	= /data/data/com.termux/files/usr
 		ETC_DIR = $(DESTDIR)/etc
+		PLATFORM_ABBR = android
 	endif
 else ifeq ($(PLATFORM), Darwin)
 	PREFIX		= local/bin
 	LIBDIR		= local/lib
 	ETC_DIR		= /etc
 	MANDIR		= local/share/man/man1
+	PLATFORM_ABBR = macos
 else ifeq ($(PLATFORM), FreeBSD)
 	CFLAGS		+= -D__FREEBSD__ -D__BSD__
 	CFLAGS_DEBUG += -D__FREEBSD__ -D__BSD__
@@ -31,6 +35,7 @@ else ifeq ($(PLATFORM), FreeBSD)
 	LIBDIR		= lib
 	ETC_DIR		= /etc
 	MANDIR		= share/man/man1
+	PLATFORM_ABBR = freebsd
 else ifeq ($(PLATFORM), OpenBSD)
 	CFLAGS		+= -D__OPENBSD__ -D__BSD__
 	CFLAGS_DEBUG += -D__OPENBSD__ -D__BSD__
@@ -38,12 +43,15 @@ else ifeq ($(PLATFORM), OpenBSD)
 	LIBDIR		= lib
 	ETC_DIR		= /etc
 	MANDIR		= share/man/man1
+	PLATFORM_ABBR = openbsd
 else ifeq ($(PLATFORM), windows32)
 	CC				= gcc
 	PREFIX			= "C:\Program Files"
 	LIBDIR			=
 	MANDIR			=
 	RELEASE_SCRIPTS = release_scripts/*.ps1
+	PLATFORM_ABBR	= win64
+	EXT				= .exe
 else ifeq ($(PLATFORM), linux4win)
 	CC				= x86_64-w64-mingw32-gcc
 	PREFIX			=
@@ -51,6 +59,8 @@ else ifeq ($(PLATFORM), linux4win)
 	LIBDIR			=
 	MANDIR			=
 	RELEASE_SCRIPTS = release_scripts/*.ps1
+	PLATFORM_ABBR	= win64
+	EXT				= .exe
 endif
 
 build: $(BIN_FILES) lib
@@ -62,15 +72,19 @@ lib: $(LIB_FILES)
 	$(CC) $(CFLAGS) -shared -o lib$(LIB_FILES:.c=.so) $(LIB_FILES:.c=.o)
 
 release: build
-	mkdir -pv $(NAME)_$(UWUFETCH_VERSION)
-	cp $(RELEASE_SCRIPTS) $(NAME)_$(UWUFETCH_VERSION)
-	cp -r res $(NAME)_$(UWUFETCH_VERSION)
-	cp $(NAME) $(NAME)_$(UWUFETCH_VERSION)
-	cp $(NAME).1.gz $(NAME)_$(UWUFETCH_VERSION)
-	cp lib$(LIB_FILES:.c=.so) $(NAME)_$(UWUFETCH_VERSION)
-	cp $(LIB_FILES:.c=.h) $(NAME)_$(UWUFETCH_VERSION)
-	cp default.config $(NAME)_$(UWUFETCH_VERSION)
-	tar -czf $(NAME)_$(UWUFETCH_VERSION).tar.gz $(NAME)_$(UWUFETCH_VERSION)
+	mkdir -pv $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
+	cp $(RELEASE_SCRIPTS) $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
+	cp -r res $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
+	cp $(NAME)$(EXT) $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
+	cp $(NAME).1.gz $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
+	cp lib$(LIB_FILES:.c=.so) $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
+	cp $(LIB_FILES:.c=.h) $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
+	cp default.config $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
+ifeq ($(PLATFORM), linux4win)
+	zip -9r $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR).zip $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
+else
+	tar -czf $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR).tar.gz $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
+endif
 
 debug: CFLAGS = $(CFLAGS_DEBUG)
 debug: build
