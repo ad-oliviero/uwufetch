@@ -14,7 +14,7 @@ AmogOwOS, Nyalpine, Nyarch Linuwu, ArcOwO, Nyartix Linuwu, Debinyan, endevaOwO, 
 
 ### Partial support (Either no ASCII art, or no image is provided)
 
-KDE NeOwOn, nixOwOs, xuwulinux; Plus FweeBSD, OwOpenBSD, macOwOS and iOwOS; Plus WinyandOwOws.
+Dewepyn, KDE NeOwOn, nixOwOs, xuwulinux; Plus FweeBSD, OwOpenBSD, macOwOS and iOwOS; Plus WinyandOwOws.
 
 ## Building and installation
 
@@ -42,6 +42,7 @@ From the AUR
 [![uwufetch-git](https://img.shields.io/aur/version/uwufetch-git?color=1793d1&label=uwufetch-git&logo=arch-linux&style=for-the-badge)](https://aur.archlinux.org/packages/uwufetch-git/)
 
 From [Pacstall](https://github.com/pacstall/pacstall#installing)
+
 ```bash
 pacstall -I uwufetch
 ```

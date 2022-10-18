@@ -256,6 +256,7 @@ void uwu_name(struct configuration* config_flags, struct info* user_info) {
 	else STRING_TO_UWU("arcolinux", "ArcOwO Linuwu");
 	else STRING_TO_UWU("artix", "Nyartix Linuwu");
 	else STRING_TO_UWU("debian", "Debinyan");
+	else STRING_TO_UWU("deepin", "Dewepyn");
 	else STRING_TO_UWU("endeavouros", "endeavOwO");
 	else STRING_TO_UWU("EndeavourOS", "endeavOwO");
 	else STRING_TO_UWU("fedora", "Fedowa");
@@ -281,6 +282,7 @@ void uwu_name(struct configuration* config_flags, struct info* user_info) {
 	// BSD
 	else STRING_TO_UWU("freebsd", "FweeBSD");
 	else STRING_TO_UWU("openbsd", "OwOpenBSD");
+
 	// Apple family
 	else STRING_TO_UWU("macos", "macOwOS");
 	else STRING_TO_UWU("ios", "iOwOS");
@@ -322,6 +324,7 @@ void uwu_kernel(char* kernel) {
 		else KERNEL_TO_UWU(splitted[i], "arch", "Nyarch Linuwu");
 		else KERNEL_TO_UWU(splitted[i], "artix", "Nyartix Linuwu");
 		else KERNEL_TO_UWU(splitted[i], "debian", "Debinyan");
+		else KERNEL_TO_UWU(splitted[i], "deepin", "Dewepyn");
 		else KERNEL_TO_UWU(splitted[i], "endeavouros", "endeavOwO");
 		else KERNEL_TO_UWU(splitted[i], "EndeavourOS", "endeavOwO");
 		else KERNEL_TO_UWU(splitted[i], "fedora", "Fedowa");
@@ -716,7 +719,7 @@ void list(char* arg) {
 		   "      %sarch, arcolinux, %sartix, endeavouros %smanjaro, "
 		   "manjaro-arm, %sxerolinux\n\n"
 		   "    %sDebian/%sUbuntu %sbased:\n"
-		   "      %samogos, debian, %slinuxmint, neon %spop, %sraspbian "
+		   "      %samogos, debian, deepin, %slinuxmint, neon %spop, %sraspbian "
 		   "%subuntu\n\n"
 		   "    %sBSD %sbased:\n"
 		   "      %sfreebsd, %sopenbsd, %sm%sa%sc%so%ss, %sios\n\n"
