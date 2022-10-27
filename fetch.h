@@ -97,4 +97,9 @@ struct info {
 // Retrieves system information
 struct info get_info();
 
+#ifdef __APPLE__
+// gets the uptime for mac os
+int uptime_apple();
+#endif
+
 #endif // _FETCH_H_
