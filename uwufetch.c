@@ -696,9 +696,11 @@ int print_cache(struct configuration* config_flags, struct info* user_info) {
 	pclose(mem_active_fp);
 	pclose(mem_compressed_fp);
 
-	int mem_wired	   = atoi(mem_wired_ch);
-	int mem_active	   = atoi(mem_active_ch);
-	int mem_compressed = atoi(mem_compressed_ch);
+	int mem_wired		  = atoi(mem_wired_ch);
+	int mem_active		  = atoi(mem_active_ch);
+	int mem_compressed	  = atoi(mem_compressed_ch);
+	int64_t mem_buffer	  = 0;
+	size_t mem_buffer_len = sizeof(mem_buffer);
 
 	// Total ram
 	sysctlbyname("hw.memsize", &mem_buffer, &mem_buffer_len, NULL, 0);
