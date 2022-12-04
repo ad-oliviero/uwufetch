@@ -95,6 +95,22 @@ I am not a copyright expert, and maybe I am doing all wrong things, please corre
 
 #
 
+## Devuan
+
+<img title="Devunyan" src="https://raw.githubusercontent.com/ItsHoul/blobicons/main/PNG/devuan.png" alt="image" width="100">
+
+### Base artwork:
+
+-   Copyright Holder: Devuan Editors
+-   License: [No license was mentioned](https://gitea.devuan.org/devuan/documentation/src/branch/master/art/graphics/logo/)
+-   [Reference](https://gitea.devuan.org/devuan/documentation/src/branch/master/art/graphics/logo/devuan-emblem.svg)
+
+### Modifications
+
+-   Description: From [blobicons](https://github.com/ItsHoul/blobicons)
+-   Copyright Holder: [Houl](https://github.com/ItsHoul)
+-   [Reference](https://github.com/ItsHoul/blobicons/blob/main/PNG/devuan.png)
+
 ## Endeavour OS
 
 <img title="Endowo Os" src="https://raw.githubusercontent.com/TheDarkBug/uwufetch/main/res/endeavouros.png" alt="image" width="100">
