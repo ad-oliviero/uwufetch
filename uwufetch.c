@@ -256,6 +256,7 @@ void uwu_name(struct configuration* config_flags, struct info* user_info) {
 	else STRING_TO_UWU("arcolinux", "ArcOwO Linuwu");
 	else STRING_TO_UWU("artix", "Nyartix Linuwu");
 	else STRING_TO_UWU("debian", "Debinyan");
+	else STRING_TO_UWU("devuan", "Devunyan");
 	else STRING_TO_UWU("deepin", "Dewepyn");
 	else STRING_TO_UWU("endeavouros", "endeavOwO");
 	else STRING_TO_UWU("EndeavourOS", "endeavOwO");
