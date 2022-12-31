@@ -406,7 +406,7 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
 	#define responsively_printf(buf, format, ...)         \
 		{                                                 \
 			sprintf(buf, format, __VA_ARGS__);            \
-			printf("%.*s\n", user_info->ws_col - 1, buf); \
+			printf("%.*s\n", user_info->ws_col - 4, buf); \
 			line_count++;                                 \
 		}
 #else // _WIN32
@@ -414,7 +414,7 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
 	#define responsively_printf(buf, format, ...)             \
 		{                                                     \
 			sprintf(buf, format, __VA_ARGS__);                \
-			printf("%.*s\n", user_info->win.ws_col - 1, buf); \
+			printf("%.*s\n", user_info->win.ws_col - 4, buf); \
 			line_count++;                                     \
 		}
 #endif					  // _WIN32
@@ -467,7 +467,7 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
 		system("ls $(brew --cellar) | wc -l | awk -F' ' '{print \"  \x1b[34m                   \x1b[0m\x1b[1mPKGS\x1b[0m        \"$1 \" (brew)\"}'");
 #else
 	if (config_flags->show_pkgs) // print pkgs
-		responsively_printf(print_buf, "%s%s%sPKGS        %s%s%d: %s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, NORMAL, user_info->pkgs, user_info->pkgman_name);
+		responsively_printf(print_buf, "%s%s%sPKGS        %s%d: %s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->pkgs, user_info->pkgman_name);
 #endif
 	if (config_flags->show_uptime) { // print uptime
 		if (user_info->uptime == 0) {
