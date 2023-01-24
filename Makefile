@@ -14,6 +14,7 @@ PLATFORM_ABBR = $(PLATFORM)
 ifeq ($(PLATFORM), Linux)
 	PREFIX		= bin
 	LIBDIR		= lib
+	INCDIR      = include
 	ETC_DIR		= /etc
 	MANDIR		= share/man/man1
 	PLATFORM_ABBR = linux
@@ -25,6 +26,7 @@ ifeq ($(PLATFORM), Linux)
 else ifeq ($(PLATFORM), Darwin)
 	PREFIX		= local/bin
 	LIBDIR		= local/lib
+	INCDIR      = local/include
 	ETC_DIR		= /etc
 	MANDIR		= local/share/man/man1
 	PLATFORM_ABBR = macos
@@ -33,6 +35,7 @@ else ifeq ($(PLATFORM), FreeBSD)
 	CFLAGS_DEBUG += -D__FREEBSD__ -D__BSD__
 	PREFIX		= bin
 	LIBDIR		= lib
+	INCDIR      = include
 	ETC_DIR		= /etc
 	MANDIR		= share/man/man1
 	PLATFORM_ABBR = freebsd
@@ -41,6 +44,7 @@ else ifeq ($(PLATFORM), OpenBSD)
 	CFLAGS_DEBUG += -D__OPENBSD__ -D__BSD__
 	PREFIX		= bin
 	LIBDIR		= lib
+	INCDIR      = include
 	ETC_DIR		= /etc
 	MANDIR		= share/man/man1
 	PLATFORM_ABBR = openbsd
@@ -48,6 +52,7 @@ else ifeq ($(PLATFORM), windows32)
 	CC				= gcc
 	PREFIX			= "C:\Program Files"
 	LIBDIR			=
+	INCDIR          =
 	MANDIR			=
 	RELEASE_SCRIPTS = release_scripts/*.ps1
 	PLATFORM_ABBR	= win64
@@ -57,6 +62,7 @@ else ifeq ($(PLATFORM), linux4win)
 	PREFIX			=
 	CFLAGS			+= -D_WIN32
 	LIBDIR			=
+	INCDIR          =
 	MANDIR			=
 	RELEASE_SCRIPTS = release_scripts/*.ps1
 	PLATFORM_ABBR	= win64
@@ -94,7 +100,7 @@ install: build
 	mkdir -pv $(DESTDIR)/$(PREFIX) $(DESTDIR)/$(LIBDIR)/$(NAME) $(DESTDIR)/$(MANDIR) $(ETC_DIR)/$(NAME)
 	cp $(NAME) $(DESTDIR)/$(PREFIX)
 	cp lib$(LIB_FILES:.c=.so) $(DESTDIR)/$(LIBDIR)
-	cp $(LIB_FILES:.c=.h) $(DESTDIR)/include
+	cp $(LIB_FILES:.c=.h) $(DESTDIR)/$(INCDIR)
 	cp -r res/* $(DESTDIR)/$(LIBDIR)/$(NAME)
 	cp default.config $(ETC_DIR)/$(NAME)/config
 	cp ./$(NAME).1.gz $(DESTDIR)/$(MANDIR)
