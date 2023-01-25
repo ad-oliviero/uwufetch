@@ -28,20 +28,20 @@
 	#else
 		#include <time.h>
 	#endif // defined(__OPENBSD__)
-#else	   // defined(__APPLE__) || defined(__BSD__)
+#else		 // defined(__APPLE__) || defined(__BSD__)
 	#ifdef __BSD__
 	#else // defined(__BSD__) || defined(_WIN32)
 		#ifndef _WIN32
 			#ifndef __OPENBSD__
 				#include <sys/sysinfo.h>
 				#include <pthread.h> // linux only right now
-			#else					 // __OPENBSD__
-			#endif					 // __OPENBSD__
-		#else						 // _WIN32
+			#else									 // __OPENBSD__
+			#endif								 // __OPENBSD__
+		#else										 // _WIN32
 			#include <sysinfoapi.h>
 		#endif // _WIN32
-	#endif	   // defined(__BSD__) || defined(_WIN32)
-#endif		   // defined(__APPLE__) || defined(__BSD__)
+	#endif	 // defined(__BSD__) || defined(_WIN32)
+#endif		 // defined(__APPLE__) || defined(__BSD__)
 #ifndef _WIN32
 	#include <sys/ioctl.h>
 	#include <sys/utsname.h>
@@ -62,7 +62,7 @@ char cpu_buffer[CPUBUFFERLEN];
 size_t cpu_buffer_len = CPUBUFFERLEN;
 
 // Installed RAM
-int64_t mem_buffer	  = 0;
+int64_t mem_buffer		= 0;
 size_t mem_buffer_len = sizeof(mem_buffer);
 
 // uptime
@@ -72,7 +72,7 @@ size_t time_buffer_len = sizeof(time_buffer);
 
 struct package_manager {
 	char command_string[128]; // command to get number of packages installed
-	char pkgman_name[16];	  // name of the package manager
+	char pkgman_name[16];			// name of the package manager
 };
 
 struct argvp {
@@ -97,7 +97,7 @@ int uptime_apple() {
 #ifdef __BSD__
 // gets the uptime for freebsd
 int uptime_freebsd() { // this code is from coreutils uptime: https://github.com/coreutils/coreutils/blob/master/src/uptime.c
-	int boot_time		  = 0;
+	int boot_time					= 0;
 	static int request[2] = {CTL_KERN, KERN_BOOTTIME};
 	struct timeval result;
 	size_t result_len = sizeof result;
@@ -128,13 +128,13 @@ void remove_brackets(char* str) {
 
 // tries to get memory usage
 void* get_ram(void* argp) {
-	char* buffer		   = ((struct argvp*)argp)->buffer;
-	int buf_sz			   = ((struct argvp*)argp)->buf_sz;
+	char* buffer					 = ((struct argvp*)argp)->buffer;
+	int buf_sz						 = ((struct argvp*)argp)->buf_sz;
 	struct info* user_info = ((struct argvp*)argp)->user_info;
 #ifndef __APPLE__
 	#ifdef _WIN32
-	FILE* mem_used_fp	   = popen("wmic os get freevirtualmemory", "r");	   // free memory
-	FILE* mem_total_fp	   = popen("wmic os get totalvirtualmemorysize", "r"); // total memory
+	FILE* mem_used_fp			 = popen("wmic os get freevirtualmemory", "r");			 // free memory
+	FILE* mem_total_fp		 = popen("wmic os get totalvirtualmemorysize", "r"); // total memory
 	char mem_used_ch[2137] = {0}, mem_total_ch[2137] = {0};
 
 	while (fgets(mem_total_ch, sizeof(mem_total_ch), mem_total_fp) != NULL) {
@@ -152,7 +152,7 @@ void* get_ram(void* argp) {
 			continue;
 		else
 			user_info->ram_used =
-				user_info->ram_total - (atoi(mem_used_ch) / 1024);
+					user_info->ram_total - (atoi(mem_used_ch) / 1024);
 	}
 	pclose(mem_used_fp);
 	pclose(mem_total_fp);
@@ -198,11 +198,11 @@ void* get_ram(void* argp) {
 	fclose(meminfo);
 	#endif
 #else // if __APPLE__
-	  // Used
+	// Used
 	FILE *mem_wired_fp,
-		*mem_active_fp, *mem_compressed_fp;
-	mem_wired_fp	  = popen("vm_stat | awk '/wired/ { printf $4 }' | cut -d '.' -f 1", "r");
-	mem_active_fp	  = popen("vm_stat | awk '/active/ { printf $3 }' | cut -d '.' -f 1", "r");
+			*mem_active_fp, *mem_compressed_fp;
+	mem_wired_fp			= popen("vm_stat | awk '/wired/ { printf $4 }' | cut -d '.' -f 1", "r");
+	mem_active_fp			= popen("vm_stat | awk '/active/ { printf $3 }' | cut -d '.' -f 1", "r");
 	mem_compressed_fp = popen("vm_stat | awk '/occupied/ { printf $5 }' | cut -d '.' -f 1", "r");
 	char mem_wired_ch[2137], mem_active_ch[2137], mem_compressed_ch[2137];
 	while (fgets(mem_wired_ch, sizeof(mem_wired_ch), mem_wired_fp) != NULL)
@@ -214,8 +214,8 @@ void* get_ram(void* argp) {
 	pclose(mem_active_fp);
 	pclose(mem_compressed_fp);
 
-	int mem_wired	   = atoi(mem_wired_ch);
-	int mem_active	   = atoi(mem_active_ch);
+	int mem_wired			 = atoi(mem_wired_ch);
+	int mem_active		 = atoi(mem_active_ch);
 	int mem_compressed = atoi(mem_compressed_ch);
 
 	// Total
@@ -228,10 +228,10 @@ void* get_ram(void* argp) {
 
 // tries to get installed gpu(s)
 void* get_gpu(void* argp) {
-	char* buffer		   = ((struct argvp*)argp)->buffer;
-	int buf_sz			   = ((struct argvp*)argp)->buf_sz;
+	char* buffer					 = ((struct argvp*)argp)->buffer;
+	int buf_sz						 = ((struct argvp*)argp)->buf_sz;
 	struct info* user_info = ((struct argvp*)argp)->user_info;
-	int gpuc			   = 0; // gpu counter
+	int gpuc							 = 0; // gpu counter
 #ifndef _WIN32
 	setenv("LANG", "en_US", 1); // force language to english
 #endif
@@ -281,8 +281,8 @@ void* get_gpu(void* argp) {
 
 // tries to get screen resolution
 void* get_res(void* argp) {
-	char* buffer		   = ((struct argvp*)argp)->buffer;
-	int buf_sz			   = ((struct argvp*)argp)->buf_sz;
+	char* buffer					 = ((struct argvp*)argp)->buffer;
+	int buf_sz						 = ((struct argvp*)argp)->buf_sz;
 	struct info* user_info = ((struct argvp*)argp)->user_info;
 #ifndef _WIN32
 	FILE* resolution = popen("xwininfo -root 2> /dev/null | grep -E 'Width|Height'", "r");
@@ -299,34 +299,34 @@ void* get_res(void* argp) {
 // tries to get the installed package count and package managers name
 void* get_pkg(void* argp) { // this is just a function that returns the total of installed packages
 	struct info* user_info = ((struct argvp*)argp)->user_info;
-	user_info->pkgs		   = 0;
+	user_info->pkgs				 = 0;
 #ifndef __APPLE__
 	// this function is not used on mac os because it causes lots of problems
 	#ifndef _WIN32
 	// all supported package managers
 	struct package_manager pkgmans[] =
-		{{"apt list --installed 2> /dev/null | wc -l", "(apt)"},
-		 {"apk info 2> /dev/null | wc -l", "(apk)"},
-		 //  {"dnf list installed 2> /dev/null | wc -l", "(dnf)"}, // according to https://stackoverflow.com/questions/48570019/advantages-of-dnf-vs-rpm-on-fedora, dnf and rpm return the same number of packages
-		 {"qlist -I 2> /dev/null | wc -l", "(emerge)"},
-		 {"flatpak list 2> /dev/null | wc -l", "(flatpak)"},
-		 {"snap list 2> /dev/null | wc -l", "(snap)"},
-		 {"guix package --list-installed 2> /dev/null | wc -l", "(guix)"},
-		 {"nix-store -q --requisites /run/current-system/sw 2> /dev/null | wc -l", "(nix)"},
-		 {"pacman -Qq 2> /dev/null | wc -l", "(pacman)"},
-		 {"pkg info 2>/dev/null | wc -l", "(pkg)"},
-		 {"pkg_info 2>/dev/null | wc -l | sed \"s/ //g\"", "(pkg)"},
-		 {"port installed 2> /dev/null | tail -n +2 | wc -l", "(port)"},
-		 {"brew list 2> /dev/null | wc -l", "(brew)"},
-		 {"rpm -qa --last 2> /dev/null | wc -l", "(rpm)"},
-		 {"xbps-query -l 2> /dev/null | wc -l", "(xbps)"},
-		 {"zypper -q se --installed-only 2> /dev/null | wc -l", "(zypper)"}};
+			{{"apt list --installed 2> /dev/null | wc -l", "(apt)"},
+			 {"apk info 2> /dev/null | wc -l", "(apk)"},
+			 //  {"dnf list installed 2> /dev/null | wc -l", "(dnf)"}, // according to https://stackoverflow.com/questions/48570019/advantages-of-dnf-vs-rpm-on-fedora, dnf and rpm return the same number of packages
+			 {"qlist -I 2> /dev/null | wc -l", "(emerge)"},
+			 {"flatpak list 2> /dev/null | wc -l", "(flatpak)"},
+			 {"snap list 2> /dev/null | wc -l", "(snap)"},
+			 {"guix package --list-installed 2> /dev/null | wc -l", "(guix)"},
+			 {"nix-store -q --requisites /run/current-system/sw 2> /dev/null | wc -l", "(nix)"},
+			 {"pacman -Qq 2> /dev/null | wc -l", "(pacman)"},
+			 {"pkg info 2>/dev/null | wc -l", "(pkg)"},
+			 {"pkg_info 2>/dev/null | wc -l | sed \"s/ //g\"", "(pkg)"},
+			 {"port installed 2> /dev/null | tail -n +2 | wc -l", "(port)"},
+			 {"brew list 2> /dev/null | wc -l", "(brew)"},
+			 {"rpm -qa --last 2> /dev/null | wc -l", "(rpm)"},
+			 {"xbps-query -l 2> /dev/null | wc -l", "(xbps)"},
+			 {"zypper -q se --installed-only 2> /dev/null | wc -l", "(zypper)"}};
 	const int pkgman_count = sizeof(pkgmans) / sizeof(pkgmans[0]); // number of package managers
-	int comma_separator	   = 0;
+	int comma_separator		 = 0;
 	for (int i = 0; i < pkgman_count; i++) {
 		struct package_manager* current = &pkgmans[i]; // pointer to current package manager
 
-		FILE* fp			   = popen(current->command_string, "r"); // trying current package manager
+		FILE* fp							 = popen(current->command_string, "r"); // trying current package manager
 		unsigned int pkg_count = 0;
 
 		if (fscanf(fp, "%u", &pkg_count) == 3) continue; // if a number is found, continue the loop
@@ -343,7 +343,7 @@ void* get_pkg(void* argp) { // this is just a function that returns the total of
 			strcat(user_info->pkgman_name, current->pkgman_name);
 		}
 	}
-	#else  // _WIN32
+	#else	 // _WIN32
 	// chocolatey for windows
 	FILE* fp = popen("choco list -l --no-color 2> nul", "r");
 	unsigned int pkg_count;
@@ -365,17 +365,17 @@ void* get_pkg(void* argp) { // this is just a function that returns the total of
 }
 
 // Retrieves system information
-struct info get_info() {
+struct info get_info(struct flags flags) {
 	struct info user_info = {0};
-	int buf_sz			  = 256;
+	int buf_sz						= 256;
 	char buffer[buf_sz]; // line buffer
-						 // get terminal width used to truncate long names
+											 // get terminal width used to truncate long names
 #ifndef _WIN32
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &user_info.win);
 	user_info.target_width = user_info.win.ws_col - 30;
-#else  // _WIN32
+#else	 // _WIN32
 	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-	user_info.ws_col  = csbi.srWindow.Right - csbi.srWindow.Left - 29;
+	user_info.ws_col	= csbi.srWindow.Right - csbi.srWindow.Left - 29;
 	user_info.ws_rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
 #endif // _WIN32
 
@@ -383,20 +383,20 @@ struct info get_info() {
 #ifdef __OPENBSD__
 	FILE* os_release = popen("echo ID=openbsd", "r"); // os-release does not exist in OpenBSD
 #else
-	FILE* os_release  = fopen("/etc/os-release", "r"); // os name file
+	FILE* os_release	= fopen("/etc/os-release", "r"); // os name file
 #endif
 #ifndef __BSD__
 	FILE* cpuinfo = fopen("/proc/cpuinfo", "r"); // cpu name file for not-freebsd systems
 #else
-	FILE* cpuinfo	  = popen("sysctl hw.model", "r"); // cpu name command for freebsd
+	FILE* cpuinfo			= popen("sysctl hw.model", "r"); // cpu name command for freebsd
 #endif
 	// trying to get some kind of information about the name of the computer (hopefully a product full name)
 	FILE* model_fp /* = fopen("/sys/devices/virtual/dmi/id/product_version", "r") */; // trying to get product version
 	// if (!model_fp) model_fp = fopen("/sys/devices/virtual/dmi/id/product_name", "r"); // trying to get product name
 	// if (!model_fp) model_fp = fopen("/sys/devices/virtual/dmi/id/board_name", "r");	  // trying to get motherboard name
 	char model_filename[3][256] = {"/sys/devices/virtual/dmi/id/product_version",
-								   "/sys/devices/virtual/dmi/id/product_name",
-								   "/sys/devices/virtual/dmi/id/board_name"};
+																 "/sys/devices/virtual/dmi/id/product_name",
+																 "/sys/devices/virtual/dmi/id/board_name"};
 
 	char tmp_model[3][256]; // temporary variable to store the contents of all 3 files
 	int longest_model = 0, best_len = 0, currentlen = 0;
@@ -411,7 +411,7 @@ struct info get_info() {
 		// choose the file with the longest name
 		currentlen = strlen(tmp_model[i]);
 		if (currentlen > best_len) {
-			best_len	  = currentlen;
+			best_len			= currentlen;
 			longest_model = i;
 		}
 	}
@@ -436,18 +436,18 @@ struct info get_info() {
 	#elif defined(__OPENBSD__)
 		#define HOSTCTL "hw.product"
 	#endif
-	model_fp		  = popen("sysctl " HOSTCTL, "r");
+	model_fp					= popen("sysctl " HOSTCTL, "r");
 	while (fgets(buffer, sizeof(buffer), model_fp))
 		if (sscanf(buffer, HOSTCTL
 	#ifndef __OPENBSD__
-				   ": "
+							 ": "
 	#else
-				   "="
+							 "="
 	#endif
-				   "%[^\n]",
-				   user_info.model))
+							 "%[^\n]",
+							 user_info.model))
 			break;
-#endif				  // _WIN32
+#endif							// _WIN32
 	if (os_release) { // get normal vars if os_release exists
 		while (fgets(buffer, sizeof(buffer), os_release) && !(sscanf(buffer, "\nID=\"%s\"", user_info.os_name) || sscanf(buffer, "\nID=%s", user_info.os_name)))
 			;
@@ -470,12 +470,12 @@ struct info get_info() {
 #ifdef __BSD__
 			if (sscanf(buffer, "hw.model"
 	#ifdef __FREEBSD__
-							   ": "
+												 ": "
 	#elif defined(__OPENBSD__)
-							   "="
+												 "="
 	#endif
-							   "%[^\n]",
-					   user_info.cpu_model))
+												 "%[^\n]",
+								 user_info.cpu_model))
 				break;
 #else
 			if (sscanf(buffer, "model name    : %[^\n]", user_info.cpu_model))
@@ -491,9 +491,9 @@ struct info get_info() {
 		fclose(os_release);
 	} else { // try for android vars, next for Apple var, or unknown system
 		// android
-		DIR* system_app		 = opendir("/system/app/");
+		DIR* system_app			 = opendir("/system/app/");
 		DIR* system_priv_app = opendir("/system/priv-app/");
-		DIR* library		 = opendir("/Library/");
+		DIR* library				 = opendir("/Library/");
 		if (system_app && system_priv_app) {
 			closedir(system_app);
 			closedir(system_priv_app);
@@ -529,7 +529,7 @@ struct info get_info() {
 	fclose(cpuinfo);
 #endif
 #ifndef _WIN32
-	gethostname(user_info.host, 256);  // hostname
+	gethostname(user_info.host, 256);	 // hostname
 	char* tmp_shell = getenv("SHELL"); // shell name
 	if (tmp_shell == NULL)
 		sprintf(user_info.shell, "%s", "");
@@ -539,7 +539,7 @@ struct info get_info() {
 	if (strlen(user_info.shell) > 16) // android shell name was too long
 		memmove(&user_info.shell, &user_info.shell[27], strlen(user_info.shell));
 	#endif
-#else  // if _WIN32
+#else	 // if _WIN32
 	// cpu name
 	cpuinfo = popen("wmic cpu get caption", "r");
 	while (fgets(buffer, sizeof(buffer), cpuinfo)) {
@@ -559,7 +559,7 @@ struct info get_info() {
 		else {
 			sscanf(buffer, "%[^\\]%s", user_info.host, user_info.user);
 			memmove(user_info.user, user_info.user + 1,
-					sizeof(user_info.user) - 1);
+							sizeof(user_info.user) - 1);
 			break;
 		}
 	}
@@ -591,7 +591,7 @@ struct info get_info() {
 	truncate_str(user_info.sys_var.release, user_info.target_width);
 	sprintf(user_info.kernel, "%s %s %s", user_info.sys_var.sysname, user_info.sys_var.release, user_info.sys_var.machine); // kernel name
 	truncate_str(user_info.kernel, user_info.target_width);
-#else  // _WIN32
+#else	 // _WIN32
 	// os name and windows version
 	sprintf(user_info.os_name, "windows");
 	FILE* kernel_fp = popen("wmic computersystem get systemtype", "r");
@@ -613,9 +613,9 @@ struct info get_info() {
 	get_pkg(&user_info);
 #else
 	// is this overpowered? nah
-	pthread_t tids[4]			  = {0};
+	pthread_t tids[4]							= {0};
 	void* (*fnptr[4])(void* argp) = {get_ram, get_gpu, get_res, get_pkg};
-	struct argvp args			  = (struct argvp){buffer, buf_sz, &user_info};
+	struct argvp args							= (struct argvp){buffer, buf_sz, &user_info};
 	for (int i = 0; i < 4; i++)
 		pthread_create(&tids[i], NULL, fnptr[i], &args);
 	for (int i = 0; i < 4; i++)
