@@ -34,9 +34,10 @@
 		#ifndef _WIN32
 			#ifndef __OPENBSD__
 				#include <sys/sysinfo.h>
-			#else  // __OPENBSD__
-			#endif // __OPENBSD__
-		#else	   // _WIN32
+				#include <pthread.h> // linux only right now
+			#else					 // __OPENBSD__
+			#endif					 // __OPENBSD__
+		#else						 // _WIN32
 			#include <sysinfoapi.h>
 		#endif // _WIN32
 	#endif	   // defined(__BSD__) || defined(_WIN32)
@@ -72,6 +73,12 @@ size_t time_buffer_len = sizeof(time_buffer);
 struct package_manager {
 	char command_string[128]; // command to get number of packages installed
 	char pkgman_name[16];	  // name of the package manager
+};
+
+struct argvp {
+	char* buffer;
+	int buf_sz;
+	struct info* user_info;
 };
 
 #ifdef __APPLE__
@@ -120,7 +127,10 @@ void remove_brackets(char* str) {
 }
 
 // tries to get memory usage
-void get_ram(char* buffer, int buf_sz, struct info* user_info) {
+void* get_ram(void* argp) {
+	char* buffer		   = ((struct argvp*)argp)->buffer;
+	int buf_sz			   = ((struct argvp*)argp)->buf_sz;
+	struct info* user_info = ((struct argvp*)argp)->user_info;
 #ifndef __APPLE__
 	#ifdef _WIN32
 	FILE* mem_used_fp	   = popen("wmic os get freevirtualmemory", "r");	   // free memory
@@ -213,11 +223,15 @@ void get_ram(char* buffer, int buf_sz, struct info* user_info) {
 	user_info->ram_used	 = ((mem_wired + mem_active + mem_compressed) * 4 / 1024);
 	user_info->ram_total = mem_buffer / 1024 / 1024;
 #endif
+	return 0;
 }
 
 // tries to get installed gpu(s)
-void get_gpu(char* buffer, int buf_sz, struct info* user_info) {
-	int gpuc = 0; // gpu counter
+void* get_gpu(void* argp) {
+	char* buffer		   = ((struct argvp*)argp)->buffer;
+	int buf_sz			   = ((struct argvp*)argp)->buf_sz;
+	struct info* user_info = ((struct argvp*)argp)->user_info;
+	int gpuc			   = 0; // gpu counter
 #ifndef _WIN32
 	setenv("LANG", "en_US", 1); // force language to english
 #endif
@@ -262,10 +276,14 @@ void get_gpu(char* buffer, int buf_sz, struct info* user_info) {
 		remove_brackets(user_info->gpu_model[i]);
 		truncate_str(user_info->gpu_model[i], user_info->target_width);
 	}
+	return 0;
 }
 
 // tries to get screen resolution
-void get_res(char* buffer, int buf_sz, struct info* user_info) {
+void* get_res(void* argp) {
+	char* buffer		   = ((struct argvp*)argp)->buffer;
+	int buf_sz			   = ((struct argvp*)argp)->buf_sz;
+	struct info* user_info = ((struct argvp*)argp)->user_info;
 #ifndef _WIN32
 	FILE* resolution = popen("xwininfo -root 2> /dev/null | grep -E 'Width|Height'", "r");
 	while (fgets(buffer, buf_sz, resolution)) {
@@ -275,11 +293,13 @@ void get_res(char* buffer, int buf_sz, struct info* user_info) {
 #else
 	// TODO: get resolution on windows
 #endif
+	return 0;
 }
 
 // tries to get the installed package count and package managers name
-void get_pkg(struct info* user_info) { // this is just a function that returns the total of installed packages
-	user_info->pkgs = 0;
+void* get_pkg(void* argp) { // this is just a function that returns the total of installed packages
+	struct info* user_info = ((struct argvp*)argp)->user_info;
+	user_info->pkgs		   = 0;
 #ifndef __APPLE__
 	// this function is not used on mac os because it causes lots of problems
 	#ifndef _WIN32
@@ -341,6 +361,7 @@ void get_pkg(struct info* user_info) { // this is just a function that returns t
 	strcat(user_info->pkgman_name, "(chocolatey)");
 	#endif // _WIN32
 #endif
+	return 0;
 }
 
 // Retrieves system information
@@ -348,8 +369,7 @@ struct info get_info() {
 	struct info user_info = {0};
 	int buf_sz			  = 256;
 	char buffer[buf_sz]; // line buffer
-
-	// get terminal width used to truncate long names
+						 // get terminal width used to truncate long names
 #ifndef _WIN32
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &user_info.win);
 	user_info.target_width = user_info.win.ws_col - 30;
@@ -586,9 +606,20 @@ struct info get_info() {
 	}
 	if (kernel_fp) pclose(kernel_fp);
 #endif // _WIN32
+#ifndef __linux__
 	get_ram(buffer, buf_sz, &user_info);
 	get_gpu(buffer, buf_sz, &user_info);
 	get_res(buffer, buf_sz, &user_info);
 	get_pkg(&user_info);
+#else
+	// is this overpowered? nah
+	pthread_t tids[4]			  = {0};
+	void* (*fnptr[4])(void* argp) = {get_ram, get_gpu, get_res, get_pkg};
+	struct argvp args			  = (struct argvp){buffer, buf_sz, &user_info};
+	for (int i = 0; i < 4; i++)
+		pthread_create(&tids[i], NULL, fnptr[i], &args);
+	for (int i = 0; i < 4; i++)
+		pthread_join(tids[i], NULL);
+#endif
 	return user_info;
 }
