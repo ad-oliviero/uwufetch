@@ -1,0 +1,17 @@
+#distro=arch
+#image=~/Pictures/picture.png
+ascii=true
+user=false
+os=false
+host=false
+kernel=false
+cpu=false
+gpu=0
+gpu=3
+gpu=1
+ram=false
+resolution=false
+shell=false
+pkgs=false
+uptime=false
+colors=false

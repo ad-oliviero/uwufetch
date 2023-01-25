@@ -11,7 +11,7 @@ AlignEscapedNewlinesLeft: true
 AlignTrailingComments: true
 AllowShortIfStatementsOnASingleLine: true
 AllowShortLoopsOnASingleLine: true
-ColumnLimit: 0
+ColumnLimit: 1000
 MaxEmptyLinesToKeep: 1
 PointerAlignment: Left
 ...
