@@ -64,15 +64,11 @@ struct info {
 			model[256],	 // model name
 			kernel[256], // kernel name (linux 5.x-whatever)
 			os_name[64], // os name (arch linux, windows, mac os)
-			cpu_model[256],
-			gpu_model[64][256],
+			cpu_model[256], gpu_model[64][256],
 			pkgman_name[64], // package managers string
 			image_name[128];
 	int target_width, // for the truncate_str function
-			screen_width,
-			screen_height,
-			ram_total,
-			ram_used,
+			screen_width, screen_height, ram_total, ram_used,
 			pkgs; // full package count
 	long uptime;
 
@@ -95,29 +91,29 @@ struct info {
 #endif // _WIN32
 };
 
-// decide what info should be retrieved
-struct flags {
-	bool user,
-			host,
-			shell,
-			model,
-			kernel,
-			os_name,
-			cpu_model,
-			gpu_model,
-			pkgman_name,
-			image_name,
-			target_width,
-			screen_width,
-			screen_height,
-			ram_total,
-			ram_used,
-			pkgs,
-			uptime;
+// Args struct for get_something thread oriented functions
+struct thread_varg {
+	char* buffer;
+	int buf_sz;
+	struct info* user_info;
+	bool thread_flags[7];
 };
 
+// decide what info should be retrieved
+struct flags {
+	bool user, shell, model, kernel, os, cpu, gpu, resolution, ram, pkgs, uptime;
+};
+
+void get_sys(struct info*);
+void* get_ram(void*);
+void* get_gpu(void*);
+void* get_res(void*);
+void* get_pkg(void*);
+void* get_model(void*);
+void* get_ker(void*);
+void* get_upt(void*);
 // Retrieves system information
-struct info get_info(struct flags);
+void get_info(struct flags, struct info* user_info);
 
 #ifdef __APPLE__
 // gets the uptime for mac os
