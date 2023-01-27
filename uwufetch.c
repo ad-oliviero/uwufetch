@@ -273,6 +273,7 @@ void uwu_name(struct configuration* config_flags, struct info* user_info) {
 	else STRING_TO_UWU("opensuse-tumbleweed", "OwOpenSUSE Tumbleweed");
 	else STRING_TO_UWU("pop", "PopOwOS");
 	else STRING_TO_UWU("raspbian", "RaspNyan");
+	else STRING_TO_UWU("rocky", "Wocky Linuwu");
 	else STRING_TO_UWU("slackware", "Swackwawe");
 	else STRING_TO_UWU("solus", "sOwOlus");
 	else STRING_TO_UWU("ubuntu", "Uwuntu");
@@ -341,6 +342,7 @@ void uwu_kernel(char* kernel) {
 		else KERNEL_TO_UWU(splitted[i], "opensuse-tumbleweed", "OwOpenSUSE Tumbleweed");
 		else KERNEL_TO_UWU(splitted[i], "pop", "PopOwOS");
 		else KERNEL_TO_UWU(splitted[i], "raspbian", "RaspNyan");
+		else KERNEL_TO_UWU(splitted[i], "rocky", "Wocky Linuwu");
 		else KERNEL_TO_UWU(splitted[i], "slackware", "Swackwawe");
 		else KERNEL_TO_UWU(splitted[i], "solus", "sOwOlus");
 		else KERNEL_TO_UWU(splitted[i], "ubuntu", "Uwuntu");
@@ -726,14 +728,16 @@ void list(char* arg) {
 		   "%subuntu\n\n"
 		   "    %sBSD %sbased:\n"
 		   "      %sfreebsd, %sopenbsd, %sm%sa%sc%so%ss, %sios\n\n"
+		   "    %sRHEL %sbased:\n"
+		   "      %sfedora, %s"
 		   "    %sOther/spare distributions:\n"
-		   "      %salpine, %sfedora, %sgentoo, %sslackware, %ssolus, %svoid, "
+		   "      %salpine, %sgentoo, %sslackware, %ssolus, %svoid, "
 		   "opensuse-leap, android, %sgnu, guix, %swindows, %sunknown\n\n",
 		   arg, BLUE, NORMAL, BLUE, MAGENTA, GREEN, BLUE,					// Arch based colors
 		   RED, YELLOW, NORMAL, RED, GREEN, BLUE, RED, YELLOW,				// Debian based colors
 		   RED, NORMAL, RED, YELLOW, GREEN, YELLOW, RED, PINK, BLUE, WHITE, // BSD/Apple colors
-		   NORMAL, BLUE, BLUE, PINK, MAGENTA, WHITE, GREEN, YELLOW, BLUE,
-		   WHITE); // Other/spare distributions colors
+		   RED, NORMAL, BLUE, GREEN,										// RHEL colors
+		   NORMAL, BLUE, PINK, MAGENTA, WHITE, GREEN, YELLOW, BLUE, WHITE); // Other/spare distributions colors
 }
 
 // prints the usage

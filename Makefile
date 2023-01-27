@@ -116,6 +116,10 @@ uninstall:
 clean:
 	rm -rf $(NAME) $(NAME)_* *.o *.so *.a *.exe
 
+ascii_debug: build
+ascii_debug:
+	ls res/ascii/$(ASCII).txt | entr -c ./$(NAME) -d $(ASCII)
+
 man:
 	gzip --keep $(NAME).1
 
