@@ -261,6 +261,7 @@ void uwu_name(struct configuration* config_flags, struct info* user_info) {
 	else STRING_TO_UWU("endeavouros", "endeavOwO");
 	else STRING_TO_UWU("EndeavourOS", "endeavOwO");
 	else STRING_TO_UWU("fedora", "Fedowa");
+	else STRING_TO_UWU("FemboyOS", "FemboyOWOS");
 	else STRING_TO_UWU("gentoo", "GentOwO");
 	else STRING_TO_UWU("gnu", "gnUwU");
 	else STRING_TO_UWU("guix", "gnUwU gUwUix");
@@ -330,6 +331,7 @@ void uwu_kernel(char* kernel) {
 		else KERNEL_TO_UWU(splitted[i], "endeavouros", "endeavOwO");
 		else KERNEL_TO_UWU(splitted[i], "EndeavourOS", "endeavOwO");
 		else KERNEL_TO_UWU(splitted[i], "fedora", "Fedowa");
+		else KERNEL_TO_UWU(splitted[i], "FemboyOS", "FemboyOWOS");
 		else KERNEL_TO_UWU(splitted[i], "gentoo", "GentOwO");
 		else KERNEL_TO_UWU(splitted[i], "gnu", "gnUwU");
 		else KERNEL_TO_UWU(splitted[i], "guix", "gnUwU gUwUix");
@@ -731,13 +733,13 @@ void list(char* arg) {
 		   "    %sRHEL %sbased:\n"
 		   "      %sfedora, %s"
 		   "    %sOther/spare distributions:\n"
-		   "      %salpine, %sgentoo, %sslackware, %ssolus, %svoid, "
+		   "      %salpine, %sFemboyOS, %sgentoo, %sslackware, %ssolus, %svoid, "
 		   "opensuse-leap, android, %sgnu, guix, %swindows, %sunknown\n\n",
-		   arg, BLUE, NORMAL, BLUE, MAGENTA, GREEN, BLUE,					// Arch based colors
-		   RED, YELLOW, NORMAL, RED, GREEN, BLUE, RED, YELLOW,				// Debian based colors
-		   RED, NORMAL, RED, YELLOW, GREEN, YELLOW, RED, PINK, BLUE, WHITE, // BSD/Apple colors
-		   RED, NORMAL, BLUE, GREEN,										// RHEL colors
-		   NORMAL, BLUE, PINK, MAGENTA, WHITE, GREEN, YELLOW, BLUE, WHITE); // Other/spare distributions colors
+		   arg, BLUE, NORMAL, BLUE, MAGENTA, GREEN, BLUE,						 // Arch based colors
+		   RED, YELLOW, NORMAL, RED, GREEN, BLUE, RED, YELLOW,					 // Debian based colors
+		   RED, NORMAL, RED, YELLOW, GREEN, YELLOW, RED, PINK, BLUE, WHITE,		 // BSD/Apple colors
+		   RED, NORMAL, BLUE, GREEN,											 // RHEL colors
+		   NORMAL, BLUE, RED, PINK, MAGENTA, WHITE, GREEN, YELLOW, BLUE, WHITE); // Other/spare distributions colors
 }
 
 // prints the usage
