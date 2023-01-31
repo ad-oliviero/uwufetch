@@ -342,14 +342,13 @@ void* get_pkg(void* argp) { // this is just a function that returns the total of
 	#ifndef __APPLE__
 		FILE* fp = popen(current->command_string, "r"); // trying current package manager
 	#else
-		system(
-				current->command_string); // writes to a temporary file: for some reason popen() does not
-																	// intercept the stdout, so i have to read from a temporary file
+		system(current->command_string); // writes to a temporary file: for some reason popen() does
+																		 // not
+		// intercept the stdout, so i have to read from a temporary file
 		FILE* fp = fopen("/tmp/uwufetch_brew_tmp", "r");
 	#endif
 		unsigned int pkg_count = 0;
-
-		if (fscanf(fp, "%u", &pkg_count) == 3) continue; // if a number is found, continue the loop
+		if (fscanf(fp, "%u", &pkg_count) == 3) continue;
 
 	#ifndef __APPLE__
 		pclose(fp);
@@ -438,18 +437,19 @@ void* get_model(void* argp) {
 	model_fp		 = popen("sysctl " HOSTCTL, "r");
 	char* buffer = ((struct thread_varg*)argp)->buffer;
 	int buf_sz	 = ((struct thread_varg*)argp)->buf_sz;
-	while (fgets(buffer, sizeof(buffer), model_fp))
+	while (fgets(buffer, buf_sz, model_fp))
 		if (sscanf(buffer,
 							 HOSTCTL
-	#ifndef __OPENBSD__
-							 ": "
-	#else
+	#ifdef __OPENBSD__
 							 "="
+	#else
+							 ": "
 	#endif
 							 "%[^\n]",
 							 user_info->model))
 			break;
 #endif // _WIN32
+	pclose(model_fp);
 	return 0;
 }
 
@@ -530,8 +530,8 @@ void get_info(struct flags flags, struct info* user_info) {
 #else
 	FILE* cpuinfo			= popen("sysctl hw.model", "r"); // cpu name command for freebsd
 #endif
-	// trying to get some kind of information about the name of the computer (hopefully a product full
-	// name)
+	// trying to get some kind of information about the name of the computer (hopefully a product
+	// full name)
 	if (os_release) { // get normal vars if os_release exists
 		if (flags.os) {
 			while (fgets(buffer, sizeof(buffer), os_release) &&
@@ -573,15 +573,6 @@ void get_info(struct flags flags, struct info* user_info) {
 #endif // __BSD__
 			}
 		}
-		// getting username
-		if (flags.user) {
-			char* tmp_user = getenv("USER");
-			if (tmp_user == NULL)
-				sprintf(user_info->user, "%s", "");
-			else
-				sprintf(user_info->user, "%s", tmp_user);
-			fclose(os_release);
-		}
 	} else { // try for android vars, next for Apple var, or unknown system
 					 // android
 		DIR* system_app			 = opendir("/system/app/");
@@ -613,7 +604,8 @@ void get_info(struct flags flags, struct info* user_info) {
 			closedir(library);
 #ifdef __APPLE__
 			if (flags.cpu) {
-				sysctlbyname("machdep.cpu.brand_string", &cpu_buffer, &cpu_buffer_len, NULL, 0); // cpu name
+				sysctlbyname("machdep.cpu.brand_string", &cpu_buffer, &cpu_buffer_len, NULL,
+										 0); // cpu name
 				sprintf(user_info->cpu_model, "%s", cpu_buffer);
 			}
 			if (flags.os) {
@@ -631,7 +623,16 @@ void get_info(struct flags flags, struct info* user_info) {
 	fclose(cpuinfo);
 #endif
 #ifndef _WIN32
-	if (flags.user) gethostname(user_info->host, 256); // hostname
+	// getting username and hostname
+	if (flags.user) {
+		gethostname(user_info->host, 256);
+		char* tmp_user = getenv("USER");
+		if (tmp_user == NULL)
+			sprintf(user_info->user, "%s", "");
+		else
+			sprintf(user_info->user, "%s", tmp_user);
+		fclose(os_release);
+	}
 	if (flags.shell) {
 		char* tmp_shell = getenv("SHELL"); // shell name
 		if (tmp_shell == NULL)
