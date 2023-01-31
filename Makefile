@@ -26,7 +26,7 @@ ifeq ($(PLATFORM), Linux)
 else ifeq ($(PLATFORM), Darwin)
 	PREFIX		= local/bin
 	LIBDIR		= local/lib
-	INCDIR      = include
+	INCDIR      = local/include
 	ETC_DIR		= /etc
 	MANDIR		= local/share/man/man1
 	PLATFORM_ABBR = macos
