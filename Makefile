@@ -14,7 +14,7 @@ PLATFORM_ABBR = $(PLATFORM)
 ifeq ($(PLATFORM), Linux)
 	PREFIX		= bin
 	LIBDIR		= lib
-	INCDIR      = include
+	INCDIR		= include
 	ETC_DIR		= /etc
 	MANDIR		= share/man/man1
 	PLATFORM_ABBR = linux
@@ -26,7 +26,7 @@ ifeq ($(PLATFORM), Linux)
 else ifeq ($(PLATFORM), Darwin)
 	PREFIX		= local/bin
 	LIBDIR		= local/lib
-	INCDIR      = local/include
+	INCDIR		= local/include
 	ETC_DIR		= /etc
 	MANDIR		= local/share/man/man1
 	PLATFORM_ABBR = macos
@@ -35,7 +35,7 @@ else ifeq ($(PLATFORM), FreeBSD)
 	CFLAGS_DEBUG += -D__FREEBSD__ -D__BSD__
 	PREFIX		= bin
 	LIBDIR		= lib
-	INCDIR      = include
+	INCDIR		= include
 	ETC_DIR		= /etc
 	MANDIR		= share/man/man1
 	PLATFORM_ABBR = freebsd
@@ -44,7 +44,7 @@ else ifeq ($(PLATFORM), OpenBSD)
 	CFLAGS_DEBUG += -D__OPENBSD__ -D__BSD__
 	PREFIX		= bin
 	LIBDIR		= lib
-	INCDIR      = include
+	INCDIR		= include
 	ETC_DIR		= /etc
 	MANDIR		= share/man/man1
 	PLATFORM_ABBR = openbsd
@@ -52,7 +52,7 @@ else ifeq ($(PLATFORM), windows32)
 	CC				= gcc
 	PREFIX			= "C:\Program Files"
 	LIBDIR			=
-	INCDIR          =
+	INCDIR		    =
 	MANDIR			=
 	RELEASE_SCRIPTS = release_scripts/*.ps1
 	PLATFORM_ABBR	= win64
@@ -62,7 +62,7 @@ else ifeq ($(PLATFORM), linux4win)
 	PREFIX			=
 	CFLAGS			+= -D_WIN32
 	LIBDIR			=
-	INCDIR          =
+	INCDIR		    =
 	MANDIR			=
 	RELEASE_SCRIPTS = release_scripts/*.ps1
 	PLATFORM_ABBR	= win64
