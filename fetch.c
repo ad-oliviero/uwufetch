@@ -71,7 +71,7 @@ size_t time_buffer_len = sizeof(time_buffer);
 #endif // __APPLE__
 
 struct package_manager {
-	char command_string[128]; // command to get number of packages installed
+	char command_string[256]; // command to get number of packages installed
 	char pkgman_name[16];			// name of the package manager
 };
 
@@ -346,20 +346,45 @@ void* get_pkg(void* argp) { // this is just a function that returns the total of
 			{"pkg info 2>/dev/null | wc -l", "(pkg)"},
 			{"pkg_info 2>/dev/null | wc -l | sed \"s/ //g\"", "(pkg)"},
 			{"port installed 2> /dev/null | tail -n +2 | wc -l", "(port)"},
-			{"brew list 2> /dev/null | wc -l", "(brew)"},
+			{"expr $(find $(brew --cellar 2>/dev/null) -maxdepth 1 -type d 2> /dev/null | wc -l | awk "
+			 "'{print $1}') + $(find $(brew --caskroom 2>/dev/null) -maxdepth 1 -type d 2> /dev/null | "
+			 "wc -l | awk '{print $1}')",
+			 "(brew)"},
 			{"rpm -qa --last 2> /dev/null | wc -l", "(rpm)"},
 			{"xbps-query -l 2> /dev/null | wc -l", "(xbps)"},
 			{"zypper -q se --installed-only 2> /dev/null | wc -l", "(zypper)"}};
+	#endif
+#else
+	struct package_manager pkgmans[] = {
+			{"expr $(find $(brew --cellar 2>/dev/null) -maxdepth 1 -type d 2> /dev/null | wc -l | awk "
+			 "'{print $1}') + $(find $(brew --caskroom 2>/dev/null) -maxdepth 1 -type d 2> /dev/null | "
+			 "wc -l | awk '{print $1}') - 2 > /tmp/uwufetch_brew_tmp",
+			 "(brew)"}};
+#endif
+#ifndef _WIN32
 	const int pkgman_count = sizeof(pkgmans) / sizeof(pkgmans[0]); // number of package managers
 	int comma_separator		 = 0;
 	for (int i = 0; i < pkgman_count; i++) {
 		struct package_manager* current = &pkgmans[i]; // pointer to current package manager
 
-		FILE* fp							 = popen(current->command_string, "r"); // trying current package manager
+	#ifndef __APPLE__
+		FILE* fp = popen(current->command_string, "r"); // trying current package manager
+	#else
+		system(
+				current->command_string); // writes to a temporary file: for some reason popen() does not
+																	// intercept the stdout, so i have to read from a temporary file
+		FILE* fp = fopen("/tmp/uwufetch_brew_tmp", "r");
+	#endif
 		unsigned int pkg_count = 0;
 
 		if (fscanf(fp, "%u", &pkg_count) == 3) continue; // if a number is found, continue the loop
+
+	#ifndef __APPLE__
 		pclose(fp);
+	#else
+		remove("/tmp/uwufetch_brew_tmp");
+		fclose(fp);
+	#endif
 
 		// adding a package manager with its package count to user_info->pkgman_name
 		user_info->pkgs += pkg_count;
@@ -372,7 +397,7 @@ void* get_pkg(void* argp) { // this is just a function that returns the total of
 			strcat(user_info->pkgman_name, current->pkgman_name);
 		}
 	}
-	#else	 // _WIN32
+#else	 // _WIN32
 	// chocolatey for windows
 	FILE* fp = popen("choco list -l --no-color 2> nul", "r");
 	unsigned int pkg_count;
@@ -388,15 +413,12 @@ void* get_pkg(void* argp) { // this is just a function that returns the total of
 	strcat(user_info->pkgman_name, spkg_count);
 	strcat(user_info->pkgman_name, " ");
 	strcat(user_info->pkgman_name, "(chocolatey)");
-	#endif // _WIN32
-#endif
+#endif // _WIN32
 	return 0;
 }
 
 void* get_model(void* argp) {
 	if (!((struct thread_varg*)argp)->thread_flags[4]) return 0;
-	char* buffer					 = ((struct thread_varg*)argp)->buffer;
-	int buf_sz						 = ((struct thread_varg*)argp)->buf_sz;
 	struct info* user_info = ((struct thread_varg*)argp)->user_info;
 	FILE* model_fp;
 	char model_filename[3][256] = {"/sys/devices/virtual/dmi/id/product_version",
@@ -459,8 +481,6 @@ void* get_model(void* argp) {
 
 void* get_ker(void* argp) {
 	if (!((struct thread_varg*)argp)->thread_flags[5]) return 0;
-	char* buffer					 = ((struct thread_varg*)argp)->buffer;
-	int buf_sz						 = ((struct thread_varg*)argp)->buf_sz;
 	struct info* user_info = ((struct thread_varg*)argp)->user_info;
 
 #ifndef _WIN32
@@ -487,8 +507,6 @@ void* get_ker(void* argp) {
 
 void* get_upt(void* argp) {
 	if (!((struct thread_varg*)argp)->thread_flags[6]) return 0;
-	char* buffer					 = ((struct thread_varg*)argp)->buffer;
-	int buf_sz						 = ((struct thread_varg*)argp)->buf_sz;
 	struct info* user_info = ((struct thread_varg*)argp)->user_info;
 #ifdef __APPLE__
 	user_info->uptime = uptime_apple();

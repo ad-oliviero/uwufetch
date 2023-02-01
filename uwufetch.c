@@ -250,6 +250,7 @@ void uwu_name(struct info* user_info) {
 	else STRING_TO_UWU("endeavouros", "endeavOwO");
 	else STRING_TO_UWU("EndeavourOS", "endeavOwO");
 	else STRING_TO_UWU("fedora", "Fedowa");
+	else STRING_TO_UWU("femboyos", "FemboyOWOS");
 	else STRING_TO_UWU("gentoo", "GentOwO");
 	else STRING_TO_UWU("gnu", "gnUwU");
 	else STRING_TO_UWU("guix", "gnUwU gUwUix");
@@ -262,6 +263,7 @@ void uwu_name(struct info* user_info) {
 	else STRING_TO_UWU("opensuse-tumbleweed", "OwOpenSUSE Tumbleweed");
 	else STRING_TO_UWU("pop", "PopOwOS");
 	else STRING_TO_UWU("raspbian", "RaspNyan");
+	else STRING_TO_UWU("rocky", "Wocky Linuwu");
 	else STRING_TO_UWU("slackware", "Swackwawe");
 	else STRING_TO_UWU("solus", "sOwOlus");
 	else STRING_TO_UWU("ubuntu", "Uwuntu");
@@ -314,6 +316,7 @@ void uwu_kernel(char* kernel) {
 		else KERNEL_TO_UWU(splitted[i], "endeavouros", "endeavOwO");
 		else KERNEL_TO_UWU(splitted[i], "EndeavourOS", "endeavOwO");
 		else KERNEL_TO_UWU(splitted[i], "fedora", "Fedowa");
+		else KERNEL_TO_UWU(splitted[i], "femboyos", "FemboyOWOS");
 		else KERNEL_TO_UWU(splitted[i], "gentoo", "GentOwO");
 		else KERNEL_TO_UWU(splitted[i], "gnu", "gnUwU");
 		else KERNEL_TO_UWU(splitted[i], "guix", "gnUwU gUwUix");
@@ -326,6 +329,7 @@ void uwu_kernel(char* kernel) {
 		else KERNEL_TO_UWU(splitted[i], "opensuse-tumbleweed", "OwOpenSUSE Tumbleweed");
 		else KERNEL_TO_UWU(splitted[i], "pop", "PopOwOS");
 		else KERNEL_TO_UWU(splitted[i], "raspbian", "RaspNyan");
+		else KERNEL_TO_UWU(splitted[i], "rocky", "Wocky Linuwu");
 		else KERNEL_TO_UWU(splitted[i], "slackware", "Swackwawe");
 		else KERNEL_TO_UWU(splitted[i], "solus", "sOwOlus");
 		else KERNEL_TO_UWU(splitted[i], "ubuntu", "Uwuntu");
@@ -450,22 +454,36 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
 			responsively_printf(print_buf, "%s%s%sWESOWUTION%s  %dx%d", MOVE_CURSOR, NORMAL, BOLD, NORMAL,
 													user_info->screen_width, user_info->screen_height);
 	if (config_flags->show.shell) // print shell name
-		responsively_printf(print_buf, "%s%s%sSHEWW    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL,
+		responsively_printf(print_buf, "%s%s%sSHEWW       %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL,
 												user_info->shell);
-#if defined(__APPLE__) && \
-		!defined(__IPHONE__)			 // some time ago __IPHONE__ was defined as TARGET_OS_IPHONE,
-															 // but it was defined also in m1 macs, so I changed it
-	if (config_flags->show_pkgs) // print pkgs for mac os
-		system("ls $(brew --cellar) | wc -l | awk -F' ' '{print \"  \x1b[34m       "
-					 "            "
-					 "\x1b[0m\x1b[1mPKGS\x1b[0m     \"$1 \" (brew)\"}'");
-#else
+	// #if defined(__APPLE__) && !defined(__IPHONE__) // some time ago __IPHONE__ was defined as
+	// TARGET_OS_IPHONE, but it was defined also in m1 macs, so I changed it
+	//	if (config_flags->show_pkgs)			   // print pkgs for mac os
+	//		system("ls $(brew --cellar) | wc -l | awk -F' ' '{print \"  \x1b[34m
+	//\x1b[0m\x1b[1mPKGS\x1b[0m        \"$1 \" (brew)\"}'");
+	// #else
 	if (config_flags->show.pkgs) // print pkgs
-		responsively_printf(print_buf, "%s%s%sPKGS     %s%d: %s", MOVE_CURSOR, NORMAL, BOLD, NORMAL,
+		responsively_printf(print_buf, "%s%s%sPKGS        %s%d: %s", MOVE_CURSOR, NORMAL, BOLD, NORMAL,
 												user_info->pkgs, user_info->pkgman_name);
-#endif
+	// #endif
 	if (config_flags->show.uptime) { // print uptime
-		switch (user_info->uptime) {	 // formatting the uptime which is store in seconds
+		if (user_info->uptime == 0) {
+
+#ifdef __APPLE__
+			user_info->uptime = uptime_apple();
+#else
+	#ifdef __BSD__
+			user_info->uptime = uptime_freebsd();
+	#else
+		#ifdef _WIN32
+			user_info->uptime = GetTickCount() / 1000;
+		#else	 // _WIN32
+			user_info->uptime = user_info->sys.uptime;
+		#endif // _WIN32
+	#endif
+#endif
+		}
+		switch (user_info->uptime) { // formatting the uptime which is store in seconds
 		case 0 ... 3599:
 			responsively_printf(print_buf, "%s%s%sUWUPTIME %s%lim", MOVE_CURSOR, NORMAL, BOLD, NORMAL,
 													user_info->uptime / 60 % 60);
@@ -632,15 +650,16 @@ void list(char* arg) {
 				 "%subuntu\n\n"
 				 "    %sBSD %sbased:\n"
 				 "      %sfreebsd, %sopenbsd, %sm%sa%sc%so%ss, %sios\n\n"
+				 "    %sRHEL %sbased:\n"
+				 "      %sfedora, rocky%s"
 				 "    %sOther/spare distributions:\n"
-				 "      %salpine, %sfedora, %sgentoo, %sslackware, %ssolus, %svoid, "
+				 "      %salpine, %sfemboyos, %sgentoo, %sslackware, %ssolus, %svoid, "
 				 "opensuse-leap, android, %sgnu, guix, %swindows, %sunknown\n\n",
-				 arg, BLUE, NORMAL, BLUE, MAGENTA, GREEN, BLUE, // Arch based colors
-				 RED, YELLOW, NORMAL, RED, GREEN, BLUE, RED,
-				 YELLOW, // Debian based colors
-				 RED, NORMAL, RED, YELLOW, GREEN, YELLOW, RED, PINK, BLUE,
-				 WHITE, // BSD/Apple colors
-				 NORMAL, BLUE, BLUE, PINK, MAGENTA, WHITE, GREEN, YELLOW, BLUE,
+				 arg, BLUE, NORMAL, BLUE, MAGENTA, GREEN, BLUE,										// Arch based colors
+				 RED, YELLOW, NORMAL, RED, GREEN, BLUE, RED, YELLOW,							// Debian based colors
+				 RED, NORMAL, RED, YELLOW, GREEN, YELLOW, RED, PINK, BLUE, WHITE, // BSD/Apple colors
+				 RED, NORMAL, BLUE, GREEN,																				// RHEL colors
+				 NORMAL, BLUE, RED, PINK, MAGENTA, WHITE, GREEN, YELLOW, BLUE,
 				 WHITE); // Other/spare distributions colors
 }
 
