@@ -122,10 +122,10 @@ void get_sys(struct info* user_info) {
 // tries to get memory usage
 void* get_ram(void* argp) {
 	if (!((struct thread_varg*)argp)->thread_flags[0]) return 0;
-	char* buffer					 = ((struct thread_varg*)argp)->buffer;
-	int buf_sz						 = ((struct thread_varg*)argp)->buf_sz;
 	struct info* user_info = ((struct thread_varg*)argp)->user_info;
 #ifndef __APPLE__
+	char* buffer = ((struct thread_varg*)argp)->buffer;
+	int buf_sz	 = ((struct thread_varg*)argp)->buf_sz;
 	#ifdef _WIN32
 	FILE* mem_used_fp			 = popen("wmic os get freevirtualmemory", "r");			 // free memory
 	FILE* mem_total_fp		 = popen("wmic os get totalvirtualmemorysize", "r"); // total memory
@@ -435,7 +435,9 @@ void* get_model(void* argp) {
 	#elif defined(__OPENBSD__)
 		#define HOSTCTL "hw.product"
 	#endif
-	model_fp = popen("sysctl " HOSTCTL, "r");
+	model_fp		 = popen("sysctl " HOSTCTL, "r");
+	char* buffer = ((struct thread_varg*)argp)->buffer;
+	int buf_sz	 = ((struct thread_varg*)argp)->buf_sz;
 	while (fgets(buffer, sizeof(buffer), model_fp))
 		if (sscanf(buffer,
 							 HOSTCTL
@@ -445,7 +447,7 @@ void* get_model(void* argp) {
 							 "="
 	#endif
 							 "%[^\n]",
-							 user_info.model))
+							 user_info->model))
 			break;
 #endif // _WIN32
 	return 0;
