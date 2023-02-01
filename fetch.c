@@ -448,8 +448,8 @@ void* get_model(void* argp) {
 							 "%[^\n]",
 							 user_info->model))
 			break;
-#endif // _WIN32
 	pclose(model_fp);
+#endif // _WIN32
 	return 0;
 }
 
