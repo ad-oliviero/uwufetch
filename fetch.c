@@ -34,10 +34,9 @@
 		#ifndef _WIN32
 			#ifndef __OPENBSD__
 				#include <sys/sysinfo.h>
-				#include <pthread.h> // linux only right now
-			#else									 // __OPENBSD__
-			#endif								 // __OPENBSD__
-		#else										 // _WIN32
+			#else	 // __OPENBSD__
+			#endif // __OPENBSD__
+		#else		 // _WIN32
 			#include <sysinfoapi.h>
 		#endif // _WIN32
 	#endif	 // defined(__BSD__) || defined(_WIN32)
@@ -45,7 +44,8 @@
 #ifndef _WIN32
 	#include <sys/ioctl.h>
 	#include <sys/utsname.h>
-#else // _WIN32
+	#include <pthread.h> // linux only right now
+#else									 // _WIN32
 	#include <windows.h>
 CONSOLE_SCREEN_BUFFER_INFO csbi;
 #endif // _WIN32
@@ -74,34 +74,6 @@ struct package_manager {
 	char command_string[256]; // command to get number of packages installed
 	char pkgman_name[16];			// name of the package manager
 };
-
-#ifdef __APPLE__
-// gets the uptime for mac os
-int uptime_apple() {
-	int mib[2] = {CTL_KERN, KERN_BOOTTIME};
-	sysctl(mib, 2, &time_buffer, &time_buffer_len, NULL, 0);
-
-	time_t bsec = time_buffer.tv_sec;
-	time_t csec = time(NULL);
-
-	return difftime(csec, bsec);
-}
-#endif
-
-#ifdef __BSD__
-// gets the uptime for freebsd
-int uptime_freebsd() { // this code is from coreutils uptime:
-											 // https://github.com/coreutils/coreutils/blob/master/src/uptime.c
-	int boot_time					= 0;
-	static int request[2] = {CTL_KERN, KERN_BOOTTIME};
-	struct timeval result;
-	size_t result_len = sizeof result;
-
-	if (sysctl(request, 2, &result, &result_len, NULL, 0) >= 0) boot_time = result.tv_sec;
-	int time_now = time(NULL);
-	return time_now - boot_time;
-}
-#endif
 
 // truncates the given string
 void truncate_str(char* string, int target_width) {
@@ -509,10 +481,24 @@ void* get_upt(void* argp) {
 	if (!((struct thread_varg*)argp)->thread_flags[6]) return 0;
 	struct info* user_info = ((struct thread_varg*)argp)->user_info;
 #ifdef __APPLE__
-	user_info->uptime = uptime_apple();
+	int mib[2] = {CTL_KERN, KERN_BOOTTIME};
+	sysctl(mib, 2, &time_buffer, &time_buffer_len, NULL, 0);
+
+	time_t bsec = time_buffer.tv_sec;
+	time_t csec = time(NULL);
+
+	user_info->uptime = difftime(csec, bsec);
 #else
 	#ifdef __BSD__
-	user_info->uptime = uptime_freebsd();
+	// https://github.com/coreutils/coreutils/blob/master/src/uptime.c
+	int boot_time					= 0;
+	static int request[2] = {CTL_KERN, KERN_BOOTTIME};
+	struct timeval result;
+	size_t result_len = sizeof result;
+
+	if (sysctl(request, 2, &result, &result_len, NULL, 0) >= 0) boot_time = result.tv_sec;
+	int time_now			= time(NULL);
+	user_info->uptime = time_now - boot_time;
 	#else
 		#ifdef _WIN32
 	user_info->uptime = GetTickCount() / 1000;

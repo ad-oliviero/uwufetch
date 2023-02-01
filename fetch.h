@@ -115,9 +115,4 @@ void* get_upt(void*);
 // Retrieves system information
 void get_info(struct flags, struct info* user_info);
 
-#ifdef __APPLE__
-// gets the uptime for mac os
-int uptime_apple();
-#endif
-
 #endif // _FETCH_H_

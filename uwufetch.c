@@ -454,35 +454,13 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
 			responsively_printf(print_buf, "%s%s%sWESOWUTION%s  %dx%d", MOVE_CURSOR, NORMAL, BOLD, NORMAL,
 													user_info->screen_width, user_info->screen_height);
 	if (config_flags->show.shell) // print shell name
-		responsively_printf(print_buf, "%s%s%sSHEWW       %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL,
+		responsively_printf(print_buf, "%s%s%sSHEWW    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL,
 												user_info->shell);
-	// #if defined(__APPLE__) && !defined(__IPHONE__) // some time ago __IPHONE__ was defined as
-	// TARGET_OS_IPHONE, but it was defined also in m1 macs, so I changed it
-	//	if (config_flags->show_pkgs)			   // print pkgs for mac os
-	//		system("ls $(brew --cellar) | wc -l | awk -F' ' '{print \"  \x1b[34m
-	//\x1b[0m\x1b[1mPKGS\x1b[0m        \"$1 \" (brew)\"}'");
-	// #else
 	if (config_flags->show.pkgs) // print pkgs
-		responsively_printf(print_buf, "%s%s%sPKGS        %s%d: %s", MOVE_CURSOR, NORMAL, BOLD, NORMAL,
+		responsively_printf(print_buf, "%s%s%sPKGS     %s%d: %s", MOVE_CURSOR, NORMAL, BOLD, NORMAL,
 												user_info->pkgs, user_info->pkgman_name);
 	// #endif
-	if (config_flags->show.uptime) { // print uptime
-		if (user_info->uptime == 0) {
-
-#ifdef __APPLE__
-			user_info->uptime = uptime_apple();
-#else
-	#ifdef __BSD__
-			user_info->uptime = uptime_freebsd();
-	#else
-		#ifdef _WIN32
-			user_info->uptime = GetTickCount() / 1000;
-		#else	 // _WIN32
-			user_info->uptime = user_info->sys.uptime;
-		#endif // _WIN32
-	#endif
-#endif
-		}
+	if (config_flags->show.uptime) {
 		switch (user_info->uptime) { // formatting the uptime which is store in seconds
 		case 0 ... 3599:
 			responsively_printf(print_buf, "%s%s%sUWUPTIME %s%lim", MOVE_CURSOR, NORMAL, BOLD, NORMAL,
