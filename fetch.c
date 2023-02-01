@@ -229,7 +229,7 @@ void* get_ram(void* argp) {
 	sysctlbyname("hw.memsize", &mem_buffer, &mem_buffer_len, NULL, 0);
 	user_info->ram_used	 = ((mem_wired + mem_active + mem_compressed) * 4 / 1024);
 	user_info->ram_total = mem_buffer / 1024 / 1024;
-	LOG_V(user_info->total_ram);
+	LOG_V(user_info->ram_total);
 	LOG_V(user_info->ram_used);
 #endif
 	return 0;
