@@ -53,7 +53,10 @@ int* get_err_count_handle();
 			ERR_COUNT += type == 1;                                                                                              \
 		}
 #else
-	#define VERBOSE_LOG(type, format, ...)
+	#define LOG_I(format, ...)
+	#define LOG_E(format, ...)
+	#define LOG_V(var)
+	#define LOG(type, format, ...)
 #endif
 
 #ifndef LIBFETCH_INTERNAL
