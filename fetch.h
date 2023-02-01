@@ -17,9 +17,46 @@
 #define _FETCH_H_
 #include <stdbool.h>
 
-#ifndef LIBFETCH_INTERNAL
-	#define _GNU_SOURCE // for strcasestr
+#ifdef __DEBUG__
+bool* get_verbose_handle();
+int* get_err_count_handle();
+	#ifdef LIBFETCH_INTERNAL
+		#define VERBOSE_ENABLED verbose_enabled
+		#define ERR_COUNT err_count
+	#else
+		#define VERBOSE_ENABLED *verbose_enabled
+		#define ERR_COUNT *err_count
+	#endif
+	#define LOG_I(format, ...) LOG(0, format, ##__VA_ARGS__)
+	#define LOG_E(format, ...) LOG(1, format, ##__VA_ARGS__)
+	#define LOG_V(var)                                                \
+		if (VERBOSE_ENABLED) {                                          \
+			char format[1024] = "";                                       \
+			sprintf(format, "%s = %s", #var, _Generic((var), int          \
+																								: "%d", float       \
+																								: "%f", char*       \
+																								: "\"%s\"", default \
+																								: "%p"));           \
+			LOG(2, format, var)                                           \
+		}
+	#define LOG(type, format, ...)                                                                                           \
+		if (VERBOSE_ENABLED) {                                                                                                 \
+			char buf[2048] = "";                                                                                                 \
+			if (sizeof(#__VA_ARGS__) == sizeof(""))                                                                              \
+				sprintf(buf, "%s", format);                                                                                        \
+			else                                                                                                                 \
+				sprintf(buf, format, ##__VA_ARGS__);                                                                               \
+			fprintf(stderr, "[%s]: %s in %s:%d: %s\n", type == 0 ? "\033[32mINFO\033[0m" : type == 1 ? "\033[31mERROR\033[0m"    \
+																																								 : type == 2	 ? "\033[37mVARIABLE\033[0m" \
+																																															 : "",                         \
+							__func__, __FILE__, __LINE__, buf);                                                                          \
+			ERR_COUNT += type == 1;                                                                                              \
+		}
+#else
+	#define VERBOSE_LOG(type, format, ...)
+#endif
 
+#ifndef LIBFETCH_INTERNAL
 	#ifdef __APPLE__
 		#include <TargetConditionals.h> // for checking iOS
 	#endif
@@ -51,8 +88,10 @@
 	#ifndef _WIN32
 		#include <sys/ioctl.h>
 		#include <sys/utsname.h>
-	#else // _WIN32
+		#include <pthread.h> // linux only right now
+	#else									 // _WIN32
 		#include <windows.h>
+CONSOLE_SCREEN_BUFFER_INFO csbi;
 	#endif // _WIN32
 #endif
 

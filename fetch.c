@@ -52,6 +52,12 @@ CONSOLE_SCREEN_BUFFER_INFO csbi;
 
 #define LIBFETCH_INTERNAL // to do certain things only when included from the library itself
 #include "fetch.h"
+#ifdef __DEBUG__
+bool verbose_enabled = false;
+int err_count				 = 0;
+bool* get_verbose_handle() { return &verbose_enabled; }
+int* get_err_count_handle() { return &err_count; }
+#endif
 
 #ifdef __APPLE__
 // buffers where data fetched from sysctl are stored
@@ -92,18 +98,23 @@ void remove_brackets(char* str) {
 }
 
 void get_twidth(struct info* user_info) {
+	LOG_I("getting terminal width");
 	// get terminal width used to truncate long names
 #ifndef _WIN32
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &user_info->win);
 	user_info->target_width = user_info->win.ws_col - 30;
+	LOG_V(user_info->target_width);
 #else	 // _WIN32
 	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
 	user_info->ws_col	 = csbi.srWindow.Right - csbi.srWindow.Left - 29;
 	user_info->ws_rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+	LOG_V(user_info->ws_col);
+	LOG_V(user_info->ws_rows);
 #endif // _WIN32
 }
 
 void get_sys(struct info* user_info) {
+	LOG_I("getting sys_var struct");
 #ifndef _WIN32
 	uname(&user_info->sys_var);
 #endif // _WIN32
@@ -120,6 +131,7 @@ void get_sys(struct info* user_info) {
 
 // tries to get memory usage
 void* get_ram(void* argp) {
+	LOG_I("getting ram");
 	if (!((struct thread_varg*)argp)->thread_flags[0]) return 0;
 	struct info* user_info = ((struct thread_varg*)argp)->user_info;
 #ifndef __APPLE__
@@ -138,6 +150,7 @@ void* get_ram(void* argp) {
 		else
 			user_info->ram_total = atoi(mem_total_ch) / 1024;
 	}
+	LOG_V(user_info->total_ram);
 	while (fgets(mem_used_ch, sizeof(mem_used_ch), mem_used_fp) != NULL) {
 		if (strstr(mem_used_ch, "FreeVirtualMemory") != 0)
 			continue;
@@ -146,6 +159,7 @@ void* get_ram(void* argp) {
 		else
 			user_info->ram_used = user_info->ram_total - (atoi(mem_used_ch) / 1024);
 	}
+	LOG_V(user_info->ram_used);
 	pclose(mem_used_fp);
 	pclose(mem_total_fp);
 	#else // if not _WIN32
@@ -185,6 +199,8 @@ void* get_ram(void* argp) {
 		user_info->ram_total = memtotal / 1024;
 		user_info->ram_used	 = ((memtotal + shmem) - (memfree + buffers + cached + sreclaimable)) / 1024;
 		#endif
+		LOG_V(user_info->ram_total);
+		LOG_V(user_info->ram_used);
 	}
 
 	fclose(meminfo);
@@ -213,6 +229,8 @@ void* get_ram(void* argp) {
 	sysctlbyname("hw.memsize", &mem_buffer, &mem_buffer_len, NULL, 0);
 	user_info->ram_used	 = ((mem_wired + mem_active + mem_compressed) * 4 / 1024);
 	user_info->ram_total = mem_buffer / 1024 / 1024;
+	LOG_V(user_info->total_ram);
+	LOG_V(user_info->ram_used);
 #endif
 	return 0;
 }
@@ -229,6 +247,7 @@ void* get_gpu(void* argp) {
 #endif
 	FILE* gpu;
 #ifndef _WIN32
+	LOG_I("getting gpus with lshw");
 	gpu = popen("lshw -class display 2> /dev/null", "r");
 
 	// add all gpus to the array gpu_model
@@ -267,22 +286,26 @@ void* get_gpu(void* argp) {
 	for (int i = 0; i < gpuc; i++) {
 		remove_brackets(user_info->gpu_model[i]);
 		truncate_str(user_info->gpu_model[i], user_info->target_width);
+		LOG_V(user_info->gpu_model[i]);
 	}
 	return 0;
 }
 
 // tries to get screen resolution
 void* get_res(void* argp) {
+#ifndef _WIN32
 	if (!((struct thread_varg*)argp)->thread_flags[2]) return 0;
+	LOG_I("getting resolution");
 	char* buffer					 = ((struct thread_varg*)argp)->buffer;
 	int buf_sz						 = ((struct thread_varg*)argp)->buf_sz;
 	struct info* user_info = ((struct thread_varg*)argp)->user_info;
-#ifndef _WIN32
-	FILE* resolution = popen("xwininfo -root 2> /dev/null | grep -E 'Width|Height'", "r");
+	FILE* resolution			 = popen("xwininfo -root 2> /dev/null | grep -E 'Width|Height'", "r");
 	while (fgets(buffer, buf_sz, resolution)) {
 		sscanf(buffer, "  Width: %d", &user_info->screen_width);
 		sscanf(buffer, "  Height: %d", &user_info->screen_height);
 	}
+	LOG_V(user_info->screen_width);
+	LOG_V(user_info->screen_height);
 #else
 	// TODO: get resolution on windows
 #endif
@@ -292,6 +315,7 @@ void* get_res(void* argp) {
 // tries to get the installed package count and package managers name
 void* get_pkg(void* argp) { // this is just a function that returns the total of installed packages
 	if (!((struct thread_varg*)argp)->thread_flags[3]) return 0;
+	LOG_I("getting pkgs");
 	struct info* user_info = ((struct thread_varg*)argp)->user_info;
 	user_info->pkgs				 = 0;
 #ifndef __APPLE__
@@ -332,6 +356,7 @@ void* get_pkg(void* argp) { // this is just a function that returns the total of
 	for (int i = 0; i < pkgman_count; i++) {
 		struct package_manager* current = &pkgmans[i]; // pointer to current package manager
 
+		LOG_I("trying pkgman %d: %s", i, current->pkgman_name);
 	#ifndef __APPLE__
 		FILE* fp = popen(current->command_string, "r"); // trying current package manager
 	#else
@@ -357,6 +382,7 @@ void* get_pkg(void* argp) { // this is just a function that returns the total of
 			strcat(user_info->pkgman_name, spkg_count);
 			strcat(user_info->pkgman_name, " ");
 			strcat(user_info->pkgman_name, current->pkgman_name);
+			LOG_V(user_info->pkgman_name);
 		}
 	}
 #else	 // _WIN32
@@ -375,12 +401,14 @@ void* get_pkg(void* argp) { // this is just a function that returns the total of
 	strcat(user_info->pkgman_name, spkg_count);
 	strcat(user_info->pkgman_name, " ");
 	strcat(user_info->pkgman_name, "(chocolatey)");
+	LOG_V(user_info->pkgman_name);
 #endif // _WIN32
 	return 0;
 }
 
 void* get_model(void* argp) {
 	if (!((struct thread_varg*)argp)->thread_flags[4]) return 0;
+	LOG_I("getting model");
 	struct info* user_info = ((struct thread_varg*)argp)->user_info;
 	FILE* model_fp;
 	char model_filename[3][256] = {"/sys/devices/virtual/dmi/id/product_version",
@@ -397,6 +425,7 @@ void* get_model(void* argp) {
 			tmp_model[i][strlen(tmp_model[i]) - 1] = '\0';
 			fclose(model_fp);
 		}
+		LOG_V(tmp_model[i]);
 		// choose the file with the longest name
 		currentlen = strlen(tmp_model[i]);
 		if (currentlen > best_len) {
@@ -405,6 +434,7 @@ void* get_model(void* argp) {
 		}
 	}
 	sprintf(user_info->model, "%s", tmp_model[longest_model]); // read model name
+	LOG_V(user_info->model);
 #ifdef _WIN32
 	// all the previous files obviously did not exist on windows
 	model_fp = popen("wmic computersystem get model", "r");
@@ -446,13 +476,14 @@ void* get_model(void* argp) {
 
 void* get_ker(void* argp) {
 	if (!((struct thread_varg*)argp)->thread_flags[5]) return 0;
+	LOG_I("getting kernel");
 	struct info* user_info = ((struct thread_varg*)argp)->user_info;
 
 #ifndef _WIN32
 	truncate_str(user_info->sys_var.release, user_info->target_width);
-	sprintf(user_info->kernel, "%s %s %s", user_info->sys_var.sysname, user_info->sys_var.release,
-					user_info->sys_var.machine); // kernel name
+	sprintf(user_info->kernel, "%s %s %s", user_info->sys_var.sysname, user_info->sys_var.release, user_info->sys_var.machine); // kernel name
 	truncate_str(user_info->kernel, user_info->target_width);
+	LOG_V(user_info->kernel);
 #else	 // _WIN32
 	// windows version
 	FILE* kernel_fp = popen("wmic computersystem get systemtype", "r");
@@ -472,6 +503,7 @@ void* get_ker(void* argp) {
 
 void* get_upt(void* argp) {
 	if (!((struct thread_varg*)argp)->thread_flags[6]) return 0;
+	LOG_I("getting uptime");
 	struct info* user_info = ((struct thread_varg*)argp)->user_info;
 #ifdef __APPLE__
 	int mib[2] = {CTL_KERN, KERN_BOOTTIME};
@@ -500,6 +532,7 @@ void* get_upt(void* argp) {
 		#endif // _WIN32
 	#endif
 #endif
+	LOG_V(user_info->uptime);
 	return 0;
 }
 
@@ -524,6 +557,7 @@ void get_info(struct flags flags, struct info* user_info) {
 	// trying to get some kind of information about the name of the computer (hopefully a product full name)
 	if (os_release) { // get normal vars if os_release exists
 		if (flags.os) {
+			LOG_I("getting os name from /etc/os-release");
 			while (fgets(buffer, sizeof(buffer), os_release) &&
 						 !(sscanf(buffer, "\nID=\"%s\"", user_info->os_name) ||
 							 sscanf(buffer, "\nID=%s", user_info->os_name)))
@@ -540,11 +574,14 @@ void get_info(struct flags flags, struct info* user_info) {
 				if (amogos_plymouth) {
 					closedir(amogos_plymouth);
 					sprintf(user_info->os_name, "amogos");
+					LOG_V(user_info->os_name);
 				}
 			}
+			LOG_V(user_info->os_name);
 		}
 		// getting cpu name
 		if (flags.cpu) {
+			LOG_I("getting cpu name");
 			while (fgets(buffer, sizeof(buffer), cpuinfo)) {
 #ifdef __BSD__
 				if (sscanf(buffer,
@@ -561,6 +598,7 @@ void get_info(struct flags flags, struct info* user_info) {
 				if (sscanf(buffer, "model name    : %[^\n]", user_info->cpu_model)) break;
 #endif // __BSD__
 			}
+			LOG_V(user_info->cpu_model);
 		}
 	} else { // try for android vars, next for Apple var, or unknown system
 					 // android
@@ -571,14 +609,17 @@ void get_info(struct flags flags, struct info* user_info) {
 			closedir(system_app);
 			closedir(system_priv_app);
 			if (flags.os) sprintf(user_info->os_name, "android");
+			LOG_V(user_info->os_name);
 			if (flags.user) {
 				// username
 				FILE* whoami = popen("whoami", "r");
 				if (fscanf(whoami, "%s", user_info->user) == 3) sprintf(user_info->user, "unknown");
+				LOG_V(user_info->user);
 				pclose(whoami);
 			}
 			// model name
 			if (flags.model) {
+				LOG_I("getting android/bsd model");
 				FILE* model_fp = popen("getprop ro.product.model", "r");
 				while (fgets(buffer, sizeof(buffer), model_fp) &&
 							 !sscanf(buffer, "%[^\n]", user_info->model))
@@ -588,6 +629,7 @@ void get_info(struct flags flags, struct info* user_info) {
 							 !sscanf(buffer, "Hardware        : %[^\n]", user_info->cpu_model))
 					;
 #endif
+				LOG_V(user_info->model);
 			}
 		} else if (library) { // Apple
 			closedir(library);
@@ -614,16 +656,22 @@ void get_info(struct flags flags, struct info* user_info) {
 #ifndef _WIN32
 	// getting username and hostname
 	if (flags.user) {
+		LOG_I("getting username and hostname");
 		gethostname(user_info->host, 256);
+		LOG_V(user_info->host);
 		char* tmp_user = getenv("USER");
+		LOG_V(tmp_user);
 		if (tmp_user == NULL)
 			sprintf(user_info->user, "%s", "");
 		else
 			sprintf(user_info->user, "%s", tmp_user);
+		LOG_V(user_info->user);
 		fclose(os_release);
 	}
 	if (flags.shell) {
+		LOG_I("getting shell");
 		char* tmp_shell = getenv("SHELL"); // shell name
+		LOG_V(tmp_shell);
 		if (tmp_shell == NULL)
 			sprintf(user_info->shell, "%s", "");
 		else
@@ -632,6 +680,7 @@ void get_info(struct flags flags, struct info* user_info) {
 		if (strlen(user_info->shell) > 16) // android shell name was too long
 			memmove(&user_info->shell, &user_info->shell[27], strlen(user_info->shell));
 	#endif
+		LOG_V(user_info->shell);
 	}
 #else	 // if _WIN32
 	// cpu name
@@ -687,7 +736,12 @@ void get_info(struct flags flags, struct info* user_info) {
 													 user_info,
 													 {flags.ram, flags.gpu, flags.resolution, flags.pkgs, flags.model,
 														flags.kernel, flags.uptime}};
-	for (int i = 0; i < THREAD_COUNT; i++) pthread_create(&tids[i], NULL, fnptrs[i], &args);
-	for (int i = 0; i < THREAD_COUNT; i++)
+	for (int i = 0; i < THREAD_COUNT; i++) {
+		pthread_create(&tids[i], NULL, fnptrs[i], &args);
+		LOG_I("STARTING thread %d", i);
+	}
+	for (int i = 0; i < THREAD_COUNT; i++) {
 		if (tids[i] != 0) pthread_join(tids[i], NULL);
+		LOG_I("JOINING thread %d", i);
+	}
 }

@@ -621,7 +621,10 @@ void usage(char* arg) {
 #endif
 				 "                        read README.md for more info%s\n"
 				 "    -l, --list          lists all supported distributions\n"
-				 "    -v, --version       prints the current uwufetch version\n"
+				 "    -V, --version       prints the current uwufetch version\n"
+#ifdef __DEBUG__
+				 "    -v, --verbose       logs everything (not yet fully implemented)\n"
+#endif
 				 "    -w, --write-cache   writes to the cache file "
 				 "(~/.cache/uwufetch.cache)\n"
 				 "    -r, --read-cache    reads from the cache file "
@@ -655,12 +658,22 @@ int main(int argc, char* argv[]) {
 																	{"image", optional_argument, NULL, 'i'},
 																	{"list", no_argument, NULL, 'l'},
 																	{"read-cache", no_argument, NULL, 'r'},
-																	{"version", no_argument, NULL, 'v'},
+																	{"version", no_argument, NULL, 'V'},
+#ifdef __DEBUG__
+																	{"verbose", no_argument, NULL, 'v'},
+#endif
 																	{"write-cache", no_argument, NULL, 'w'},
 																	{NULL, 0, NULL, 0}};
+#ifdef __DEBUG__
+	#define OPT_STRING "c:d:hi::lrVvw"
+	bool* verbose_enabled = get_verbose_handle();
+	int* err_count				= get_err_count_handle();
+#else
+	#define OPT_STRING "c:d:hi::lrVw"
+#endif
 
 	// reading cmdline options
-	while ((opt = getopt_long(argc, argv, "c:d:hi::lrvw", long_options, NULL)) != -1) {
+	while ((opt = getopt_long(argc, argv, OPT_STRING, long_options, NULL)) != -1) {
 		switch (opt) {
 		case 'c': // set the config directory
 			user_config_file.config_directory = optarg;
@@ -682,9 +695,15 @@ int main(int argc, char* argv[]) {
 		case 'r':
 			user_config_file.read_enabled = true;
 			break;
-		case 'v':
+		case 'V':
 			printf("UwUfetch version %s\n", UWUFETCH_VERSION);
 			return 0;
+#ifdef __DEBUG__
+		case 'v':
+			*verbose_enabled = true;
+			LOG_I("version %s", UWUFETCH_VERSION);
+			break;
+#endif
 		case 'w':
 			user_config_file.write_enabled = true;
 			break;
@@ -694,8 +713,10 @@ int main(int argc, char* argv[]) {
 	}
 
 	if (user_config_file.read_enabled) {
+		LOG_I("reading cache");
 		// if no cache file found write to it
 		if (!read_cache(&user_info)) {
+			LOG_E("reading cache gone wrong");
 			user_config_file.read_enabled	 = false;
 			user_config_file.write_enabled = true;
 		} else {
@@ -705,12 +726,14 @@ int main(int argc, char* argv[]) {
 					buffer, buf_sz, &user_info, {true, true, true, true, true, true, true}};
 			if (config_flags.show.ram) get_ram(&vargp);
 			if (config_flags.show.uptime) {
+				LOG_I("getting additional not-cached info");
 				get_sys(&user_info);
 				get_upt(&vargp);
 			}
 		}
 	}
 	if (!user_config_file.read_enabled) {
+		LOG_I("reading config");
 #ifdef _WIN32
 		user_info = get_info(&config_flags); // get the info to modify it with cmdline options
 #else
@@ -718,12 +741,16 @@ int main(int argc, char* argv[]) {
 #endif
 	}
 
-	if (user_config_file.write_enabled) write_cache(&user_info);
+	if (user_config_file.write_enabled) {
+		LOG_E("writing cache");
+		write_cache(&user_info);
+	}
 	if (custom_distro_name) sprintf(user_info.os_name, "%s", custom_distro_name);
 	if (custom_image_name) sprintf(user_info.image_name, "%s", custom_image_name);
 
 	uwufy_all(&user_info);
 
+	LOG_V(config_flags.show_image);
 	if (config_flags.show_image)
 		print_image(&user_info);
 	else
@@ -731,5 +758,6 @@ int main(int argc, char* argv[]) {
 
 	// move cursor down if the number of printed lines is smaller that the default image height
 	printf("\033[%dB", 9 - print_info(&config_flags, &user_info));
+	LOG_I("Completed with %d error%c", *err_count, (*err_count) == 1 ? 0 : 's');
 	return 0;
 }
