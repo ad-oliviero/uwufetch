@@ -495,17 +495,6 @@ void write_cache(struct info* user_info) {
 		return;
 	}
 	// writing all info to the cache file
-#ifdef __APPLE__
-	user_info->uptime = uptime_apple();
-#else
-	#ifdef __BSD__
-	user_info->uptime = uptime_freebsd();
-	#else
-		#ifndef _WIN32
-	user_info->uptime = user_info->sys.uptime;
-		#endif // _WIN32
-	#endif
-#endif
 	fprintf( // writing most of the values to config file
 			cache_fp,
 			"user=%s\nhost=%s\nversion_name=%s\nhost_model=%s\nkernel=%s\ncpu=%"
