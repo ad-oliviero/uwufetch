@@ -587,11 +587,11 @@ void get_info(struct flags flags, struct info* user_info) {
 		DIR* system_app			 = opendir("/system/app/");
 		DIR* system_priv_app = opendir("/system/priv-app/");
 		DIR* library				 = opendir("/Library/");
-		if (flags.os) {
-			if (system_app && system_priv_app) {
-				closedir(system_app);
-				closedir(system_priv_app);
-				sprintf(user_info->os_name, "android");
+		if (system_app && system_priv_app) {
+			closedir(system_app);
+			closedir(system_priv_app);
+			if (flags.os) sprintf(user_info->os_name, "android");
+			if (flags.user) {
 				// username
 				FILE* whoami = popen("whoami", "r");
 				if (fscanf(whoami, "%s", user_info->user) == 3) sprintf(user_info->user, "unknown");
@@ -624,9 +624,8 @@ void get_info(struct flags flags, struct info* user_info) {
 	#endif
 			}
 #endif
-		} else
-			sprintf(user_info->os_name,
-							"unknown"); // if no option before is working, the system is unknown
+		} else // if no option before is working, the system is unknown
+			sprintf(user_info->os_name, "unknown");
 	}
 #ifndef __BSD__
 	fclose(cpuinfo);
