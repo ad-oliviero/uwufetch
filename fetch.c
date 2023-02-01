@@ -55,7 +55,6 @@ CONSOLE_SCREEN_BUFFER_INFO csbi;
 
 #ifdef __APPLE__
 // buffers where data fetched from sysctl are stored
-// CPU
 	#define CPUBUFFERLEN 128
 
 char cpu_buffer[CPUBUFFERLEN];
@@ -161,8 +160,7 @@ void* get_ram(void* argp) {
 									"r"); // free alternative for openbsd
 			#endif
 		#else
-	// getting memory info from /proc/meminfo:
-	// https://github.com/KittyKatt/screenFetch/issues/386#issuecomment-249312716
+	// getting memory info from /proc/meminfo: https://github.com/KittyKatt/screenFetch/issues/386#issuecomment-249312716
 	meminfo = fopen("/proc/meminfo",
 									"r"); // popen("LANG=EN_us free -m 2> /dev/null", "r"); // get ram info with free
 		#endif
@@ -185,13 +183,10 @@ void* get_ram(void* argp) {
 		}
 		#ifndef __OPENBSD__
 		user_info->ram_total = memtotal / 1024;
-		user_info->ram_used = ((memtotal + shmem) - (memfree + buffers + cached + sreclaimable)) / 1024;
+		user_info->ram_used	 = ((memtotal + shmem) - (memfree + buffers + cached + sreclaimable)) / 1024;
 		#endif
 	}
 
-	// while (fgets(buffer, buf_sz, meminfo)) // old way to get ram usage that uses the "free" command
-	// 	// free command prints like this: "Mem:" total     used    free shared    buff/cache available
-	// 	sscanf(buffer, "Mem: %d %d", &user_info->ram_total, &user_info->ram_used);
 	fclose(meminfo);
 	#endif
 #else // if __APPLE__
@@ -306,9 +301,7 @@ void* get_pkg(void* argp) { // this is just a function that returns the total of
 	struct package_manager pkgmans[] = {
 			{"apt list --installed 2> /dev/null | wc -l", "(apt)"},
 			{"apk info 2> /dev/null | wc -l", "(apk)"},
-			//  {"dnf list installed 2> /dev/null | wc -l", "(dnf)"}, // according to
-			//  https://stackoverflow.com/questions/48570019/advantages-of-dnf-vs-rpm-on-fedora, dnf and
-			//  rpm return the same number of packages
+			//  {"dnf list installed 2> /dev/null | wc -l", "(dnf)"}, // according to https://stackoverflow.com/questions/48570019/advantages-of-dnf-vs-rpm-on-fedora, dnf and rpm return the same number of packages
 			{"qlist -I 2> /dev/null | wc -l", "(emerge)"},
 			{"flatpak list 2> /dev/null | wc -l", "(flatpak)"},
 			{"snap list 2> /dev/null | wc -l", "(snap)"},
@@ -342,9 +335,7 @@ void* get_pkg(void* argp) { // this is just a function that returns the total of
 	#ifndef __APPLE__
 		FILE* fp = popen(current->command_string, "r"); // trying current package manager
 	#else
-		system(current->command_string); // writes to a temporary file: for some reason popen() does
-																		 // not
-		// intercept the stdout, so i have to read from a temporary file
+		system(current->command_string); // writes to a temporary file: for some reason popen() does not intercept the stdout, so i have to read from a temporary file
 		FILE* fp = fopen("/tmp/uwufetch_brew_tmp", "r");
 	#endif
 		unsigned int pkg_count = 0;
@@ -530,8 +521,7 @@ void get_info(struct flags flags, struct info* user_info) {
 #else
 	FILE* cpuinfo			= popen("sysctl hw.model", "r"); // cpu name command for freebsd
 #endif
-	// trying to get some kind of information about the name of the computer (hopefully a product
-	// full name)
+	// trying to get some kind of information about the name of the computer (hopefully a product full name)
 	if (os_release) { // get normal vars if os_release exists
 		if (flags.os) {
 			while (fgets(buffer, sizeof(buffer), os_release) &&
@@ -543,8 +533,7 @@ void get_info(struct flags flags, struct info* user_info) {
 			if (user_info->os_name[os_name_len - 1] == '\"') {
 				user_info->os_name[os_name_len - 1] = '\0';
 			}
-			/* trying to detect amogos because in its os-release file ID value is just "debian",
-				 will be removed when amogos will have an os-release file with ID=amogos */
+			// trying to detect amogos because in its os-release file ID value is just "debian", will be removed when amogos will have an os-release file with ID=amogos
 			if (strcmp(user_info->os_name, "debian") == 0 ||
 					strcmp(user_info->os_name, "raspbian") == 0) {
 				DIR* amogos_plymouth = opendir("/usr/share/plymouth/themes/amogos");

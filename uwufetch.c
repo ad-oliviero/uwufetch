@@ -166,9 +166,7 @@ void print_image(struct info* user_info) {
 					 "   for more info.\n\n",
 					 RED);
 #else
-	// unfortunately, the iOS stdlib does not have
-	// system();
-	// because it reports that it is not available under iOS during compilation
+	// unfortunately, the iOS stdlib does not have system(); because it reports that it is not available under iOS during compilation
 	printf("\033[0E\033[3C%s\n"
 				 "   There was an\n"
 				 "   error: images\n"
@@ -178,11 +176,7 @@ void print_image(struct info* user_info) {
 #endif
 }
 
-/*
-	This replaces all terms in a string with another term.
-	replace("Hello World!", "World", "everyone")
-	This returns "Hello everyone!".
-*/
+// Replaces all terms in a string with another term.
 void replace(char* original, char* search, char* replacer) {
 	char* ch;
 	char buffer[1024];
@@ -196,11 +190,7 @@ void replace(char* original, char* search, char* replacer) {
 	}
 }
 
-/*
-	This replaces all terms in a string with another term, case insensitive
-	replace("Hello wOrLd!", "WoRlD", "everyone")
-	This returns "Hello everyone!".
-*/
+// Replaces all terms in a string with another term, case insensitive
 void replace_ignorecase(char* original, char* search, char* replacer) {
 	char* ch;
 	char buffer[1024];
@@ -217,8 +207,7 @@ void replace_ignorecase(char* original, char* search, char* replacer) {
 }
 
 #ifdef _WIN32
-// windows sucks and hasn't a strstep, so I copied one from
-// https://stackoverflow.com/questions/8512958/is-there-a-windows-variant-of-strsep-function
+// windows sucks and hasn't a strstep, so I copied one from https://stackoverflow.com/questions/8512958/is-there-a-windows-variant-of-strsep-function
 char* strsep(char** stringp, const char* delim) {
 	char* start = *stringp;
 	char* p;
@@ -241,6 +230,7 @@ void uwu_name(struct info* user_info) {
 	// linux
 	STRING_TO_UWU("alpine", "Nyalpine");
 	else STRING_TO_UWU("amogos", "AmogOwOS");
+	else STRING_TO_UWU("android", "Nyandroid");
 	else STRING_TO_UWU("arch", "Nyarch Linuwu");
 	else STRING_TO_UWU("arcolinux", "ArcOwO Linuwu");
 	else STRING_TO_UWU("artix", "Nyartix Linuwu");
@@ -269,9 +259,6 @@ void uwu_name(struct info* user_info) {
 	else STRING_TO_UWU("ubuntu", "Uwuntu");
 	else STRING_TO_UWU("void", "OwOid");
 	else STRING_TO_UWU("xerolinux", "xuwulinux");
-	else STRING_TO_UWU("android",
-										 "Nyandroid"); // android at the end because it could be not
-																	 // considered as an actual distribution of gnu/linux
 
 	// BSD
 	else STRING_TO_UWU("freebsd", "FweeBSD");
@@ -309,6 +296,7 @@ void uwu_kernel(char* kernel) {
 		else KERNEL_TO_UWU(splitted[i], "linux", "linuwu");
 		else KERNEL_TO_UWU(splitted[i], "alpine", "Nyalpine");
 		else KERNEL_TO_UWU(splitted[i], "amogos", "AmogOwOS");
+		else KERNEL_TO_UWU(splitted[i], "android", "Nyandroid");
 		else KERNEL_TO_UWU(splitted[i], "arch", "Nyarch Linuwu");
 		else KERNEL_TO_UWU(splitted[i], "artix", "Nyartix Linuwu");
 		else KERNEL_TO_UWU(splitted[i], "debian", "Debinyan");
@@ -335,9 +323,6 @@ void uwu_kernel(char* kernel) {
 		else KERNEL_TO_UWU(splitted[i], "ubuntu", "Uwuntu");
 		else KERNEL_TO_UWU(splitted[i], "void", "OwOid");
 		else KERNEL_TO_UWU(splitted[i], "xerolinux", "xuwulinux");
-		else KERNEL_TO_UWU(splitted[i], "android",
-											 "Nyandroid"); // android at the end because it could be not considered
-																		 // as an actual distribution of gnu/linux
 
 		// BSD
 		else KERNEL_TO_UWU(splitted[i], "freebsd", "FweeBSD");
@@ -360,9 +345,7 @@ void uwu_kernel(char* kernel) {
 void uwu_hw(char* hwname) {
 #define HW_TO_UWU(original, uwuified) replace_ignorecase(hwname, original, uwuified);
 	HW_TO_UWU("lenovo", "LenOwO")
-	HW_TO_UWU("cpu",
-						"CC\bPUwU"); // for some reasons this caused a segfault, using a \b
-												 // (backspace) char fixes it
+	HW_TO_UWU("cpu", "CC\bPUwU"); // for some reasons this caused a segfault, using a \b (backspace) char fixes it
 	HW_TO_UWU("gpu", "GG\bPUwU")
 	HW_TO_UWU("graphics", "Gwaphics")
 	HW_TO_UWU("corporation", "COwOpowation")
@@ -507,12 +490,6 @@ void write_cache(struct info* user_info) {
 	for (int i = 0; user_info->gpu_model[i][0]; i++) // writing gpu names to file
 		fprintf(cache_fp, "gpu=%s\n", user_info->gpu_model[i]);
 
-#ifdef __APPLE__
-		/* char brew_command[2048];
-		 sprintf(brew_command, "ls $(brew --cellar) | wc -l | awk -F' ' '{print \"
-		 \x1b[34mw         w     \x1b[0m\x1b[1mPKGS\x1b[0m        \"$1 \" (brew)\"}'
-		 > %s", cache_file); system(brew_command); */
-#endif
 	fclose(cache_fp);
 	return;
 }
@@ -550,8 +527,7 @@ void print_ascii(struct info* user_info) {
 	printf("\n");
 	FILE* file;
 	char ascii_file[1024];
-	// First tries to get ascii art file from local directory. Useful for
-	// debugging
+	// First tries to get ascii art file from local directory. Useful for debugging
 	sprintf(ascii_file, "./res/ascii/%s.txt", user_info->os_name);
 	file = fopen(ascii_file, "r");
 	if (!file) { // if the file does not exist in the local directory, open it
@@ -597,8 +573,7 @@ void print_ascii(struct info* user_info) {
 		replace(buffer, "{BACKGROUND_WHITE}", "\e[0;47m");
 		printf("%s", buffer); // print the line after setting the color
 	}
-	// Always set color to NORMAL, so there's no need to do this in every ascii
-	// file.
+	// Always set color to NORMAL, so there's no need to do this in every ascii file.
 	printf(NORMAL);
 	fclose(file);
 }
@@ -622,12 +597,11 @@ void list(char* arg) {
 				 "    %sOther/spare distributions:\n"
 				 "      %salpine, %sfemboyos, %sgentoo, %sslackware, %ssolus, %svoid, "
 				 "opensuse-leap, android, %sgnu, guix, %swindows, %sunknown\n\n",
-				 arg, BLUE, NORMAL, BLUE, MAGENTA, GREEN, BLUE,										// Arch based colors
-				 RED, YELLOW, NORMAL, RED, GREEN, BLUE, RED, YELLOW,							// Debian based colors
-				 RED, NORMAL, RED, YELLOW, GREEN, YELLOW, RED, PINK, BLUE, WHITE, // BSD/Apple colors
-				 RED, NORMAL, BLUE, GREEN,																				// RHEL colors
-				 NORMAL, BLUE, RED, PINK, MAGENTA, WHITE, GREEN, YELLOW, BLUE,
-				 WHITE); // Other/spare distributions colors
+				 arg, BLUE, NORMAL, BLUE, MAGENTA, GREEN, BLUE,												 // Arch based colors
+				 RED, YELLOW, NORMAL, RED, GREEN, BLUE, RED, YELLOW,									 // Debian based colors
+				 RED, NORMAL, RED, YELLOW, GREEN, YELLOW, RED, PINK, BLUE, WHITE,			 // BSD/Apple colors
+				 RED, NORMAL, BLUE, GREEN,																						 // RHEL colors
+				 NORMAL, BLUE, RED, PINK, MAGENTA, WHITE, GREEN, YELLOW, BLUE, WHITE); // Other/spare distributions colors
 }
 
 // prints the usage
@@ -661,8 +635,7 @@ void usage(char* arg) {
 				 NORMAL);
 }
 
-// the main function is on the bottom of the file to avoid double function
-// declarations
+// the main function is on the bottom of the file to avoid double function declarations
 int main(int argc, char* argv[]) {
 	struct user_config user_config_file;
 	struct info user_info							= {0};
