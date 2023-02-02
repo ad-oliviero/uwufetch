@@ -2,7 +2,7 @@ NAME = uwufetch
 BIN_FILES = uwufetch.c
 LIB_FILES = fetch.c
 UWUFETCH_VERSION = $(shell git describe --tags)
-CFLAGS = -O3 -DUWUFETCH_VERSION=\"$(UWUFETCH_VERSION)\"
+CFLAGS = -O3 -D__DEBUG__ -DUWUFETCH_VERSION=\"$(UWUFETCH_VERSION)\"
 CFLAGS_DEBUG = -Wall -Wextra -g -pthread -DUWUFETCH_VERSION=\"$(UWUFETCH_VERSION)\" -D__DEBUG__
 CC = cc
 AR = ar

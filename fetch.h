@@ -138,6 +138,7 @@ struct thread_varg {
 	char* buffer;
 	int buf_sz;
 	struct info* user_info;
+	FILE* cpuinfo;
 	bool thread_flags[7];
 };
 

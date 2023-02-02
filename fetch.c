@@ -405,20 +405,26 @@ void* get_model(void* argp) {
 	if (!((struct thread_varg*)argp)->thread_flags[4]) return 0;
 	LOG_I("getting model");
 	struct info* user_info = ((struct thread_varg*)argp)->user_info;
+	char* buffer					 = ((struct thread_varg*)argp)->buffer;
 	FILE* model_fp;
-	char model_filename[3][256] = {"/sys/devices/virtual/dmi/id/product_version",
-																 "/sys/devices/virtual/dmi/id/product_name",
-																 "/sys/devices/virtual/dmi/id/board_name"};
+	char model_filename[4][256] = {
+			"/sys/devices/virtual/dmi/id/product_version",
+			"/sys/devices/virtual/dmi/id/product_name",
+			"/sys/devices/virtual/dmi/id/board_name",
+			"getprop ro.product.vendor.marketname 2>/dev/null",
+	};
 
-	char tmp_model[3][256]; // temporary variable to store the contents of all 3 files
+	char tmp_model[4][256]; // temporary variable to store the contents of all 3 files
 	int longest_model = 0, best_len = 0, currentlen = 0;
-	for (int i = 0; i < 3; i++) {
+	FILE* (*tocall[])(const char*, const char*) = {fopen, fopen, fopen, popen}; // open a process or a file, depending on the model_filename
+	int (*tocall_close[])(FILE*)								= {fclose, fclose, fclose, pclose};
+	for (int i = 0; i < 4; i++) {
 		// read file
-		model_fp = fopen(model_filename[i], "r");
+		model_fp = tocall[i](model_filename[i], "r");
 		if (model_fp) {
 			fgets(tmp_model[i], 256, model_fp);
 			tmp_model[i][strlen(tmp_model[i]) - 1] = '\0';
-			fclose(model_fp);
+			tocall_close[i](model_fp);
 		}
 		LOG_V(tmp_model[i]);
 		// choose the file with the longest name
@@ -429,6 +435,14 @@ void* get_model(void* argp) {
 		}
 	}
 	sprintf(user_info->model, "%s", tmp_model[longest_model]); // read model name
+	if (strlen(user_info->model) == 0) {
+		LOG_I("getting bsd model");
+#ifndef __BSD__
+		while (fgets(buffer, sizeof(buffer), ((struct thread_varg*)argp)->cpuinfo) &&
+					 !sscanf(buffer, "Hardware        : %[^\n]", user_info->cpu_model))
+			;
+#endif
+	}
 	LOG_V(user_info->model);
 #ifdef _WIN32
 	// all the previous files obviously did not exist on windows
@@ -608,23 +622,10 @@ void get_info(struct flags flags, struct info* user_info) {
 			if (flags.user) {
 				// username
 				FILE* whoami = popen("whoami", "r");
-				if (fscanf(whoami, "%s", user_info->user) == 3) sprintf(user_info->user, "unknown");
+				if (fscanf(whoami, "%s", user_info->user) == 3)
+					;
 				LOG_V(user_info->user);
 				pclose(whoami);
-			}
-			// model name
-			if (flags.model) {
-				LOG_I("getting android/bsd model");
-				FILE* model_fp = popen("getprop ro.product.model", "r");
-				while (fgets(buffer, sizeof(buffer), model_fp) &&
-							 !sscanf(buffer, "%[^\n]", user_info->model))
-					;
-#ifndef __BSD__
-				while (fgets(buffer, sizeof(buffer), cpuinfo) &&
-							 !sscanf(buffer, "Hardware        : %[^\n]", user_info->cpu_model))
-					;
-#endif
-				LOG_V(user_info->model);
 			}
 		} else if (library) { // Apple
 			closedir(library);
@@ -729,8 +730,8 @@ void get_info(struct flags flags, struct info* user_info) {
 			(struct thread_varg){buffer,
 													 buf_sz,
 													 user_info,
-													 {flags.ram, flags.gpu, flags.resolution, flags.pkgs, flags.model,
-														flags.kernel, flags.uptime}};
+													 cpuinfo,
+													 {flags.ram, flags.gpu, flags.resolution, flags.pkgs, flags.model, flags.kernel, flags.uptime}};
 	for (int i = 0; i < THREAD_COUNT; i++) {
 		pthread_create(&tids[i], NULL, fnptrs[i], &args);
 		LOG_I("STARTING thread %d", i);
