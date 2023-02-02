@@ -335,20 +335,15 @@ void* get_pkg(void* argp) { // this is just a function that returns the total of
 			{"pkg info 2>/dev/null | wc -l", "(pkg)"},
 			{"pkg_info 2>/dev/null | wc -l | sed \"s/ //g\"", "(pkg)"},
 			{"port installed 2> /dev/null | tail -n +2 | wc -l", "(port)"},
-			{"expr $(find $(brew --cellar 2>/dev/null) -maxdepth 1 -type d 2> /dev/null | wc -l | awk "
-			 "'{print $1}') + $(find $(brew --caskroom 2>/dev/null) -maxdepth 1 -type d 2> /dev/null | "
-			 "wc -l | awk '{print $1}')",
-			 "(brew)"},
+			{"find $(brew --cellar 2>/dev/stdout) -maxdepth 1 -type d 2> /dev/null | wc -l | awk '{print $1}'", "(brew-cellar)"},
+			{"find $(brew --caskroom 2>/dev/stdout) -maxdepth 1 -type d 2> /dev/null | wc -l | awk '{print $1}'", "(brew-cask)"},
 			{"rpm -qa --last 2> /dev/null | wc -l", "(rpm)"},
 			{"xbps-query -l 2> /dev/null | wc -l", "(xbps)"},
 			{"zypper -q se --installed-only 2> /dev/null | wc -l", "(zypper)"}};
 	#endif
 #else
-	struct package_manager pkgmans[] = {
-			{"expr $(find $(brew --cellar 2>/dev/null) -maxdepth 1 -type d 2> /dev/null | wc -l | awk "
-			 "'{print $1}') + $(find $(brew --caskroom 2>/dev/null) -maxdepth 1 -type d 2> /dev/null | "
-			 "wc -l | awk '{print $1}') - 2 > /tmp/uwufetch_brew_tmp",
-			 "(brew)"}};
+	struct package_manager pkgmans[] = {{"find $(brew --cellar 2>/dev/stdout) -maxdepth 1 -type d 2> /dev/null | wc -l | awk '{print $1}'", "(brew-cellar)"},
+																			{"find $(brew --caskroom 2>/dev/stdout) -maxdepth 1 -type d 2> /dev/null | wc -l | awk '{print $1}'", "(brew-cask)"}};
 #endif
 #ifndef _WIN32
 	const int pkgman_count = sizeof(pkgmans) / sizeof(pkgmans[0]); // number of package managers
@@ -666,7 +661,7 @@ void get_info(struct flags flags, struct info* user_info) {
 		else
 			sprintf(user_info->user, "%s", tmp_user);
 		LOG_V(user_info->user);
-		fclose(os_release);
+		if (os_release) fclose(os_release);
 	}
 	if (flags.shell) {
 		LOG_I("getting shell");
