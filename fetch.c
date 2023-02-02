@@ -454,7 +454,8 @@ void* get_model(void* argp) {
 		#define HOSTCTL "hw.product"
 	#endif
 	model_fp	 = popen("sysctl " HOSTCTL, "r");
-	int buf_sz = ((struct thread_varg*)argp)->buf_sz;
+	char* buffer					 = ((struct thread_varg*)argp)->buffer;
+	int buf_sz						 = ((struct thread_varg*)argp)->buf_sz;
 	while (fgets(buffer, buf_sz, model_fp))
 		if (sscanf(buffer,
 							 HOSTCTL
