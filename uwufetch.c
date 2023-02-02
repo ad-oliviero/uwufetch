@@ -67,6 +67,7 @@ struct user_config {
 
 // reads the config file
 struct configuration parse_config(struct info* user_info, struct user_config* user_config_file) {
+	LOG_I("parsing config");
 	char buffer[256]; // buffer for the current line
 	// enabling all flags by default
 	struct configuration config_flags;
@@ -75,17 +76,18 @@ struct configuration parse_config(struct info* user_info, struct user_config* us
 	config_flags.show_gpu[0] = -2;												 // show all gpus
 	config_flags.show_image	 = 0;
 
-	FILE* config = NULL; // config file pointer
-	if (user_config_file->config_directory ==
-			NULL) { // if config directory is not set, try to open the default
+	FILE* config = NULL;															// config file pointer
+	if (user_config_file->config_directory == NULL) { // if config directory is not set, try to open the default
 		if (getenv("HOME") != NULL) {
 			char homedir[512];
 			sprintf(homedir, "%s/.config/uwufetch/config", getenv("HOME"));
+			LOG_V(homedir);
 			config = fopen(homedir, "r");
 			if (!config) {
 				if (getenv("PREFIX") != NULL) {
 					char prefixed_etc[512];
 					sprintf(prefixed_etc, "%s/etc/uwufetch/config", getenv("PREFIX"));
+					LOG_V(prefixed_etc);
 					config = fopen(prefixed_etc, "r");
 				} else
 					config = fopen("/etc/uwufetch/config", "r");
@@ -101,9 +103,8 @@ struct configuration parse_config(struct info* user_info, struct user_config* us
 	while (fgets(buffer, sizeof(buffer), config)) {
 		sscanf(buffer, "distro=%s", user_info->os_name);
 		if (sscanf(buffer, "image=\"%[^\"]\"", user_info->image_name)) {
-			if (user_info->image_name[0] == '~') { // replacing the ~ character with the home directory
-				memmove(&user_info->image_name[0], &user_info->image_name[1],
-								strlen(user_info->image_name)); // remove the first char
+			if (user_info->image_name[0] == '~') {																													// replacing the ~ character with the home directory
+				memmove(&user_info->image_name[0], &user_info->image_name[1], strlen(user_info->image_name)); // remove the first char
 				char temp[128] = "/home/";
 				strcat(temp, user_info->user);
 				strcat(temp, user_info->image_name);
@@ -113,52 +114,79 @@ struct configuration parse_config(struct info* user_info, struct user_config* us
 		}
 
 		// reading other values
-		if (sscanf(buffer, "user=%[truefalse]", buffer))
+		if (sscanf(buffer, "user=%[truefalse]", buffer)) {
 			config_flags.show.user = !strcmp(buffer, "true");
-		if (sscanf(buffer, "os=%[truefalse]", buffer)) config_flags.show.os = strcmp(buffer, "false");
-		if (sscanf(buffer, "host=%[truefalse]", buffer))
-			config_flags.show.model = strcmp(buffer, "false");
-		if (sscanf(buffer, "kernel=%[truefalse]", buffer))
-			config_flags.show.kernel = strcmp(buffer, "false");
-		if (sscanf(buffer, "cpu=%[truefalse]", buffer)) config_flags.show.cpu = strcmp(buffer, "false");
-		if (sscanf(buffer, "gpu=%d",
-							 &config_flags.show_gpu[gpu_cfg_count])) // enabling single gpu
-			gpu_cfg_count++;
-		if (sscanf(buffer, "gpu=%[truefalse]", buffer)) {									 // enabling all gpus
-			if (strcmp(buffer, "false") == 0) config_flags.show_gpu[0] = -3; // disable all gpus
+			LOG_V(config_flags.show.user);
 		}
-		if (sscanf(buffer, "ram=%[truefalse]", buffer)) config_flags.show.ram = strcmp(buffer, "false");
-		if (sscanf(buffer, "resolution=%[truefalse]", buffer))
+		if (sscanf(buffer, "os=%[truefalse]", buffer)) {
+			config_flags.show.os = strcmp(buffer, "false");
+			LOG_V(config_flags.show.os);
+		}
+		if (sscanf(buffer, "host=%[truefalse]", buffer)) {
+			config_flags.show.model = strcmp(buffer, "false");
+			LOG_V(config_flags.show.model);
+		}
+		if (sscanf(buffer, "kernel=%[truefalse]", buffer)) {
+			config_flags.show.kernel = strcmp(buffer, "false");
+			LOG_V(config_flags.show.kernel);
+		}
+		if (sscanf(buffer, "cpu=%[truefalse]", buffer)) {
+			config_flags.show.cpu = strcmp(buffer, "false");
+			LOG_V(config_flags.show.cpu);
+		}
+		if (sscanf(buffer, "gpu=%d", &config_flags.show_gpu[gpu_cfg_count])) {
+			gpu_cfg_count++; // enabling single gpu
+			if (sscanf(buffer, "gpu=%[truefalse]", buffer)) {
+				if (strcmp(buffer, "false") == 0) config_flags.show_gpu[0] = -3; // enabling/disabling all gpus
+				LOG_V(config_flags.show_gpu[gpu_cfg_count]);
+			}
+		}
+		if (sscanf(buffer, "ram=%[truefalse]", buffer)) {
+			config_flags.show.ram = strcmp(buffer, "false");
+			LOG_V(config_flags.show.ram);
+		}
+		if (sscanf(buffer, "resolution=%[truefalse]", buffer)) {
 			config_flags.show.resolution = strcmp(buffer, "false");
-		if (sscanf(buffer, "shell=%[truefalse]", buffer))
+			LOG_V(config_flags.show.resolution);
+		}
+		if (sscanf(buffer, "shell=%[truefalse]", buffer)) {
 			config_flags.show.shell = strcmp(buffer, "false");
-		if (sscanf(buffer, "pkgs=%[truefalse]", buffer))
+			LOG_V(config_flags.show.shell);
+		}
+		if (sscanf(buffer, "pkgs=%[truefalse]", buffer)) {
 			config_flags.show.pkgs = strcmp(buffer, "false");
-		if (sscanf(buffer, "uptime=%[truefalse]", buffer))
+			LOG_V(config_flags.show.pkgs);
+		}
+		if (sscanf(buffer, "uptime=%[truefalse]", buffer)) {
 			config_flags.show.uptime = strcmp(buffer, "false");
-		if (sscanf(buffer, "colors=%[truefalse]", buffer))
+			LOG_V(config_flags.show.uptime);
+		}
+		if (sscanf(buffer, "colors=%[truefalse]", buffer)) {
 			config_flags.show_colors = strcmp(buffer, "false");
+			LOG_V(config_flags.show_colors);
+		}
 	}
+	LOG_V(user_info->os_name);
+	LOG_V(user_info->image_name);
 	fclose(config);
 	config_flags.show.gpu = (config_flags.show_gpu[0] == -3);
 	return config_flags;
 }
 
 // prints logo (as an image) of the given system.
-void print_image(struct info* user_info) {
+int print_image(struct info* user_info) {
+	LOG_I("printing image");
 #ifndef __IPHONE__
 	char command[256];
 	if (strlen(user_info->image_name) < 1) {
-		char* repl_str = strcmp(user_info->os_name, "android") == 0
-												 ? "/data/data/com.termux/files/usr/lib/uwufetch/%s.png"
+		char* repl_str = strcmp(user_info->os_name, "android") == 0 ? "/data/data/com.termux/files/usr/lib/uwufetch/%s.png"
 										 : strcmp(user_info->os_name, "macos") == 0 ? "/usr/local/lib/uwufetch/%s.png"
 																																: "/usr/lib/uwufetch/%s.png";
-		sprintf(user_info->image_name, repl_str,
-						user_info->os_name); // image command for android
+		sprintf(user_info->image_name, repl_str, user_info->os_name); // image command for android
+		LOG_V(user_info->image_name);
 	}
-	sprintf(command, "viu -t -w 18 -h 8 %s 2> /dev/null",
-					user_info->image_name); // creating the command to show the image
-	printf("%s\n\n", user_info->image_name);
+	sprintf(command, "viu -t -w 18 -h 9 %s 2> /dev/null", user_info->image_name); // creating the command to show the image
+	LOG_V(command);
 	if (system(command) != 0) // if viu is not installed or the image is missing
 		printf("\033[0E\033[3C%s\n"
 					 "   There was an\n"
@@ -178,6 +206,7 @@ void print_image(struct info* user_info) {
 				 "  disabled on iOS.\n\n",
 				 RED);
 #endif
+	return 9;
 }
 
 // Replaces all terms in a string with another term.
@@ -230,7 +259,6 @@ char* strsep(char** stringp, const char* delim) {
 void uwu_name(struct info* user_info) {
 #define STRING_TO_UWU(original, uwufied) \
 	if (strcmp(user_info->os_name, original) == 0) sprintf(user_info->os_name, "%s", uwufied)
-
 	// linux
 	STRING_TO_UWU("alpine", "Nyalpine");
 	else STRING_TO_UWU("amogos", "AmogOwOS");
@@ -283,6 +311,8 @@ void uwu_name(struct info* user_info) {
 void uwu_kernel(char* kernel) {
 #define KERNEL_TO_UWU(str, original, uwufied) \
 	if (strcmp(str, original) == 0) sprintf(str, "%s", uwufied)
+
+	LOG_I("uwufing kernel");
 
 	char* temp_kernel = kernel;
 	char* token;
@@ -343,10 +373,12 @@ void uwu_kernel(char* kernel) {
 		strcat(kernel, splitted[i]);
 	}
 #undef KERNEL_TO_UWU
+	LOG_V(kernel);
 }
 
 // uwufies hardware names
 void uwu_hw(char* hwname) {
+	LOG_I("uwufing hardware")
 #define HW_TO_UWU(original, uwuified) replace_ignorecase(hwname, original, uwuified);
 	HW_TO_UWU("lenovo", "LenOwO")
 	HW_TO_UWU("cpu", "CC\bPUwU"); // for some reasons this caused a segfault, using a \b (backspace) char fixes it
@@ -370,12 +402,15 @@ void uwu_hw(char* hwname) {
 
 // uwufies everything
 void uwufy_all(struct info* user_info) {
+	LOG_I("uwufing everything");
 	if (strcmp(user_info->os_name, "windows"))
 		MOVE_CURSOR = "\033[21C"; // to print windows logo on not windows systems
 	uwu_kernel(user_info->kernel);
 	for (int i = 0; user_info->gpu_model[i][0]; i++) uwu_hw(user_info->gpu_model[i]);
 	uwu_hw(user_info->cpu_model);
+	LOG_V(user_info->cpu_model);
 	uwu_hw(user_info->model);
+	LOG_V(user_info->model);
 }
 
 // prints all the collected info and returns the number of printed lines
@@ -401,7 +436,6 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
 	char print_buf[1024]; // for responsively print
 
 	// print collected info - from host to cpu info
-	printf("\033[9A"); // to align info text
 	if (config_flags->show.user)
 		responsively_printf(print_buf, "%s%s%s%s@%s", MOVE_CURSOR, NORMAL, BOLD, user_info->user,
 												user_info->host);
@@ -473,12 +507,13 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
 
 // writes cache to cache file
 void write_cache(struct info* user_info) {
+	LOG_I("writing cache");
 	char cache_file[512];
-	sprintf(cache_file, "%s/.cache/uwufetch.cache",
-					getenv("HOME")); // default cache file location
+	sprintf(cache_file, "%s/.cache/uwufetch.cache", getenv("HOME")); // default cache file location
+	LOG_V(cache_file);
 	FILE* cache_fp = fopen(cache_file, "w");
 	if (cache_fp == NULL) {
-		fprintf(stderr, "Failed to write to %s!", cache_file);
+		LOG_E("Failed to write to %s!", cache_file);
 		return;
 	}
 	// writing all info to the cache file
@@ -500,9 +535,10 @@ void write_cache(struct info* user_info) {
 
 // reads cache file if it exists
 int read_cache(struct info* user_info) {
+	LOG_I("reading cache");
 	char cache_file[512];
-	sprintf(cache_file, "%s/.cache/uwufetch.cache",
-					getenv("HOME")); // cache file location
+	sprintf(cache_file, "%s/.cache/uwufetch.cache", getenv("HOME")); // cache file location
+	LOG_V(cache_file);
 	FILE* cache_fp = fopen(cache_file, "r");
 	if (cache_fp == NULL) return 0;
 	char buffer[256];																	// line buffer
@@ -521,41 +557,54 @@ int read_cache(struct info* user_info) {
 		sscanf(buffer, "pkgs=%i", &user_info->pkgs);
 		sscanf(buffer, "pkgman_name=%99[^\n]", user_info->pkgman_name);
 	}
-
+	LOG_V(user_info->user);
+	LOG_V(user_info->host);
+	LOG_V(user_info->os_name);
+	LOG_V(user_info->model);
+	LOG_V(user_info->kernel);
+	LOG_V(user_info->cpu_model);
+	LOG_V(user_info->gpu_model[gpuc]);
+	LOG_V(user_info->screen_width);
+	LOG_V(user_info->screen_height);
+	LOG_V(user_info->shell);
+	LOG_V(user_info->pkgs);
+	LOG_V(user_info->pkgman_name);
 	fclose(cache_fp);
 	return 1;
 }
 
 // prints logo (as ascii art) of the given system.
-void print_ascii(struct info* user_info) {
-	printf("\n");
+int print_ascii(struct info* user_info) {
 	FILE* file;
 	char ascii_file[1024];
 	// First tries to get ascii art file from local directory. Useful for debugging
 	sprintf(ascii_file, "./res/ascii/%s.txt", user_info->os_name);
+	LOG_V(ascii_file);
 	file = fopen(ascii_file, "r");
-	if (!file) { // if the file does not exist in the local directory, open it
-							 // from the installation directory
+	if (!file) { // if the file does not exist in the local directory, open it from the installation directory
 		if (strcmp(user_info->os_name, "android") == 0)
-			sprintf(ascii_file, "/data/data/com.termux/files/usr/lib/uwufetch/ascii/%s.txt",
-							user_info->os_name);
+			sprintf(ascii_file, "/data/data/com.termux/files/usr/lib/uwufetch/ascii/%s.txt", user_info->os_name);
 		else if (strcmp(user_info->os_name, "macos") == 0)
 			sprintf(ascii_file, "/usr/local/lib/uwufetch/ascii/%s.txt", user_info->os_name);
 		else
 			sprintf(ascii_file, "/usr/lib/uwufetch/ascii/%s.txt", user_info->os_name);
+		LOG_V(ascii_file);
 
 		file = fopen(ascii_file, "r");
 		if (!file) {
 			// Prevent infinite loops
 			if (strcmp(user_info->os_name, "unknown") == 0) {
-				printf("No\nunknown\nascii\nfile\n\n\n\n");
-				return;
+				LOG_E("No\nunknown\nascii\nfile\n\n\n\n");
+				return 7;
 			}
 			sprintf(user_info->os_name, "unknown"); // current os is not supported
+			LOG_V(user_info->os_name);
 			return print_ascii(user_info);
 		}
 	}
-	char buffer[256];									 // line buffer
+	char buffer[256]; // line buffer
+	int line_count = 1;
+	printf("\n");
 	while (fgets(buffer, 256, file)) { // replacing color placecholders
 		replace(buffer, "{NORMAL}", NORMAL);
 		replace(buffer, "{BOLD}", BOLD);
@@ -576,16 +625,19 @@ void print_ascii(struct info* user_info) {
 		replace(buffer, "{BACKGROUND_RED}", "\e[0;41m");
 		replace(buffer, "{BACKGROUND_WHITE}", "\e[0;47m");
 		printf("%s", buffer); // print the line after setting the color
+		line_count++;
 	}
 	// Always set color to NORMAL, so there's no need to do this in every ascii file.
 	printf(NORMAL);
 	fclose(file);
+	return line_count;
 }
 
 /* prints distribution list
 	 distributions are listed by distribution branch
 	 to make the output easier to understand by the user.*/
 void list(char* arg) {
+	LOG_I("printing supported distro list");
 	// clang-format off
 	printf("%s -d <options>\n"
 				 "  Available distributions:\n"
@@ -605,6 +657,7 @@ void list(char* arg) {
 
 // prints the usage
 void usage(char* arg) {
+	LOG_I("printing usage");
 	printf("Usage: %s <args>\n"
 				 "    -c  --config        use custom config path\n"
 				 "    -d, --distro        lets you choose the logo to print\n"
@@ -622,12 +675,10 @@ void usage(char* arg) {
 				 "    -l, --list          lists all supported distributions\n"
 				 "    -V, --version       prints the current uwufetch version\n"
 #ifdef __DEBUG__
-				 "    -v, --verbose       logs everything (not yet fully implemented)\n"
+				 "    -v, --verbose       logs everything\n"
 #endif
-				 "    -w, --write-cache   writes to the cache file "
-				 "(~/.cache/uwufetch.cache)\n"
-				 "    -r, --read-cache    reads from the cache file "
-				 "(~/.cache/uwufetch.cache)\n",
+				 "    -w, --write-cache   writes to the cache file (~/.cache/uwufetch.cache)\n"
+				 "    -r, --read-cache    reads from the cache file (~/.cache/uwufetch.cache)\n",
 				 arg,
 #ifndef __IPHONE__
 				 BLUE,
@@ -639,6 +690,9 @@ void usage(char* arg) {
 
 // the main function is on the bottom of the file to avoid double function declarations
 int main(int argc, char* argv[]) {
+#ifdef __DEBUG__
+	verbose_enabled = get_verbose_handle();
+#endif
 	struct user_config user_config_file = {0};
 	struct info user_info								= {0};
 	struct configuration config_flags		= parse_config(&user_info, &user_config_file);
@@ -651,21 +705,21 @@ int main(int argc, char* argv[]) {
 #endif
 
 	int opt											 = 0;
-	struct option long_options[] = {{"config", required_argument, NULL, 'c'},
-																	{"distro", required_argument, NULL, 'd'},
-																	{"help", no_argument, NULL, 'h'},
-																	{"image", optional_argument, NULL, 'i'},
-																	{"list", no_argument, NULL, 'l'},
-																	{"read-cache", no_argument, NULL, 'r'},
-																	{"version", no_argument, NULL, 'V'},
+	struct option long_options[] = {
+			{"config", required_argument, NULL, 'c'},
+			{"distro", required_argument, NULL, 'd'},
+			{"help", no_argument, NULL, 'h'},
+			{"image", optional_argument, NULL, 'i'},
+			{"list", no_argument, NULL, 'l'},
+			{"read-cache", no_argument, NULL, 'r'},
+			{"version", no_argument, NULL, 'V'},
 #ifdef __DEBUG__
-																	{"verbose", no_argument, NULL, 'v'},
+			{"verbose", no_argument, NULL, 'v'},
 #endif
-																	{"write-cache", no_argument, NULL, 'w'},
-																	{NULL, 0, NULL, 0}};
+			{"write-cache", no_argument, NULL, 'w'},
+			{0}};
 #ifdef __DEBUG__
 	#define OPT_STRING "c:d:hi::lrVvw"
-	verbose_enabled = get_verbose_handle();
 #else
 	#define OPT_STRING "c:d:hi::lrVw"
 #endif
@@ -711,10 +765,8 @@ int main(int argc, char* argv[]) {
 	}
 
 	if (user_config_file.read_enabled) {
-		LOG_I("reading cache");
 		// if no cache file found write to it
 		if (!read_cache(&user_info)) {
-			LOG_E("reading cache failed, preparing to generate new cache");
 			user_config_file.read_enabled	 = false;
 			user_config_file.write_enabled = true;
 		} else {
@@ -731,16 +783,10 @@ int main(int argc, char* argv[]) {
 		}
 	}
 	if (!user_config_file.read_enabled) {
-		LOG_I("reading config");
-		// #ifdef _WIN32
-		// user_info = get_info(&config_flags); // get the info to modify it with cmdline options
-		// #else
 		get_info(config_flags.show, &user_info);
-		// #endif
 	}
 
 	if (user_config_file.write_enabled) {
-		LOG_I("writing cache");
 		write_cache(&user_info);
 	}
 	if (custom_distro_name) sprintf(user_info.os_name, "%s", custom_distro_name);
@@ -748,13 +794,11 @@ int main(int argc, char* argv[]) {
 
 	uwufy_all(&user_info);
 
-	LOG_V(config_flags.show_image);
-	if (config_flags.show_image)
-		print_image(&user_info);
-	else
-		print_ascii(&user_info);
+	// print ascii or image and align cursor for print_info()
+	printf("\033[%dA", config_flags.show_image ? print_image(&user_info) : print_ascii(&user_info));
 
-	// move cursor down if the number of printed lines is smaller that the default image height
+	// print info and move cursor down if the number of printed lines is smaller that the default image height
 	printf("\033[%dB", 9 - print_info(&config_flags, &user_info));
+	LOG_I("Execution completed successfully!");
 	return 0;
 }
