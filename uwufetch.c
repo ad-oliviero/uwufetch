@@ -46,6 +46,10 @@ char* MOVE_CURSOR = "\033[21C"; // moves the cursor after printing the image or 
 char* MOVE_CURSOR = "\033[18C";
 #endif // _WIN32
 
+#ifdef __DEBUG__
+static bool* verbose_enabled = NULL;
+#endif
+
 // all configuration flags available
 struct configuration {
 	struct flags show; // all true by default
@@ -582,26 +586,21 @@ void print_ascii(struct info* user_info) {
 	 distributions are listed by distribution branch
 	 to make the output easier to understand by the user.*/
 void list(char* arg) {
+	// clang-format off
 	printf("%s -d <options>\n"
 				 "  Available distributions:\n"
-				 "    %sArch linux %sbased:\n"
-				 "      %sarch, arcolinux, %sartix, endeavouros %smanjaro, "
-				 "manjaro-arm, %sxerolinux\n\n"
-				 "    %sDebian/%sUbuntu %sbased:\n"
-				 "      %samogos, debian, deepin, %slinuxmint, neon %spop, %sraspbian "
-				 "%subuntu\n\n"
-				 "    %sBSD %sbased:\n"
-				 "      %sfreebsd, %sopenbsd, %sm%sa%sc%so%ss, %sios\n\n"
-				 "    %sRHEL %sbased:\n"
-				 "      %sfedora, rocky%s"
-				 "    %sOther/spare distributions:\n"
-				 "      %salpine, %sfemboyos, %sgentoo, %sslackware, %ssolus, %svoid, "
-				 "opensuse-leap, android, %sgnu, guix, %swindows, %sunknown\n\n",
-				 arg, BLUE, NORMAL, BLUE, MAGENTA, GREEN, BLUE,												 // Arch based colors
-				 RED, YELLOW, NORMAL, RED, GREEN, BLUE, RED, YELLOW,									 // Debian based colors
-				 RED, NORMAL, RED, YELLOW, GREEN, YELLOW, RED, PINK, BLUE, WHITE,			 // BSD/Apple colors
-				 RED, NORMAL, BLUE, GREEN,																						 // RHEL colors
-				 NORMAL, BLUE, RED, PINK, MAGENTA, WHITE, GREEN, YELLOW, BLUE, WHITE); // Other/spare distributions colors
+				 "    "BLUE"Arch linux "NORMAL"based:\n"
+				 "      "BLUE"arch, arcolinux, "MAGENTA"artix, endeavouros "GREEN"manjaro, manjaro-arm, "BLUE"xerolinux\n\n"
+				 "    "RED"Debian/"YELLOW"Ubuntu "NORMAL"based:\n"
+				 "      "RED"amogos, debian, deepin, "GREEN"linuxmint, neon, "BLUE"pop, "RED"raspbian "YELLOW"ubuntu\n\n"
+				 "    "RED"BSD "NORMAL"based:\n"
+				 "      "RED"freebsd, "YELLOW"openbsd, "GREEN"m"YELLOW"a"RED"c"PINK"o"BLUE"s, "WHITE"ios\n\n"
+				 "    "RED"RHEL "NORMAL"based:\n"
+				 "      "BLUE"fedora, "GREEN"rocky\n\n"
+				 "    "NORMAL"Other/spare distributions:\n"
+				 "      "BLUE"alpine, "PINK"femboyos, gentoo, "MAGENTA"slackware, "WHITE"solus, "GREEN"void, opensuse-leap, android, "YELLOW"gnu, guix, "BLUE"windows, "WHITE"unknown\n\n",
+				 arg); // Other/spare distributions colors
+	// clang-format on
 }
 
 // prints the usage
@@ -641,10 +640,10 @@ void usage(char* arg) {
 // the main function is on the bottom of the file to avoid double function declarations
 int main(int argc, char* argv[]) {
 	struct user_config user_config_file = {0};
-	struct info user_info							= {0};
-	struct configuration config_flags = parse_config(&user_info, &user_config_file);
-	char* custom_distro_name					= NULL;
-	char* custom_image_name						= NULL;
+	struct info user_info								= {0};
+	struct configuration config_flags		= parse_config(&user_info, &user_config_file);
+	char* custom_distro_name						= NULL;
+	char* custom_image_name							= NULL;
 
 #ifdef _WIN32
 	// packages disabled by default because chocolatey is too slow
@@ -666,8 +665,7 @@ int main(int argc, char* argv[]) {
 																	{NULL, 0, NULL, 0}};
 #ifdef __DEBUG__
 	#define OPT_STRING "c:d:hi::lrVvw"
-	bool* verbose_enabled = get_verbose_handle();
-	int* err_count				= get_err_count_handle();
+	verbose_enabled = get_verbose_handle();
 #else
 	#define OPT_STRING "c:d:hi::lrVw"
 #endif
@@ -716,7 +714,7 @@ int main(int argc, char* argv[]) {
 		LOG_I("reading cache");
 		// if no cache file found write to it
 		if (!read_cache(&user_info)) {
-			LOG_E("reading cache gone wrong");
+			LOG_E("reading cache failed, preparing to generate new cache");
 			user_config_file.read_enabled	 = false;
 			user_config_file.write_enabled = true;
 		} else {
@@ -742,7 +740,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	if (user_config_file.write_enabled) {
-		LOG_E("writing cache");
+		LOG_I("writing cache");
 		write_cache(&user_info);
 	}
 	if (custom_distro_name) sprintf(user_info.os_name, "%s", custom_distro_name);
@@ -758,6 +756,5 @@ int main(int argc, char* argv[]) {
 
 	// move cursor down if the number of printed lines is smaller that the default image height
 	printf("\033[%dB", 9 - print_info(&config_flags, &user_info));
-	LOG_I("Completed with %d error%c", *err_count, (*err_count) == 1 ? 0 : 's');
 	return 0;
 }

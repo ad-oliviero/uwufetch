@@ -53,10 +53,8 @@ CONSOLE_SCREEN_BUFFER_INFO csbi;
 #define LIBFETCH_INTERNAL // to do certain things only when included from the library itself
 #include "fetch.h"
 #ifdef __DEBUG__
-bool verbose_enabled = false;
-int err_count				 = 0;
+static bool verbose_enabled = false;
 bool* get_verbose_handle() { return &verbose_enabled; }
-int* get_err_count_handle() { return &err_count; }
 #endif
 
 #ifdef __APPLE__

@@ -19,13 +19,10 @@
 
 #ifdef __DEBUG__
 bool* get_verbose_handle();
-int* get_err_count_handle();
 	#ifdef LIBFETCH_INTERNAL
 		#define VERBOSE_ENABLED verbose_enabled
-		#define ERR_COUNT err_count
 	#else
 		#define VERBOSE_ENABLED *verbose_enabled
-		#define ERR_COUNT *err_count
 	#endif
 	#define LOG_I(format, ...) LOG(0, format, ##__VA_ARGS__)
 	#define LOG_E(format, ...) LOG(1, format, ##__VA_ARGS__)
@@ -50,7 +47,6 @@ int* get_err_count_handle();
 																																								 : type == 2	 ? "\033[37mVARIABLE\033[0m" \
 																																															 : "",                         \
 							__func__, __FILE__, __LINE__, buf);                                                                          \
-			ERR_COUNT += type == 1;                                                                                              \
 		}
 #else
 	#define LOG_I(format, ...)
