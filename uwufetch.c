@@ -71,12 +71,11 @@ struct configuration parse_config(struct info* user_info, struct user_config* us
 	char buffer[256]; // buffer for the current line
 	// enabling all flags by default
 	struct configuration config_flags;
-	memset(&config_flags, 1, sizeof(config_flags));
+	memset(&config_flags, true, sizeof(config_flags));
 	memset(&config_flags.show_gpu, -1, 256 * sizeof(int)); // -1 means 'undefined'
 	config_flags.show_gpu[0] = -2;												 // show all gpus
-	config_flags.show_image	 = 0;
-
-	FILE* config = NULL;															// config file pointer
+	config_flags.show_image	 = false;
+	FILE* config						 = NULL;									// config file pointer
 	if (user_config_file->config_directory == NULL) { // if config directory is not set, try to open the default
 		if (getenv("HOME") != NULL) {
 			char homedir[512];
@@ -769,9 +768,8 @@ int main(int argc, char* argv[]) {
 			}
 		}
 	}
-	if (!user_config_file.read_enabled) {
+	if (!user_config_file.read_enabled)
 		get_info(config_flags.show, &user_info);
-	}
 
 	if (user_config_file.write_enabled) {
 		write_cache(&user_info);

@@ -127,10 +127,46 @@ void get_sys(struct info* user_info) {
 #endif
 }
 
+// tries to get cpu name
+void* get_cpu(void* argp) {
+	if (!((struct thread_varg*)argp)->thread_flags[0]) return 0;
+	char* buffer					 = ((struct thread_varg*)argp)->buffer;
+	int buf_sz						 = ((struct thread_varg*)argp)->buf_sz;
+	struct info* user_info = ((struct thread_varg*)argp)->user_info;
+	FILE* cpuinfo					 = ((struct thread_varg*)argp)->cpuinfo;
+	LOG_I("getting cpu name");
+	while (fgets(buffer, buf_sz, cpuinfo)) {
+#ifdef __BSD__
+		if (sscanf(buffer, "hw.model"
+	#ifdef __FREEBSD__
+											 ": "
+	#elif defined(__OPENBSD__)
+											 "="
+	#endif
+											 "%[^\n]",
+							 user_info->cpu_model))
+			break;
+#else
+		if (sscanf(buffer, "model name    : %[^\n]", user_info->cpu_model)) break;
+#endif // __BSD__
+	}
+	if (strlen(user_info->cpu_model) == 0) {
+		LOG_E("failed to get cpu name");
+		rewind(cpuinfo);
+		char cores[4] = "";
+		while (fgets(buffer, buf_sz, cpuinfo)) // get the last core number
+			sscanf(buffer, "processor%*[    |	]: %[^\n]", cores);
+		cores[strlen(cores) - 1] += 1; // should be a number
+		sprintf(user_info->cpu_model, "%s Cores", cores);
+	}
+	LOG_V(user_info->cpu_model);
+	return 0;
+}
+
 // tries to get memory usage
 void* get_ram(void* argp) {
+	if (!((struct thread_varg*)argp)->thread_flags[1]) return 0;
 	LOG_I("getting ram");
-	if (!((struct thread_varg*)argp)->thread_flags[0]) return 0;
 	struct info* user_info = ((struct thread_varg*)argp)->user_info;
 #ifndef __APPLE__
 	#ifdef _WIN32
@@ -160,7 +196,7 @@ void* get_ram(void* argp) {
 	pclose(mem_total_fp);
 	#else // if not _WIN32
 	char* buffer = ((struct thread_varg*)argp)->buffer;
-	int buf_sz	 = ((struct thread_varg*)argp)->buf_sz;
+	int buf_sz = ((struct thread_varg*)argp)->buf_sz;
 	FILE* meminfo;
 
 		#ifdef __BSD__
@@ -195,7 +231,7 @@ void* get_ram(void* argp) {
 		}
 		#ifndef __OPENBSD__
 		user_info->ram_total = memtotal / 1024;
-		user_info->ram_used	 = ((memtotal + shmem) - (memfree + buffers + cached + sreclaimable)) / 1024;
+		user_info->ram_used = ((memtotal + shmem) - (memfree + buffers + cached + sreclaimable)) / 1024;
 		#endif
 		LOG_V(user_info->ram_total);
 		LOG_V(user_info->ram_used);
@@ -235,7 +271,7 @@ void* get_ram(void* argp) {
 
 // tries to get installed gpu(s)
 void* get_gpu(void* argp) {
-	if (!((struct thread_varg*)argp)->thread_flags[1]) return 0;
+	if (!((struct thread_varg*)argp)->thread_flags[2]) return 0;
 	char* buffer					 = ((struct thread_varg*)argp)->buffer;
 	int buf_sz						 = ((struct thread_varg*)argp)->buf_sz;
 	struct info* user_info = ((struct thread_varg*)argp)->user_info;
@@ -292,7 +328,7 @@ void* get_gpu(void* argp) {
 // tries to get screen resolution
 void* get_res(void* argp) {
 #ifndef _WIN32
-	if (!((struct thread_varg*)argp)->thread_flags[2]) return 0;
+	if (!((struct thread_varg*)argp)->thread_flags[3]) return 0;
 	LOG_I("getting resolution");
 	char* buffer					 = ((struct thread_varg*)argp)->buffer;
 	int buf_sz						 = ((struct thread_varg*)argp)->buf_sz;
@@ -312,7 +348,7 @@ void* get_res(void* argp) {
 
 // tries to get the installed package count and package managers name
 void* get_pkg(void* argp) { // this is just a function that returns the total of installed packages
-	if (!((struct thread_varg*)argp)->thread_flags[3]) return 0;
+	if (!((struct thread_varg*)argp)->thread_flags[4]) return 0;
 	LOG_I("getting pkgs");
 	struct info* user_info = ((struct thread_varg*)argp)->user_info;
 	user_info->pkgs				 = 0;
@@ -383,7 +419,7 @@ void* get_pkg(void* argp) { // this is just a function that returns the total of
 	FILE* fp = popen("choco list -l --no-color 2> nul", "r");
 	unsigned int pkg_count;
 	char buffer[7562] = {0};
-	while (fgets(buffer, sizeof(buffer), fp)) {
+	while (fgets(buffer, buf_sz, fp)) {
 		sscanf(buffer, "%u packages installed.", &pkg_count);
 	}
 	if (fp) pclose(fp);
@@ -400,7 +436,7 @@ void* get_pkg(void* argp) { // this is just a function that returns the total of
 }
 
 void* get_model(void* argp) {
-	if (!((struct thread_varg*)argp)->thread_flags[4]) return 0;
+	if (!((struct thread_varg*)argp)->thread_flags[5]) return 0;
 	LOG_I("getting model");
 	struct info* user_info = ((struct thread_varg*)argp)->user_info;
 	FILE* model_fp;
@@ -408,7 +444,7 @@ void* get_model(void* argp) {
 	// all the previous files obviously did not exist on windows
 	char* buffer = ((struct thread_varg*)argp)->buffer;
 	model_fp		 = popen("wmic computersystem get model", "r");
-	while (fgets(buffer, sizeof(buffer), model_fp)) {
+	while (fgets(buffer, buf_sz, model_fp)) {
 		if (strstr(buffer, "Model") != 0)
 			continue;
 		else {
@@ -475,7 +511,7 @@ void* get_model(void* argp) {
 }
 
 void* get_ker(void* argp) {
-	if (!((struct thread_varg*)argp)->thread_flags[5]) return 0;
+	if (!((struct thread_varg*)argp)->thread_flags[6]) return 0;
 	LOG_I("getting kernel");
 	struct info* user_info = ((struct thread_varg*)argp)->user_info;
 
@@ -488,7 +524,7 @@ void* get_ker(void* argp) {
 	// windows version
 	FILE* kernel_fp = popen("wmic computersystem get systemtype", "r");
 	char* buffer		= ((struct thread_varg*)argp)->buffer;
-	while (fgets(buffer, sizeof(buffer), kernel_fp)) {
+	while (fgets(buffer, buf_sz, kernel_fp)) {
 		if (strstr(buffer, "SystemType") != 0)
 			continue;
 		else {
@@ -503,7 +539,7 @@ void* get_ker(void* argp) {
 }
 
 void* get_upt(void* argp) {
-	if (!((struct thread_varg*)argp)->thread_flags[6]) return 0;
+	if (!((struct thread_varg*)argp)->thread_flags[7]) return 0;
 	LOG_I("getting uptime");
 	struct info* user_info = ((struct thread_varg*)argp)->user_info;
 #ifdef __APPLE__
@@ -541,9 +577,7 @@ void* get_upt(void* argp) {
 void get_info(struct flags flags, struct info* user_info) {
 	int buf_sz = 256;
 	char buffer[buf_sz]; // line buffer
-
 	get_twidth(user_info);
-
 	// os version, cpu and board info
 #ifdef __OPENBSD__
 	FILE* os_release = popen("echo ID=openbsd", "r"); // os-release does not exist in OpenBSD
@@ -559,7 +593,7 @@ void get_info(struct flags flags, struct info* user_info) {
 	if (os_release) { // get normal vars if os_release exists
 		if (flags.os) {
 			LOG_I("getting os name from /etc/os-release");
-			while (fgets(buffer, sizeof(buffer), os_release) &&
+			while (fgets(buffer, buf_sz, os_release) &&
 						 !(sscanf(buffer, "\nID=\"%s\"", user_info->os_name) ||
 							 sscanf(buffer, "\nID=%s", user_info->os_name)))
 				;
@@ -579,36 +613,6 @@ void get_info(struct flags flags, struct info* user_info) {
 				}
 			}
 			LOG_V(user_info->os_name);
-		}
-		// getting cpu name
-		if (flags.cpu) {
-			LOG_I("getting cpu name");
-			while (fgets(buffer, sizeof(buffer), cpuinfo)) {
-#ifdef __BSD__
-				if (sscanf(buffer,
-									 "hw.model"
-	#ifdef __FREEBSD__
-									 ": "
-	#elif defined(__OPENBSD__)
-									 "="
-	#endif
-									 "%[^\n]",
-									 user_info->cpu_model))
-					break;
-#else
-				if (sscanf(buffer, "model name    : %[^\n]", user_info->cpu_model)) break;
-#endif // __BSD__
-			}
-			if (strlen(user_info->cpu_model) == 0) {
-				LOG_E("failed to get cpu name");
-				rewind(cpuinfo);
-				char cores[4] = "";
-				while (fgets(buffer, sizeof(buffer), cpuinfo)) // get the last core number
-					sscanf(buffer, "processor%*[    |	]: %[^\n]", cores);
-				cores[strlen(cores) - 1] += 1; // should be a number
-				sprintf(user_info->cpu_model, "%s Cores", cores);
-			}
-			LOG_V(user_info->cpu_model);
 		}
 	} else { // try for android vars, next for Apple var, or unknown system
 					 // android
@@ -682,7 +686,7 @@ void get_info(struct flags flags, struct info* user_info) {
 	// cpu name
 	if (flags.cpu) {
 		cpuinfo = popen("wmic cpu get caption", "r");
-		while (fgets(buffer, sizeof(buffer), cpuinfo)) {
+		while (fgets(buffer, buf_sz, cpuinfo)) {
 			if (strstr(buffer, "Caption") != 0)
 				continue;
 			else {
@@ -695,7 +699,7 @@ void get_info(struct flags flags, struct info* user_info) {
 	// username
 	if (flags.user) {
 		FILE* user_host_fp = popen("wmic computersystem get username", "r");
-		while (fgets(buffer, sizeof(buffer), user_host_fp)) {
+		while (fgets(buffer, buf_sz, user_host_fp)) {
 			if (strstr(buffer, "UserName") != 0)
 				continue;
 			else {
@@ -710,7 +714,7 @@ void get_info(struct flags flags, struct info* user_info) {
 		FILE* shell_fp = popen("powershell $PSVersionTable", "r");
 		sprintf(user_info->shell, "PowerShell ");
 		char tmp_shell[64];
-		while (fgets(buffer, sizeof(buffer), shell_fp) &&
+		while (fgets(buffer, buf_sz, shell_fp) &&
 					 sscanf(buffer, "PSVersion                      %s", tmp_shell) == 0)
 			;
 		strcat(user_info->shell, tmp_shell);
@@ -723,14 +727,14 @@ void get_info(struct flags flags, struct info* user_info) {
 #endif
 	get_sys(user_info);
 	// are threads overpowered? nah
-	void* (*fnptrs[])(void*) = {get_ram, get_gpu, get_res, get_pkg, get_model, get_ker, get_upt};
+	void* (*fnptrs[])(void*) = {get_cpu, get_ram, get_gpu, get_res, get_pkg, get_model, get_ker, get_upt};
 	struct thread_varg args =
 			(struct thread_varg){buffer,
 													 buf_sz,
 													 user_info,
 													 cpuinfo,
-													 {flags.ram, flags.gpu, flags.resolution, flags.pkgs, flags.model, flags.kernel, flags.uptime}};
-#define THREAD_COUNT 7
+													 {flags.cpu, flags.ram, flags.gpu, flags.resolution, flags.pkgs, flags.model, flags.kernel, flags.uptime}};
+#define THREAD_COUNT 8
 #ifndef _WIN32
 	pthread_t tids[THREAD_COUNT] = {0};
 #endif

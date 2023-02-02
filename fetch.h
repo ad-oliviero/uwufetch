@@ -134,7 +134,7 @@ struct thread_varg {
 	int buf_sz;
 	struct info* user_info;
 	FILE* cpuinfo;
-	bool thread_flags[7];
+	bool thread_flags[8];
 };
 
 // decide what info should be retrieved
