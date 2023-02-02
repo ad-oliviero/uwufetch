@@ -90,7 +90,6 @@ bool* get_verbose_handle();
 		#include <pthread.h> // linux only right now
 	#else									 // _WIN32
 		#include <windows.h>
-CONSOLE_SCREEN_BUFFER_INFO csbi;
 	#endif // _WIN32
 #endif
 

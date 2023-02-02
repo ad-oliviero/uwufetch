@@ -133,8 +133,6 @@ void* get_ram(void* argp) {
 	if (!((struct thread_varg*)argp)->thread_flags[0]) return 0;
 	struct info* user_info = ((struct thread_varg*)argp)->user_info;
 #ifndef __APPLE__
-	char* buffer = ((struct thread_varg*)argp)->buffer;
-	int buf_sz	 = ((struct thread_varg*)argp)->buf_sz;
 	#ifdef _WIN32
 	FILE* mem_used_fp			 = popen("wmic os get freevirtualmemory", "r");			 // free memory
 	FILE* mem_total_fp		 = popen("wmic os get totalvirtualmemorysize", "r"); // total memory
@@ -148,7 +146,7 @@ void* get_ram(void* argp) {
 		else
 			user_info->ram_total = atoi(mem_total_ch) / 1024;
 	}
-	LOG_V(user_info->total_ram);
+	LOG_V(user_info->ram_total);
 	while (fgets(mem_used_ch, sizeof(mem_used_ch), mem_used_fp) != NULL) {
 		if (strstr(mem_used_ch, "FreeVirtualMemory") != 0)
 			continue;
@@ -161,6 +159,8 @@ void* get_ram(void* argp) {
 	pclose(mem_used_fp);
 	pclose(mem_total_fp);
 	#else // if not _WIN32
+	char* buffer = ((struct thread_varg*)argp)->buffer;
+	int buf_sz	 = ((struct thread_varg*)argp)->buf_sz;
 	FILE* meminfo;
 
 		#ifdef __BSD__
@@ -404,6 +404,7 @@ void* get_model(void* argp) {
 	LOG_I("getting model");
 	struct info* user_info = ((struct thread_varg*)argp)->user_info;
 	FILE* model_fp;
+#ifndef _WIN32
 	char model_filename[4][256] = {
 			"/sys/devices/virtual/dmi/id/product_version",
 			"/sys/devices/virtual/dmi/id/product_name",
@@ -433,15 +434,16 @@ void* get_model(void* argp) {
 	}
 	sprintf(user_info->model, "%s", tmp_model[longest_model]); // read model name
 	LOG_V(user_info->model);
-#ifdef _WIN32
+#elif defined(_WIN32)
 	// all the previous files obviously did not exist on windows
-	model_fp = popen("wmic computersystem get model", "r");
+	char* buffer = ((struct thread_varg*)argp)->buffer;
+	model_fp		 = popen("wmic computersystem get model", "r");
 	while (fgets(buffer, sizeof(buffer), model_fp)) {
 		if (strstr(buffer, "Model") != 0)
 			continue;
 		else {
-			sprintf(user_info.model, "%s", buffer);
-			user_info.model[strlen(user_info.model) - 2] = '\0';
+			sprintf(user_info->model, "%s", buffer);
+			user_info->model[strlen(user_info->model) - 2] = '\0';
 			break;
 		}
 	}
@@ -453,9 +455,9 @@ void* get_model(void* argp) {
 	#elif defined(__OPENBSD__)
 		#define HOSTCTL "hw.product"
 	#endif
-	model_fp	 = popen("sysctl " HOSTCTL, "r");
-	char* buffer					 = ((struct thread_varg*)argp)->buffer;
-	int buf_sz						 = ((struct thread_varg*)argp)->buf_sz;
+	model_fp		 = popen("sysctl " HOSTCTL, "r");
+	char* buffer = ((struct thread_varg*)argp)->buffer;
+	int buf_sz	 = ((struct thread_varg*)argp)->buf_sz;
 	while (fgets(buffer, buf_sz, model_fp))
 		if (sscanf(buffer,
 							 HOSTCTL
@@ -485,6 +487,7 @@ void* get_ker(void* argp) {
 #else	 // _WIN32
 	// windows version
 	FILE* kernel_fp = popen("wmic computersystem get systemtype", "r");
+	char* buffer		= ((struct thread_varg*)argp)->buffer;
 	while (fgets(buffer, sizeof(buffer), kernel_fp)) {
 		if (strstr(buffer, "SystemType") != 0)
 			continue;
@@ -710,23 +713,31 @@ void get_info(struct flags flags, struct info* user_info) {
 	if (flags.os) sprintf(user_info->os_name, "windows");
 #endif
 	get_sys(user_info);
-// are threads overpowered? nah
-#define THREAD_COUNT 7
-	pthread_t tids[THREAD_COUNT] = {0};
-	void* (*fnptrs[])(void*)		 = {get_ram, get_gpu, get_res, get_pkg, get_model, get_ker, get_upt};
+	// are threads overpowered? nah
+	void* (*fnptrs[])(void*) = {get_ram, get_gpu, get_res, get_pkg, get_model, get_ker, get_upt};
 	struct thread_varg args =
 			(struct thread_varg){buffer,
 													 buf_sz,
 													 user_info,
 													 cpuinfo,
 													 {flags.ram, flags.gpu, flags.resolution, flags.pkgs, flags.model, flags.kernel, flags.uptime}};
+#define THREAD_COUNT 7
+#ifndef _WIN32
+	pthread_t tids[THREAD_COUNT] = {0};
+#endif
 	for (int i = 0; i < THREAD_COUNT; i++) {
+#ifdef _WIN32
+		fnptrs[i](&args);
+#else
 		pthread_create(&tids[i], NULL, fnptrs[i], &args);
+#endif
 		LOG_I("STARTING thread %d", i);
 	}
+#ifndef _WIN32
 	for (int i = 0; i < THREAD_COUNT; i++) {
 		if (tids[i] != 0) pthread_join(tids[i], NULL);
 		LOG_I("JOINING thread %d", i);
 	}
+#endif
 	fclose(cpuinfo);
 }

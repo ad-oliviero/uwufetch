@@ -647,7 +647,7 @@ int main(int argc, char* argv[]) {
 
 #ifdef _WIN32
 	// packages disabled by default because chocolatey is too slow
-	config_flags.show_pkgs = 0;
+	config_flags.show.pkgs = 0;
 #endif
 
 	int opt											 = 0;
@@ -732,11 +732,11 @@ int main(int argc, char* argv[]) {
 	}
 	if (!user_config_file.read_enabled) {
 		LOG_I("reading config");
-#ifdef _WIN32
-		user_info = get_info(&config_flags); // get the info to modify it with cmdline options
-#else
+		// #ifdef _WIN32
+		// user_info = get_info(&config_flags); // get the info to modify it with cmdline options
+		// #else
 		get_info(config_flags.show, &user_info);
-#endif
+		// #endif
 	}
 
 	if (user_config_file.write_enabled) {

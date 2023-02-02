@@ -8,7 +8,11 @@ CC = cc
 AR = ar
 DESTDIR = /usr
 RELEASE_SCRIPTS = release_scripts/*.sh
-PLATFORM = $(shell uname)
+ifeq ($(OS), Windows_NT)
+	PLATFORM = $(OS)
+else
+	PLATFORM = $(shell uname)
+endif
 PLATFORM_ABBR = $(PLATFORM)
 
 ifeq ($(PLATFORM), Linux)
@@ -48,11 +52,11 @@ else ifeq ($(PLATFORM), OpenBSD)
 	ETC_DIR		= /etc
 	MANDIR		= share/man/man1
 	PLATFORM_ABBR = openbsd
-else ifeq ($(PLATFORM), windows32)
-	CC				= gcc
+else ifeq ($(PLATFORM), Windows_NT)
+	CC					= gcc
 	PREFIX			= "C:\Program Files"
 	LIBDIR			=
-	INCDIR		    =
+	INCDIR			=
 	MANDIR			=
 	RELEASE_SCRIPTS = release_scripts/*.ps1
 	PLATFORM_ABBR	= win64
