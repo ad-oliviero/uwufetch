@@ -10,3 +10,4 @@ uwufetch_*
 *.o
 *.so
 *.a
+*.dSYM
