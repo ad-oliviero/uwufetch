@@ -404,37 +404,7 @@ void* get_model(void* argp) {
 	LOG_I("getting model");
 	struct info* user_info = ((struct thread_varg*)argp)->user_info;
 	FILE* model_fp;
-#ifndef _WIN32
-	char model_filename[4][256] = {
-			"/sys/devices/virtual/dmi/id/product_version",
-			"/sys/devices/virtual/dmi/id/product_name",
-			"/sys/devices/virtual/dmi/id/board_name",
-			"getprop ro.product.vendor.marketname 2>/dev/null",
-	};
-
-	char tmp_model[4][256]; // temporary variable to store the contents of all 3 files
-	int longest_model = 0, best_len = 0, currentlen = 0;
-	FILE* (*tocall[])(const char*, const char*) = {fopen, fopen, fopen, popen}; // open a process or a file, depending on the model_filename
-	int (*tocall_close[])(FILE*)								= {fclose, fclose, fclose, pclose};
-	for (int i = 0; i < 4; i++) {
-		// read file
-		model_fp = tocall[i](model_filename[i], "r");
-		if (model_fp) {
-			fgets(tmp_model[i], 256, model_fp);
-			tmp_model[i][strlen(tmp_model[i]) - 1] = '\0';
-			tocall_close[i](model_fp);
-		}
-		LOG_V(tmp_model[i]);
-		// choose the file with the longest name
-		currentlen = strlen(tmp_model[i]);
-		if (currentlen > best_len) {
-			best_len			= currentlen;
-			longest_model = i;
-		}
-	}
-	sprintf(user_info->model, "%s", tmp_model[longest_model]); // read model name
-	LOG_V(user_info->model);
-#elif defined(_WIN32)
+#ifdef _WIN32
 	// all the previous files obviously did not exist on windows
 	char* buffer = ((struct thread_varg*)argp)->buffer;
 	model_fp		 = popen("wmic computersystem get model", "r");
@@ -470,7 +440,37 @@ void* get_model(void* argp) {
 							 user_info->model))
 			break;
 	pclose(model_fp);
-#endif // _WIN32
+#else
+	char model_filename[4][256] = {
+			"/sys/devices/virtual/dmi/id/product_version",
+			"/sys/devices/virtual/dmi/id/product_name",
+			"/sys/devices/virtual/dmi/id/board_name",
+			"getprop ro.product.vendor.marketname 2>/dev/null",
+	};
+
+	char tmp_model[4][256]; // temporary variable to store the contents of all 3 files
+	int longest_model = 0, best_len = 0, currentlen = 0;
+	FILE* (*tocall[])(const char*, const char*) = {fopen, fopen, fopen, popen}; // open a process or a file, depending on the model_filename
+	int (*tocall_close[])(FILE*)								= {fclose, fclose, fclose, pclose};
+	for (int i = 0; i < 4; i++) {
+		// read file
+		model_fp = tocall[i](model_filename[i], "r");
+		if (model_fp) {
+			fgets(tmp_model[i], 256, model_fp);
+			tmp_model[i][strlen(tmp_model[i]) - 1] = '\0';
+			tocall_close[i](model_fp);
+		}
+		LOG_V(tmp_model[i]);
+		// choose the file with the longest name
+		currentlen = strlen(tmp_model[i]);
+		if (currentlen > best_len) {
+			best_len			= currentlen;
+			longest_model = i;
+		}
+	}
+	sprintf(user_info->model, "%s", tmp_model[longest_model]); // read model name
+	LOG_V(user_info->model);
+#endif
 	return 0;
 }
 
