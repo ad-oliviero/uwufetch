@@ -437,71 +437,58 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
 
 	// print collected info - from host to cpu info
 	if (config_flags->show.user)
-		responsively_printf(print_buf, "%s%s%s%s@%s", MOVE_CURSOR, NORMAL, BOLD, user_info->user,
-												user_info->host);
+		responsively_printf(print_buf, "%s%s%s%s@%s", MOVE_CURSOR, NORMAL, BOLD, user_info->user, user_info->host);
 	uwu_name(user_info);
 	if (config_flags->show.os)
-		responsively_printf(print_buf, "%s%s%sOWOS     %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL,
-												user_info->os_name);
+		responsively_printf(print_buf, "%s%s%sOWOS     %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->os_name);
 	if (config_flags->show.model)
-		responsively_printf(print_buf, "%s%s%sMOWODEL  %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL,
-												user_info->model);
+		responsively_printf(print_buf, "%s%s%sMOWODEL  %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->model);
 	if (config_flags->show.kernel)
-		responsively_printf(print_buf, "%s%s%sKEWNEL   %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL,
-												user_info->kernel);
+		responsively_printf(print_buf, "%s%s%sKEWNEL   %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->kernel);
 	if (config_flags->show.cpu)
-		responsively_printf(print_buf, "%s%s%sCPUWU    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL,
-												user_info->cpu_model);
+		responsively_printf(print_buf, "%s%s%sCPUWU    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->cpu_model);
 
 	if (config_flags->show_gpu[0] == -2) { // print all gpu models
-		for (int i = 0; i < 256 && user_info->gpu_model[i][0]; i++) {
-			responsively_printf(print_buf, "%s%s%sGPUWU    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL,
-													user_info->gpu_model[i]);
-		}
+		for (int i = 0; i < 256 && user_info->gpu_model[i][0]; i++)
+			responsively_printf(print_buf, "%s%s%sGPUWU    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->gpu_model[i]);
 	} else if (config_flags->show_gpu[0] != -3) { // print only the configured gpu models
 		for (int i = 0; i < 256; i++) {
 			if (config_flags->show_gpu[i] >= 0)
 				if (user_info->gpu_model[config_flags->show_gpu[i]][0])
-					responsively_printf(print_buf, "%s%s%sGPUWU    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL,
-															user_info->gpu_model[config_flags->show_gpu[i]]);
+					responsively_printf(print_buf, "%s%s%sGPUWU    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->gpu_model[config_flags->show_gpu[i]]);
 		}
 	}
 
 	if (config_flags->show.ram) // print ram
-		responsively_printf(print_buf, "%s%s%sMEMOWY   %s%i MiB/%i MiB", MOVE_CURSOR, NORMAL, BOLD,
-												NORMAL, (user_info->ram_used), user_info->ram_total);
+		responsively_printf(print_buf, "%s%s%sMEMOWY   %s%i MiB/%i MiB", MOVE_CURSOR, NORMAL, BOLD, NORMAL, (user_info->ram_used), user_info->ram_total);
 	if (config_flags->show.resolution) // print resolution
 		if (user_info->screen_width != 0 || user_info->screen_height != 0)
-			responsively_printf(print_buf, "%s%s%sWESOWUTION%s  %dx%d", MOVE_CURSOR, NORMAL, BOLD, NORMAL,
-													user_info->screen_width, user_info->screen_height);
+			responsively_printf(print_buf, "%s%s%sWESOWUTION%s  %dx%d", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->screen_width, user_info->screen_height);
 	if (config_flags->show.shell) // print shell name
-		responsively_printf(print_buf, "%s%s%sSHEWW    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL,
-												user_info->shell);
+		responsively_printf(print_buf, "%s%s%sSHEWW    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->shell);
 	if (config_flags->show.pkgs) // print pkgs
-		responsively_printf(print_buf, "%s%s%sPKGS     %s%d: %s", MOVE_CURSOR, NORMAL, BOLD, NORMAL,
-												user_info->pkgs, user_info->pkgman_name);
+		responsively_printf(print_buf, "%s%s%sPKGS     %s%d: %s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->pkgs, user_info->pkgman_name);
 	// #endif
 	if (config_flags->show.uptime) {
 		switch (user_info->uptime) { // formatting the uptime which is store in seconds
 		case 0 ... 3599:
-			responsively_printf(print_buf, "%s%s%sUWUPTIME %s%lim", MOVE_CURSOR, NORMAL, BOLD, NORMAL,
-													user_info->uptime / 60 % 60);
+			responsively_printf(print_buf, "%s%s%sUWUPTIME %s%lim", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->uptime / 60 % 60);
 			break;
 		case 3600 ... 86399:
-			responsively_printf(print_buf, "%s%s%sUWUPTIME %s%lih, %lim", MOVE_CURSOR, NORMAL, BOLD,
-													NORMAL, user_info->uptime / 3600, user_info->uptime / 60 % 60);
+			responsively_printf(print_buf, "%s%s%sUWUPTIME %s%lih, %lim", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->uptime / 3600, user_info->uptime / 60 % 60);
 			break;
 		default:
-			responsively_printf(print_buf, "%s%s%sUWUPTIME %s%lid, %lih, %lim", MOVE_CURSOR, NORMAL, BOLD,
-													NORMAL, user_info->uptime / 86400, user_info->uptime / 3600 % 24,
-													user_info->uptime / 60 % 60);
+			responsively_printf(print_buf, "%s%s%sUWUPTIME %s%lid, %lih, %lim", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->uptime / 86400, user_info->uptime / 3600 % 24, user_info->uptime / 60 % 60);
 		}
 	}
-	if (config_flags->show_colors) // print colors
-		printf("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n", MOVE_CURSOR, BOLD, BLACK,
-					 BLOCK_CHAR, BLOCK_CHAR, RED, BLOCK_CHAR, BLOCK_CHAR, GREEN, BLOCK_CHAR, BLOCK_CHAR,
-					 YELLOW, BLOCK_CHAR, BLOCK_CHAR, BLUE, BLOCK_CHAR, BLOCK_CHAR, MAGENTA, BLOCK_CHAR,
-					 BLOCK_CHAR, CYAN, BLOCK_CHAR, BLOCK_CHAR, WHITE, BLOCK_CHAR, BLOCK_CHAR, NORMAL);
+	// clang-format off
+	if (config_flags->show_colors)
+		printf("%s"	BOLD BLACK BLOCK_CHAR BLOCK_CHAR RED BLOCK_CHAR
+								BLOCK_CHAR GREEN BLOCK_CHAR BLOCK_CHAR YELLOW
+								BLOCK_CHAR BLOCK_CHAR BLUE BLOCK_CHAR BLOCK_CHAR
+								MAGENTA BLOCK_CHAR BLOCK_CHAR CYAN BLOCK_CHAR
+								BLOCK_CHAR WHITE BLOCK_CHAR BLOCK_CHAR NORMAL "\n", MOVE_CURSOR);
+	// clang-format on
 	return line_count;
 }
 
