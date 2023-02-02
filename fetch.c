@@ -610,8 +610,8 @@ void get_info(struct flags flags, struct info* user_info) {
 			if (flags.user) {
 				// username
 				FILE* whoami = popen("whoami", "r");
-				if (fscanf(whoami, "%s", user_info->user) == 3)
-					;
+				if (fscanf(whoami, "%s", user_info->user) == 3) {
+				}
 				LOG_V(user_info->user);
 				pclose(whoami);
 			}
@@ -635,7 +635,6 @@ void get_info(struct flags flags, struct info* user_info) {
 			sprintf(user_info->os_name, "unknown");
 	}
 #ifndef __BSD__
-	fclose(cpuinfo);
 #endif
 #ifndef _WIN32
 	// getting username and hostname
@@ -728,4 +727,5 @@ void get_info(struct flags flags, struct info* user_info) {
 		if (tids[i] != 0) pthread_join(tids[i], NULL);
 		LOG_I("JOINING thread %d", i);
 	}
+	fclose(cpuinfo);
 }
