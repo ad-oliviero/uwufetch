@@ -640,7 +640,7 @@ void usage(char* arg) {
 
 // the main function is on the bottom of the file to avoid double function declarations
 int main(int argc, char* argv[]) {
-	struct user_config user_config_file;
+	struct user_config user_config_file = {0};
 	struct info user_info							= {0};
 	struct configuration config_flags = parse_config(&user_info, &user_config_file);
 	char* custom_distro_name					= NULL;
