@@ -599,6 +599,15 @@ void get_info(struct flags flags, struct info* user_info) {
 				if (sscanf(buffer, "model name    : %[^\n]", user_info->cpu_model)) break;
 #endif // __BSD__
 			}
+			if (strlen(user_info->cpu_model) == 0) {
+				LOG_E("failed to get cpu name");
+				rewind(cpuinfo);
+				char cores[4] = "";
+				while (fgets(buffer, sizeof(buffer), cpuinfo)) // get the last core number
+					sscanf(buffer, "processor%*[    |	]: %[^\n]", cores);
+				cores[strlen(cores) - 1] += 1; // should be a number
+				sprintf(user_info->cpu_model, "%s Cores", cores);
+			}
 			LOG_V(user_info->cpu_model);
 		}
 	} else { // try for android vars, next for Apple var, or unknown system
