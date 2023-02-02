@@ -403,7 +403,6 @@ void* get_model(void* argp) {
 	if (!((struct thread_varg*)argp)->thread_flags[4]) return 0;
 	LOG_I("getting model");
 	struct info* user_info = ((struct thread_varg*)argp)->user_info;
-	char* buffer					 = ((struct thread_varg*)argp)->buffer;
 	FILE* model_fp;
 	char model_filename[4][256] = {
 			"/sys/devices/virtual/dmi/id/product_version",
