@@ -74,8 +74,9 @@ size_t time_buffer_len = sizeof(time_buffer);
 #endif // __APPLE__
 
 struct package_manager {
-	char command_string[256]; // command to get number of packages installed
-	char pkgman_name[16];			// name of the package manager
+	char* command_path;
+	char* command_string; // command to get number of packages installed
+	char* pkgman_name;		// name of the package manager
 };
 
 // truncates the given string
@@ -357,27 +358,27 @@ void* get_pkg(void* argp) { // this is just a function that returns the total of
 	#ifndef _WIN32
 	// all supported package managers
 	struct package_manager pkgmans[] = {
-			{"apt list --installed 2> /dev/null | wc -l", "(apt)"},
-			{"apk info 2> /dev/null | wc -l", "(apk)"},
-			//  {"dnf list installed 2> /dev/null | wc -l", "(dnf)"}, // according to https://stackoverflow.com/questions/48570019/advantages-of-dnf-vs-rpm-on-fedora, dnf and rpm return the same number of packages
-			{"qlist -I 2> /dev/null | wc -l", "(emerge)"},
-			{"flatpak list 2> /dev/null | wc -l", "(flatpak)"},
-			{"snap list 2> /dev/null | wc -l", "(snap)"},
-			{"guix package --list-installed 2> /dev/null | wc -l", "(guix)"},
-			{"nix-store -q --requisites /run/current-system/sw 2> /dev/null | wc -l", "(nix)"},
-			{"pacman -Qq 2> /dev/null | wc -l", "(pacman)"},
-			{"pkg info 2>/dev/null | wc -l", "(pkg)"},
-			{"pkg_info 2>/dev/null | wc -l | sed \"s/ //g\"", "(pkg)"},
-			{"port installed 2> /dev/null | tail -n +2 | wc -l", "(port)"},
-			{"find $(brew --cellar 2>/dev/stdout) -maxdepth 1 -type d 2> /dev/null | wc -l | awk '{print $1}'", "(brew-cellar)"},
-			{"find $(brew --caskroom 2>/dev/stdout) -maxdepth 1 -type d 2> /dev/null | wc -l | awk '{print $1}'", "(brew-cask)"},
-			{"rpm -qa --last 2> /dev/null | wc -l", "(rpm)"},
-			{"xbps-query -l 2> /dev/null | wc -l", "(xbps)"},
-			{"zypper -q se --installed-only 2> /dev/null | wc -l", "(zypper)"}};
+			{"/usr/bin/apt", "apt list --installed 2> /dev/null | wc -l", "(apt)"},
+			{"/usr/bin/apk", "apk info 2> /dev/null | wc -l", "(apk)"},
+			//  {"/usr/bin/dnf","dnf list installed 2> /dev/null | wc -l", "(dnf)"}, // according to https://stackoverflow.com/questions/48570019/advantages-of-dnf-vs-rpm-on-fedora, dnf and rpm return the same number of packages
+			{"/usr/bin/qlist", "qlist -I 2> /dev/null | wc -l", "(emerge)"},
+			{"/usr/bin/flatpak", "flatpak list 2> /dev/null | wc -l", "(flatpak)"},
+			{"/usr/bin/snap", "snap list 2> /dev/null | wc -l", "(snap)"},
+			{"/usr/bin/guix", "guix package --list-installed 2> /dev/null | wc -l", "(guix)"},
+			{"/usr/bin/nix-store", "nix-store -q --requisites /run/current-system/sw 2> /dev/null | wc -l", "(nix)"},
+			{"/usr/bin/pacman", "pacman -Qq 2> /dev/null | wc -l", "(pacman)"},
+			{"/usr/bin/pkg", "pkg info 2>/dev/null | wc -l", "(pkg)"},
+			{"/usr/bin/pkg_info", "pkg_info 2>/dev/null | wc -l | sed \"s/ //g\"", "(pkg)"},
+			{"/usr/bin/port", "port installed 2> /dev/null | tail -n +2 | wc -l", "(port)"},
+			{"/usr/bin/find", "find $(brew --cellar 2>/dev/stdout) -maxdepth 1 -type d 2> /dev/null | wc -l | awk '{print $1}'", "(brew-cellar)"},
+			{"/usr/bin/find", "find $(brew --caskroom 2>/dev/stdout) -maxdepth 1 -type d 2> /dev/null | wc -l | awk '{print $1}'", "(brew-cask)"},
+			{"/usr/bin/rpm", "rpm -qa --last 2> /dev/null | wc -l", "(rpm)"},
+			{"/usr/bin/xbps-query", "xbps-query -l 2> /dev/null | wc -l", "(xbps)"},
+			{"/usr/bin/zypper", "zypper -q se --installed-only 2> /dev/null | wc -l", "(zypper)"}};
 	#endif
 #else
-	struct package_manager pkgmans[] = {{"find $(brew --cellar 2>/dev/stdout) -maxdepth 1 -type d 2> /dev/null | wc -l | awk '{print $1}' > /tmp/uwufetch_brew_tmp", "(brew-cellar)"},
-																			{"find $(brew --caskroom 2>/dev/stdout) -maxdepth 1 -type d 2> /dev/null | wc -l | awk '{print $1}' > /tmp/uwufetch_brew_tmp", "(brew-cask)"}};
+	struct package_manager pkgmans[] = {{"/usr/local/bin/brew", "find $(brew --cellar 2>/dev/stdout) -maxdepth 1 -type d 2> /dev/null | wc -l | awk '{print $1}' > /tmp/uwufetch_brew_tmp", "(brew-cellar)"},
+																			{"/usr/local/bin/brew", "find $(brew --caskroom 2>/dev/stdout) -maxdepth 1 -type d 2> /dev/null | wc -l | awk '{print $1}' > /tmp/uwufetch_brew_tmp", "(brew-cask)"}};
 #endif
 #ifndef _WIN32
 	const int pkgman_count = sizeof(pkgmans) / sizeof(pkgmans[0]); // number of package managers
@@ -386,21 +387,23 @@ void* get_pkg(void* argp) { // this is just a function that returns the total of
 		struct package_manager* current = &pkgmans[i]; // pointer to current package manager
 
 		LOG_I("trying pkgman %d: %s", i, current->pkgman_name);
-	#ifndef __APPLE__
-		FILE* fp = popen(current->command_string, "r"); // trying current package manager
-	#else
-		system(current->command_string); // writes to a temporary file: for some reason popen() does not intercept the stdout, so i have to read from a temporary file
-		FILE* fp = fopen("/tmp/uwufetch_brew_tmp", "r");
-	#endif
 		unsigned int pkg_count = 0;
-		if (fscanf(fp, "%u", &pkg_count) == 3) continue;
+		if (access(current->command_path, F_OK) != -1) {
+	#ifndef __APPLE__
+			FILE* fp = popen(current->command_string, "r"); // trying current package manager
+	#else
+			system(current->command_string); // writes to a temporary file: for some reason popen() does not intercept the stdout, so i have to read from a temporary file
+			FILE* fp = fopen("/tmp/uwufetch_brew_tmp", "r");
+	#endif
+			if (fscanf(fp, "%u", &pkg_count) == 3) continue;
 
 	#ifndef __APPLE__
-		pclose(fp);
+			pclose(fp);
 	#else
-		// remove("/tmp/uwufetch_brew_tmp");
-		fclose(fp);
+			// remove("/tmp/uwufetch_brew_tmp");
+			fclose(fp);
 	#endif
+		}
 
 		// adding a package manager with its package count to user_info->pkgman_name
 		user_info->pkgs += pkg_count;
