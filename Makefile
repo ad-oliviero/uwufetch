@@ -23,9 +23,11 @@ ifeq ($(PLATFORM), Linux)
 	MANDIR		= share/man/man1
 	PLATFORM_ABBR = linux
 	ifeq ($(shell uname -o), Android)
-		DESTDIR	= /data/data/com.termux/files/usr
-		ETC_DIR = $(DESTDIR)/etc
-		PLATFORM_ABBR = android
+		CFLAGS				+= -DPKGPATH=\"/data/data/com.termux/files/usr/bin\"
+		CFLAGS_DEBUG	+= -DPKGPATH=\"/data/data/com.termux/files/usr/bin\"
+		DESTDIR				= /data/data/com.termux/files/usr
+		ETC_DIR				= $(DESTDIR)/etc
+		PLATFORM_ABBR	= android
 	endif
 else ifeq ($(PLATFORM), Darwin)
 	PREFIX		= local/bin

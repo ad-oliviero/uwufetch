@@ -57,6 +57,14 @@ static bool verbose_enabled = false;
 bool* get_verbose_handle() { return &verbose_enabled; }
 #endif
 
+#ifndef PKGPATH
+	#ifdef __APPLE__
+		#define PKGPATH "/usr/local/bin"
+	#else
+		#define PKGPATH "/usr/bin"
+	#endif
+#endif
+
 #ifdef __APPLE__
 // buffers where data fetched from sysctl are stored
 	#define CPUBUFFERLEN 128
@@ -358,23 +366,23 @@ void* get_pkg(void* argp) { // this is just a function that returns the total of
 	#ifndef _WIN32
 	// all supported package managers
 	struct package_manager pkgmans[] = {
-			{"/usr/bin/apt", "apt list --installed 2> /dev/null | wc -l", "(apt)"},
-			{"/usr/bin/apk", "apk info 2> /dev/null | wc -l", "(apk)"},
-			//  {"/usr/bin/dnf","dnf list installed 2> /dev/null | wc -l", "(dnf)"}, // according to https://stackoverflow.com/questions/48570019/advantages-of-dnf-vs-rpm-on-fedora, dnf and rpm return the same number of packages
-			{"/usr/bin/qlist", "qlist -I 2> /dev/null | wc -l", "(emerge)"},
-			{"/usr/bin/flatpak", "flatpak list 2> /dev/null | wc -l", "(flatpak)"},
-			{"/usr/bin/snap", "snap list 2> /dev/null | wc -l", "(snap)"},
-			{"/usr/bin/guix", "guix package --list-installed 2> /dev/null | wc -l", "(guix)"},
-			{"/usr/bin/nix-store", "nix-store -q --requisites /run/current-system/sw 2> /dev/null | wc -l", "(nix)"},
-			{"/usr/bin/pacman", "pacman -Qq 2> /dev/null | wc -l", "(pacman)"},
-			{"/usr/bin/pkg", "pkg info 2>/dev/null | wc -l", "(pkg)"},
-			{"/usr/bin/pkg_info", "pkg_info 2>/dev/null | wc -l | sed \"s/ //g\"", "(pkg)"},
-			{"/usr/bin/port", "port installed 2> /dev/null | tail -n +2 | wc -l", "(port)"},
-			{"/usr/bin/find", "find $(brew --cellar 2>/dev/stdout) -maxdepth 1 -type d 2> /dev/null | wc -l | awk '{print $1}'", "(brew-cellar)"},
-			{"/usr/bin/find", "find $(brew --caskroom 2>/dev/stdout) -maxdepth 1 -type d 2> /dev/null | wc -l | awk '{print $1}'", "(brew-cask)"},
-			{"/usr/bin/rpm", "rpm -qa --last 2> /dev/null | wc -l", "(rpm)"},
-			{"/usr/bin/xbps-query", "xbps-query -l 2> /dev/null | wc -l", "(xbps)"},
-			{"/usr/bin/zypper", "zypper -q se --installed-only 2> /dev/null | wc -l", "(zypper)"}};
+			{PKGPATH "apt", "apt list --installed 2> /dev/null | wc -l", "(apt)"},
+			{PKGPATH "apk", "apk info 2> /dev/null | wc -l", "(apk)"},
+			// {PKGPATH"dnf","dnf list installed 2> /dev/null | wc -l", "(dnf)"}, // according to https://stackoverflow.com/questions/48570019/advantages-of-dnf-vs-rpm-on-fedora, dnf and rpm return the same number of packages
+			{PKGPATH "qlist", "qlist -I 2> /dev/null | wc -l", "(emerge)"},
+			{PKGPATH "flatpak", "flatpak list 2> /dev/null | wc -l", "(flatpak)"},
+			{PKGPATH "snap", "snap list 2> /dev/null | wc -l", "(snap)"},
+			{PKGPATH "guix", "guix package --list-installed 2> /dev/null | wc -l", "(guix)"},
+			{PKGPATH "nix-store", "nix-store -q --requisites /run/current-system/sw 2> /dev/null | wc -l", "(nix)"},
+			{PKGPATH "pacman", "pacman -Qq 2> /dev/null | wc -l", "(pacman)"},
+			{PKGPATH "pkg", "pkg info 2>/dev/null | wc -l", "(pkg)"},
+			{PKGPATH "pkg_info", "pkg_info 2>/dev/null | wc -l | sed \"s/ //g\"", "(pkg)"},
+			{PKGPATH "port", "port installed 2> /dev/null | tail -n +2 | wc -l", "(port)"},
+			{PKGPATH "find", "find $(brew --cellar 2>/dev/stdout) -maxdepth 1 -type d 2> /dev/null | wc -l | awk '{print $1}'", "(brew-cellar)"},
+			{PKGPATH "find", "find $(brew --caskroom 2>/dev/stdout) -maxdepth 1 -type d 2> /dev/null | wc -l | awk '{print $1}'", "(brew-cask)"},
+			{PKGPATH "rpm", "rpm -qa --last 2> /dev/null | wc -l", "(rpm)"},
+			{PKGPATH "xbps-query", "xbps-query -l 2> /dev/null | wc -l", "(xbps)"},
+			{PKGPATH "zypper", "zypper -q se --installed-only 2> /dev/null | wc -l", "(zypper)"}};
 	#endif
 #else
 	struct package_manager pkgmans[] = {{"/usr/local/bin/brew", "find $(brew --cellar 2>/dev/stdout) -maxdepth 1 -type d 2> /dev/null | wc -l | awk '{print $1}' > /tmp/uwufetch_brew_tmp", "(brew-cellar)"},
