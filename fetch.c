@@ -59,9 +59,9 @@ bool* get_verbose_handle() { return &verbose_enabled; }
 
 #ifndef PKGPATH
 	#ifdef __APPLE__
-		#define PKGPATH "/usr/local/bin"
+		#define PKGPATH "/usr/local/bin/"
 	#else
-		#define PKGPATH "/usr/bin"
+		#define PKGPATH "/usr/bin/"
 	#endif
 #endif
 
@@ -395,9 +395,9 @@ void* get_pkg(void* argp) { // this is just a function that returns the total of
 		struct package_manager* current = &pkgmans[i]; // pointer to current package manager
 
 		unsigned int pkg_count = 0;
+		LOG_I("trying pkgman %d: %s", i, current->pkgman_name);
+		LOG_V(current->command_path);
 		if (access(current->command_path, F_OK) != -1) {
-			LOG_I("trying pkgman %d: %s", i, current->pkgman_name);
-			LOG_V(current->command_path);
 	#ifndef __APPLE__
 			FILE* fp = popen(current->command_string, "r"); // trying current package manager
 	#else
@@ -413,6 +413,10 @@ void* get_pkg(void* argp) { // this is just a function that returns the total of
 			fclose(fp);
 	#endif
 		}
+	#ifdef __DEBUG__
+		else
+			LOG_W("pkgman %s executable not found!", current->pkgman_name);
+	#endif
 
 		// adding a package manager with its package count to user_info->pkgman_name
 		user_info->pkgs += pkg_count;
@@ -451,6 +455,8 @@ void* get_model(void* argp) {
 	if (!((struct thread_varg*)argp)->thread_flags[5]) return 0;
 	LOG_I("getting model");
 	struct info* user_info = ((struct thread_varg*)argp)->user_info;
+	char* buffer					 = ((struct thread_varg*)argp)->buffer;
+	int buf_sz						 = ((struct thread_varg*)argp)->buf_sz;
 	FILE* model_fp;
 #ifdef _WIN32
 	// all the previous files obviously did not exist on windows
@@ -473,9 +479,7 @@ void* get_model(void* argp) {
 	#elif defined(__OPENBSD__)
 		#define HOSTCTL "hw.product"
 	#endif
-	model_fp		 = popen("sysctl " HOSTCTL, "r");
-	char* buffer = ((struct thread_varg*)argp)->buffer;
-	int buf_sz	 = ((struct thread_varg*)argp)->buf_sz;
+	model_fp = popen("sysctl " HOSTCTL, "r");
 	while (fgets(buffer, buf_sz, model_fp))
 		if (sscanf(buffer,
 							 HOSTCTL
@@ -496,7 +500,7 @@ void* get_model(void* argp) {
 			"getprop ro.product.vendor.marketname 2>/dev/null",
 	};
 
-	char tmp_model[4][256]; // temporary variable to store the contents of all 3 files
+	char tmp_model[4][buf_sz]; // temporary variable to store the contents of all 3 files
 	int longest_model = 0, best_len = 0, currentlen = 0;
 	FILE* (*tocall[])(const char*, const char*) = {fopen, fopen, fopen, popen}; // open a process or a file, depending on the model_filename
 	int (*tocall_close[])(FILE*)								= {fclose, fclose, fclose, pclose};
@@ -504,7 +508,7 @@ void* get_model(void* argp) {
 		// read file
 		model_fp = tocall[i](model_filename[i], "r");
 		if (model_fp) {
-			fgets(tmp_model[i], 256, model_fp);
+			fgets(tmp_model[i], buf_sz, model_fp);
 			tmp_model[i][strlen(tmp_model[i]) - 1] = '\0';
 			tocall_close[i](model_fp);
 		}
@@ -516,7 +520,14 @@ void* get_model(void* argp) {
 			longest_model = i;
 		}
 	}
-	sprintf(user_info->model, "%s", tmp_model[longest_model]); // read model name
+	if (strlen(tmp_model[longest_model]) == 0) {
+		model_fp = popen("lscpu 2>/dev/null", "r");
+		while (fgets(buffer, buf_sz, model_fp))
+			if (sscanf(buffer, "%*[  ]Model name:%*[           |		]%[^\n]", tmp_model[longest_model]) == 1) break;
+		pclose(model_fp);
+		if (strcmp(tmp_model[longest_model], "Icestorm") == 0) sprintf(tmp_model[longest_model], "Apple MacBook Air (M1)");
+	}
+	sprintf(user_info->model, "%s", tmp_model[longest_model]);
 	LOG_V(user_info->model);
 #endif
 	return 0;
@@ -551,6 +562,7 @@ void* get_ker(void* argp) {
 }
 
 void* get_upt(void* argp) {
+	LOG_V(((struct thread_varg*)argp)->thread_flags[7]);
 	if (!((struct thread_varg*)argp)->thread_flags[7]) return 0;
 	LOG_I("getting uptime");
 	struct info* user_info = ((struct thread_varg*)argp)->user_info;

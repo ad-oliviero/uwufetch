@@ -381,6 +381,7 @@ void uwu_hw(char* hwname) {
 #define HW_TO_UWU(original, uwuified) replace_ignorecase(hwname, original, uwuified);
 	HW_TO_UWU("lenovo", "LenOwO")
 	HW_TO_UWU("cpu", "CC\bPUwU"); // for some reasons this caused a segfault, using a \b (backspace) char fixes it
+	HW_TO_UWU("core", "Cowe");
 	HW_TO_UWU("gpu", "GG\bPUwU")
 	HW_TO_UWU("graphics", "Gwaphics")
 	HW_TO_UWU("corporation", "COwOpowation")
@@ -759,7 +760,7 @@ int main(int argc, char* argv[]) {
 			int buf_sz = 256;
 			char buffer[buf_sz]; // line buffer
 			struct thread_varg vargp = {
-					buffer, buf_sz, &user_info, NULL, {true, true, true, true, true, true, true}};
+					buffer, buf_sz, &user_info, NULL, {true, true, true, true, true, true, true, true}};
 			if (config_flags.show.ram) get_ram(&vargp);
 			if (config_flags.show.uptime) {
 				LOG_I("getting additional not-cached info");
