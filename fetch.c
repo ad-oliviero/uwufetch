@@ -378,8 +378,8 @@ void* get_pkg(void* argp) { // this is just a function that returns the total of
 			{PKGPATH "pkg", "pkg info 2>/dev/null | wc -l", "(pkg)"},
 			{PKGPATH "pkg_info", "pkg_info 2>/dev/null | wc -l | sed \"s/ //g\"", "(pkg)"},
 			{PKGPATH "port", "port installed 2> /dev/null | tail -n +2 | wc -l", "(port)"},
-			{PKGPATH "find", "find $(brew --cellar 2>/dev/stdout) -maxdepth 1 -type d 2> /dev/null | wc -l | awk '{print $1}'", "(brew-cellar)"},
-			{PKGPATH "find", "find $(brew --caskroom 2>/dev/stdout) -maxdepth 1 -type d 2> /dev/null | wc -l | awk '{print $1}'", "(brew-cask)"},
+			{PKGPATH "brew", "find $(brew --cellar 2>/dev/stdout) -maxdepth 1 -type d 2> /dev/null | wc -l | awk '{print $1}'", "(brew-cellar)"},
+			{PKGPATH "brew", "find $(brew --caskroom 2>/dev/stdout) -maxdepth 1 -type d 2> /dev/null | wc -l | awk '{print $1}'", "(brew-cask)"},
 			{PKGPATH "rpm", "rpm -qa --last 2> /dev/null | wc -l", "(rpm)"},
 			{PKGPATH "xbps-query", "xbps-query -l 2> /dev/null | wc -l", "(xbps)"},
 			{PKGPATH "zypper", "zypper -q se --installed-only 2> /dev/null | wc -l", "(zypper)"}};
@@ -394,9 +394,10 @@ void* get_pkg(void* argp) { // this is just a function that returns the total of
 	for (int i = 0; i < pkgman_count; i++) {
 		struct package_manager* current = &pkgmans[i]; // pointer to current package manager
 
-		LOG_I("trying pkgman %d: %s", i, current->pkgman_name);
 		unsigned int pkg_count = 0;
 		if (access(current->command_path, F_OK) != -1) {
+			LOG_I("trying pkgman %d: %s", i, current->pkgman_name);
+			LOG_V(current->command_path);
 	#ifndef __APPLE__
 			FILE* fp = popen(current->command_string, "r"); // trying current package manager
 	#else
