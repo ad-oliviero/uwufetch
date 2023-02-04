@@ -23,3 +23,11 @@ jobs:
       run: make
     - name: run
       run: ./uwufetch
+  mac-os:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: make
+      run: make
+    - name: run
+      run: ./uwufetch
