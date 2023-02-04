@@ -335,8 +335,8 @@ void* get_gpu(void* argp) {
 }
 
 // tries to get screen resolution
-void* get_res(void* argp) {
 #ifndef _WIN32
+void* get_res(void* argp) {
 	if (!((struct thread_varg*)argp)->thread_flags[3]) return 0;
 	LOG_I("getting resolution");
 	char* buffer					 = ((struct thread_varg*)argp)->buffer;
@@ -350,6 +350,7 @@ void* get_res(void* argp) {
 	LOG_V(user_info->screen_width);
 	LOG_V(user_info->screen_height);
 #else
+void* get_res() {
 	// TODO: get resolution on windows
 #endif
 	return 0;
@@ -362,7 +363,6 @@ void* get_pkg(void* argp) { // this is just a function that returns the total of
 	struct info* user_info = ((struct thread_varg*)argp)->user_info;
 	user_info->pkgs				 = 0;
 #ifndef __APPLE__
-	// this function is not used on mac os because it causes lots of problems
 	#ifndef _WIN32
 	// all supported package managers
 	struct package_manager pkgmans[] = {
@@ -432,7 +432,8 @@ void* get_pkg(void* argp) { // this is just a function that returns the total of
 	}
 #else	 // _WIN32
 	// chocolatey for windows
-	FILE* fp = popen("choco list -l --no-color 2> nul", "r");
+	int buf_sz = ((struct thread_varg*)argp)->buf_sz;
+	FILE* fp	 = popen("choco list -l --no-color 2> nul", "r");
 	unsigned int pkg_count;
 	char buffer[7562] = {0};
 	while (fgets(buffer, buf_sz, fp)) {
@@ -460,8 +461,7 @@ void* get_model(void* argp) {
 	FILE* model_fp;
 #ifdef _WIN32
 	// all the previous files obviously did not exist on windows
-	char* buffer = ((struct thread_varg*)argp)->buffer;
-	model_fp		 = popen("wmic computersystem get model", "r");
+	model_fp = popen("wmic computersystem get model", "r");
 	while (fgets(buffer, buf_sz, model_fp)) {
 		if (strstr(buffer, "Model") != 0)
 			continue;
@@ -547,6 +547,7 @@ void* get_ker(void* argp) {
 	// windows version
 	FILE* kernel_fp = popen("wmic computersystem get systemtype", "r");
 	char* buffer		= ((struct thread_varg*)argp)->buffer;
+	int buf_sz			= ((struct thread_varg*)argp)->buf_sz;
 	while (fgets(buffer, buf_sz, kernel_fp)) {
 		if (strstr(buffer, "SystemType") != 0)
 			continue;

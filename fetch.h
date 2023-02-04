@@ -150,7 +150,11 @@ struct flags {
 void get_sys(struct info*);
 void* get_ram(void*);
 void* get_gpu(void*);
+#ifdef _WIN32
+void* get_res();
+#else
 void* get_res(void*);
+#endif
 void* get_pkg(void*);
 void* get_model(void*);
 void* get_ker(void*);
