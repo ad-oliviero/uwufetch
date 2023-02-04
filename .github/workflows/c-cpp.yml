@@ -18,4 +18,4 @@ jobs:
     - name: run
       run: ./uwufetch
     - name: make debug
-      run: make debug
+      run: make debug UWUFETCH_VERSION=\"github-actions\"
