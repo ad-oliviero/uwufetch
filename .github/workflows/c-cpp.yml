@@ -1,0 +1,21 @@
+name: Make and Run
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: make
+      run: make
+    - name: run
+      run: ./uwufetch
+    - name: make debug
+      run: make debug
