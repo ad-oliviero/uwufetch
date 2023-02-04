@@ -144,20 +144,22 @@ void* get_cpu(void* argp) {
 	struct info* user_info = ((struct thread_varg*)argp)->user_info;
 	FILE* cpuinfo					 = ((struct thread_varg*)argp)->cpuinfo;
 	LOG_I("getting cpu name");
-	while (fgets(buffer, buf_sz, cpuinfo)) {
+	if (cpuinfo) {
+		while (fgets(buffer, buf_sz, cpuinfo)) {
 #ifdef __BSD__
-		if (sscanf(buffer, "hw.model"
+			if (sscanf(buffer, "hw.model"
 	#ifdef __FREEBSD__
-											 ": "
+												 ": "
 	#elif defined(__OPENBSD__)
-											 "="
+												 "="
 	#endif
-											 "%[^\n]",
-							 user_info->cpu_model))
-			break;
+												 "%[^\n]",
+								 user_info->cpu_model))
+				break;
 #else
-		if (sscanf(buffer, "model name    : %[^\n]", user_info->cpu_model)) break;
+			if (sscanf(buffer, "model name    : %[^\n]", user_info->cpu_model)) break;
 #endif // __BSD__
+		}
 	}
 	if (strlen(user_info->cpu_model) == 0) {
 		LOG_E("failed to get cpu name");
@@ -763,12 +765,12 @@ void get_info(struct flags flags, struct info* user_info) {
 	pthread_t tids[THREAD_COUNT] = {0};
 #endif
 	for (int i = 0; i < THREAD_COUNT; i++) {
+		LOG_I("STARTING thread %d", i);
 #ifdef _WIN32
 		fnptrs[i](&args);
 #else
 		pthread_create(&tids[i], NULL, fnptrs[i], &args);
 #endif
-		LOG_I("STARTING thread %d", i);
 	}
 #ifndef _WIN32
 	for (int i = 0; i < THREAD_COUNT; i++) {
