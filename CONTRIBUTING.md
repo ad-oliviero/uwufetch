@@ -27,4 +27,4 @@ Issue templates should be enough to guide you to write a good issue.
 
 ## Conclusions
 
-I'òò take some space to thank all the [contributors](https://github.com/TheDarkBug/uwufetch/graphs/contributors) that make this project better every day.
+I'll take some space to thank all the [contributors](https://github.com/TheDarkBug/uwufetch/graphs/contributors) that make this project better every day.
