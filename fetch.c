@@ -696,7 +696,7 @@ void get_info(struct flags flags, struct info* user_info) {
 		LOG_I("getting shell");
 		char* tmp_shell = getenv("SHELL"); // shell name
 		LOG_V(tmp_shell);
-		if (tmp_shell == NULL)
+		if (!tmp_shell)
 			sprintf(user_info->shell, "%s", "");
 		else
 			sprintf(user_info->shell, "%s", tmp_shell);
@@ -744,7 +744,6 @@ void get_info(struct flags flags, struct info* user_info) {
 		strcat(user_info->shell, tmp_shell);
 	}
 #endif // _WIN32
-	truncate_str(user_info->cpu_model, user_info->target_width);
 
 #ifdef _WIN32
 	if (flags.os) sprintf(user_info->os_name, "windows");
