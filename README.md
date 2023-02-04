@@ -2,6 +2,7 @@
 
 A meme system info tool for (almost) all your Linux/Unix-based systems, based on the nyan/UwU trend on r/linuxmasterrace.
 
+
 ## Contributing
 
 All kinds of contributions are welcome, but before contributing **please** read [CONTRIBUTING.md](/CONTRIBUTING.md).
@@ -17,6 +18,8 @@ AmogOwOS, Nyalpine, Nyarch Linuwu, ArcOwO, Nyartix Linuwu, Debinyan, endevaOwO, 
 Dewepyn, FemboyOS, KDE NeOwOn, nixOwOs, xuwulinux, Wocky Linuwu; Plus FweeBSD, OwOpenBSD, macOwOS and iOwOS; Plus WinyandOwOws.
 
 ## Building and installation
+
+[![Build and Run](https://github.com/TheDarkBug/uwufetch/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/TheDarkBug/uwufetch/actions/workflows/c-cpp.yml)
 
 ### Requisites
 
