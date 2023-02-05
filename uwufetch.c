@@ -760,7 +760,7 @@ int main(int argc, char* argv[]) {
 			int buf_sz = 256;
 			char buffer[buf_sz]; // line buffer
 			struct thread_varg vargp = {
-					buffer, buf_sz, &user_info, NULL, {true, true, true, true, true, true, true, true}};
+					buffer, &user_info, NULL, {true, true, true, true, true, true, true, true}};
 			if (config_flags.show.ram) get_ram(&vargp);
 			if (config_flags.show.uptime) {
 				LOG_I("getting additional not-cached info");

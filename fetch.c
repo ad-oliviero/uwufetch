@@ -52,6 +52,7 @@ CONSOLE_SCREEN_BUFFER_INFO csbi;
 
 #define LIBFETCH_INTERNAL // to do certain things only when included from the library itself
 #include "fetch.h"
+#define BUFFER_SIZE 256
 #ifdef __DEBUG__
 static bool verbose_enabled = false;
 bool* get_verbose_handle() { return &verbose_enabled; }
@@ -140,12 +141,11 @@ void get_sys(struct info* user_info) {
 void* get_cpu(void* argp) {
 	if (!((struct thread_varg*)argp)->thread_flags[0]) return 0;
 	char* buffer					 = ((struct thread_varg*)argp)->buffer;
-	int buf_sz						 = ((struct thread_varg*)argp)->buf_sz;
 	struct info* user_info = ((struct thread_varg*)argp)->user_info;
 	FILE* cpuinfo					 = ((struct thread_varg*)argp)->cpuinfo;
 	LOG_I("getting cpu name");
 	if (cpuinfo) {
-		while (fgets(buffer, buf_sz, cpuinfo)) {
+		while (fgets(buffer, BUFFER_SIZE, cpuinfo)) {
 #ifdef __BSD__
 			if (sscanf(buffer, "hw.model"
 	#ifdef __FREEBSD__
@@ -165,7 +165,7 @@ void* get_cpu(void* argp) {
 		LOG_E("failed to get cpu name");
 		rewind(cpuinfo);
 		char cores[4] = "";
-		while (fgets(buffer, buf_sz, cpuinfo)) // get the last core number
+		while (fgets(buffer, BUFFER_SIZE, cpuinfo)) // get the last core number
 			sscanf(buffer, "processor%*[    |	]: %[^\n]", cores);
 		cores[strlen(cores) - 1] += 1; // should be a number
 		sprintf(user_info->cpu_model, "%s Cores", cores);
@@ -207,7 +207,6 @@ void* get_ram(void* argp) {
 	pclose(mem_total_fp);
 	#else // if not _WIN32
 	char* buffer = ((struct thread_varg*)argp)->buffer;
-	int buf_sz = ((struct thread_varg*)argp)->buf_sz;
 	FILE* meminfo;
 
 		#ifdef __BSD__
@@ -228,7 +227,7 @@ void* get_ram(void* argp) {
 		#ifndef __OPENBSD__
 		int memtotal = 0, shmem = 0, memfree = 0, buffers = 0, cached = 0, sreclaimable = 0;
 		#endif
-		while (fgets(buffer, buf_sz, meminfo)) {
+		while (fgets(buffer, BUFFER_SIZE, meminfo)) {
 		#ifndef __OPENBSD__
 			sscanf(buffer, "MemTotal:       %d", &memtotal);
 			sscanf(buffer, "Shmem:             %d", &shmem);
@@ -284,7 +283,6 @@ void* get_ram(void* argp) {
 void* get_gpu(void* argp) {
 	if (!((struct thread_varg*)argp)->thread_flags[2]) return 0;
 	char* buffer					 = ((struct thread_varg*)argp)->buffer;
-	int buf_sz						 = ((struct thread_varg*)argp)->buf_sz;
 	struct info* user_info = ((struct thread_varg*)argp)->user_info;
 	int gpuc							 = 0; // gpu counter
 #ifndef _WIN32
@@ -296,7 +294,7 @@ void* get_gpu(void* argp) {
 	gpu = popen("lshw -class display 2> /dev/null", "r");
 
 	// add all gpus to the array gpu_model
-	while (fgets(buffer, buf_sz, gpu))
+	while (fgets(buffer, BUFFER_SIZE, gpu))
 		if (sscanf(buffer, "    product: %[^\n]", user_info->gpu_model[gpuc])) gpuc++;
 #endif
 
@@ -318,7 +316,7 @@ void* get_gpu(void* argp) {
 	}
 
 	// get all the gpus
-	while (fgets(buffer, buf_sz, gpu)) {
+	while (fgets(buffer, BUFFER_SIZE, gpu)) {
 		// windows
 		if (strstr(buffer, "Name") || (strlen(buffer) == 2))
 			continue;
@@ -342,10 +340,9 @@ void* get_res(void* argp) {
 	if (!((struct thread_varg*)argp)->thread_flags[3]) return 0;
 	LOG_I("getting resolution");
 	char* buffer					 = ((struct thread_varg*)argp)->buffer;
-	int buf_sz						 = ((struct thread_varg*)argp)->buf_sz;
 	struct info* user_info = ((struct thread_varg*)argp)->user_info;
 	FILE* resolution			 = popen("xwininfo -root 2> /dev/null | grep -E 'Width|Height'", "r");
-	while (fgets(buffer, buf_sz, resolution)) {
+	while (fgets(buffer, BUFFER_SIZE, resolution)) {
 		sscanf(buffer, "  Width: %d", &user_info->screen_width);
 		sscanf(buffer, "  Height: %d", &user_info->screen_height);
 	}
@@ -434,11 +431,10 @@ void* get_pkg(void* argp) { // this is just a function that returns the total of
 	}
 #else	 // _WIN32
 	// chocolatey for windows
-	int buf_sz = ((struct thread_varg*)argp)->buf_sz;
-	FILE* fp	 = popen("choco list -l --no-color 2> nul", "r");
+	FILE* fp = popen("choco list -l --no-color 2> nul", "r");
 	unsigned int pkg_count;
 	char buffer[7562] = {0};
-	while (fgets(buffer, buf_sz, fp)) {
+	while (fgets(buffer, BUFFER_SIZE, fp)) {
 		sscanf(buffer, "%u packages installed.", &pkg_count);
 	}
 	if (fp) pclose(fp);
@@ -459,12 +455,11 @@ void* get_model(void* argp) {
 	LOG_I("getting model");
 	struct info* user_info = ((struct thread_varg*)argp)->user_info;
 	char* buffer					 = ((struct thread_varg*)argp)->buffer;
-	int buf_sz						 = ((struct thread_varg*)argp)->buf_sz;
 	FILE* model_fp;
 #ifdef _WIN32
 	// all the previous files obviously did not exist on windows
 	model_fp = popen("wmic computersystem get model", "r");
-	while (fgets(buffer, buf_sz, model_fp)) {
+	while (fgets(buffer, BUFFER_SIZE, model_fp)) {
 		if (strstr(buffer, "Model") != 0)
 			continue;
 		else {
@@ -482,7 +477,7 @@ void* get_model(void* argp) {
 		#define HOSTCTL "hw.product"
 	#endif
 	model_fp = popen("sysctl " HOSTCTL, "r");
-	while (fgets(buffer, buf_sz, model_fp))
+	while (fgets(buffer, BUFFER_SIZE, model_fp))
 		if (sscanf(buffer,
 							 HOSTCTL
 	#ifdef __OPENBSD__
@@ -502,7 +497,7 @@ void* get_model(void* argp) {
 			"getprop ro.product.vendor.marketname 2>/dev/null",
 	};
 
-	char tmp_model[4][buf_sz]; // temporary variable to store the contents of all 3 files
+	char tmp_model[4][BUFFER_SIZE] = {0}; // temporary variable to store the contents of all 3 files
 	int longest_model = 0, best_len = 0, currentlen = 0;
 	FILE* (*tocall[])(const char*, const char*) = {fopen, fopen, fopen, popen}; // open a process or a file, depending on the model_filename
 	int (*tocall_close[])(FILE*)								= {fclose, fclose, fclose, pclose};
@@ -510,7 +505,7 @@ void* get_model(void* argp) {
 		// read file
 		model_fp = tocall[i](model_filename[i], "r");
 		if (model_fp) {
-			fgets(tmp_model[i], buf_sz, model_fp);
+			fgets(tmp_model[i], BUFFER_SIZE, model_fp);
 			tmp_model[i][strlen(tmp_model[i]) - 1] = '\0';
 			tocall_close[i](model_fp);
 		}
@@ -524,9 +519,10 @@ void* get_model(void* argp) {
 	}
 	if (strlen(tmp_model[longest_model]) == 0) {
 		model_fp = popen("lscpu 2>/dev/null", "r");
-		while (fgets(buffer, buf_sz, model_fp))
+		while (fgets(buffer, BUFFER_SIZE, model_fp))
 			if (sscanf(buffer, "%*[  ]Model name:%*[           |		]%[^\n]", tmp_model[longest_model]) == 1) break;
 		pclose(model_fp);
+		LOG_V(tmp_model[longest_model]);
 		if (strcmp(tmp_model[longest_model], "Icestorm") == 0) sprintf(tmp_model[longest_model], "Apple MacBook Air (M1)");
 	}
 	sprintf(user_info->model, "%s", tmp_model[longest_model]);
@@ -549,8 +545,7 @@ void* get_ker(void* argp) {
 	// windows version
 	FILE* kernel_fp = popen("wmic computersystem get systemtype", "r");
 	char* buffer		= ((struct thread_varg*)argp)->buffer;
-	int buf_sz			= ((struct thread_varg*)argp)->buf_sz;
-	while (fgets(buffer, buf_sz, kernel_fp)) {
+	while (fgets(buffer, BUFFER_SIZE, kernel_fp)) {
 		if (strstr(buffer, "SystemType") != 0)
 			continue;
 		else {
@@ -602,8 +597,7 @@ void* get_upt(void* argp) {
 
 // Retrieves system information
 void get_info(struct flags flags, struct info* user_info) {
-	int buf_sz = 256;
-	char buffer[buf_sz]; // line buffer
+	char buffer[BUFFER_SIZE]; // line buffer
 	get_twidth(user_info);
 	// os version, cpu and board info
 #ifdef __OPENBSD__
@@ -620,7 +614,7 @@ void get_info(struct flags flags, struct info* user_info) {
 	if (os_release) { // get normal vars if os_release exists
 		if (flags.os) {
 			LOG_I("getting os name from /etc/os-release");
-			while (fgets(buffer, buf_sz, os_release) &&
+			while (fgets(buffer, BUFFER_SIZE, os_release) &&
 						 !(sscanf(buffer, "\nID=\"%s\"", user_info->os_name) ||
 							 sscanf(buffer, "\nID=%s", user_info->os_name)))
 				;
@@ -713,7 +707,7 @@ void get_info(struct flags flags, struct info* user_info) {
 	// cpu name
 	if (flags.cpu) {
 		cpuinfo = popen("wmic cpu get caption", "r");
-		while (fgets(buffer, buf_sz, cpuinfo)) {
+		while (fgets(buffer, BUFFER_SIZE, cpuinfo)) {
 			if (strstr(buffer, "Caption") != 0)
 				continue;
 			else {
@@ -726,7 +720,7 @@ void get_info(struct flags flags, struct info* user_info) {
 	// username
 	if (flags.user) {
 		FILE* user_host_fp = popen("wmic computersystem get username", "r");
-		while (fgets(buffer, buf_sz, user_host_fp)) {
+		while (fgets(buffer, BUFFER_SIZE, user_host_fp)) {
 			if (strstr(buffer, "UserName") != 0)
 				continue;
 			else {
@@ -741,7 +735,7 @@ void get_info(struct flags flags, struct info* user_info) {
 		FILE* shell_fp = popen("powershell $PSVersionTable", "r");
 		sprintf(user_info->shell, "PowerShell ");
 		char tmp_shell[64];
-		while (fgets(buffer, buf_sz, shell_fp) &&
+		while (fgets(buffer, BUFFER_SIZE, shell_fp) &&
 					 sscanf(buffer, "PSVersion                      %s", tmp_shell) == 0)
 			;
 		strcat(user_info->shell, tmp_shell);
@@ -756,7 +750,6 @@ void get_info(struct flags flags, struct info* user_info) {
 	void* (*fnptrs[])(void*) = {get_cpu, get_ram, get_gpu, get_res, get_pkg, get_model, get_ker, get_upt};
 	struct thread_varg args =
 			(struct thread_varg){buffer,
-													 buf_sz,
 													 user_info,
 													 cpuinfo,
 													 {flags.cpu, flags.ram, flags.gpu, flags.resolution, flags.pkgs, flags.model, flags.kernel, flags.uptime}};
