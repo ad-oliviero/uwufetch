@@ -520,7 +520,7 @@ void* get_model(void* argp) {
 	if (strlen(tmp_model[longest_model]) == 0) {
 		model_fp = popen("lscpu 2>/dev/null", "r");
 		while (fgets(buffer, BUFFER_SIZE, model_fp))
-			if (sscanf(buffer, "%*[  ]Model name:%*[           |		]%[^\n]", tmp_model[longest_model]) == 1) break;
+			if (sscanf(buffer, "Model name:%*[           |		]%[^\n]", tmp_model[longest_model]) == 1) break;
 		pclose(model_fp);
 		LOG_V(tmp_model[longest_model]);
 		if (strcmp(tmp_model[longest_model], "Icestorm") == 0) sprintf(tmp_model[longest_model], "Apple MacBook Air (M1)");
