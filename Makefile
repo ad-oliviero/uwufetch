@@ -103,7 +103,7 @@ debug: build
 	./$(NAME) $(ARGS)
 
 install: build man
-	mkdir -pv $(DESTDIR)/$(PREFIX) $(DESTDIR)/$(LIBDIR)/$(NAME) $(DESTDIR)/$(MANDIR) $(ETC_DIR)/$(NAME)
+	mkdir -pv $(DESTDIR)/$(PREFIX) $(DESTDIR)/$(LIBDIR)/$(NAME) $(DESTDIR)/$(MANDIR) $(ETC_DIR)/$(NAME) $(DESTDIR)/include
 	cp $(NAME) $(DESTDIR)/$(PREFIX)
 	cp lib$(LIB_FILES:.c=.so) $(DESTDIR)/$(LIBDIR)
 	cp $(LIB_FILES:.c=.h) $(DESTDIR)/$(INCDIR)
