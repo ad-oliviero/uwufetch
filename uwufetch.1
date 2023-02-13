@@ -7,15 +7,12 @@
 .\" I makes text appear in italic face
 .\" inline versions would look like \fBthis\fR and \fIthis\fR
 .\" EX and EE surrounds example section with text as is, with no empty lines in between the actual lines
-.TH UWUFETCH 1 "27 August 2021" "1.4" "A meme system info tool for Linux"
+.TH UWUFETCH 1 "{DATE}" "{UWUFETCH_VERSION}" "A meme system info tool for Linux"
 .SH DESCRIPTION
 UwUfetch is a program inspired by neofetch and ufetch, that takes system information and prints it in terminal in an UwU way, with either UwU ascii or image logo.
 .SH SYNOPSYS
 \fBuwufetch\fR [\fIOPTIONS\fR] [\fIARGUMENTS\fR]
 .SH OPTIONS
-.TP
-.B -a --ascii
-prints the logo as ascii text (default)
 .TP
 .B -c --config
 you can change config path
@@ -33,14 +30,14 @@ works in most terminals, read README.md for more info
 .B -l --list
 prints a list of all supported distributions
 .TP
+.B -r --read-cache
+reads the cache file (~/.cache/uwufetch.cache)
+.TP
 .B -v --version
 prints the current uwufetch version
 .TP
-.B -w --write-cache writes to the cache file (~/.cache/uwufetch.cache)
+.B -w --write-cache
 writes to the cache file (~/.cache/uwufetch.cache)
-.TP
-.B -w --write-cache writes to the cache file (~/.cache/uwufetch.cache)
-reads from the cache file (~/.cache/uwufetch.cache)
 .SH CONFIGURATION
 The system-wide config file is /etc/uwufetch/config, and you can use it to configure uwufetch globally or as a template for your own config.
 The user config file is located in $HOME/.config/uwufetch/config (you need to create it), but you can change the path by using the \fB--config\fR option.
@@ -48,8 +45,7 @@ The user config file is located in $HOME/.config/uwufetch/config (you need to cr
 .SH EXAMPLE
 .EX
 distro=arch
-image=~/Pictures/picture.png
-ascii=true
+image=path/to/custom/image.png
 user=true
 os=true
 host=true
@@ -70,6 +66,7 @@ Distribution name -d \fBoption\fR
 .TP
 .SH FULLY SUPPORTED
 .EX
+AmogOwOs            \fBamogos\fR
 Nyalpine            \fBalpine\fR
 Nyarch Linuwu       \fBarch\fR
 ArcOwO Linuwu       \fBarcolinux\fR
@@ -95,10 +92,12 @@ Unknown (tux logo)  \fBunknown\fR
 .TP
 .SH IMAGE OR ASCII ONLY
 .EX
-AmogOwOs      \fBamogos\fR
+Dewepyn       \fBdeepin\fR
+FemboyOWOS    \fBfemboyos\fR
 KDE NeOwOn    \fBneon\fR
 nixOwOs       \fBnixos\fR
 xuwulinux     \fBxerolinux\fR
+Wocky Linuwu  \fBrocky\fR
 FweeBSD       \fBfreebsd\fR
 OwOpenBSD     \fBopenbsd\fR
 macOwOS       \fBmacos\fR
@@ -113,15 +112,24 @@ uwufetch -id artix              # uses Artix image logo (which is also uwu)
 .EE
 .SH DEPENDENCIES
 .TP 8
-.B lshw
-better gpu info
+.B freecolor
+ram usage on FreeBSD
+.TP
+.B libc (required)
+glibc on gnu systems or musl on non-gnu systems
 .TP
 .B viu
 print images instead of ascii logo
 .TP
+.B xwininfo
+get screen resolution
+.TP
+.B lshw
+better gpu info
+.TP
 .B kitty
 better image viewing
 .P
-All of these dependencies are optional. There are no required dependencies.
+All of these dependencies are optional. There are no required dependencies (except libc).
 .SH LICENSE AND COPYRIGHT
 uwufetch is provided under the GPL3 license, for copyright info read https://github.com/TheDarkBug/uwufetch/tree/main/res/COPYRIGHT.md.

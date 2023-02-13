@@ -83,7 +83,7 @@ lib: $(LIB_FILES)
 	$(AR) rcs lib$(LIB_FILES:.c=.a) $(LIB_FILES:.c=.o)
 	$(CC) $(CFLAGS) -shared -o lib$(LIB_FILES:.c=.so) $(LIB_FILES:.c=.o)
 
-release: build
+release: build man
 	mkdir -pv $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
 	cp $(RELEASE_SCRIPTS) $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
 	cp -r res $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
@@ -102,7 +102,7 @@ debug: CFLAGS = $(CFLAGS_DEBUG)
 debug: build
 	./$(NAME) $(ARGS)
 
-install: build
+install: build man
 	mkdir -pv $(DESTDIR)/$(PREFIX) $(DESTDIR)/$(LIBDIR)/$(NAME) $(DESTDIR)/$(MANDIR) $(ETC_DIR)/$(NAME)
 	cp $(NAME) $(DESTDIR)/$(PREFIX)
 	cp lib$(LIB_FILES:.c=.so) $(DESTDIR)/$(LIBDIR)
@@ -127,8 +127,8 @@ ascii_debug:
 	ls res/ascii/$(ASCII).txt | entr -c ./$(NAME) -d $(ASCII)
 
 man:
-	gzip --keep $(NAME).1
+	sed "s/{DATE}/$(shell date '+%d %B %Y')/g" $(NAME).1 | sed "s/{UWUFETCH_VERSION}/$(UWUFETCH_VERSION)/g" | gzip > $(NAME).1.gz
 
 man_debug:
 	@clear
-	man -P cat ./uwufetch.1
+	man -P cat ./$(NAME).1

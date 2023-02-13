@@ -1,5 +1,6 @@
 uwufetch
 uwufetch_*
+*.gz
 *.core
 *.zip
 *.idea
