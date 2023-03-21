@@ -139,6 +139,8 @@ struct configuration parse_config(struct info* user_info, struct user_config* us
 		if (sscanf(buffer, "gpu=%d", &config_flags.show_gpu[gpu_cfg_count])) {
 			gpu_cfg_count++; // enabling single gpu
 			if (sscanf(buffer, "gpu=%[truefalse]", buffer)) {
+
+				// also what is this? why are you comparing to 0?
 				if (strcmp(buffer, "false") == 0) config_flags.show_gpu[0] = -3; // enabling/disabling all gpus
 				LOG_V(config_flags.show_gpu[gpu_cfg_count]);
 			}
