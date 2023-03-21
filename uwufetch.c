@@ -73,9 +73,12 @@ struct configuration parse_config(struct info* user_info, struct user_config* us
 	struct configuration config_flags;
 	memset(&config_flags, true, sizeof(config_flags));
 	memset(&config_flags.show_gpu, -1, 256 * sizeof(int)); // -1 means 'undefined'
-	config_flags.show_gpu[0] = -2;												 // show all gpus
-	config_flags.show_image	 = false;
-	FILE* config						 = NULL;									// config file pointer
+
+	// why is this set to -2, if the comparison at the bottom is to -3 in line 174?
+	config_flags.show_gpu[0] = -2; // show all gpus
+
+	config_flags.show_image = false;
+	FILE* config						= NULL;										// config file pointer
 	if (user_config_file->config_directory == NULL) { // if config directory is not set, try to open the default
 		if (getenv("HOME") != NULL) {
 			char homedir[512];
@@ -168,7 +171,7 @@ struct configuration parse_config(struct info* user_info, struct user_config* us
 	LOG_V(user_info->os_name);
 	LOG_V(user_info->image_name);
 	fclose(config);
-	config_flags.show.gpu = (config_flags.show_gpu[0] == -3);
+	config_flags.show.gpu = (config_flags.show_gpu[0] == -3 || config_flags.show_gpu[0] == -2);
 	return config_flags;
 }
 
