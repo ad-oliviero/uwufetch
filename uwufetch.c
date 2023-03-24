@@ -74,11 +74,11 @@ struct configuration parse_config(struct info* user_info, struct user_config* us
 	memset(&config_flags, true, sizeof(config_flags));
 	memset(&config_flags.show_gpu, -1, 256 * sizeof(int)); // -1 means 'undefined'
 
-	// why is this set to -2, if the comparison at the bottom is to -3 in line 174?
 	config_flags.show_gpu[0] = -2; // show all gpus
+	config_flags.show_image	 = false;
 
-	config_flags.show_image = false;
-	FILE* config						= NULL;										// config file pointer
+	FILE* config = NULL; // config file pointer
+
 	if (user_config_file->config_directory == NULL) { // if config directory is not set, try to open the default
 		if (getenv("HOME") != NULL) {
 			char homedir[512];
@@ -139,8 +139,6 @@ struct configuration parse_config(struct info* user_info, struct user_config* us
 		if (sscanf(buffer, "gpu=%d", &config_flags.show_gpu[gpu_cfg_count])) {
 			gpu_cfg_count++; // enabling single gpu
 			if (sscanf(buffer, "gpu=%[truefalse]", buffer)) {
-
-				// also what is this? why are you comparing to 0?
 				if (strcmp(buffer, "false") == 0) config_flags.show_gpu[0] = -3; // enabling/disabling all gpus
 				LOG_V(config_flags.show_gpu[gpu_cfg_count]);
 			}
@@ -173,7 +171,7 @@ struct configuration parse_config(struct info* user_info, struct user_config* us
 	LOG_V(user_info->os_name);
 	LOG_V(user_info->image_name);
 	fclose(config);
-	config_flags.show.gpu = (config_flags.show_gpu[0] == -3 || config_flags.show_gpu[0] == -2);
+	config_flags.show.gpu = (config_flags.show_gpu[0] == -2);
 	return config_flags;
 }
 
