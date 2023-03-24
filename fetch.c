@@ -282,6 +282,7 @@ void* get_ram(void* argp) {
 // tries to get installed gpu(s)
 void* get_gpu(void* argp) {
 	if (!((struct thread_varg*)argp)->thread_flags[2]) return 0;
+	LOG_I("getting gpu(s)");
 	char* buffer					 = ((struct thread_varg*)argp)->buffer;
 	struct info* user_info = ((struct thread_varg*)argp)->user_info;
 	int gpuc							 = 0; // gpu counter

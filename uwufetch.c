@@ -55,7 +55,8 @@ struct configuration {
 	struct flags show; // all true by default
 	bool show_image,	 // false by default
 			show_colors;	 // true by default
-	int show_gpu[256]; // if show_gpu[0] == -2, all gpus are shown, if == -3 no gpu is shown
+	bool show_gpu[256];
+	bool show_gpus; // global gpu toggle
 };
 
 // user's config stored on the disk
@@ -72,10 +73,11 @@ struct configuration parse_config(struct info* user_info, struct user_config* us
 	// enabling all flags by default
 	struct configuration config_flags;
 	memset(&config_flags, true, sizeof(config_flags));
-	memset(&config_flags.show_gpu, -1, 256 * sizeof(int)); // -1 means 'undefined'
-	config_flags.show_gpu[0] = -2;												 // show all gpus
-	config_flags.show_image	 = false;
-	FILE* config						 = NULL;									// config file pointer
+
+	config_flags.show_image = false;
+
+	FILE* config = NULL; // config file pointer
+
 	if (user_config_file->config_directory == NULL) { // if config directory is not set, try to open the default
 		if (getenv("HOME") != NULL) {
 			char homedir[512];
@@ -133,12 +135,27 @@ struct configuration parse_config(struct info* user_info, struct user_config* us
 			config_flags.show.cpu = strcmp(buffer, "false");
 			LOG_V(config_flags.show.cpu);
 		}
-		if (sscanf(buffer, "gpu=%d", &config_flags.show_gpu[gpu_cfg_count])) {
-			gpu_cfg_count++; // enabling single gpu
-			if (sscanf(buffer, "gpu=%[truefalse]", buffer)) {
-				if (strcmp(buffer, "false") == 0) config_flags.show_gpu[0] = -3; // enabling/disabling all gpus
-				LOG_V(config_flags.show_gpu[gpu_cfg_count]);
+		if (sscanf(buffer, "gpu=%d", &gpu_cfg_count)) {
+			if (gpu_cfg_count > 255) {
+				LOG_E("gpu config index is too high, setting it to 255");
+				gpu_cfg_count = 255;
+			} else if (gpu_cfg_count < 0) {
+				LOG_E("gpu config index is too low, setting it to 0");
+				gpu_cfg_count = 0;
 			}
+			config_flags.show_gpu[gpu_cfg_count] = false;
+			LOG_V(config_flags.show_gpu[gpu_cfg_count]);
+		}
+		if (sscanf(buffer, "gpus=%[truefalse]", buffer)) { // global gpu toggle
+			if (strcmp(buffer, "false") == 0) {
+				config_flags.show_gpus = false;
+				config_flags.show.gpu	 = false; // enable getting gpu info
+			} else {
+				config_flags.show_gpus = true;
+				config_flags.show.gpu	 = true;
+			}
+			LOG_V(config_flags.show_gpus);
+			LOG_V(config_flags.show.gpu);
 		}
 		if (sscanf(buffer, "ram=%[truefalse]", buffer)) {
 			config_flags.show.ram = strcmp(buffer, "false");
@@ -168,7 +185,6 @@ struct configuration parse_config(struct info* user_info, struct user_config* us
 	LOG_V(user_info->os_name);
 	LOG_V(user_info->image_name);
 	fclose(config);
-	config_flags.show.gpu = (config_flags.show_gpu[0] == -3);
 	return config_flags;
 }
 
@@ -448,15 +464,10 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
 	if (config_flags->show.cpu)
 		responsively_printf(print_buf, "%s%s%sCPUWU    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->cpu_model);
 
-	if (config_flags->show_gpu[0] == -2) { // print all gpu models
-		for (int i = 0; i < 256 && user_info->gpu_model[i][0]; i++)
-			responsively_printf(print_buf, "%s%s%sGPUWU    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->gpu_model[i]);
-	} else if (config_flags->show_gpu[0] != -3) { // print only the configured gpu models
-		for (int i = 0; i < 256; i++) {
-			if (config_flags->show_gpu[i] >= 0)
-				if (user_info->gpu_model[config_flags->show_gpu[i]][0])
-					responsively_printf(print_buf, "%s%s%sGPUWU    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->gpu_model[config_flags->show_gpu[i]]);
-		}
+	for (int i = 0; i < 256; i++) {
+		if (config_flags->show_gpu[i])
+			if (user_info->gpu_model[i][0])
+				responsively_printf(print_buf, "%s%s%sGPUWU    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->gpu_model[i]);
 	}
 
 	if (config_flags->show.ram) // print ram
@@ -771,6 +782,7 @@ int main(int argc, char* argv[]) {
 	}
 	if (!user_config_file.read_enabled)
 		get_info(config_flags.show, &user_info);
+	LOG_V(user_info.gpu_model[1]);
 
 	if (user_config_file.write_enabled) {
 		write_cache(&user_info);
