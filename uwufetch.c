@@ -137,10 +137,10 @@ struct configuration parse_config(struct info* user_info, struct user_config* us
 		}
 		if (sscanf(buffer, "gpu=%d", &gpu_cfg_count)) {
 			if (gpu_cfg_count > 255) {
-				LOG_W("gpu config index is too high, setting it to 255");
+				LOG_E("gpu config index is too high, setting it to 255");
 				gpu_cfg_count = 255;
 			} else if (gpu_cfg_count < 0) {
-				LOG_W("gpu config index is too low, setting it to 0");
+				LOG_E("gpu config index is too low, setting it to 0");
 				gpu_cfg_count = 0;
 			}
 			config_flags.show_gpu[gpu_cfg_count] = false;
