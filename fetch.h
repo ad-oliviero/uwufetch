@@ -106,7 +106,7 @@ struct info {
 			model[256],	 // model name
 			kernel[256], // kernel name (linux 5.x-whatever)
 			os_name[64], // os name (arch linux, windows, mac os)
-			cpu_model[256], gpu_model[64][256],
+			cpu_model[256], gpu_model[256][256],
 			pkgman_name[64], // package managers string
 			image_name[128];
 	int target_width, // for the truncate_str function

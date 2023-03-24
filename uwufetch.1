@@ -44,18 +44,17 @@ The user config file is located in $HOME/.config/uwufetch/config (you need to cr
 .TP
 .SH EXAMPLE
 .EX
-distro=arch
-image=path/to/custom/image.png
+#distro=arch
+#image=~/Pictures/picture.png
 user=true
 os=true
 host=true
 kernel=true
 cpu=true
-gpu=0
-gpu=3
-gpu=1
+gpu=1 # disables the gpu[1] (array goes from 0 to 255)
+gpus=true # enables all gpus (except 1 that got disabled before)
 ram=true
-resolution=true
+resolution=false
 shell=true
 pkgs=true
 uptime=true
