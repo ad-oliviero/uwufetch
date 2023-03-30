@@ -111,6 +111,8 @@ I am not a copyright expert, and maybe I am doing all wrong things, please corre
 -   Copyright Holder: [Houl](https://github.com/ItsHoul)
 -   [Reference](https://github.com/ItsHoul/blobicons/blob/main/PNG/devuan.png)
 
+#
+
 ## Endeavour OS
 
 <img title="Endowo Os" src="https://raw.githubusercontent.com/TheDarkBug/uwufetch/main/res/endeavouros.png" alt="image" width="100">
@@ -185,6 +187,8 @@ I am not a copyright expert, and maybe I am doing all wrong things, please corre
 -   Copyright Holder: [u/FOSSphorous](https://www.reddit.com/user/FOSSphorous/)
 -   License: [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/)
 -   [Reference](https://www.reddit.com/r/linuxmasterrace/comments/lyi8ce/its_actually_gnuwulinux/)
+
+#
 
 ## Manjaro
 
