@@ -228,13 +228,14 @@ int print_image(struct info* user_info) {
 void replace(char* original, char* search, char* replacer) {
 	char* ch;
 	char buffer[1024];
-	while ((ch = strstr(original, search))) {
-		ch = strstr(original, search);
+	int offset = 0;
+	while ((ch = strstr(original + offset, search))) {
 		strncpy(buffer, original, ch - original);
 		buffer[ch - original] = 0;
 		sprintf(buffer + (ch - original), "%s%s", replacer, ch + strlen(search));
 		original[0] = 0;
 		strcpy(original, buffer);
+		offset = ch - original + strlen(replacer);
 	}
 }
 
@@ -242,15 +243,17 @@ void replace(char* original, char* search, char* replacer) {
 void replace_ignorecase(char* original, char* search, char* replacer) {
 	char* ch;
 	char buffer[1024];
+	int offset = 0;
 #ifdef _WIN32
 	#define strcasestr(o, s) strstr(o, s)
 #endif
-	while ((ch = strcasestr(original, search))) {
+	while ((ch = strcasestr(original + offset, search))) {
 		strncpy(buffer, original, ch - original);
 		buffer[ch - original] = 0;
 		sprintf(buffer + (ch - original), "%s%s", replacer, ch + strlen(search));
 		original[0] = 0;
 		strcpy(original, buffer);
+		offset = ch - original + strlen(replacer);
 	}
 }
 
@@ -396,9 +399,9 @@ void uwu_hw(char* hwname) {
 	LOG_I("uwufing hardware")
 #define HW_TO_UWU(original, uwuified) replace_ignorecase(hwname, original, uwuified);
 	HW_TO_UWU("lenovo", "LenOwO")
-	HW_TO_UWU("cpu", "CC\bPUwU"); // for some reasons this caused a segfault, using a \b (backspace) char fixes it
+	HW_TO_UWU("cpu", "CPUwU");
 	HW_TO_UWU("core", "Cowe");
-	HW_TO_UWU("gpu", "GG\bPUwU")
+	HW_TO_UWU("gpu", "GPUwU")
 	HW_TO_UWU("graphics", "Gwaphics")
 	HW_TO_UWU("corporation", "COwOpowation")
 	HW_TO_UWU("nvidia", "NyaVIDIA")
@@ -411,7 +414,7 @@ void uwu_hw(char* hwname) {
 	HW_TO_UWU("motorola", "MotOwOwa")
 	HW_TO_UWU("proliant", "ProLinyant")
 	HW_TO_UWU("poweredge", "POwOwEdge")
-	HW_TO_UWU("apple", "Nyaa\bpple")
+	HW_TO_UWU("apple", "Nyapple")
 	HW_TO_UWU("electronic", "ElectrOwOnic")
 #undef HW_TO_UWU
 }
