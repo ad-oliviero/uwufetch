@@ -416,6 +416,9 @@ void uwu_hw(char* hwname) {
 	HW_TO_UWU("poweredge", "POwOwEdge")
 	HW_TO_UWU("apple", "Nyapple")
 	HW_TO_UWU("electronic", "ElectrOwOnic")
+	HW_TO_UWU("processor", "Pwocessow")
+	HW_TO_UWU("microsoft", "MicOwOsoft")
+	HW_TO_UWU("ryzen", "Wyzen")
 #undef HW_TO_UWU
 }
 
