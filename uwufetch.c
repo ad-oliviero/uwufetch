@@ -422,6 +422,24 @@ void uwu_hw(char* hwname) {
 #undef HW_TO_UWU
 }
 
+// uwufies package manager names
+void uwu_pkgman(char* pkgman_name) {
+	LOG_I("uwufing package managers")
+#define PKGMAN_TO_UWU(original, uwuified) replace_ignorecase(pkgman_name, original, uwuified);
+	// these package managers do not have edits yet:
+	// apk, apt, guix, nix, pkg, xbps
+	PKGMAN_TO_UWU("brew-cask", "bwew-cawsk");
+	PKGMAN_TO_UWU("brew-cellar", "bwew-cewwaw");
+	PKGMAN_TO_UWU("emerge", "emewge");
+	PKGMAN_TO_UWU("flatpak", "fwatpakkies");
+	PKGMAN_TO_UWU("pacman", "pacnyan");
+	PKGMAN_TO_UWU("port", "powt");
+	PKGMAN_TO_UWU("rpm", "rawrpm");
+	PKGMAN_TO_UWU("snap", "snyap");
+	PKGMAN_TO_UWU("zypper", "zyppew");
+#undef PKGMAN_TO_UWU
+}
+
 // uwufies everything
 void uwufy_all(struct info* user_info) {
 	LOG_I("uwufing everything");
@@ -433,6 +451,8 @@ void uwufy_all(struct info* user_info) {
 	LOG_V(user_info->cpu_model);
 	uwu_hw(user_info->model);
 	LOG_V(user_info->model);
+	uwu_pkgman(user_info->pkgman_name);
+	LOG_V(user_info->pkgman_name);
 }
 
 // prints all the collected info and returns the number of printed lines
