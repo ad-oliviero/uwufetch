@@ -25,7 +25,7 @@ Dewepyn, FemboyOWOS, KDE NeOwOn, nixOwOs, xuwulinux, Wocky Linuwu; Plus FweeBSD,
 
 - [freecolor](http://www.rkeene.org/oss/freecolor/) to get ram usage on FreeBSD.
 
-- [musl libc](https://www.musl-libc.org/) if you are on a non-gnu system (such as [alpine linux](https://pkgs.alpinelinux.org/package/edge/main/x86_64/musl-dev))
+- [musl libc](https://musl.libc.org/) if you are on a non-gnu system (such as [alpine linux](https://pkgs.alpinelinux.org/package/edge/main/x86_64/musl-dev))
 
 - [xwininfo](https://github.com/freedesktop/xorg-xwininfo) to get screen resolution.
 
