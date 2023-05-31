@@ -419,6 +419,13 @@ void uwu_hw(char* hwname) {
 	HW_TO_UWU("processor", "Pwocessow")
 	HW_TO_UWU("microsoft", "MicOwOsoft")
 	HW_TO_UWU("ryzen", "Wyzen")
+	HW_TO_UWU("advanced", "Adwanced")
+	HW_TO_UWU("micro", "Micwo")
+	HW_TO_UWU("devices", "Dewices")
+	HW_TO_UWU("inc.", "Nyanc.")
+	HW_TO_UWU("lucienne", "Lucienyan")
+	HW_TO_UWU("tuxedo", "TUWUXEDO")
+	HW_TO_UWU("aura", "Uwura")
 #undef HW_TO_UWU
 }
 
