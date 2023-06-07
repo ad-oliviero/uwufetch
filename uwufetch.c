@@ -829,7 +829,8 @@ int main(int argc, char* argv[]) {
 	printf("\033[%dA", config_flags.show_image ? print_image(&user_info) : print_ascii(&user_info));
 
 	// print info and move cursor down if the number of printed lines is smaller that the default image height
-	printf("\033[%dB", 9 - print_info(&config_flags, &user_info));
+	int to_move = 9 - print_info(&config_flags, &user_info);
+	printf("\033[%d%c", to_move < 0 ? -to_move : to_move, to_move < 0 ? 'A' : 'B');
 	LOG_I("Execution completed successfully!");
 	return 0;
 }

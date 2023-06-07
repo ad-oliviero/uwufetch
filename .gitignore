@@ -12,3 +12,4 @@ uwufetch_*
 *.so
 *.a
 *.dSYM
+.nvim-session
