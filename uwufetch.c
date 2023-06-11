@@ -52,11 +52,12 @@ static bool* verbose_enabled = NULL;
 
 // all configuration flags available
 struct configuration {
-	struct flags show; // all true by default
-	bool show_image,	 // false by default
-			show_colors;	 // true by default
-	bool show_gpu[256];
-	bool show_gpus; // global gpu toggle
+	bool user, shell, model, kernel, get_gpu,
+			os, cpu, resolution, ram, pkgs, uptime; // all true by default
+	bool image,																	// false by default
+			colors;																	// true by default
+	bool gpu[256];
+	bool gpus; // global gpu toggle
 };
 
 // user's config stored on the disk
@@ -74,7 +75,7 @@ struct configuration parse_config(struct info* user_info, struct user_config* us
 	struct configuration config_flags;
 	memset(&config_flags, true, sizeof(config_flags));
 
-	config_flags.show_image = false;
+	config_flags.image = false;
 
 	FILE* config = NULL; // config file pointer
 
@@ -111,29 +112,29 @@ struct configuration parse_config(struct info* user_info, struct user_config* us
 				strcat(temp, user_info->image_name);
 				sprintf(user_info->image_name, "%s", temp);
 			}
-			config_flags.show_image = 1; // enable the image flag
+			config_flags.image = 1; // enable the image flag
 		}
 
 		// reading other values
 		if (sscanf(buffer, "user=%[truefalse]", buffer)) {
-			config_flags.show.user = !strcmp(buffer, "true");
-			LOG_V(config_flags.show.user);
+			config_flags.user = !strcmp(buffer, "true");
+			LOG_V(config_flags.user);
 		}
 		if (sscanf(buffer, "os=%[truefalse]", buffer)) {
-			config_flags.show.os = strcmp(buffer, "false");
-			LOG_V(config_flags.show.os);
+			config_flags.os = strcmp(buffer, "false");
+			LOG_V(config_flags.os);
 		}
 		if (sscanf(buffer, "host=%[truefalse]", buffer)) {
-			config_flags.show.model = strcmp(buffer, "false");
-			LOG_V(config_flags.show.model);
+			config_flags.model = strcmp(buffer, "false");
+			LOG_V(config_flags.model);
 		}
 		if (sscanf(buffer, "kernel=%[truefalse]", buffer)) {
-			config_flags.show.kernel = strcmp(buffer, "false");
-			LOG_V(config_flags.show.kernel);
+			config_flags.kernel = strcmp(buffer, "false");
+			LOG_V(config_flags.kernel);
 		}
 		if (sscanf(buffer, "cpu=%[truefalse]", buffer)) {
-			config_flags.show.cpu = strcmp(buffer, "false");
-			LOG_V(config_flags.show.cpu);
+			config_flags.cpu = strcmp(buffer, "false");
+			LOG_V(config_flags.cpu);
 		}
 		if (sscanf(buffer, "gpu=%d", &gpu_cfg_count)) {
 			if (gpu_cfg_count > 255) {
@@ -143,43 +144,43 @@ struct configuration parse_config(struct info* user_info, struct user_config* us
 				LOG_E("gpu config index is too low, setting it to 0");
 				gpu_cfg_count = 0;
 			}
-			config_flags.show_gpu[gpu_cfg_count] = false;
-			LOG_V(config_flags.show_gpu[gpu_cfg_count]);
+			config_flags.gpu[gpu_cfg_count] = false;
+			LOG_V(config_flags.gpu[gpu_cfg_count]);
 		}
 		if (sscanf(buffer, "gpus=%[truefalse]", buffer)) { // global gpu toggle
 			if (strcmp(buffer, "false") == 0) {
-				config_flags.show_gpus = false;
-				config_flags.show.gpu	 = false; // enable getting gpu info
+				config_flags.gpus		 = false;
+				config_flags.get_gpu = false; // enable getting gpu info
 			} else {
-				config_flags.show_gpus = true;
-				config_flags.show.gpu	 = true;
+				config_flags.gpus		 = true;
+				config_flags.get_gpu = true;
 			}
-			LOG_V(config_flags.show_gpus);
-			LOG_V(config_flags.show.gpu);
+			LOG_V(config_flags.gpus);
+			LOG_V(config_flags.gpu);
 		}
 		if (sscanf(buffer, "ram=%[truefalse]", buffer)) {
-			config_flags.show.ram = strcmp(buffer, "false");
-			LOG_V(config_flags.show.ram);
+			config_flags.ram = strcmp(buffer, "false");
+			LOG_V(config_flags.ram);
 		}
 		if (sscanf(buffer, "resolution=%[truefalse]", buffer)) {
-			config_flags.show.resolution = strcmp(buffer, "false");
-			LOG_V(config_flags.show.resolution);
+			config_flags.resolution = strcmp(buffer, "false");
+			LOG_V(config_flags.resolution);
 		}
 		if (sscanf(buffer, "shell=%[truefalse]", buffer)) {
-			config_flags.show.shell = strcmp(buffer, "false");
-			LOG_V(config_flags.show.shell);
+			config_flags.shell = strcmp(buffer, "false");
+			LOG_V(config_flags.shell);
 		}
 		if (sscanf(buffer, "pkgs=%[truefalse]", buffer)) {
-			config_flags.show.pkgs = strcmp(buffer, "false");
-			LOG_V(config_flags.show.pkgs);
+			config_flags.pkgs = strcmp(buffer, "false");
+			LOG_V(config_flags.pkgs);
 		}
 		if (sscanf(buffer, "uptime=%[truefalse]", buffer)) {
-			config_flags.show.uptime = strcmp(buffer, "false");
-			LOG_V(config_flags.show.uptime);
+			config_flags.uptime = strcmp(buffer, "false");
+			LOG_V(config_flags.uptime);
 		}
 		if (sscanf(buffer, "colors=%[truefalse]", buffer)) {
-			config_flags.show_colors = strcmp(buffer, "false");
-			LOG_V(config_flags.show_colors);
+			config_flags.colors = strcmp(buffer, "false");
+			LOG_V(config_flags.colors);
 		}
 	}
 	LOG_V(user_info->os_name);
@@ -485,35 +486,35 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
 	char print_buf[1024]; // for responsively print
 
 	// print collected info - from host to cpu info
-	if (config_flags->show.user)
+	if (config_flags->user)
 		responsively_printf(print_buf, "%s%s%s%s@%s", MOVE_CURSOR, NORMAL, BOLD, user_info->user, user_info->host);
 	uwu_name(user_info);
-	if (config_flags->show.os)
+	if (config_flags->os)
 		responsively_printf(print_buf, "%s%s%sOWOS     %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->os_name);
-	if (config_flags->show.model)
+	if (config_flags->model)
 		responsively_printf(print_buf, "%s%s%sMOWODEL  %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->model);
-	if (config_flags->show.kernel)
+	if (config_flags->kernel)
 		responsively_printf(print_buf, "%s%s%sKEWNEL   %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->kernel);
-	if (config_flags->show.cpu)
+	if (config_flags->cpu)
 		responsively_printf(print_buf, "%s%s%sCPUWU    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->cpu_model);
 
 	for (int i = 0; i < 256; i++) {
-		if (config_flags->show_gpu[i])
+		if (config_flags->gpu[i])
 			if (user_info->gpu_model[i][0])
 				responsively_printf(print_buf, "%s%s%sGPUWU    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->gpu_model[i]);
 	}
 
-	if (config_flags->show.ram) // print ram
+	if (config_flags->ram) // print ram
 		responsively_printf(print_buf, "%s%s%sMEMOWY   %s%i MiB/%i MiB", MOVE_CURSOR, NORMAL, BOLD, NORMAL, (user_info->ram_used), user_info->ram_total);
-	if (config_flags->show.resolution) // print resolution
+	if (config_flags->resolution) // print resolution
 		if (user_info->screen_width != 0 || user_info->screen_height != 0)
 			responsively_printf(print_buf, "%s%s%sWESOWUTION%s  %dx%d", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->screen_width, user_info->screen_height);
-	if (config_flags->show.shell) // print shell name
+	if (config_flags->shell) // print shell name
 		responsively_printf(print_buf, "%s%s%sSHEWW    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->shell);
-	if (config_flags->show.pkgs) // print pkgs
+	if (config_flags->pkgs) // print pkgs
 		responsively_printf(print_buf, "%s%s%sPKGS     %s%d: %s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->pkgs, user_info->pkgman_name);
 	// #endif
-	if (config_flags->show.uptime) {
+	if (config_flags->uptime) {
 		switch (user_info->uptime) { // formatting the uptime which is store in seconds
 		case 0 ... 3599:
 			responsively_printf(print_buf, "%s%s%sUWUPTIME %s%lim", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->uptime / 60 % 60);
@@ -526,7 +527,7 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
 		}
 	}
 	// clang-format off
-	if (config_flags->show_colors)
+	if (config_flags->colors)
 		printf("%s"	BOLD BLACK BLOCK_CHAR BLOCK_CHAR RED BLOCK_CHAR
 								BLOCK_CHAR GREEN BLOCK_CHAR BLOCK_CHAR YELLOW
 								BLOCK_CHAR BLOCK_CHAR BLUE BLOCK_CHAR BLOCK_CHAR
@@ -725,14 +726,14 @@ int main(int argc, char* argv[]) {
 	verbose_enabled = get_verbose_handle();
 #endif
 	struct user_config user_config_file = {0};
-	struct info user_info								= {0};
-	struct configuration config_flags		= parse_config(&user_info, &user_config_file);
+	struct info* user_info							= (struct info*)malloc(sizeof(struct info));
+	struct configuration config_flags		= parse_config(user_info, &user_config_file);
 	char* custom_distro_name						= NULL;
 	char* custom_image_name							= NULL;
 
 #ifdef _WIN32
 	// packages disabled by default because chocolatey is too slow
-	config_flags.show.pkgs = 0;
+	config_flags.pkgs = 0;
 #endif
 
 	int opt											 = 0;
@@ -760,7 +761,7 @@ int main(int argc, char* argv[]) {
 		switch (opt) {
 		case 'c': // set the config directory
 			user_config_file.config_directory = optarg;
-			config_flags											= parse_config(&user_info, &user_config_file);
+			config_flags											= parse_config(user_info, &user_config_file);
 			break;
 		case 'd': // set the distribution name
 			custom_distro_name = optarg;
@@ -769,7 +770,7 @@ int main(int argc, char* argv[]) {
 			usage(argv[0]);
 			return 0;
 		case 'i': // set ascii logo as output
-			config_flags.show_image = true;
+			config_flags.image = true;
 			if (argv[optind]) custom_image_name = argv[optind];
 			break;
 		case 'l':
@@ -797,39 +798,41 @@ int main(int argc, char* argv[]) {
 
 	if (user_config_file.read_enabled) {
 		// if no cache file found write to it
-		if (!read_cache(&user_info)) {
+		if (!read_cache(user_info)) {
 			user_config_file.read_enabled	 = false;
 			user_config_file.write_enabled = true;
 		} else {
 			int buf_sz = 256;
 			char buffer[buf_sz]; // line buffer
 			struct thread_varg vargp = {
-					buffer, &user_info, NULL, {true, true, true, true, true, true, true, true}};
-			if (config_flags.show.ram) get_ram(&vargp);
-			if (config_flags.show.uptime) {
+					buffer, user_info, NULL, {true, true, true, true, true, true, true, true}};
+			// if (config_flags.ram) get_ram(&vargp);
+			if (config_flags.uptime) {
 				LOG_I("getting additional not-cached info");
-				get_sys(&user_info);
-				get_upt(&vargp);
+				// get_sys(user_info);
+				// get_upt(&vargp);
 			}
 		}
 	}
-	if (!user_config_file.read_enabled)
-		get_info(config_flags.show, &user_info);
-	LOG_V(user_info.gpu_model[1]);
+	if (!user_config_file.read_enabled) {
+		free(user_info);
+		user_info = get_info();
+	}
+	LOG_V(user_info->gpu_model[1]);
 
 	if (user_config_file.write_enabled) {
-		write_cache(&user_info);
+		write_cache(user_info);
 	}
-	if (custom_distro_name) sprintf(user_info.os_name, "%s", custom_distro_name);
-	if (custom_image_name) sprintf(user_info.image_name, "%s", custom_image_name);
+	if (custom_distro_name) sprintf(user_info->os_name, "%s", custom_distro_name);
+	if (custom_image_name) sprintf(user_info->image_name, "%s", custom_image_name);
 
-	uwufy_all(&user_info);
+	uwufy_all(user_info);
 
 	// print ascii or image and align cursor for print_info()
-	printf("\033[%dA", config_flags.show_image ? print_image(&user_info) : print_ascii(&user_info));
+	printf("\033[%dA", config_flags.image ? print_image(user_info) : print_ascii(user_info));
 
 	// print info and move cursor down if the number of printed lines is smaller that the default image height
-	int to_move = 9 - print_info(&config_flags, &user_info);
+	int to_move = 9 - print_info(&config_flags, user_info);
 	printf("\033[%d%c", to_move < 0 ? -to_move : to_move, to_move < 0 ? 'A' : 'B');
 	LOG_I("Execution completed successfully!");
 	return 0;

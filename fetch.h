@@ -141,24 +141,7 @@ struct thread_varg {
 	bool thread_flags[8];
 };
 
-// decide what info should be retrieved
-struct flags {
-	bool user, shell, model, kernel, os, cpu, gpu, resolution, ram, pkgs, uptime;
-};
-
-void get_sys(struct info*);
-void* get_ram(void*);
-void* get_gpu(void*);
-#ifdef _WIN32
-void* get_res();
-#else
-void* get_res(void*);
-#endif
-void* get_pkg(void*);
-void* get_model(void*);
-void* get_ker(void*);
-void* get_upt(void*);
 // Retrieves system information
-void get_info(struct flags, struct info* user_info);
+struct info* get_info();
 
 #endif // _FETCH_H_
