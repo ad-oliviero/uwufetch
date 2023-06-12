@@ -1,6 +1,8 @@
 #ifndef _LOGGING_H_
 #define _LOGGING_H_
 
+#include <stdio.h>
+
 #ifdef LOGGING_ENABLED
 	#define LEVEL_DISABLE 0
 	#define LEVEL_ERROR 1

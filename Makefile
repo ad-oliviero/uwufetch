@@ -4,7 +4,7 @@ LIB_FILES = fetch.c
 SRC_DIR = src
 UWUFETCH_VERSION = $(shell git describe --tags)
 CFLAGS = -O3 -pthread -DUWUFETCH_VERSION=\"$(UWUFETCH_VERSION)\"
-CFLAGS_DEBUG = -Wall -Wextra -g -pthread -DUWUFETCH_VERSION=\"$(UWUFETCH_VERSION)\" -D__DEBUG__
+CFLAGS_DEBUG = -Wall -Wextra -Wpedantic -g -pthread -DUWUFETCH_VERSION=\"$(UWUFETCH_VERSION)\" -D__DEBUG__
 CC = cc
 AR = ar
 DESTDIR = /usr
@@ -24,8 +24,8 @@ ifeq ($(PLATFORM), Linux)
 	MANDIR		= share/man/man1
 	PLATFORM_ABBR = linux
 	ifeq ($(shell uname -o), Android)
-		CFLAGS				+= -DPKGPATH=\"/data/data/com.termux/files/usr/bin/\"
-		CFLAGS_DEBUG	+= -DPKGPATH=\"/data/data/com.termux/files/usr/bin/\"
+		CFLAGS				+= -DPKGPATH=\"/data/data/com.termux/files/usr/bin/\" -D__ANDROID__
+		CFLAGS_DEBUG	+= -DPKGPATH=\"/data/data/com.termux/files/usr/bin/\" -D__ANDROID__
 		DESTDIR				= /data/data/com.termux/files/usr
 		ETC_DIR				= $(DESTDIR)/etc
 		PLATFORM_ABBR	= android

@@ -17,86 +17,30 @@
 #define _FETCH_H_
 #include <stdbool.h>
 
-#ifndef LIBFETCH_INTERNAL
-	#ifdef __APPLE__
-		#include <TargetConditionals.h> // for checking iOS
-	#endif
-	#include <dirent.h>
-	#include <stdio.h>
-	#include <stdlib.h>
-	#include <string.h>
-	#include <unistd.h>
-	#if defined(__APPLE__) || defined(__BSD__)
-		#include <sys/sysctl.h>
-		#if defined(__OPENBSD__)
-			#include <sys/time.h>
-		#else
-			#include <time.h>
-		#endif // defined(__OPENBSD__)
-	#else		 // defined(__APPLE__) || defined(__BSD__)
-		#ifdef __BSD__
-		#else // defined(__BSD__) || defined(_WIN32)
-			#ifndef _WIN32
-				#ifndef __OPENBSD__
-					#include <sys/sysinfo.h>
-				#else	 // __OPENBSD__
-				#endif // __OPENBSD__
-			#else		 // _WIN32
-				#include <sysinfoapi.h>
-			#endif // _WIN32
-		#endif	 // defined(__BSD__) || defined(_WIN32)
-	#endif		 // defined(__APPLE__) || defined(__BSD__)
-	#ifndef _WIN32
-		#include <sys/ioctl.h>
-		#include <sys/utsname.h>
-		#include <pthread.h> // linux only right now
-	#else									 // _WIN32
-		#include <windows.h>
-	#endif // _WIN32
+enum SUPPORTED_SYSTEM_BASE {
+	SYSTEM_LINUX,
+	SYSTEM_ANDROID,
+	SYSTEM_FREEBSD,
+	SYSTEM_OPENBSD,
+	SYSTEM_MACOS,
+	SYSTEM_WINDOWS
+};
+
+#if defined(__linux__)
+	#define SYSTEM_BASE LINUX
+#elif defined(__ANDROID__)
+	#define SYSTEM_BASE ANDROID
+#elif defined(__FreeBSD__)
+	#define SYSTEM_BASE FREEBSD
+#elif defined(__OpenBSD__)
+	#define SYSTEM_BASE OPENBSD
+#elif defined(__APPLE__)
+	#define SYSTEM_BASE MACOS
+#elif defined(_WIN32)
+	#define SYSTEM_BASE WINDOWS
+#else
+	#error "System Base not specified!"
 #endif
-
-// info that will be printed with the logo
-struct info {
-	char user[128],	 // username
-			host[256],	 // hostname (computer name)
-			shell[64],	 // shell name
-			model[256],	 // model name
-			kernel[256], // kernel name (linux 5.x-whatever)
-			os_name[64], // os name (arch linux, windows, mac os)
-			cpu_model[256], gpu_model[256][256],
-			pkgman_name[64], // package managers string
-			image_name[128];
-	int target_width, // for the truncate_str function
-			screen_width, screen_height, ram_total, ram_used,
-			pkgs; // full package count
-	long uptime;
-
-#ifndef _WIN32
-	struct utsname sys_var;
-#endif // _WIN32
-#ifndef __APPLE__
-	#ifdef __linux__
-	struct sysinfo sys;
-	#else // __linux__
-		#ifdef _WIN32
-	struct _SYSTEM_INFO sys;
-		#endif // _WIN32
-	#endif	 // __linux__
-#endif		 // __APPLE__
-#ifndef _WIN32
-	struct winsize win;
-#else	 // _WIN32
-	int ws_col, ws_rows;
-#endif // _WIN32
-};
-
-// Args struct for get_something thread oriented functions
-struct thread_varg {
-	char* buffer;
-	struct info* user_info;
-	FILE* cpuinfo;
-	bool thread_flags[8];
-};
 
 #ifdef __DEBUG__
 void set_libfetch_log_level(int level);
@@ -105,7 +49,22 @@ void set_libfetch_log_level(int level);
 	#define SET_LIBFETCH_LOG_LEVEL(level)
 #endif
 
-// Retrieves system information
-struct info* get_all();
+char* get_user_name();
+char* get_host_name();
+char* get_shell_name();
+char* get_model_name();
+char* get_kernel_name();
+char* get_os_name();
+char* get_cpu_model();
+char* get_pkgman_name();
+char* get_image_name();
+char* get_resolution();
+int get_screen_width();
+int get_screen_height();
+char* get_memory();
+int get_memory_total();
+int get_memory_used();
+int get_pkg_count();
+long get_uptime();
 
 #endif // _FETCH_H_
