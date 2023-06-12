@@ -16,6 +16,7 @@
 #include "fetch.h"
 #include <stdlib.h>
 #include <string.h>
+#include <sys/sysinfo.h>
 #include <sys/utsname.h>
 #if defined(__DEBUG__)
 	#define LOGGING_ENABLED
@@ -29,6 +30,7 @@ void set_libfetch_log_level(int level) {
 #endif
 
 struct utsname GLOBAL_UTSNAME;
+struct sysinfo GLOBAL_SYSINFO;
 
 #define BUFFER_SIZE 1024
 #define MEM_SIZE 11 * BUFFER_SIZE // 11 strings
@@ -49,6 +51,14 @@ void libfetch_init() {
 	set_libfetch_log_level(LEVEL_MAX);
 #endif
 	uname(&GLOBAL_UTSNAME);
+	sysinfo(&GLOBAL_SYSINFO);
+
+	LOG_V(GLOBAL_SYSINFO.totalram);
+	LOG_V(GLOBAL_SYSINFO.freeram);
+	LOG_V(GLOBAL_SYSINFO.sharedram);
+	LOG_V(GLOBAL_SYSINFO.bufferram);
+	LOG_V(GLOBAL_SYSINFO.mem_unit);
+
 #if defined(LOGGING_ENABLED)
 	set_libfetch_log_level(LEVEL_DISABLE);
 #endif
@@ -96,7 +106,7 @@ char* get_host_name() {
 	return host_name;
 }
 
-char* get_shell_name() {
+char* get_shell() {
 	char* shell_name = alloc(BUFFER_SIZE);
 #if SYSTEM_BASE == SYSTEM_LINUX
 	char* env = getenv("SHELL");
@@ -108,12 +118,12 @@ char* get_shell_name() {
 	return shell_name;
 }
 
-char* get_model_name() {
+char* get_model() {
 	char* r = alloc(BUFFER_SIZE);
 	return r;
 }
 
-char* get_kernel_name() {
+char* get_kernel() {
 	char* kernel_name = alloc(BUFFER_SIZE);
 #if SYSTEM_BASE == SYSTEM_LINUX
 	size_t name_len = strlen(GLOBAL_UTSNAME.sysname);
@@ -191,5 +201,9 @@ int get_memory_used() {
 }
 
 long get_uptime() {
-	return 0;
+	long uptime = 0;
+#if SYSTEM_BASE == SYSTEM_LINUX
+	uptime = GLOBAL_SYSINFO.uptime;
+#endif
+	return uptime;
 }

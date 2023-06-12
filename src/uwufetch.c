@@ -127,9 +127,6 @@ struct info {
 			total_pkgs; // full package count
 	long uptime;
 
-// #ifndef _WIN32
-// 	struct utsname sys_var;
-// #endif // _WIN32
 // #ifndef __APPLE__
 // 	#ifdef __linux__
 // 	struct sysinfo sys;
@@ -592,17 +589,22 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
 		responsively_printf(print_buf, "%s%s%sPKGS     %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->packages);
 	// #endif
 	if (config_flags->uptime) {
-		// TODO: rewrite this
-		// switch (user_info->uptime) { // formatting the uptime which is store in seconds
-		// case 0 ... 3599:
-		// 	responsively_printf(print_buf, "%s%s%sUWUPTIME %s%lim", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->uptime / 60 % 60);
-		// 	break;
-		// case 3600 ... 86399:
-		// 	responsively_printf(print_buf, "%s%s%sUWUPTIME %s%lih, %lim", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->uptime / 3600, user_info->uptime / 60 % 60);
-		// 	break;
-		// default:
-		// 	responsively_printf(print_buf, "%s%s%sUWUPTIME %s%lid, %lih, %lim", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->uptime / 86400, user_info->uptime / 3600 % 24, user_info->uptime / 60 % 60);
-		// }
+		long secs	 = user_info->uptime % 60;
+		long mins	 = (user_info->uptime / 60) % 60;
+		long hours = (user_info->uptime / 3600) % 24;
+		long days	 = user_info->uptime / 86400;
+
+		char str_secs[6]	= "";
+		char str_mins[6]	= "";
+		char str_hours[6] = "";
+		char str_days[20] = "";
+
+		sprintf(str_secs, "%lis ", secs);
+		sprintf(str_mins, "%lim ", mins);
+		sprintf(str_hours, "%lih ", hours);
+		sprintf(str_days, "%lid ", days);
+
+		responsively_printf(print_buf, "%s%s%sUWUPTIME %s%s%s%s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, days > 0 ? str_days : "", hours > 0 ? str_hours : "", mins > 0 ? str_mins : "", secs > 0 ? str_secs : "");
 	}
 	// clang-format off
 	if (config_flags->colors)
@@ -891,9 +893,9 @@ int main(int argc, char* argv[]) {
 	if (!user_config_file.read_enabled) {
 		user_info.user_name = get_user_name();
 		user_info.host_name = get_host_name();
-		user_info.shell			= get_shell_name();
-		user_info.model			= get_model_name();
-		user_info.kernel		= get_kernel_name();
+		user_info.shell			= get_shell();
+		user_info.model			= get_model();
+		user_info.kernel		= get_kernel();
 		user_info.os_name		= get_os_name();
 		user_info.cpu_model = get_cpu_model();
 		// user_info.gpu_model[256];
