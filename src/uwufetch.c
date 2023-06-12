@@ -780,9 +780,14 @@ int main(int argc, char* argv[]) {
 		case 'V':
 			printf("UwUfetch version %s\n", UWUFETCH_VERSION);
 			return 0;
-#ifdef __DEBUG__
+#ifdef LOGGING_ENABLED
 		case 'v':
-			if (argv[optind]) set_logging_level(atoi(argv[optind]));
+			char* sec = strchr(argv[optind], ',');
+			if (sec) *(sec++) = '\0';
+			if (argv[optind]) {
+				SET_LOG_LEVEL(atoi(argv[optind]), "uwufetch");
+				SET_LIBFETCH_LOG_LEVEL(atoi(sec ? sec : argv[optind]));
+			}
 			LOG_I("version %s", UWUFETCH_VERSION);
 			break;
 #endif

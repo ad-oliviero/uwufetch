@@ -7,7 +7,7 @@
 	#define LEVEL_WARNING 2
 	#define LEVEL_INFO 3
 	#define LEVEL_VAR 4
-	#define SET_LOG_LEVEL(level) set_logging_level(level)
+	#define SET_LOG_LEVEL(level, additional_info) set_logging_level(level, additional_info)
 	#define LOG_I(format, ...) \
 		if (logging_level >= LEVEL_INFO) LOG(LEVEL_INFO, format, ##__VA_ARGS__)
 	#define LOG_W(format, ...) \
@@ -41,16 +41,17 @@
 							__func__, __FILE__, __LINE__, buf);                 \
 		}
 static int logging_level = 0;
-static void set_logging_level(int level) {
-	if (level < LEVEL_DISABLE && level > LEVEL_VAR) {
-		level = LEVEL_ERROR;
-		LOG_E("invalid logging level: %d", level);
+static __attribute__((unused)) void set_logging_level(int level, char* additional_info) {
+	if (level < LEVEL_DISABLE || level > LEVEL_VAR) {
+		logging_level = LEVEL_ERROR;
+		LOG_E("%s; invalid logging level: %d", additional_info, level);
+		return;
 	}
 	logging_level = level;
-	LOG_I("logging level set to %d", level);
+	LOG_I("%s; logging level set to %d", additional_info, level);
 }
 #else
-	#define SET_LOG_LEVEL(level)
+	#define SET_LOG_LEVEL(level, additional_info)
 	#define LOG_I(format, ...)
 	#define LOG_E(format, ...)
 	#define LOG_V(var)

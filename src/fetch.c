@@ -57,6 +57,11 @@ CONSOLE_SCREEN_BUFFER_INFO csbi;
 	#define LOGGING_ENABLED
 #endif
 #include "logging.h"
+#ifdef __DEBUG__
+void set_libfetch_log_level(int level) {
+	SET_LOG_LEVEL(level, "libfetch");
+}
+#endif
 
 // Retrieves system information
 struct info* get_all() {

@@ -98,6 +98,13 @@ struct thread_varg {
 	bool thread_flags[8];
 };
 
+#ifdef __DEBUG__
+void set_libfetch_log_level(int level);
+	#define SET_LIBFETCH_LOG_LEVEL(level) set_libfetch_log_level(level)
+#else
+	#define SET_LIBFETCH_LOG_LEVEL(level)
+#endif
+
 // Retrieves system information
 struct info* get_all();
 
