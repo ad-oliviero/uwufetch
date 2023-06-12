@@ -54,12 +54,13 @@ CONSOLE_SCREEN_BUFFER_INFO csbi;
 #include "fetch.h"
 #define BUFFER_SIZE 256
 #ifdef __DEBUG__
-static bool verbose_enabled = false;
-bool* get_verbose_handle() { return &verbose_enabled; }
+	#define LOGGING_ENABLED
 #endif
+#include "logging.h"
 
 // Retrieves system information
-struct info* get_info() {
+struct info* get_all() {
 	struct info* user_info = (struct info*)malloc(sizeof(struct info));
+	LOG_I("Getting system information");
 	return user_info;
 }

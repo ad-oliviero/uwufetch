@@ -17,49 +17,6 @@
 #define _FETCH_H_
 #include <stdbool.h>
 
-#ifdef __DEBUG__
-bool* get_verbose_handle();
-	#ifdef LIBFETCH_INTERNAL
-		#define VERBOSE_ENABLED verbose_enabled
-	#else
-		#define VERBOSE_ENABLED *verbose_enabled
-	#endif
-	#define LOG_I(format, ...) LOG(0, format, ##__VA_ARGS__)
-	#define LOG_W(format, ...) LOG(1, format, ##__VA_ARGS__)
-	#define LOG_E(format, ...) LOG(2, format, ##__VA_ARGS__)
-	#define LOG_V(var)                       \
-		if (VERBOSE_ENABLED) {                 \
-			char format[1024] = "";              \
-			sprintf(format, "%s = %s", #var,     \
-							_Generic((var), int          \
-											 : "%d", float       \
-											 : "%f", char*       \
-											 : "\"%s\"", default \
-											 : "%p"));           \
-			LOG(3, format, var)                  \
-		}
-	#define LOG(type, format, ...)                      \
-		if (VERBOSE_ENABLED) {                            \
-			char buf[2048] = "";                            \
-			if (sizeof(#__VA_ARGS__) == sizeof(""))         \
-				sprintf(buf, "%s", format);                   \
-			else                                            \
-				sprintf(buf, format, ##__VA_ARGS__);          \
-			fprintf(stderr, "[%s]: %s in %s:%d: %s\n",      \
-							type == 0		? "\033[32mINFO\033[0m"     \
-							: type == 1 ? "\033[33mWARNING\033[0m"  \
-							: type == 2 ? "\033[31mERROR\033[0m"    \
-							: type == 3 ? "\033[37mVARIABLE\033[0m" \
-													: "",                       \
-							__func__, __FILE__, __LINE__, buf);     \
-		}
-#else
-	#define LOG_I(format, ...)
-	#define LOG_E(format, ...)
-	#define LOG_V(var)
-	#define LOG(type, format, ...)
-#endif
-
 #ifndef LIBFETCH_INTERNAL
 	#ifdef __APPLE__
 		#include <TargetConditionals.h> // for checking iOS
@@ -142,6 +99,6 @@ struct thread_varg {
 };
 
 // Retrieves system information
-struct info* get_info();
+struct info* get_all();
 
 #endif // _FETCH_H_

@@ -1,6 +1,7 @@
 NAME = uwufetch
 BIN_FILES = uwufetch.c
 LIB_FILES = fetch.c
+SRC_DIR = src
 UWUFETCH_VERSION = $(shell git describe --tags)
 CFLAGS = -O3 -pthread -DUWUFETCH_VERSION=\"$(UWUFETCH_VERSION)\"
 CFLAGS_DEBUG = -Wall -Wextra -g -pthread -DUWUFETCH_VERSION=\"$(UWUFETCH_VERSION)\" -D__DEBUG__
@@ -75,11 +76,11 @@ else ifeq ($(PLATFORM), linux4win)
 	EXT				= .exe
 endif
 
-build: $(BIN_FILES) lib
-	$(CC) $(CFLAGS) -o $(NAME) $(BIN_FILES) lib$(LIB_FILES:.c=.a)
+build: $(SRC_DIR)/$(BIN_FILES) lib
+	$(CC) $(CFLAGS) -o $(NAME) $(SRC_DIR)/$(BIN_FILES) lib$(LIB_FILES:.c=.a)
 
-lib: $(LIB_FILES)
-	$(CC) $(CFLAGS) -fPIC -c -o $(LIB_FILES:.c=.o) $(LIB_FILES)
+lib: $(SRC_DIR)/$(LIB_FILES)
+	$(CC) $(CFLAGS) -fPIC -c -o $(LIB_FILES:.c=.o) $(SRC_DIR)/$(LIB_FILES)
 	$(AR) rcs lib$(LIB_FILES:.c=.a) $(LIB_FILES:.c=.o)
 	$(CC) $(CFLAGS) -shared -o lib$(LIB_FILES:.c=.so) $(LIB_FILES:.c=.o)
 
@@ -90,7 +91,7 @@ release: build man
 	cp $(NAME)$(EXT) $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
 	cp $(NAME).1.gz $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
 	cp lib$(LIB_FILES:.c=.so) $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
-	cp $(LIB_FILES:.c=.h) $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
+	cp $(SRC_DIR)/$(LIB_FILES:.c=.h) $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
 	cp default.config $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
 ifeq ($(PLATFORM), linux4win)
 	zip -9r $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR).zip $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)

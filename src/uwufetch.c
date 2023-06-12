@@ -23,6 +23,11 @@
 #include <getopt.h>
 #include <stdbool.h>
 
+#ifdef __DEBUG__
+	#define LOGGING_ENABLED
+#endif
+#include "logging.h"
+
 // COLORS
 #define NORMAL "\x1b[0m"
 #define BOLD "\x1b[1m"
@@ -45,10 +50,6 @@ char* MOVE_CURSOR = "\033[21C"; // moves the cursor after printing the image or 
 	#define BLOCK_CHAR "\u2587"
 char* MOVE_CURSOR = "\033[18C";
 #endif // _WIN32
-
-#ifdef __DEBUG__
-static bool* verbose_enabled = NULL;
-#endif
 
 // all configuration flags available
 struct configuration {
@@ -722,9 +723,6 @@ void usage(char* arg) {
 
 // the main function is on the bottom of the file to avoid double function declarations
 int main(int argc, char* argv[]) {
-#ifdef __DEBUG__
-	verbose_enabled = get_verbose_handle();
-#endif
 	struct user_config user_config_file = {0};
 	struct info* user_info							= (struct info*)malloc(sizeof(struct info));
 	struct configuration config_flags		= parse_config(user_info, &user_config_file);
@@ -746,12 +744,12 @@ int main(int argc, char* argv[]) {
 			{"read-cache", no_argument, NULL, 'r'},
 			{"version", no_argument, NULL, 'V'},
 #ifdef __DEBUG__
-			{"verbose", no_argument, NULL, 'v'},
+			{"verbose", optional_argument, NULL, 'v'},
 #endif
 			{"write-cache", no_argument, NULL, 'w'},
 			{0}};
 #ifdef __DEBUG__
-	#define OPT_STRING "c:d:hi::lrVvw"
+	#define OPT_STRING "c:d:hi::lrVv::w"
 #else
 	#define OPT_STRING "c:d:hi::lrVw"
 #endif
@@ -784,7 +782,7 @@ int main(int argc, char* argv[]) {
 			return 0;
 #ifdef __DEBUG__
 		case 'v':
-			*verbose_enabled = true;
+			if (argv[optind]) set_logging_level(atoi(argv[optind]));
 			LOG_I("version %s", UWUFETCH_VERSION);
 			break;
 #endif
@@ -802,10 +800,6 @@ int main(int argc, char* argv[]) {
 			user_config_file.read_enabled	 = false;
 			user_config_file.write_enabled = true;
 		} else {
-			int buf_sz = 256;
-			char buffer[buf_sz]; // line buffer
-			struct thread_varg vargp = {
-					buffer, user_info, NULL, {true, true, true, true, true, true, true, true}};
 			// if (config_flags.ram) get_ram(&vargp);
 			if (config_flags.uptime) {
 				LOG_I("getting additional not-cached info");
@@ -816,7 +810,7 @@ int main(int argc, char* argv[]) {
 	}
 	if (!user_config_file.read_enabled) {
 		free(user_info);
-		user_info = get_info();
+		user_info = get_all();
 	}
 	LOG_V(user_info->gpu_model[1]);
 
