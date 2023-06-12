@@ -4,11 +4,15 @@
 #include <stdio.h>
 
 #ifdef LOGGING_ENABLED
-	#define LEVEL_DISABLE 0
-	#define LEVEL_ERROR 1
-	#define LEVEL_WARNING 2
-	#define LEVEL_INFO 3
-	#define LEVEL_VAR 4
+
+enum LOG_LEVELS {
+	LEVEL_DISABLE,
+	LEVEL_ERROR,
+	LEVEL_WARNING,
+	LEVEL_INFO,
+	LEVEL_VAR,
+	LEVEL_MAX = LEVEL_VAR
+};
 	#define SET_LOG_LEVEL(level, additional_info) set_logging_level(level, additional_info)
 	#define LOG_I(format, ...) \
 		if (logging_level >= LEVEL_INFO) LOG(LEVEL_INFO, format, ##__VA_ARGS__)
@@ -25,10 +29,10 @@
 											 : "%f", char*       \
 											 : "\"%s\"", default \
 											 : "%p"));           \
-			LOG(3, format, var);                 \
+			LOG(LEVEL_VAR, format, var);         \
 		}
 	#define LOG(type, format, ...)                                  \
-		if (logging_level > LEVEL_DISABLE) {                          \
+		{                                                             \
 			static char buf[2048] = "";                                 \
 			if (sizeof(#__VA_ARGS__) == sizeof(""))                     \
 				sprintf(buf, "%s", format);                               \
@@ -44,13 +48,13 @@
 		}
 static int logging_level = 0;
 static __attribute__((unused)) void set_logging_level(int level, char* additional_info) {
-	if (level < LEVEL_DISABLE || level > LEVEL_VAR) {
+	if (level < LEVEL_DISABLE || level > LEVEL_MAX) {
 		logging_level = LEVEL_ERROR;
 		LOG_E("%s; invalid logging level: %d", additional_info, level);
 		return;
 	}
 	logging_level = level;
-	LOG_I("%s; logging level set to %d", additional_info, level);
+	LOG(LEVEL_INFO, "%s; logging level set to %d", additional_info, level);
 }
 #else
 	#define SET_LOG_LEVEL(level, additional_info)

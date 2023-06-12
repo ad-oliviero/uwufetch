@@ -49,6 +49,7 @@ void set_libfetch_log_level(int level);
 	#define SET_LIBFETCH_LOG_LEVEL(level)
 #endif
 
+void libfetch_init();
 char* get_user_name();
 char* get_host_name();
 char* get_shell_name();
@@ -56,15 +57,12 @@ char* get_model_name();
 char* get_kernel_name();
 char* get_os_name();
 char* get_cpu_model();
-char* get_pkgman_name();
+char* get_packages();
 char* get_image_name();
-char* get_resolution();
 int get_screen_width();
 int get_screen_height();
-char* get_memory();
 int get_memory_total();
 int get_memory_used();
-int get_pkg_count();
 long get_uptime();
 
 #endif // _FETCH_H_

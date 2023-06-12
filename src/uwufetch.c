@@ -112,18 +112,19 @@ struct user_config {
 
 // info that will be printed with the logo
 struct info {
-	char *user,		// username
-			*host,		// hostname (computer name)
-			*shell,		// shell name
-			*model,		// model name
-			*kernel,	// kernel name (linux .x-whatever)
-			*os_name, // os name (arch linux, windows, mac os)
-			*cpu_model, *gpu_model[256],
-			*pkgman_name, // package managers string
+	char *user_name,
+			*host_name,
+			*shell,
+			*model,
+			*kernel,
+			*os_name,
+			*cpu_model,
+			*gpu_model[256],
+			*packages,
 			*image_name;
 	int target_width, // for the truncate_str function
 			screen_width, screen_height, ram_total, ram_used,
-			pkgs; // full package count
+			total_pkgs; // full package count
 	long uptime;
 
 // #ifndef _WIN32
@@ -186,7 +187,7 @@ struct configuration parse_config(struct info* user_info, struct user_config* us
 			if (user_info->image_name[0] == '~') {																													// replacing the ~ character with the home directory
 				memmove(&user_info->image_name[0], &user_info->image_name[1], strlen(user_info->image_name)); // remove the first char
 				char temp[128] = "/home/";
-				strcat(temp, user_info->user);
+				strcat(temp, user_info->user_name);
 				strcat(temp, user_info->image_name);
 				sprintf(user_info->image_name, "%s", temp);
 			}
@@ -563,7 +564,7 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
 
 	// print collected info - from host to cpu info
 	if (config_flags->user)
-		responsively_printf(print_buf, "%s%s%s%s@%s", MOVE_CURSOR, NORMAL, BOLD, user_info->user, user_info->host);
+		responsively_printf(print_buf, "%s%s%s%s@%s", MOVE_CURSOR, NORMAL, BOLD, user_info->user_name, user_info->host_name);
 	uwu_name(user_info);
 	if (config_flags->os)
 		responsively_printf(print_buf, "%s%s%sOWOS     %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->os_name);
@@ -588,7 +589,7 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
 	if (config_flags->shell) // print shell name
 		responsively_printf(print_buf, "%s%s%sSHEWW    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->shell);
 	if (config_flags->pkgs) // print pkgs
-		responsively_printf(print_buf, "%s%s%sPKGS     %s%d: %s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->pkgs, user_info->pkgman_name);
+		responsively_printf(print_buf, "%s%s%sPKGS     %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->packages);
 	// #endif
 	if (config_flags->uptime) {
 		// TODO: rewrite this
@@ -629,11 +630,9 @@ void write_cache(struct info* user_info) {
 	fprintf( // writing most of the values to config file
 			cache_fp,
 			"user=%s\nhost=%s\nversion_name=%s\nhost_model=%s\nkernel=%s\ncpu=%"
-			"s\nscreen_width=%d\nscreen_height=%d\nshell=%s\npkgs=%d\npkgman_name=%"
-			"s\n",
-			user_info->user, user_info->host, user_info->os_name, user_info->model, user_info->kernel,
-			user_info->cpu_model, user_info->screen_width, user_info->screen_height, user_info->shell,
-			user_info->pkgs, user_info->pkgman_name);
+			"s\nscreen_width=%d\nscreen_height=%d\nshell=%s\npkgs=%s\n",
+			user_info->user_name, user_info->host_name, user_info->os_name, user_info->model, user_info->kernel,
+			user_info->cpu_model, user_info->screen_width, user_info->screen_height, user_info->shell, user_info->packages);
 
 	for (int i = 0; user_info->gpu_model[i][0]; i++) // writing gpu names to file
 		fprintf(cache_fp, "gpu=%s\n", user_info->gpu_model[i]);
@@ -653,8 +652,8 @@ int read_cache(struct info* user_info) {
 	char buffer[256];																	// line buffer
 	int gpuc = 0;																			// gpu counter
 	while (fgets(buffer, sizeof(buffer), cache_fp)) { // reading the file
-		sscanf(buffer, "user=%99[^\n]", user_info->user);
-		sscanf(buffer, "host=%99[^\n]", user_info->host);
+		sscanf(buffer, "user=%99[^\n]", user_info->user_name);
+		sscanf(buffer, "host=%99[^\n]", user_info->host_name);
 		sscanf(buffer, "version_name=%99[^\n]", user_info->os_name);
 		sscanf(buffer, "host_model=%99[^\n]", user_info->model);
 		sscanf(buffer, "kernel=%99[^\n]", user_info->kernel);
@@ -663,11 +662,10 @@ int read_cache(struct info* user_info) {
 		sscanf(buffer, "screen_width=%i", &user_info->screen_width);
 		sscanf(buffer, "screen_height=%i", &user_info->screen_height);
 		sscanf(buffer, "shell=%99[^\n]", user_info->shell);
-		sscanf(buffer, "pkgs=%i", &user_info->pkgs);
-		sscanf(buffer, "pkgman_name=%99[^\n]", user_info->pkgman_name);
+		sscanf(buffer, "pkgs=%99[^\n]", user_info->packages);
 	}
-	LOG_V(user_info->user);
-	LOG_V(user_info->host);
+	LOG_V(user_info->user_name);
+	LOG_V(user_info->host_name);
 	LOG_V(user_info->os_name);
 	LOG_V(user_info->model);
 	LOG_V(user_info->kernel);
@@ -676,8 +674,7 @@ int read_cache(struct info* user_info) {
 	LOG_V(user_info->screen_width);
 	LOG_V(user_info->screen_height);
 	LOG_V(user_info->shell);
-	LOG_V(user_info->pkgs);
-	LOG_V(user_info->pkgman_name);
+	LOG_V(user_info->packages);
 	fclose(cache_fp);
 	return 1;
 }
@@ -805,6 +802,7 @@ int main(int argc, char* argv[]) {
 	struct configuration config_flags		= parse_config(&user_info, &user_config_file);
 	char* custom_distro_name						= NULL;
 	char* custom_image_name							= NULL;
+	libfetch_init();
 
 #ifdef _WIN32
 	// packages disabled by default because chocolatey is too slow
@@ -891,22 +889,21 @@ int main(int argc, char* argv[]) {
 		}
 	}
 	if (!user_config_file.read_enabled) {
-		user_info.user			= get_user_name();
-		user_info.host			= get_host_name();
+		user_info.user_name = get_user_name();
+		user_info.host_name = get_host_name();
 		user_info.shell			= get_shell_name();
 		user_info.model			= get_model_name();
 		user_info.kernel		= get_kernel_name();
 		user_info.os_name		= get_os_name();
 		user_info.cpu_model = get_cpu_model();
 		// user_info.gpu_model[256];
-		user_info.pkgman_name = get_pkgman_name();
-		user_info.image_name	= get_image_name();
+		user_info.packages	 = get_packages();
+		user_info.image_name = get_image_name();
 		// user_info.target_width;
 		user_info.screen_width	= get_screen_width();
 		user_info.screen_height = get_screen_height();
 		user_info.ram_total			= get_memory_total();
 		user_info.ram_used			= get_memory_used();
-		user_info.pkgs					= get_pkg_count();
 		user_info.uptime				= get_uptime();
 
 		// #ifndef _WIN32
