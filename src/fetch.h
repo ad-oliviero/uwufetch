@@ -17,27 +17,18 @@
 #define _FETCH_H_
 #include <stdbool.h>
 
-enum SUPPORTED_SYSTEM_BASE {
-	SYSTEM_LINUX,
-	SYSTEM_ANDROID,
-	SYSTEM_FREEBSD,
-	SYSTEM_OPENBSD,
-	SYSTEM_MACOS,
-	SYSTEM_WINDOWS
-};
-
 #if defined(__linux__)
-	#define SYSTEM_BASE LINUX
+	#define SYSTEM_BASE_LINUX
 #elif defined(__ANDROID__)
-	#define SYSTEM_BASE ANDROID
+	#define SYSTEM_BASE_ANDROID
 #elif defined(__FreeBSD__)
-	#define SYSTEM_BASE FREEBSD
+	#define SYSTEM_BASE_FREEBSD
 #elif defined(__OpenBSD__)
-	#define SYSTEM_BASE OPENBSD
+	#define SYSTEM_BASE_OPENBSD
 #elif defined(__APPLE__)
-	#define SYSTEM_BASE MACOS
+	#define SYSTEM_BASE_MACOS
 #elif defined(_WIN32)
-	#define SYSTEM_BASE WINDOWS
+	#define SYSTEM_BASE_WINDOWS
 #else
 	#error "System Base not specified!"
 #endif
@@ -58,7 +49,6 @@ char* get_kernel();
 char* get_os_name();
 char* get_cpu_model();
 char* get_packages();
-char* get_image_name();
 int get_screen_width();
 int get_screen_height();
 unsigned long get_memory_total();
