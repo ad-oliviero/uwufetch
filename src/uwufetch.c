@@ -902,7 +902,7 @@ int main(int argc, char* argv[]) {
 		user_info.ram_used			= get_memory_used();
 		user_info.uptime				= get_uptime();
 	}
-	// LOG_V(user_info.gpu_model[1]);
+	// LOG_V(user_info.gpu_model[1]);// TODO: implement gpu
 
 	if (user_config_file.write_enabled) write_cache(&user_info);
 	if (custom_distro_name) sprintf(user_info.os_name, "%s", custom_distro_name);

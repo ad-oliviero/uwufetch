@@ -267,6 +267,11 @@ char* get_packages() {
 #undef PKGPATH
 }
 
+char* get_image_name() {
+	char* r = alloc(BUFFER_SIZE);
+	return r;
+}
+
 int get_screen_width() {
 	int screen_width = 0;
 #if defined(SYSTEM_BASE_LINUX)
