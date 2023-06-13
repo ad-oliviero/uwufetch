@@ -32,6 +32,7 @@ void set_libfetch_log_level(int level) {
 struct utsname GLOBAL_UTSNAME;
 struct sysinfo GLOBAL_SYSINFO;
 char PROC_MEMINFO[256];
+char PROC_CPUINFO[256];
 
 #define BUFFER_SIZE 1024
 #define MEM_SIZE 11 * BUFFER_SIZE // 11 strings
@@ -51,13 +52,9 @@ void libfetch_init() {
 #if defined(LOGGING_ENABLED)
 	set_libfetch_log_level(LEVEL_MAX);
 #endif
+#if SYSTEM_BASE == SYSTEM_LINUX
 	uname(&GLOBAL_UTSNAME);
 	sysinfo(&GLOBAL_SYSINFO);
-
-	LOG_V(GLOBAL_SYSINFO.totalram);
-	LOG_V(GLOBAL_SYSINFO.freeram);
-	LOG_V(GLOBAL_SYSINFO.sharedram);
-	LOG_V(GLOBAL_SYSINFO.bufferram);
 
 	FILE* proc_meminfo = fopen("/proc/meminfo", "r");
 	if (proc_meminfo) {
@@ -66,6 +63,14 @@ void libfetch_init() {
 		PROC_MEMINFO[len] = '\0';
 		fclose(proc_meminfo);
 	}
+
+	FILE* cpu_info = fopen("/proc/cpuinfo", "r");
+	if (cpu_info) {
+		size_t len				= fread(PROC_CPUINFO, 1, 256, cpu_info) - 1;
+		PROC_CPUINFO[len] = '\0';
+		fclose(cpu_info);
+	}
+#endif
 
 #if defined(LOGGING_ENABLED)
 	set_libfetch_log_level(LEVEL_DISABLE);
@@ -178,8 +183,15 @@ char* get_os_name() {
 }
 
 char* get_cpu_model() {
-	char* r = alloc(BUFFER_SIZE);
-	return r;
+	char* cpu_model = alloc(BUFFER_SIZE);
+#if SYSTEM_BASE == SYSTEM_LINUX
+	char* p = PROC_CPUINFO - 1;
+	do {
+		p++;
+		sscanf(p, "model name%*[ |	]: %[^\n]", cpu_model);
+	} while ((p = strchr(p, '\n')));
+#endif
+	return cpu_model;
 }
 
 char* get_packages() {
@@ -204,8 +216,8 @@ unsigned long get_memory_total() {
 	unsigned long memory_total = 0;
 #if SYSTEM_BASE == SYSTEM_LINUX
 	memory_total = GLOBAL_SYSINFO.totalram;
-#endif
 	memory_total /= 1048576;
+#endif
 	return memory_total;
 }
 
