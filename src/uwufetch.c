@@ -123,8 +123,9 @@ struct info {
 			*packages,
 			*image_name;
 	int target_width, // for the truncate_str function
-			screen_width, screen_height, ram_total, ram_used,
-			total_pkgs; // full package count
+			screen_width, screen_height,
+			total_pkgs;
+	unsigned long ram_total, ram_used;
 	long uptime;
 
 // #ifndef __APPLE__
@@ -578,9 +579,9 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
 	// 			responsively_printf(print_buf, "%s%s%sGPUWU    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->gpu_model[i]);
 	// }
 
-	if (config_flags->ram) // print ram
-		responsively_printf(print_buf, "%s%s%sMEMOWY   %s%i MiB/%i MiB", MOVE_CURSOR, NORMAL, BOLD, NORMAL, (user_info->ram_used), user_info->ram_total);
-	if (config_flags->resolution) // print resolution
+	if (config_flags->ram)																																																																									// print ram
+		responsively_printf(print_buf, "%s%s%sMEMOWY   %s%lu MiB/%lu MiB", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->ram_used, user_info->ram_total); // from bytes to mega bytes, 2^20
+	if (config_flags->resolution)																																																																						// print resolution
 		if (user_info->screen_width != 0 || user_info->screen_height != 0)
 			responsively_printf(print_buf, "%s%s%sWESOWUTION%s  %dx%d", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->screen_width, user_info->screen_height);
 	if (config_flags->shell) // print shell name
@@ -589,9 +590,10 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
 		responsively_printf(print_buf, "%s%s%sPKGS     %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->packages);
 	// #endif
 	if (config_flags->uptime) {
-		long secs	 = user_info->uptime % 60;
-		long mins	 = (user_info->uptime / 60) % 60;
-		long hours = (user_info->uptime / 3600) % 24;
+		// using chars because all the space provided by long or int types is not needed
+		char secs	 = user_info->uptime % 60;
+		char mins	 = (user_info->uptime / 60) % 60;
+		char hours = (user_info->uptime / 3600) % 24;
 		long days	 = user_info->uptime / 86400;
 
 		char str_secs[6]	= "";
@@ -599,9 +601,9 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
 		char str_hours[6] = "";
 		char str_days[20] = "";
 
-		sprintf(str_secs, "%lis ", secs);
-		sprintf(str_mins, "%lim ", mins);
-		sprintf(str_hours, "%lih ", hours);
+		sprintf(str_secs, "%is ", secs);
+		sprintf(str_mins, "%im ", mins);
+		sprintf(str_hours, "%ih ", hours);
 		sprintf(str_days, "%lid ", days);
 
 		responsively_printf(print_buf, "%s%s%sUWUPTIME %s%s%s%s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, days > 0 ? str_days : "", hours > 0 ? str_hours : "", mins > 0 ? str_mins : "", secs > 0 ? str_secs : "");

@@ -61,8 +61,8 @@ char* get_packages();
 char* get_image_name();
 int get_screen_width();
 int get_screen_height();
-int get_memory_total();
-int get_memory_used();
+unsigned long get_memory_total();
+unsigned long get_memory_used();
 long get_uptime();
 
 #endif // _FETCH_H_

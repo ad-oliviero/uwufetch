@@ -31,6 +31,7 @@ void set_libfetch_log_level(int level) {
 
 struct utsname GLOBAL_UTSNAME;
 struct sysinfo GLOBAL_SYSINFO;
+char PROC_MEMINFO[256];
 
 #define BUFFER_SIZE 1024
 #define MEM_SIZE 11 * BUFFER_SIZE // 11 strings
@@ -57,7 +58,14 @@ void libfetch_init() {
 	LOG_V(GLOBAL_SYSINFO.freeram);
 	LOG_V(GLOBAL_SYSINFO.sharedram);
 	LOG_V(GLOBAL_SYSINFO.bufferram);
-	LOG_V(GLOBAL_SYSINFO.mem_unit);
+
+	FILE* proc_meminfo = fopen("/proc/meminfo", "r");
+	if (proc_meminfo) {
+		// reading only 256 bytes because every other line of the file is not really needed
+		size_t len				= fread(PROC_MEMINFO, 1, 256, proc_meminfo) - 1;
+		PROC_MEMINFO[len] = '\0';
+		fclose(proc_meminfo);
+	}
 
 #if defined(LOGGING_ENABLED)
 	set_libfetch_log_level(LEVEL_DISABLE);
@@ -192,12 +200,30 @@ int get_screen_height() {
 	return 0;
 }
 
-int get_memory_total() {
-	return 0;
+unsigned long get_memory_total() {
+	unsigned long memory_total = 0;
+#if SYSTEM_BASE == SYSTEM_LINUX
+	memory_total = GLOBAL_SYSINFO.totalram;
+#endif
+	memory_total /= 1048576;
+	return memory_total;
 }
 
-int get_memory_used() {
-	return 0;
+unsigned long get_memory_used() {
+	unsigned long memory_used = 0;
+#if SYSTEM_BASE == SYSTEM_LINUX
+	unsigned long memtotal = 0, memfree = 0, buffers = 0, cached = 0;
+	char* p = PROC_MEMINFO - 1;
+	do {
+		p++;
+		sscanf(p, "MemTotal:%*[^0-9]%lu", &memtotal);
+		sscanf(p, "MemFree:%*[^0-9]%lu", &memfree);
+		sscanf(p, "Buffers:%*[^0-9]%lu", &buffers);
+		sscanf(p, "Cached:%*[^0-9]%lu", &cached);
+	} while ((p = strchr(p, '\n')));
+	memory_used = (memtotal - (memfree + buffers + cached)) / 1024;
+#endif
+	return memory_used;
 }
 
 long get_uptime() {
