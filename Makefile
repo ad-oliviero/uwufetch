@@ -24,8 +24,8 @@ ifeq ($(PLATFORM), Linux)
 	MANDIR		= share/man/man1
 	PLATFORM_ABBR = linux
 	ifeq ($(shell uname -o), Android)
-		CFLAGS				+= -DPKGPATH=\"/data/data/com.termux/files/usr/bin/\" -D__ANDROID__
-		CFLAGS_DEBUG	+= -DPKGPATH=\"/data/data/com.termux/files/usr/bin/\" -D__ANDROID__
+		CFLAGS				+= -D__ANDROID__
+		CFLAGS_DEBUG	+= -D__ANDROID__
 		DESTDIR				= /data/data/com.termux/files/usr
 		ETC_DIR				= $(DESTDIR)/etc
 		PLATFORM_ABBR	= android

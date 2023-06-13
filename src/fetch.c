@@ -18,6 +18,7 @@
 #include <string.h>
 #include <sys/sysinfo.h>
 #include <sys/utsname.h>
+#include <unistd.h>
 #if defined(__DEBUG__)
 	#define LOGGING_ENABLED
 #endif
@@ -52,7 +53,7 @@ void libfetch_init() {
 #if defined(LOGGING_ENABLED)
 	set_libfetch_log_level(LEVEL_MAX);
 #endif
-#if SYSTEM_BASE == SYSTEM_LINUX
+#if defined(SYSTEM_BASE_LINUX)
 	uname(&GLOBAL_UTSNAME);
 	sysinfo(&GLOBAL_SYSINFO);
 
@@ -79,12 +80,11 @@ void libfetch_init() {
 
 char* get_user_name() {
 	char* user_name = alloc(BUFFER_SIZE);
-#if SYSTEM_BASE == SYSTEM_LINUX
+#if defined(SYSTEM_BASE_LINUX)
 	char* env = getenv("USER");
-	if (env) {
-		size_t len = strlen(env);
-		memcpy(user_name, env, len < BUFFER_SIZE ? len : BUFFER_SIZE - 1);
-	} else {
+	if (env)
+		snprintf(user_name, BUFFER_SIZE, "%s", env);
+	else {
 		FILE* pp = popen("whoami", "r");
 		if (pp) {
 			fscanf(pp, "%s", user_name);
@@ -97,16 +97,15 @@ char* get_user_name() {
 
 char* get_host_name() {
 	char* host_name = alloc(BUFFER_SIZE);
-#if SYSTEM_BASE == SYSTEM_LINUX
+#if defined(SYSTEM_BASE_LINUX)
 	size_t len = strlen(GLOBAL_UTSNAME.nodename);
 	if (len > 0) {
-		memcpy(host_name, GLOBAL_UTSNAME.nodename, len < BUFFER_SIZE ? len : BUFFER_SIZE - 1);
+		snprintf(host_name, BUFFER_SIZE, "%s", GLOBAL_UTSNAME.nodename);
 	} else {
 		char* env = getenv("HOSTNAME");
-		if (env) {
-			len = strlen(env);
-			memcpy(host_name, env, len < BUFFER_SIZE ? len : BUFFER_SIZE - 1);
-		} else {
+		if (env)
+			snprintf(host_name, BUFFER_SIZE, "%s", env);
+		else {
 			FILE* fp = fopen("/etc/hostname", "r");
 			if (fp) {
 				len = fread(host_name, 1, BUFFER_SIZE, fp) - 1;
@@ -121,47 +120,33 @@ char* get_host_name() {
 
 char* get_shell() {
 	char* shell_name = alloc(BUFFER_SIZE);
-#if SYSTEM_BASE == SYSTEM_LINUX
+#if defined(SYSTEM_BASE_LINUX)
 	char* env = getenv("SHELL");
-	if (env) {
-		size_t len = strlen(env);
-		memcpy(shell_name, env, len < BUFFER_SIZE ? len : BUFFER_SIZE - 1);
-	}
+	if (env) snprintf(shell_name, BUFFER_SIZE, "%s", env);
 #endif
 	return shell_name;
 }
 
 char* get_model() {
-	char* r = alloc(BUFFER_SIZE);
-	return r;
+	char* model = alloc(BUFFER_SIZE);
+	return model;
 }
 
 char* get_kernel() {
 	char* kernel_name = alloc(BUFFER_SIZE);
-#if SYSTEM_BASE == SYSTEM_LINUX
-	size_t name_len = strlen(GLOBAL_UTSNAME.sysname);
-	size_t len			= name_len;
-	if (name_len > 0) {
-		memcpy(kernel_name, GLOBAL_UTSNAME.sysname, len < BUFFER_SIZE ? name_len : BUFFER_SIZE - 1);
-		if (name_len < BUFFER_SIZE - 2) {
-			kernel_name[name_len++] = ' ';
-			len++;
-		}
+#if defined(SYSTEM_BASE_LINUX)
+	char* p		 = kernel_name;
+	size_t len = 0;
+	if (strlen(GLOBAL_UTSNAME.sysname) > 0) {
+		p += snprintf(p, BUFFER_SIZE, "%s ", GLOBAL_UTSNAME.sysname);
+		len = p - kernel_name;
 	}
-	size_t release_len = strlen(GLOBAL_UTSNAME.release);
-	len += release_len;
-	if (release_len > 0) {
-		memcpy(kernel_name + name_len, GLOBAL_UTSNAME.release, len < BUFFER_SIZE ? release_len : BUFFER_SIZE - name_len - 1);
-		if (len < BUFFER_SIZE - 2) {
-			kernel_name[len++] = ' ';
-			release_len++;
-		}
+	if (strlen(GLOBAL_UTSNAME.release) > 0) {
+		p += snprintf(p, BUFFER_SIZE - len, "%s ", GLOBAL_UTSNAME.release);
+		len = p - kernel_name;
 	}
-	size_t machine_len = strlen(GLOBAL_UTSNAME.machine);
-	len += machine_len;
-	if (machine_len > 0) {
-		memcpy(kernel_name + name_len + release_len, GLOBAL_UTSNAME.machine, len < BUFFER_SIZE ? machine_len : BUFFER_SIZE - (name_len + release_len) - 1);
-	}
+	if (strlen(GLOBAL_UTSNAME.machine) > 0)
+		p += snprintf(p, BUFFER_SIZE - len, "%s", GLOBAL_UTSNAME.machine);
 #endif
 	return kernel_name;
 }
@@ -169,7 +154,7 @@ char* get_kernel() {
 char* get_os_name() {
 	char* os_name = alloc(BUFFER_SIZE);
 	char buffer[BUFFER_SIZE];
-#if SYSTEM_BASE == SYSTEM_LINUX
+#if defined(SYSTEM_BASE_LINUX)
 	FILE* fp = fopen("/etc/os-release", "r");
 	if (fp) {
 		while (fgets(buffer, BUFFER_SIZE, fp) &&
@@ -184,7 +169,7 @@ char* get_os_name() {
 
 char* get_cpu_model() {
 	char* cpu_model = alloc(BUFFER_SIZE);
-#if SYSTEM_BASE == SYSTEM_LINUX
+#if defined(SYSTEM_BASE_LINUX)
 	char* p = PROC_CPUINFO - 1;
 	do {
 		p++;
@@ -195,8 +180,58 @@ char* get_cpu_model() {
 }
 
 char* get_packages() {
-	char* r = alloc(BUFFER_SIZE);
-	return r;
+	char* packages = alloc(BUFFER_SIZE);
+#if defined(SYSTEM_BASE_ANDROID)
+	#define PKGPATH "/data/data/com.termux/files/usr/bin/"
+#elif defined(SYSTEM_BASE_MACOS)
+	#define PKGPATH "/usr/local/bin/"
+#else // Linux, OpenBSD, FreeBSD
+	#define PKGPATH "/usr/bin/"
+#endif
+	struct pkgcmd {
+		char* path;
+		char* command;
+		char* name;
+		size_t count;
+	};
+#define CMD_COUNT 16
+	struct pkgcmd cmds[CMD_COUNT] = {
+			{PKGPATH "apt", "apt list --installed 2> /dev/null | wc -l", "(apt)", 0},
+			{PKGPATH "apk", "apk info 2> /dev/null | wc -l", "(apk)", 0},
+			{PKGPATH "qlist", "qlist -I 2> /dev/null | wc -l", "(emerge)", 0},
+			{PKGPATH "flatpak", "flatpak list 2> /dev/null | wc -l", "(flatpak)", 0},
+			{PKGPATH "snap", "snap list 2> /dev/null | wc -l", "(snap)", 0},
+			{PKGPATH "guix", "guix package --list-installed 2> /dev/null | wc -l", "(guix)", 0},
+			{PKGPATH "nix-store", "nix-store -q --requisites /run/current-system/sw 2> /dev/null | wc -l", "(nix)", 0},
+			{PKGPATH "pacman", "pacman -Qq 2> /dev/null | wc -l", "(pacman)", 0},
+			{PKGPATH "pkg", "pkg info 2>/dev/null | wc -l", "(pkg)", 0},
+			{PKGPATH "pkg_info", "pkg_info 2>/dev/null | wc -l | sed \"s/ //g\"", "(pkg)", 0},
+			{PKGPATH "port", "port installed 2> /dev/null | tail -n +2 | wc -l", "(port)", 0},
+			{PKGPATH "brew", "find $(brew --cellar 2>/dev/stdout) -maxdepth 1 -type d 2> /dev/null | wc -l | awk '{print $1, 0}'", "(brew-cellar)", 0},
+			{PKGPATH "brew", "find $(brew --caskroom 2>/dev/stdout) -maxdepth 1 -type d 2> /dev/null | wc -l | awk '{print $1, 0}'", "(brew-cask)", 0},
+			{PKGPATH "rpm", "rpm -qa --last 2> /dev/null | wc -l", "(rpm)", 0},
+			{PKGPATH "xbps-query", "xbps-query -l 2> /dev/null | wc -l", "(xbps)", 0},
+			{PKGPATH "zypper", "zypper -q se --installed-only 2> /dev/null | wc -l", "(zypper)", 0},
+	};
+	size_t total	 = 0;
+	int last_valid = 0;
+	for (int i = 0; i < CMD_COUNT; i++)
+		if (access(cmds[i].path, F_OK) != -1) {
+			FILE* fp = popen(cmds[i].command, "r");
+			if (fscanf(fp, "%lu", &cmds[i].count) == 3)
+				continue;
+			else {
+				last_valid = cmds[i].count > 0 ? i : last_valid;
+				total += cmds[i].count;
+			}
+			pclose(fp);
+		}
+	char* p = packages + sprintf(packages, "%lu: ", total);
+	for (int i = 0; i < CMD_COUNT; i++)
+		if (cmds[i].count > 0)
+			p += snprintf(p, BUFFER_SIZE - strlen(packages), "%lu %s%s", cmds[i].count, cmds[i].name, i == last_valid ? "" : ", ");
+	return packages;
+#undef PKGPATH
 }
 
 char* get_image_name() {
@@ -214,7 +249,7 @@ int get_screen_height() {
 
 unsigned long get_memory_total() {
 	unsigned long memory_total = 0;
-#if SYSTEM_BASE == SYSTEM_LINUX
+#if defined(SYSTEM_BASE_LINUX)
 	memory_total = GLOBAL_SYSINFO.totalram;
 	memory_total /= 1048576;
 #endif
@@ -223,7 +258,7 @@ unsigned long get_memory_total() {
 
 unsigned long get_memory_used() {
 	unsigned long memory_used = 0;
-#if SYSTEM_BASE == SYSTEM_LINUX
+#if defined(SYSTEM_BASE_LINUX)
 	unsigned long memtotal = 0, memfree = 0, buffers = 0, cached = 0;
 	char* p = PROC_MEMINFO - 1;
 	do {
@@ -240,7 +275,7 @@ unsigned long get_memory_used() {
 
 long get_uptime() {
 	long uptime = 0;
-#if SYSTEM_BASE == SYSTEM_LINUX
+#if defined(SYSTEM_BASE_LINUX)
 	uptime = GLOBAL_SYSINFO.uptime;
 #endif
 	return uptime;
