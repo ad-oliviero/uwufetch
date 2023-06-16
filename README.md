@@ -1,5 +1,5 @@
 # NOTES ABOUT THIS BRANCH
-- **NOT STABLE** This branch is a work in progress and while it does work, it might crash.
+- **NOT STABLE** This branch is work in progress and while it *does* work, it might crash.
 - **LINUX ONLY** I just (13/06/23) "completed" `fetch.c` for linux, any other system (including android for some features) does not work.
 
 ### When will this branch be complete?
