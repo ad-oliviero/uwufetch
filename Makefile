@@ -75,6 +75,7 @@ else ifeq ($(PLATFORM), linux4win)
 	PLATFORM_ABBR	= win64
 	EXT				= .exe
 endif
+.PHONY: tests
 
 build: $(SRC_DIR)/$(BIN_FILES) lib
 	$(CC) $(CFLAGS) -o $(NAME) $(SRC_DIR)/$(BIN_FILES) lib$(LIB_FILES:.c=.a)
@@ -101,7 +102,12 @@ endif
 
 debug: CFLAGS = $(CFLAGS_DEBUG)
 debug: build
+
+run:
 	./$(NAME) $(ARGS)
+
+tests: debug
+	$(MAKE) -f src/tests/tests.mk SRC_DIR=$(SRC_DIR)/tests
 
 install: build man
 	mkdir -pv $(DESTDIR)/$(PREFIX) $(DESTDIR)/$(LIBDIR)/$(NAME) $(DESTDIR)/$(MANDIR) $(ETC_DIR)/$(NAME) $(DESTDIR)/$(INCDIR)
@@ -121,6 +127,7 @@ uninstall:
 	rm -f $(DESTDIR)/$(MANDIR)/$(NAME).1.gz
 
 clean:
+	$(MAKE) -f src/tests/tests.mk clean
 	rm -rf $(NAME) $(NAME)_* *.o *.so *.a *.exe
 
 ascii_debug: build

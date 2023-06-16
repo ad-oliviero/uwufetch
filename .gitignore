@@ -13,3 +13,4 @@ uwufetch_*
 *.a
 *.dSYM
 .nvim-session
+uwutest

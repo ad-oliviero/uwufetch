@@ -186,8 +186,8 @@ char* get_kernel() {
 
 char* get_os_name() {
 	char* os_name = alloc(BUFFER_SIZE);
-	char buffer[BUFFER_SIZE];
 #if defined(SYSTEM_BASE_LINUX)
+	char buffer[BUFFER_SIZE];
 	FILE* fp = fopen("/etc/os-release", "r");
 	if (fp) {
 		while (fgets(buffer, BUFFER_SIZE, fp) &&

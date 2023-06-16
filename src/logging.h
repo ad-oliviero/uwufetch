@@ -2,8 +2,12 @@
 #define _LOGGING_H_
 
 #include <stdio.h>
+#include <string.h>
 
 #ifdef LOGGING_ENABLED
+	#define LOG_BUF_SIZE 2048
+
+static void escapeColors(char* buf);
 
 enum LOG_LEVELS {
 	LEVEL_DISABLE,
@@ -33,11 +37,13 @@ enum LOG_LEVELS {
 		}
 	#define LOG(type, format, ...)                                  \
 		{                                                             \
-			static char buf[2048] = "";                                 \
+			static char buf[LOG_BUF_SIZE] = "";                         \
 			if (sizeof(#__VA_ARGS__) == sizeof(""))                     \
 				sprintf(buf, "%s", format);                               \
-			else                                                        \
+			else {                                                      \
 				sprintf(buf, format, ##__VA_ARGS__);                      \
+				escapeColors(buf);                                        \
+			}                                                           \
 			fprintf(stderr, "[%s]: %s in %s:%d: %s\n",                  \
 							type == LEVEL_INFO			? "\033[32mINFO\033[0m"     \
 							: type == LEVEL_WARNING ? "\033[33mWARNING\033[0m"  \
@@ -55,6 +61,22 @@ static __attribute__((unused)) void set_logging_level(int level, char* additiona
 	}
 	logging_level = level;
 	LOG(LEVEL_INFO, "%s; logging level set to %d", additional_info, level);
+}
+
+static void escapeColors(char* str) {
+	char* color_strings[] = {"<r>", "<g>", "<b>", "</>"};
+	char* colors[]				= {"\033[31m", "\033[32m", "\033[33m", "\033[0m"};
+	for (int i = 0; i < 4; i++) {
+		char* pos;
+		int slen = strlen(color_strings[i]);
+		int rlen = strlen(colors[i]);
+		while ((pos = strstr(str, color_strings[i])) != NULL) {
+			if (strlen(str) + rlen < LOG_BUF_SIZE) {
+				memmove(pos + rlen, pos + slen, strlen(pos + slen) + 1);
+				strncpy(pos, colors[i], rlen);
+			}
+		}
+	}
 }
 #else
 	#define SET_LOG_LEVEL(level, additional_info)
