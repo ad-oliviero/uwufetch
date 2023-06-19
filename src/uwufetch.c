@@ -889,6 +889,10 @@ int main(int argc, char* argv[]) {
 		user_info.user_name = get_user_name();
 		user_info.host_name = get_host_name();
 		user_info.shell			= get_shell();
+#if defined(SYSTEM_BASE_ANDROID)
+		if (strlen(user_info.shell) > 27) // android shell name was too long
+			user_info.shell += 27;
+#endif
 		user_info.model			= get_model();
 		user_info.kernel		= get_kernel();
 		user_info.os_name		= get_os_name();

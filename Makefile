@@ -16,10 +16,9 @@ else
 endif
 PLATFORM_ABBR = $(PLATFORM)
 
-ifeq ($(CC), clang)
+ifeq ($(shell $(CC) -v 2>&1 | grep clang >/dev/null; echo $$?), 0) # if the compiler is clang
 	# macros give a lot of errors for ##__VA_ARGS__
-	CFLAGS				+= -Wno-gnu-zero-variadic-macro-arguments
-	CFLAGS_DEBUG	+= -Wno-gnu-zero-variadic-macro-arguments
+	CFLAGS_DEBUG += -Wno-gnu-zero-variadic-macro-arguments
 endif
 
 ifeq ($(PLATFORM), Linux)

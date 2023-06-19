@@ -1,16 +1,29 @@
 # NOTES ABOUT THIS BRANCH
 - **NOT STABLE** This branch is work in progress and while it *does* work, it might crash.
-- **LINUX ONLY** I just (13/06/23) "completed" `fetch.c` for linux, any other system (including android for some features) does not work.
+- **LINUX and ANDROID ONLY** I just (13/06/23) "completed" `fetch.c` for linux, any other system does not work.
 
 ### When will this branch be complete?
 The day I wake up and every test passes on every supported system, is the day this branch will be merged with [main](https://github.com/TheDarkBug/uwufetch).
 
 ### What is the progress right now?
-- Linux is "complete". Just `get_gpus()` and alternative methods are missing.
+- Linux is "complete"
 - Everything needs testing
-- To test things I need to write unit tests
 - Every other platform is currently not supported
 - New rules should be added to [CONTRIBUTING.md](/CONTRIBUTING.md)
+
+## TODO list
+- Linux
+    - Android
+        - `get_cpu_model()` (this function may work)
+    - `get_gpus()`
+    - test on systems different from arch linux
+- BSD (freebsd, openbsd)
+    - everything
+- Mac OS, iOS
+    - everything
+- Windows
+    - everything
+
 
 
 # UwUFetch

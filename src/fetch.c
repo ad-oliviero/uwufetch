@@ -51,7 +51,7 @@ void* alloc(size_t size) {
 }
 
 void libfetch_init(void) {
-#if defined(SYSTEM_BASE_LINUX)
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
 	uname(&GLOBAL_UTSNAME);
 	sysinfo(&GLOBAL_SYSINFO);
 
@@ -69,19 +69,20 @@ void libfetch_init(void) {
 		PROC_CPUINFO[len] = '\0';
 		fclose(cpu_info);
 	}
-
+	#if !defined(SYSTEM_BASE_ANDROID)
 	FILE* fb0_virtual_size = fopen("/sys/class/graphics/fb0/virtual_size", "r");
 	if (fb0_virtual_size) {
 		size_t len						= fread(FB0_VIRTUAL_SIZE, 1, 256, fb0_virtual_size) - 1;
 		FB0_VIRTUAL_SIZE[len] = '\0';
 		fclose(fb0_virtual_size);
 	}
+	#endif
 #endif
 }
 
 char* get_user_name(void) {
 	char* user_name = alloc(BUFFER_SIZE);
-#if defined(SYSTEM_BASE_LINUX)
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
 	char* env = getenv("USER");
 	if (env)
 		snprintf(user_name, BUFFER_SIZE, "%s", env);
@@ -98,7 +99,7 @@ char* get_user_name(void) {
 
 char* get_host_name(void) {
 	char* host_name = alloc(BUFFER_SIZE);
-#if defined(SYSTEM_BASE_LINUX)
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
 	size_t len = strlen(GLOBAL_UTSNAME.nodename);
 	if (len > 0) {
 		snprintf(host_name, BUFFER_SIZE, "%s", GLOBAL_UTSNAME.nodename);
@@ -121,7 +122,7 @@ char* get_host_name(void) {
 
 char* get_shell(void) {
 	char* shell_name = alloc(BUFFER_SIZE);
-#if defined(SYSTEM_BASE_LINUX)
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
 	char* env = getenv("SHELL");
 	if (env) snprintf(shell_name, BUFFER_SIZE, "%s", env);
 #endif
@@ -154,13 +155,21 @@ char* get_model(void) {
 	}
 	snprintf(model, BUFFER_SIZE, "%s", tmp_model[longest_model]);
 	if (model[best_len - 1] == '\n') model[best_len - 1] = '\0';
+#elif defined(SYSTEM_BASE_ANDROID)
+	FILE* marketname = popen("getprop ro.product.marketname", "r");
+	if (marketname) {
+		fgets(model, BUFFER_SIZE, marketname);
+		pclose(marketname);
+		size_t len = strlen(model);
+		if (model[len - 1] == '\n') model[len - 1] = '\0';
+	}
 #endif
 	return model;
 }
 
 char* get_kernel(void) {
 	char* kernel_name = alloc(BUFFER_SIZE);
-#if defined(SYSTEM_BASE_LINUX)
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
 	char* p		 = kernel_name;
 	size_t len = 0;
 	if (strlen(GLOBAL_UTSNAME.sysname) > 0) {
@@ -189,13 +198,15 @@ char* get_os_name(void) {
 			;
 		fclose(fp);
 	}
+#elif defined(SYSTEM_BASE_ANDROID)
+	sprintf(os_name, "android");
 #endif
 	return os_name;
 }
 
 char* get_cpu_model(void) {
 	char* cpu_model = alloc(BUFFER_SIZE);
-#if defined(SYSTEM_BASE_LINUX)
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
 	char* p = PROC_CPUINFO - 1;
 	do {
 		p++;
@@ -283,7 +294,7 @@ int get_screen_height(void) {
 
 unsigned long get_memory_total(void) {
 	unsigned long memory_total = 0;
-#if defined(SYSTEM_BASE_LINUX)
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
 	memory_total = GLOBAL_SYSINFO.totalram;
 	memory_total /= 1048576;
 #endif
@@ -292,7 +303,7 @@ unsigned long get_memory_total(void) {
 
 unsigned long get_memory_used(void) {
 	unsigned long memory_used = 0;
-#if defined(SYSTEM_BASE_LINUX)
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
 	unsigned long memtotal = 0, memfree = 0, buffers = 0, cached = 0;
 	char* p = PROC_MEMINFO - 1;
 	do {
@@ -309,7 +320,7 @@ unsigned long get_memory_used(void) {
 
 long get_uptime(void) {
 	long uptime = 0;
-#if defined(SYSTEM_BASE_LINUX)
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
 	uptime = GLOBAL_SYSINFO.uptime;
 #endif
 	return uptime;
