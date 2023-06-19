@@ -16,6 +16,12 @@ else
 endif
 PLATFORM_ABBR = $(PLATFORM)
 
+ifeq ($(CC), clang)
+	# macros give a lot of errors for ##__VA_ARGS__
+	CFLAGS				+= -Wno-gnu-zero-variadic-macro-arguments
+	CFLAGS_DEBUG	+= -Wno-gnu-zero-variadic-macro-arguments
+endif
+
 ifeq ($(PLATFORM), Linux)
 	PREFIX		= bin
 	LIBDIR		= lib

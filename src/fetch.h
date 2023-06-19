@@ -18,9 +18,11 @@
 #include <stdbool.h>
 
 #if defined(__linux__)
-	#define SYSTEM_BASE_LINUX
-#elif defined(__ANDROID__)
-	#define SYSTEM_BASE_ANDROID
+	#if defined(__ANDROID__)
+		#define SYSTEM_BASE_ANDROID
+	#else
+		#define SYSTEM_BASE_LINUX
+	#endif
 #elif defined(__FreeBSD__)
 	#define SYSTEM_BASE_FREEBSD
 #elif defined(__OpenBSD__)
@@ -40,19 +42,19 @@ void set_libfetch_log_level(int level);
 	#define SET_LIBFETCH_LOG_LEVEL(level)
 #endif
 
-void libfetch_init();
-char* get_user_name();
-char* get_host_name();
-char* get_shell();
-char* get_model();
-char* get_kernel();
-char* get_os_name();
-char* get_cpu_model();
-char* get_packages();
-int get_screen_width();
-int get_screen_height();
-unsigned long get_memory_total();
-unsigned long get_memory_used();
-long get_uptime();
+void libfetch_init(void);
+char* get_user_name(void);
+char* get_host_name(void);
+char* get_shell(void);
+char* get_model(void);
+char* get_kernel(void);
+char* get_os_name(void);
+char* get_cpu_model(void);
+char* get_packages(void);
+int get_screen_width(void);
+int get_screen_height(void);
+unsigned long get_memory_total(void);
+unsigned long get_memory_used(void);
+long get_uptime(void);
 
 #endif // _FETCH_H_

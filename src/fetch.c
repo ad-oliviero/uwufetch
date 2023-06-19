@@ -50,10 +50,7 @@ void* alloc(size_t size) {
 	return (void*)(memory_pool + start);
 }
 
-void libfetch_init() {
-#if defined(LOGGING_ENABLED)
-	set_libfetch_log_level(LEVEL_MAX);
-#endif
+void libfetch_init(void) {
 #if defined(SYSTEM_BASE_LINUX)
 	uname(&GLOBAL_UTSNAME);
 	sysinfo(&GLOBAL_SYSINFO);
@@ -80,13 +77,9 @@ void libfetch_init() {
 		fclose(fb0_virtual_size);
 	}
 #endif
-
-#if defined(LOGGING_ENABLED)
-	set_libfetch_log_level(LEVEL_DISABLE);
-#endif
 }
 
-char* get_user_name() {
+char* get_user_name(void) {
 	char* user_name = alloc(BUFFER_SIZE);
 #if defined(SYSTEM_BASE_LINUX)
 	char* env = getenv("USER");
@@ -103,7 +96,7 @@ char* get_user_name() {
 	return user_name;
 }
 
-char* get_host_name() {
+char* get_host_name(void) {
 	char* host_name = alloc(BUFFER_SIZE);
 #if defined(SYSTEM_BASE_LINUX)
 	size_t len = strlen(GLOBAL_UTSNAME.nodename);
@@ -126,7 +119,7 @@ char* get_host_name() {
 	return host_name;
 }
 
-char* get_shell() {
+char* get_shell(void) {
 	char* shell_name = alloc(BUFFER_SIZE);
 #if defined(SYSTEM_BASE_LINUX)
 	char* env = getenv("SHELL");
@@ -135,7 +128,7 @@ char* get_shell() {
 	return shell_name;
 }
 
-char* get_model() {
+char* get_model(void) {
 	char* model = alloc(BUFFER_SIZE);
 #if defined(SYSTEM_BASE_LINUX)
 	FILE* model_fp;
@@ -165,7 +158,7 @@ char* get_model() {
 	return model;
 }
 
-char* get_kernel() {
+char* get_kernel(void) {
 	char* kernel_name = alloc(BUFFER_SIZE);
 #if defined(SYSTEM_BASE_LINUX)
 	char* p		 = kernel_name;
@@ -184,7 +177,7 @@ char* get_kernel() {
 	return kernel_name;
 }
 
-char* get_os_name() {
+char* get_os_name(void) {
 	char* os_name = alloc(BUFFER_SIZE);
 #if defined(SYSTEM_BASE_LINUX)
 	char buffer[BUFFER_SIZE];
@@ -200,7 +193,7 @@ char* get_os_name() {
 	return os_name;
 }
 
-char* get_cpu_model() {
+char* get_cpu_model(void) {
 	char* cpu_model = alloc(BUFFER_SIZE);
 #if defined(SYSTEM_BASE_LINUX)
 	char* p = PROC_CPUINFO - 1;
@@ -212,7 +205,7 @@ char* get_cpu_model() {
 	return cpu_model;
 }
 
-char* get_packages() {
+char* get_packages(void) {
 	char* packages = alloc(BUFFER_SIZE);
 #if defined(SYSTEM_BASE_ANDROID)
 	#define PKGPATH "/data/data/com.termux/files/usr/bin/"
@@ -267,12 +260,12 @@ char* get_packages() {
 #undef PKGPATH
 }
 
-char* get_image_name() {
+char* get_image_name(void) {
 	char* r = alloc(BUFFER_SIZE);
 	return r;
 }
 
-int get_screen_width() {
+int get_screen_width(void) {
 	int screen_width = 0;
 #if defined(SYSTEM_BASE_LINUX)
 	sscanf(FB0_VIRTUAL_SIZE, "%d,%*d", &screen_width);
@@ -280,7 +273,7 @@ int get_screen_width() {
 	return screen_width;
 }
 
-int get_screen_height() {
+int get_screen_height(void) {
 	int screen_height = 0;
 #if defined(SYSTEM_BASE_LINUX)
 	sscanf(FB0_VIRTUAL_SIZE, "%*d,%d", &screen_height);
@@ -288,7 +281,7 @@ int get_screen_height() {
 	return screen_height;
 }
 
-unsigned long get_memory_total() {
+unsigned long get_memory_total(void) {
 	unsigned long memory_total = 0;
 #if defined(SYSTEM_BASE_LINUX)
 	memory_total = GLOBAL_SYSINFO.totalram;
@@ -297,7 +290,7 @@ unsigned long get_memory_total() {
 	return memory_total;
 }
 
-unsigned long get_memory_used() {
+unsigned long get_memory_used(void) {
 	unsigned long memory_used = 0;
 #if defined(SYSTEM_BASE_LINUX)
 	unsigned long memtotal = 0, memfree = 0, buffers = 0, cached = 0;
@@ -314,7 +307,7 @@ unsigned long get_memory_used() {
 	return memory_used;
 }
 
-long get_uptime() {
+long get_uptime(void) {
 	long uptime = 0;
 #if defined(SYSTEM_BASE_LINUX)
 	uptime = GLOBAL_SYSINFO.uptime;
