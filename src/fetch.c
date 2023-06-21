@@ -18,12 +18,12 @@
 #include <string.h>
 #if defined(SYSTEM_BASE_LINUX)
 	#include <sys/sysinfo.h>
+	#include <sys/utsname.h>
 #elif defined(SYSTEM_BASE_FREEBSD)
 	#include <sys/time.h>
 	#include <sys/sysctl.h>
 	#include <sys/types.h>
 #endif
-#include <sys/utsname.h>
 #include <unistd.h>
 #if defined(__DEBUG__)
 	#define LOGGING_ENABLED
@@ -85,6 +85,14 @@ void libfetch_init(void) {
 		fclose(fb0_virtual_size);
 	}
 	#endif
+#elif defined(SYSTEM_BASE_OPENBSD)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_MACOS)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_WINDOWS)
+	LOG_E("Not implemented");
+#else
+	LOG_E("System not supported or system base not specified");
 #endif
 }
 
@@ -101,6 +109,14 @@ char* get_user_name(void) {
 			pclose(pp);
 		}
 	}
+#elif defined(SYSTEM_BASE_OPENBSD)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_MACOS)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_WINDOWS)
+	LOG_E("Not implemented");
+#else
+	LOG_E("System not supported or system base not specified");
 #endif
 	return user_name;
 }
@@ -131,6 +147,14 @@ char* get_host_name(void) {
 	#if !defined(SYSTEM_BASE_FREEBSD)
 	}
 	#endif
+#elif defined(SYSTEM_BASE_OPENBSD)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_MACOS)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_WINDOWS)
+	LOG_E("Not implemented");
+#else
+	LOG_E("System not supported or system base not specified");
 #endif
 	return host_name;
 }
@@ -140,6 +164,14 @@ char* get_shell(void) {
 #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_FREEBSD)
 	char* env = getenv("SHELL");
 	if (env) snprintf(shell_name, BUFFER_SIZE, "%s", env);
+#elif defined(SYSTEM_BASE_OPENBSD)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_MACOS)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_WINDOWS)
+	LOG_E("Not implemented");
+#else
+	LOG_E("System not supported or system base not specified");
 #endif
 	return shell_name;
 }
@@ -183,6 +215,14 @@ char* get_model(void) {
 	size_t len						= sizeof(buf);
 	sysctlbyname("hw.hv_vendor", &buf, &len, NULL, 0);
 	strcpy(model, buf);
+#elif defined(SYSTEM_BASE_OPENBSD)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_MACOS)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_WINDOWS)
+	LOG_E("Not implemented");
+#else
+	LOG_E("System not supported or system base not specified");
 #endif
 	return model;
 }
@@ -209,6 +249,14 @@ char* get_kernel(void) {
 	strcpy(kernel_name, buf);
 	len = strlen(kernel_name) - 1;
 	if (kernel_name[len] == '\n') kernel_name[len] = '\0';
+#elif defined(SYSTEM_BASE_OPENBSD)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_MACOS)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_WINDOWS)
+	LOG_E("Not implemented");
+#else
+	LOG_E("System not supported or system base not specified");
 #endif
 	return kernel_name;
 }
@@ -227,6 +275,14 @@ char* get_os_name(void) {
 	}
 #elif defined(SYSTEM_BASE_ANDROID)
 	sprintf(os_name, "android");
+#elif defined(SYSTEM_BASE_OPENBSD)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_MACOS)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_WINDOWS)
+	LOG_E("Not implemented");
+#else
+	LOG_E("System not supported or system base not specified");
 #endif
 	return os_name;
 }
@@ -244,6 +300,14 @@ char* get_cpu_model(void) {
 	size_t len						= sizeof(buf);
 	sysctlbyname("hw.model", &buf, &len, NULL, 0);
 	strcpy(cpu_model, buf);
+#elif defined(SYSTEM_BASE_OPENBSD)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_MACOS)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_WINDOWS)
+	LOG_E("Not implemented");
+#else
+	LOG_E("System not supported or system base not specified");
 #endif
 	return cpu_model;
 }
@@ -307,6 +371,21 @@ char* get_packages(void) {
 
 char* get_image_name(void) {
 	char* r = alloc(BUFFER_SIZE);
+#if defined(SYSTEM_BASE_LINUX)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_ANDROID)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_FREEBSD)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_OPENBSD)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_MACOS)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_WINDOWS)
+	LOG_E("Not implemented");
+#else
+	LOG_E("System not supported or system base not specified");
+#endif
 	return r;
 }
 
@@ -314,6 +393,18 @@ int get_screen_width(void) {
 	int screen_width = 0;
 #if defined(SYSTEM_BASE_LINUX)
 	sscanf(FB0_VIRTUAL_SIZE, "%d,%*d", &screen_width);
+#elif defined(SYSTEM_BASE_ANDROID)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_FREEBSD)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_OPENBSD)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_MACOS)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_WINDOWS)
+	LOG_E("Not implemented");
+#else
+	LOG_E("System not supported or system base not specified");
 #endif
 	return screen_width;
 }
@@ -322,6 +413,18 @@ int get_screen_height(void) {
 	int screen_height = 0;
 #if defined(SYSTEM_BASE_LINUX)
 	sscanf(FB0_VIRTUAL_SIZE, "%*d,%d", &screen_height);
+#elif defined(SYSTEM_BASE_ANDROID)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_FREEBSD)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_OPENBSD)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_MACOS)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_WINDOWS)
+	LOG_E("Not implemented");
+#else
+	LOG_E("System not supported or system base not specified");
 #endif
 	return screen_height;
 }
@@ -333,6 +436,14 @@ unsigned long get_memory_total(void) {
 #elif defined(SYSTEM_BASE_FREEBSD)
 	size_t len = sizeof(memory_total);
 	sysctlbyname("vm.kmem_size", &memory_total, &len, NULL, 0);
+#elif defined(SYSTEM_BASE_OPENBSD)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_MACOS)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_WINDOWS)
+	LOG_E("Not implemented");
+#else
+	LOG_E("System not supported or system base not specified");
 #endif
 	memory_total /= 1048576;
 	return memory_total;
@@ -362,6 +473,14 @@ unsigned long get_memory_used(void) {
 	sysctlbyname("vm.stats.vm.v_free_count", &v_free_count, &len, NULL, 0);
 	sysctlbyname("vm.stats.vm.v_inactive_count", &v_inactive_count, &len, NULL, 0);
 	memory_used = (kmem_size - (pagesize * (v_free_count + v_inactive_count))) / 1048576;
+#elif defined(SYSTEM_BASE_OPENBSD)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_MACOS)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_WINDOWS)
+	LOG_E("Not implemented");
+#else
+	LOG_E("System not supported or system base not specified");
 #endif
 	return memory_used;
 }
@@ -377,6 +496,14 @@ long get_uptime(void) {
 	time_t current_time;
 	time(&current_time);
 	uptime = current_time - boottime.tv_sec;
+#elif defined(SYSTEM_BASE_OPENBSD)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_MACOS)
+	LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_WINDOWS)
+	LOG_E("Not implemented");
+#else
+	LOG_E("System not supported or system base not specified");
 #endif
 	return uptime;
 }
