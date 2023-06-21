@@ -16,7 +16,13 @@
 #include "fetch.h"
 #include <stdlib.h>
 #include <string.h>
-#include <sys/sysinfo.h>
+#if defined(SYSTEM_BASE_LINUX)
+	#include <sys/sysinfo.h>
+#elif defined(SYSTEM_BASE_FREEBSD)
+	#include <sys/time.h>
+	#include <sys/sysctl.h>
+	#include <sys/types.h>
+#endif
 #include <sys/utsname.h>
 #include <unistd.h>
 #if defined(__DEBUG__)
@@ -30,8 +36,10 @@ void set_libfetch_log_level(int level) {
 }
 #endif
 
+#if defined(SYSTEM_BASE_LINUX)
 struct utsname GLOBAL_UTSNAME;
 struct sysinfo GLOBAL_SYSINFO;
+#endif
 char PROC_MEMINFO[256];
 char PROC_CPUINFO[256];
 char FB0_VIRTUAL_SIZE[256];
@@ -82,7 +90,7 @@ void libfetch_init(void) {
 
 char* get_user_name(void) {
 	char* user_name = alloc(BUFFER_SIZE);
-#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_FREEBSD)
 	char* env = getenv("USER");
 	if (env)
 		snprintf(user_name, BUFFER_SIZE, "%s", env);
@@ -99,12 +107,15 @@ char* get_user_name(void) {
 
 char* get_host_name(void) {
 	char* host_name = alloc(BUFFER_SIZE);
-#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
-	size_t len = strlen(GLOBAL_UTSNAME.nodename);
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_FREEBSD)
+	size_t len = 0;
+	#if !defined(SYSTEM_BASE_FREEBSD)
+	len = strlen(GLOBAL_UTSNAME.nodename);
 	if (len > 0) {
 		snprintf(host_name, BUFFER_SIZE, "%s", GLOBAL_UTSNAME.nodename);
 	} else {
-		char* env = getenv("HOSTNAME");
+	#endif
+		char* env = getenv("HOST");
 		if (env)
 			snprintf(host_name, BUFFER_SIZE, "%s", env);
 		else {
@@ -113,16 +124,20 @@ char* get_host_name(void) {
 				len = fread(host_name, 1, BUFFER_SIZE, fp) - 1;
 				fclose(fp);
 				if (host_name[len] == '\n') host_name[len] = '\0';
+			} else {
+				gethostname(host_name, BUFFER_SIZE);
 			}
 		}
+	#if !defined(SYSTEM_BASE_FREEBSD)
 	}
+	#endif
 #endif
 	return host_name;
 }
 
 char* get_shell(void) {
 	char* shell_name = alloc(BUFFER_SIZE);
-#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_FREEBSD)
 	char* env = getenv("SHELL");
 	if (env) snprintf(shell_name, BUFFER_SIZE, "%s", env);
 #endif
@@ -163,6 +178,11 @@ char* get_model(void) {
 		size_t len = strlen(model);
 		if (model[len - 1] == '\n') model[len - 1] = '\0';
 	}
+#elif defined(SYSTEM_BASE_FREEBSD)
+	char buf[BUFFER_SIZE] = {0};
+	size_t len						= sizeof(buf);
+	sysctlbyname("hw.hv_vendor", &buf, &len, NULL, 0);
+	strcpy(model, buf);
 #endif
 	return model;
 }
@@ -182,13 +202,20 @@ char* get_kernel(void) {
 	}
 	if (strlen(GLOBAL_UTSNAME.machine) > 0)
 		p += snprintf(p, BUFFER_SIZE - len, "%s", GLOBAL_UTSNAME.machine);
+#elif defined(SYSTEM_BASE_FREEBSD)
+	char buf[BUFFER_SIZE] = {0};
+	size_t len						= sizeof(buf);
+	sysctlbyname("kern.version", &buf, &len, NULL, 0);
+	strcpy(kernel_name, buf);
+	len = strlen(kernel_name) - 1;
+	if (kernel_name[len] == '\n') kernel_name[len] = '\0';
 #endif
 	return kernel_name;
 }
 
 char* get_os_name(void) {
 	char* os_name = alloc(BUFFER_SIZE);
-#if defined(SYSTEM_BASE_LINUX)
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_FREEBSD)
 	char buffer[BUFFER_SIZE];
 	FILE* fp = fopen("/etc/os-release", "r");
 	if (fp) {
@@ -212,6 +239,11 @@ char* get_cpu_model(void) {
 		p++;
 		sscanf(p, "model name%*[ |	]: %[^\n]", cpu_model);
 	} while ((p = strchr(p, '\n')));
+#elif defined(SYSTEM_BASE_FREEBSD)
+	char buf[BUFFER_SIZE] = {0};
+	size_t len						= sizeof(buf);
+	sysctlbyname("hw.model", &buf, &len, NULL, 0);
+	strcpy(cpu_model, buf);
 #endif
 	return cpu_model;
 }
@@ -222,6 +254,8 @@ char* get_packages(void) {
 	#define PKGPATH "/data/data/com.termux/files/usr/bin/"
 #elif defined(SYSTEM_BASE_MACOS)
 	#define PKGPATH "/usr/local/bin/"
+#elif defined(SYSTEM_BASE_FREEBSD)
+	#define PKGPATH "/usr/sbin/"
 #else // Linux, OpenBSD, FreeBSD
 	#define PKGPATH "/usr/bin/"
 #endif
@@ -296,8 +330,11 @@ unsigned long get_memory_total(void) {
 	unsigned long memory_total = 0;
 #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
 	memory_total = GLOBAL_SYSINFO.totalram;
-	memory_total /= 1048576;
+#elif defined(SYSTEM_BASE_FREEBSD)
+	size_t len = sizeof(memory_total);
+	sysctlbyname("vm.kmem_size", &memory_total, &len, NULL, 0);
 #endif
+	memory_total /= 1048576;
 	return memory_total;
 }
 
@@ -314,6 +351,17 @@ unsigned long get_memory_used(void) {
 		sscanf(p, "Cached:%*[^0-9]%lu", &cached);
 	} while ((p = strchr(p, '\n')));
 	memory_used = (memtotal - (memfree + buffers + cached)) / 1024;
+#elif defined(SYSTEM_BASE_FREEBSD)
+	unsigned long kmem_size				 = 0;
+	unsigned long pagesize				 = 0;
+	unsigned long v_free_count		 = 0;
+	unsigned long v_inactive_count = 0;
+	size_t len										 = sizeof(unsigned long);
+	sysctlbyname("vm.kmem_size", &kmem_size, &len, NULL, 0);
+	sysctlbyname("hw.pagesize", &pagesize, &len, NULL, 0);
+	sysctlbyname("vm.stats.vm.v_free_count", &v_free_count, &len, NULL, 0);
+	sysctlbyname("vm.stats.vm.v_inactive_count", &v_inactive_count, &len, NULL, 0);
+	memory_used = (kmem_size - (pagesize * (v_free_count + v_inactive_count))) / 1048576;
 #endif
 	return memory_used;
 }
@@ -322,6 +370,13 @@ long get_uptime(void) {
 	long uptime = 0;
 #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
 	uptime = GLOBAL_SYSINFO.uptime;
+#elif defined(SYSTEM_BASE_FREEBSD)
+	struct timeval boottime;
+	size_t len = sizeof(boottime);
+	sysctlbyname("kern.boottime", &boottime, &len, NULL, 0);
+	time_t current_time;
+	time(&current_time);
+	uptime = current_time - boottime.tv_sec;
 #endif
 	return uptime;
 }
