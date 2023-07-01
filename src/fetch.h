@@ -18,28 +18,28 @@
 #include <stdbool.h>
 
 #if defined(__linux__)
-	#if defined(__ANDROID__)
-		#define SYSTEM_BASE_ANDROID
-	#else
-		#define SYSTEM_BASE_LINUX
-	#endif
+  #if defined(__ANDROID__)
+    #define SYSTEM_BASE_ANDROID
+  #else
+    #define SYSTEM_BASE_LINUX
+  #endif
 #elif defined(__FreeBSD__)
-	#define SYSTEM_BASE_FREEBSD
+  #define SYSTEM_BASE_FREEBSD
 #elif defined(__OpenBSD__)
-	#define SYSTEM_BASE_OPENBSD
+  #define SYSTEM_BASE_OPENBSD
 #elif defined(__APPLE__)
-	#define SYSTEM_BASE_MACOS
+  #define SYSTEM_BASE_MACOS
 #elif defined(_WIN32)
-	#define SYSTEM_BASE_WINDOWS
+  #define SYSTEM_BASE_WINDOWS
 #else
-	#error "System Base not specified!"
+  #error "System Base not specified!"
 #endif
 
 #ifdef __DEBUG__
 void set_libfetch_log_level(int level);
-	#define SET_LIBFETCH_LOG_LEVEL(level) set_libfetch_log_level(level)
+  #define SET_LIBFETCH_LOG_LEVEL(level) set_libfetch_log_level(level)
 #else
-	#define SET_LIBFETCH_LOG_LEVEL(level)
+  #define SET_LIBFETCH_LOG_LEVEL(level)
 #endif
 
 void libfetch_init(void);

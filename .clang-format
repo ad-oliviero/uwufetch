@@ -1,7 +1,7 @@
 ---
 TabWidth: 2
 IndentWidth: 2
-UseTab: Always
+UseTab: Never
 IndentPPDirectives: BeforeHash
 SortIncludes: true
 AlignAfterOpenBracket: true
