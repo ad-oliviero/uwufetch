@@ -337,7 +337,7 @@ char* get_packages(void) {
       {PKGPATH "flatpak", "flatpak list 2> /dev/null | wc -l", "(flatpak)", 0},
       {PKGPATH "snap", "snap list 2> /dev/null | wc -l", "(snap)", 0},
       {PKGPATH "guix", "guix package --list-installed 2> /dev/null | wc -l", "(guix)", 0},
-      {PKGPATH "nix-store", "nix-store -q --requisites /run/current-system/sw 2> /dev/null | wc -l", "(nix)", 0},
+      {"/run/current-system/sw/nix-store", "nix-store -q --requisites /run/current-system/sw 2> /dev/null | wc -l", "(nix)", 0},
       {PKGPATH "pacman", "pacman -Qq 2> /dev/null | wc -l", "(pacman)", 0},
       {PKGPATH "pkg", "pkg info 2>/dev/null | wc -l", "(pkg)", 0},
       {PKGPATH "pkg_info", "pkg_info 2>/dev/null | wc -l | sed \"s/ //g\"", "(pkg)", 0},
