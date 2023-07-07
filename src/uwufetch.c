@@ -799,7 +799,6 @@ int main(int argc, char* argv[]) {
   struct configuration config_flags   = parse_config(&user_info, &user_config_file);
   char* custom_distro_name            = NULL;
   char* custom_image_name             = NULL;
-  libfetch_init();
 
 #ifdef _WIN32
   // packages disabled by default because chocolatey is too slow
@@ -870,6 +869,7 @@ int main(int argc, char* argv[]) {
       return 1;
     }
   }
+  libfetch_init();
 
   if (user_config_file.read_enabled) {
     // if no cache file found write to it

@@ -52,6 +52,10 @@ enum LOG_LEVELS {
                                       : "",                           \
               __func__, __FILE__, __LINE__, buf);                 \
     }
+  #define CHECK_FN_NULL(fn) \
+    if (fn == NULL) LOG_E("%s returned NULL: %s", #fn, strerror(errno))
+  #define CHECK_FN_NEG(fn) \
+    if (fn < 0) LOG_E("%s failed: %s", #fn, strerror(errno))
 static int logging_level = 0;
 static __attribute__((unused)) void set_logging_level(int level, char* additional_info) {
   if (level < LEVEL_DISABLE || level > LEVEL_MAX) {
@@ -84,6 +88,8 @@ static void escapeColors(char* str) {
   #define LOG_E(format, ...)
   #define LOG_V(var)
   #define LOG(type, format, ...)
+  #define CHECK_FN_NULL(fn)
+  #define CHECK_FN_NEG(fn)
 #endif // LOGGING_ENABLED
 
 #endif // _LOGGING_H_
