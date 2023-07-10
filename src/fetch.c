@@ -39,25 +39,36 @@ void set_libfetch_log_level(int level) {
 #endif
 
 #if defined(SYSTEM_BASE_LINUX)
-struct utsname GLOBAL_UTSNAME;
-struct sysinfo GLOBAL_SYSINFO;
+static struct utsname GLOBAL_UTSNAME;
+static struct sysinfo GLOBAL_SYSINFO;
 #endif
-char PROC_MEMINFO[256];
-char PROC_CPUINFO[256];
-char FB0_VIRTUAL_SIZE[256];
+static char PROC_MEMINFO[256];
+static char PROC_CPUINFO[256];
+static char FB0_VIRTUAL_SIZE[256];
 
 #define BUFFER_SIZE 1024
-#define MEM_SIZE 11 * BUFFER_SIZE // 11 strings
-char memory_pool[MEM_SIZE]  = {0};
-long unsigned int pool_used = 0;
-void* alloc(size_t size) {
-  if (size > MEM_SIZE - pool_used) {
-    LOG_E("Not enough memory");
-    abort();
+#define PTR_CNT 12 // 12 strings
+static void* pointers[PTR_CNT]     = {0};
+static bool used_pointers[PTR_CNT] = {0};
+
+static void* alloc(size_t size) {
+  for (size_t i = 0; i < PTR_CNT; i++) {
+    if (!used_pointers[i]) {
+      used_pointers[i] = true;
+      pointers[i]      = malloc(size);
+      return pointers[i];
+    }
   }
-  long unsigned int start = pool_used;
-  pool_used += size;
-  return (void*)(memory_pool + start);
+  // if all pointers in the array are already registered
+  LOG_E("Out of memory");
+  abort();
+}
+
+static void dealloc_id(int i) {
+  if (!used_pointers[i]) {
+    free(pointers[i]);
+    used_pointers[i] = false;
+  }
 }
 
 void libfetch_init(void) {
@@ -92,6 +103,20 @@ void libfetch_init(void) {
     fclose(fb0_virtual_size);
   }
   #endif
+#elif defined(SYSTEM_BASE_OPENBSD)
+  LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_MACOS)
+  LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_WINDOWS)
+  LOG_E("Not implemented");
+#else
+  LOG_E("System not supported or system base not specified");
+#endif
+}
+
+void libfetch_cleanup(void) {
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_FREEBSD)
+  for (size_t i = 0; i < PTR_CNT; i++) dealloc_id(i);
 #elif defined(SYSTEM_BASE_OPENBSD)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_MACOS)
@@ -348,6 +373,19 @@ char* get_cpu_model(void) {
   return cpu_model;
 }
 
+char** get_gpus(void) {
+  char** gpus = alloc(256 * sizeof(char*));
+  bzero(gpus, 256 * sizeof(char*));
+  // TODO: Needs implementation
+  gpus[0] = alloc(BUFFER_SIZE);
+  snprintf(gpus[0], BUFFER_SIZE, "temporary0");
+  gpus[1] = alloc(BUFFER_SIZE);
+  snprintf(gpus[1], BUFFER_SIZE, "temporary1");
+  gpus[2] = alloc(BUFFER_SIZE);
+  snprintf(gpus[2], BUFFER_SIZE, "temporary2");
+  return gpus;
+}
+
 char* get_packages(void) {
   char* packages = alloc(BUFFER_SIZE);
 #if defined(SYSTEM_BASE_ANDROID)
@@ -405,26 +443,6 @@ char* get_packages(void) {
   LOG_V(packages);
   return packages;
 #undef PKGPATH
-}
-
-char* get_image_name(void) {
-  char* r = alloc(BUFFER_SIZE);
-#if defined(SYSTEM_BASE_LINUX)
-  LOG_E("Not implemented");
-#elif defined(SYSTEM_BASE_ANDROID)
-  LOG_E("Not implemented");
-#elif defined(SYSTEM_BASE_FREEBSD)
-  LOG_E("Not implemented");
-#elif defined(SYSTEM_BASE_OPENBSD)
-  LOG_E("Not implemented");
-#elif defined(SYSTEM_BASE_MACOS)
-  LOG_E("Not implemented");
-#elif defined(SYSTEM_BASE_WINDOWS)
-  LOG_E("Not implemented");
-#else
-  LOG_E("System not supported or system base not specified");
-#endif
-  return r;
 }
 
 int get_screen_width(void) {

@@ -43,6 +43,7 @@ void set_libfetch_log_level(int level);
 #endif
 
 void libfetch_init(void);
+void libfetch_cleanup(void);
 char* get_user_name(void);
 char* get_host_name(void);
 char* get_shell(void);
@@ -50,6 +51,7 @@ char* get_model(void);
 char* get_kernel(void);
 char* get_os_name(void);
 char* get_cpu_model(void);
+char** get_gpus(void);
 char* get_packages(void);
 int get_screen_width(void);
 int get_screen_height(void);

@@ -119,7 +119,7 @@ struct info {
       *kernel,
       *os_name,
       *cpu_model,
-      // (*gpu_model)[256], // TODO: implement gpu
+      **gpus,
       *packages,
       *image_name;
   int target_width, // for the truncate_str function
@@ -520,7 +520,8 @@ void uwu_pkgman(char* pkgman_name) {
 void uwufy_all(struct info* user_info) {
   LOG_I("uwufing everything");
   uwu_kernel(user_info->kernel);
-  // for (int i = 0; user_info->gpu_model[i][0]; i++) uwu_hw(user_info->gpu_model[i]);// TODO: implement gpu
+  for (int i = 0; i < 256; i++)
+    if (user_info->gpus[i]) uwu_hw(user_info->gpus[i]);
   uwu_hw(user_info->cpu_model);
   LOG_V(user_info->cpu_model);
   uwu_hw(user_info->model);
@@ -564,12 +565,11 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
   if (config_flags->cpu)
     responsively_printf(print_buf, "%s%s%sCPUWU    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->cpu_model);
 
-  // TODO: implement gpu
-  // for (int i = 0; i < 256; i++) {
-  // if (config_flags->gpu[i])
-  // if (user_info->gpu_model[i][0])
-  // 	responsively_printf(print_buf, "%s%s%sGPUWU    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->gpu_model[i]);
-  // }
+  for (int i = 0; i < 256; i++) {
+    if (config_flags->gpu[i])
+      if (user_info->gpus[i])
+        responsively_printf(print_buf, "%s%s%sGPUWU    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->gpus[i]);
+  }
 
   if (config_flags->ram)                                                                                                                              // print ram
     responsively_printf(print_buf, "%s%s%sMEMOWY   %s%lu MiB/%lu MiB", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->ram_used, user_info->ram_total); // from bytes to mega bytes, 2^20
@@ -630,15 +630,15 @@ void write_cache(struct info* user_info) {
       user_info->user_name, user_info->host_name, user_info->os_name, user_info->model, user_info->kernel,
       user_info->cpu_model, user_info->screen_width, user_info->screen_height, user_info->shell, user_info->packages);
 
-  // TODO: implement gpu
-  // for (int i = 0; user_info->gpu_model[i][0]; i++) // writing gpu names to file
-  // fprintf(cache_fp, "gpu=%s\n", user_info->gpu_model[i]);
+  for (int i = 0; i < 256; i++) // writing gpu names to file
+    if (user_info->gpus[i]) fprintf(cache_fp, "gpu=%s\n", user_info->gpus[i]);
 
   fclose(cache_fp);
   return;
 }
 
 // reads cache file if it exists
+// TODO: currently generates a segfault
 int read_cache(struct info* user_info) {
   LOG_I("reading cache");
   char cache_file[512];
@@ -646,8 +646,8 @@ int read_cache(struct info* user_info) {
   LOG_V(cache_file);
   FILE* cache_fp = fopen(cache_file, "r");
   if (cache_fp == NULL) return 0;
-  char buffer[256]; // line buffer
-  // int gpuc = 0;																			// gpu counter// TODO: implement gpu
+  char buffer[256];                                 // line buffer
+  int gpuc = 0;                                     // gpu counter
   while (fgets(buffer, sizeof(buffer), cache_fp)) { // reading the file
     sscanf(buffer, "user=%99[^\n]", user_info->user_name);
     sscanf(buffer, "host=%99[^\n]", user_info->host_name);
@@ -655,7 +655,7 @@ int read_cache(struct info* user_info) {
     sscanf(buffer, "host_model=%99[^\n]", user_info->model);
     sscanf(buffer, "kernel=%99[^\n]", user_info->kernel);
     sscanf(buffer, "cpu=%99[^\n]", user_info->cpu_model);
-    // if (sscanf(buffer, "gpu=%99[^\n]", user_info->gpu_model[gpuc]) != 0) gpuc++;// TODO: implement gpu
+    if (sscanf(buffer, "gpu=%99[^\n]", user_info->gpus[gpuc]) != 0) gpuc++;
     sscanf(buffer, "screen_width=%i", &user_info->screen_width);
     sscanf(buffer, "screen_height=%i", &user_info->screen_height);
     sscanf(buffer, "shell=%99[^\n]", user_info->shell);
@@ -667,7 +667,7 @@ int read_cache(struct info* user_info) {
   LOG_V(user_info->model);
   LOG_V(user_info->kernel);
   LOG_V(user_info->cpu_model);
-  // LOG_V(user_info->gpu_model[gpuc]); // TODO: implement gpu
+  LOG_V(user_info->gpus[gpuc]);
   LOG_V(user_info->screen_width);
   LOG_V(user_info->screen_height);
   LOG_V(user_info->shell);
@@ -897,8 +897,8 @@ int main(int argc, char* argv[]) {
     user_info.kernel    = get_kernel();
     user_info.os_name   = get_os_name();
     user_info.cpu_model = get_cpu_model();
-    // user_info.gpu_model[256]; // TODO: implement gpu
-    user_info.packages = get_packages();
+    user_info.gpus      = get_gpus();
+    user_info.packages  = get_packages();
     // user_info.target_width;
     user_info.screen_width  = get_screen_width();
     user_info.screen_height = get_screen_height();
@@ -906,7 +906,6 @@ int main(int argc, char* argv[]) {
     user_info.ram_used      = get_memory_used();
     user_info.uptime        = get_uptime();
   }
-  // LOG_V(user_info.gpu_model[1]);// TODO: implement gpu
 
   if (user_config_file.write_enabled) write_cache(&user_info);
   if (custom_distro_name) sprintf(user_info.os_name, "%s", custom_distro_name);
@@ -921,5 +920,6 @@ int main(int argc, char* argv[]) {
   int to_move = 9 - print_info(&config_flags, &user_info);
   printf("\033[%d%c", to_move < 0 ? -to_move : to_move, to_move < 0 ? 'A' : 'B');
   LOG_I("Execution completed successfully!");
+  libfetch_cleanup();
   return 0;
 }
