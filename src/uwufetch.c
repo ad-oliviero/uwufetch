@@ -697,25 +697,12 @@ int print_ascii(struct info* user_info) {
   LOG_E("System not supported or system base not specified");
   #endif
 #endif
-  if (user_info->os_name)
-    sprintf(ascii_file, PREFIX "ascii/%s.txt", user_info->os_name);
-  else
-    sprintf(ascii_file, PREFIX "ascii/unknown.txt");
+  if (strlen(user_info->os_name) == 0)
+    sprintf(user_info->os_name, "unknown");
+  sprintf(ascii_file, PREFIX "ascii/%s.txt", user_info->os_name);
   LOG_V(ascii_file);
 
   file = fopen(ascii_file, "r");
-  if (!file) {
-    // Prevent infinite loops
-    if (user_info->os_name != NULL) {
-      if (strcmp(user_info->os_name, "unknown") == 0) {
-        LOG_E("No\nunknown\nascii\nfile\n\n\n\n");
-        return 7;
-      }
-      sprintf(user_info->os_name, "unknown"); // current os is not supported
-      LOG_V(user_info->os_name);
-    }
-    return print_ascii(user_info);
-  }
   char buffer[256]; // line buffer
   int line_count = 1;
   printf("\n");
@@ -897,25 +884,25 @@ int main(int argc, char* argv[]) {
     }
   }
   if (!user_config_file.read_enabled) {
-        user_info.user_name = get_user_name();
-        user_info.host_name = get_host_name();
-        user_info.shell     = get_shell();
-    #if defined(SYSTEM_BASE_ANDROID)
-        if (strlen(user_info.shell) > 27) // android shell name was too long
-          user_info.shell += 27;
-    #endif
-        user_info.model         = get_model();
-        user_info.kernel        = get_kernel();
-        user_info.os_name       = get_os_name();
-        user_info.cpu_model     = get_cpu_model();
-        user_info.gpus          = get_gpus();
-        user_info.packages      = get_packages();
-        user_info.term_size     = get_terminal_size();
-        user_info.screen_width  = get_screen_width();
-        user_info.screen_height = get_screen_height();
-        user_info.ram_total     = get_memory_total();
-        user_info.ram_used      = get_memory_used();
-        user_info.uptime        = get_uptime();
+    user_info.user_name = get_user_name();
+    user_info.host_name = get_host_name();
+    user_info.shell     = get_shell();
+#if defined(SYSTEM_BASE_ANDROID)
+    if (strlen(user_info.shell) > 27) // android shell name was too long
+      user_info.shell += 27;
+#endif
+    user_info.model         = get_model();
+    user_info.kernel        = get_kernel();
+    user_info.os_name       = get_os_name();
+    user_info.cpu_model     = get_cpu_model();
+    user_info.gpus          = get_gpus();
+    user_info.packages      = get_packages();
+    user_info.term_size     = get_terminal_size();
+    user_info.screen_width  = get_screen_width();
+    user_info.screen_height = get_screen_height();
+    user_info.ram_total     = get_memory_total();
+    user_info.ram_used      = get_memory_used();
+    user_info.uptime        = get_uptime();
   }
 
   if (user_config_file.write_enabled) write_cache(&user_info);

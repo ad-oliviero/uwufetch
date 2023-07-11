@@ -377,13 +377,22 @@ char* get_cpu_model(void) {
 char** get_gpus(void) {
   char** gpus = alloc(256 * sizeof(char*));
   bzero(gpus, 256 * sizeof(char*));
-  // TODO: Needs implementation
-  gpus[0] = alloc(BUFFER_SIZE);
-  snprintf(gpus[0], BUFFER_SIZE, "temporary0");
-  gpus[1] = alloc(BUFFER_SIZE);
-  snprintf(gpus[1], BUFFER_SIZE, "temporary1");
-  gpus[2] = alloc(BUFFER_SIZE);
-  snprintf(gpus[2], BUFFER_SIZE, "temporary2");
+#if defined(SYSTEM_BASE_LINUX)
+  LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_ANDROID)
+  LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_FREEBSD)
+  LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_OPENBSD)
+  LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_MACOS)
+  LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_WINDOWS)
+  LOG_E("Not implemented");
+#else
+  LOG_E("System not supported or system base not specified");
+#endif
+
   return gpus;
 }
 
