@@ -11,69 +11,69 @@
  * output as it depends on the environment. Instead I chose to
  * not generate segfaults in the program that uses the library.
  */
-bool test_get_user_name() {
+bool test_get_user_name(void) {
   return get_user_name() != NULL;
 }
 
-bool test_get_host_name() {
+bool test_get_host_name(void) {
   return get_user_name() != NULL;
 }
 
-bool test_get_shell() {
+bool test_get_shell(void) {
   return get_shell() != NULL;
 }
 
-bool test_get_model() {
+bool test_get_model(void) {
   return get_model() != NULL;
 }
 
-bool test_get_kernel() {
+bool test_get_kernel(void) {
   return get_kernel() != NULL;
 }
 
-bool test_get_os_name() {
+bool test_get_os_name(void) {
   return get_os_name() != NULL;
 }
 
-bool test_get_cpu_model() {
+bool test_get_cpu_model(void) {
   return get_cpu_model() != NULL;
 }
 
-bool test_get_gpus() {
+bool test_get_gpus(void) {
   return get_gpus() != NULL;
 }
 
-bool test_get_packages() {
+bool test_get_packages(void) {
   return get_packages() != NULL;
 }
 
-bool test_get_screen_width() {
+bool test_get_screen_width(void) {
   return get_screen_width() != 0;
 }
 
-bool test_get_screen_height() {
+bool test_get_screen_height(void) {
   return get_screen_height() != 0;
 }
 
-bool test_get_memory_total() {
+bool test_get_memory_total(void) {
   return get_memory_total() != 0;
 }
 
-bool test_get_memory_used() {
+bool test_get_memory_used(void) {
   return get_memory_used() > 0;
 }
 
-bool test_get_uptime() {
+bool test_get_uptime(void) {
   return get_uptime() > 0;
 }
 
-bool test_get_terminal_size() {
+bool test_get_terminal_size(void) {
   struct winsize ws = get_terminal_size();
   return ws.ws_col > 0 && ws.ws_row > 0 && ws.ws_xpixel > 0 && ws.ws_ypixel > 0;
 }
 
 struct test {
-  bool (*function)();
+  bool (*function)(void);
   const char* name;
 };
 
@@ -111,7 +111,7 @@ int main(void) {
       failed_tests++;
     }
   }
-  LOG_I("%d tests <g>passed</>, %d <r>failed</>", passed_tests, failed_tests);
+  LOG_I("\n%d tests <g>passed</>, %d <r>failed</>", passed_tests, failed_tests);
   libfetch_cleanup();
   return 0;
 }

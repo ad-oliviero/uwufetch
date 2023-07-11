@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
-#if defined(SYSTEM_BASE_LINUX)
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
   #include <sys/sysinfo.h>
   #include <sys/utsname.h>
 #elif defined(SYSTEM_BASE_FREEBSD)
@@ -39,12 +39,14 @@ void set_libfetch_log_level(int level) {
 }
 #endif
 
-#if defined(SYSTEM_BASE_LINUX)
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
 static struct utsname GLOBAL_UTSNAME;
 static struct sysinfo GLOBAL_SYSINFO;
 static char PROC_MEMINFO[256];
 static char PROC_CPUINFO[256];
+  #if defined(SYSTEM_BASE_LINUX)
 static char FB0_VIRTUAL_SIZE[256];
+  #endif
 #endif
 
 #define BUFFER_SIZE 1024
@@ -406,7 +408,7 @@ char* get_cpu_model(void) {
 
 char** get_gpus(void) {
   char** gpus = alloc(256 * sizeof(char*));
-  bzero(gpus, 256 * sizeof(char*));
+  memset(gpus, 0, 256 * sizeof(char*));
 #if defined(SYSTEM_BASE_LINUX)
   LOG_E("Not implemented");
   return NULL;
@@ -651,16 +653,16 @@ struct winsize get_terminal_size(void) {
   ioctl(STDOUT_FILENO, TIOCGWINSZ, &terminal_size);
 #elif defined(SYSTEM_BASE_ANDROID)
   LOG_E("Not implemented");
-  return NULL;
+  return (struct winsize){0};
 #elif defined(SYSTEM_BASE_OPENBSD)
   LOG_E("Not implemented");
-  return NULL;
+  return (struct winsize){0};
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
-  return NULL;
+  return (struct winsize){0};
 #elif defined(SYSTEM_BASE_WINDOWS)
   LOG_E("Not implemented");
-  return NULL;
+  return (struct winsize){0};
 #else
   LOG_E("System not supported or system base not specified");
   return (struct winsize){0};
