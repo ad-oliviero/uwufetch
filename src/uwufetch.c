@@ -122,14 +122,14 @@ struct info {
       **gpus,
       *packages,
       *image_name;
-  int target_width, // for the truncate_str function
-      screen_width, screen_height,
+  int screen_width,
+      screen_height,
       total_pkgs;
   unsigned long ram_total, ram_used;
   long uptime;
 
 #ifndef _WIN32
-  struct winsize win;
+  struct winsize term_size;
 #else  // _WIN32
   int ws_col, ws_rows;
 #endif // _WIN32
@@ -533,23 +533,13 @@ void uwufy_all(struct info* user_info) {
 // prints all the collected info and returns the number of printed lines
 int print_info(struct configuration* config_flags, struct info* user_info) {
   int line_count = 0;
-#ifdef _WIN32
-  // prints without overflowing the terminal width
-  #define responsively_printf(buf, format, ...)     \
-    {                                               \
-      sprintf(buf, format, __VA_ARGS__);            \
-      printf("%.*s\n", user_info->ws_col - 4, buf); \
-      line_count++;                                 \
-    }
-#else // _WIN32
-  // prints without overflowing the terminal width
-  #define responsively_printf(buf, format, ...)         \
-    {                                                   \
-      sprintf(buf, format, __VA_ARGS__);                \
-      printf("%.*s\n", user_info->win.ws_col - 4, buf); \
-      line_count++;                                     \
-    }
-#endif                  // _WIN32
+// prints without overflowing the terminal width
+#define responsively_printf(buf, format, ...)               \
+  {                                                         \
+    sprintf(buf, format, __VA_ARGS__);                      \
+    printf("%.*s\n", user_info->term_size.ws_col - 1, buf); \
+    line_count++;                                           \
+  }
   char print_buf[1024]; // for responsively print
 
   // print collected info - from host to cpu info
@@ -893,13 +883,13 @@ int main(int argc, char* argv[]) {
     if (strlen(user_info.shell) > 27) // android shell name was too long
       user_info.shell += 27;
 #endif
-    user_info.model     = get_model();
-    user_info.kernel    = get_kernel();
-    user_info.os_name   = get_os_name();
-    user_info.cpu_model = get_cpu_model();
-    user_info.gpus      = get_gpus();
-    user_info.packages  = get_packages();
-    // user_info.target_width;
+    user_info.model         = get_model();
+    user_info.kernel        = get_kernel();
+    user_info.os_name       = get_os_name();
+    user_info.cpu_model     = get_cpu_model();
+    user_info.gpus          = get_gpus();
+    user_info.packages      = get_packages();
+    user_info.term_size     = get_terminal_size();
     user_info.screen_width  = get_screen_width();
     user_info.screen_height = get_screen_height();
     user_info.ram_total     = get_memory_total();
@@ -917,7 +907,7 @@ int main(int argc, char* argv[]) {
   printf("\033[%dA", config_flags.image ? print_image(&user_info) : print_ascii(&user_info));
 
   // print info and move cursor down if the number of printed lines is smaller that the default image height
-  int to_move = 9 - print_info(&config_flags, &user_info);
+  int to_move = print_info(&config_flags, &user_info);
   printf("\033[%d%c", to_move < 0 ? -to_move : to_move, to_move < 0 ? 'A' : 'B');
   LOG_I("Execution completed successfully!");
   libfetch_cleanup();

@@ -18,6 +18,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/ioctl.h>
 #if defined(SYSTEM_BASE_LINUX)
   #include <sys/sysinfo.h>
   #include <sys/utsname.h>
@@ -571,4 +572,28 @@ long get_uptime(void) {
 #endif
   LOG_V(uptime);
   return uptime;
+}
+
+struct winsize get_terminal_size(void) {
+  struct winsize terminal_size = {0};
+#if defined(SYSTEM_BASE_LINUX)
+  ioctl(STDOUT_FILENO, TIOCGWINSZ, &terminal_size);
+#elif defined(SYSTEM_BASE_ANDROID)
+  LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_FREEBSD)
+  LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_OPENBSD)
+  LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_MACOS)
+  LOG_E("Not implemented");
+#elif defined(SYSTEM_BASE_WINDOWS)
+  LOG_E("Not implemented");
+#else
+  LOG_E("System not supported or system base not specified");
+#endif
+  LOG_V(terminal_size.ws_col);
+  LOG_V(terminal_size.ws_row);
+  LOG_V(terminal_size.ws_xpixel);
+  LOG_V(terminal_size.ws_ypixel);
+  return terminal_size;
 }
