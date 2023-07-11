@@ -112,6 +112,9 @@ debug: build
 valgrind: # checks memory leak
 	valgrind --leak-check=full --show-leak-kinds=all ./$(NAME)
 
+gdb:
+	gdb -ex="set confirm off" ./$(NAME)
+
 run:
 	./$(NAME) $(ARGS)
 

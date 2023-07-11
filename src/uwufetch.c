@@ -344,6 +344,7 @@ char* strsep(char** stringp, const char* delim) {
 
 // uwufies distro name
 void uwu_name(struct info* user_info) {
+  if (!user_info->os_name) return;
 #define STRING_TO_UWU(original, uwufied) \
   if (strcmp(user_info->os_name, original) == 0) sprintf(user_info->os_name, "%s", uwufied)
   // linux
@@ -410,7 +411,7 @@ void uwu_kernel(char* kernel) {
     strcpy(splitted[count], token);
     count++;
   }
-  strcpy(kernel, "");
+  if (kernel) strcpy(kernel, "");
   for (int i = 0; i < 16; i++) {
     // replace kernel name with uwufied version
     KERNEL_TO_UWU(splitted[i], "Linux", "Linuwu");
@@ -456,8 +457,10 @@ void uwu_kernel(char* kernel) {
     // Windows
     else KERNEL_TO_UWU(splitted[i], "windows", "WinyandOwOws");
 
-    if (i != 0) strcat(kernel, " ");
-    strcat(kernel, splitted[i]);
+    if (kernel) {
+      if (i != 0) strcat(kernel, " ");
+      strcat(kernel, splitted[i]);
+    }
   }
 #undef KERNEL_TO_UWU
   LOG_V(kernel);
@@ -518,16 +521,20 @@ void uwu_pkgman(char* pkgman_name) {
 
 // uwufies everything
 void uwufy_all(struct info* user_info) {
-  // LOG_I("uwufing everything");
-  // uwu_kernel(user_info->kernel);
-  // for (int i = 0; i < 256; i++)
-  //   if (user_info->gpus[i]) uwu_hw(user_info->gpus[i]);
-  // uwu_hw(user_info->cpu_model);
-  // LOG_V(user_info->cpu_model);
-  // uwu_hw(user_info->model);
-  // LOG_V(user_info->model);
-  // uwu_pkgman(user_info->packages);
-  // LOG_V(user_info->packages);
+#define UWU_HW(x) \
+  if (x) uwu_hw(x)
+  LOG_I("uwufing everything");
+  uwu_kernel(user_info->kernel);
+  if (user_info->gpus)
+    for (int i = 0; i < 256; i++)
+      UWU_HW(user_info->gpus[i]);
+  UWU_HW(user_info->cpu_model);
+  LOG_V(user_info->cpu_model);
+  UWU_HW(user_info->model);
+  LOG_V(user_info->model);
+  if (user_info->packages) uwu_pkgman(user_info->packages);
+  LOG_V(user_info->packages);
+#undef UWU_HW
 }
 
 // prints all the collected info and returns the number of printed lines
@@ -545,7 +552,7 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
   // print collected info - from host to cpu info
   if (config_flags->user)
     responsively_printf(print_buf, "%s%s%s%s@%s", MOVE_CURSOR, NORMAL, BOLD, user_info->user_name, user_info->host_name);
-  // uwu_name(user_info);
+  uwu_name(user_info);
   if (config_flags->os)
     responsively_printf(print_buf, "%s%s%sOWOS     %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->os_name);
   if (config_flags->model)
@@ -890,25 +897,25 @@ int main(int argc, char* argv[]) {
     }
   }
   if (!user_config_file.read_enabled) {
-    user_info.user_name = get_user_name();
-    user_info.host_name = get_host_name();
-    user_info.shell     = get_shell();
-#if defined(SYSTEM_BASE_ANDROID)
-    if (strlen(user_info.shell) > 27) // android shell name was too long
-      user_info.shell += 27;
-#endif
-    user_info.model         = get_model();
-    user_info.kernel        = get_kernel();
-    user_info.os_name       = get_os_name();
-    user_info.cpu_model     = get_cpu_model();
-    user_info.gpus          = get_gpus();
-    user_info.packages      = get_packages();
-    user_info.term_size     = get_terminal_size();
-    user_info.screen_width  = get_screen_width();
-    user_info.screen_height = get_screen_height();
-    user_info.ram_total     = get_memory_total();
-    user_info.ram_used      = get_memory_used();
-    user_info.uptime        = get_uptime();
+    //     user_info.user_name = get_user_name();
+    //     user_info.host_name = get_host_name();
+    //     user_info.shell     = get_shell();
+    // #if defined(SYSTEM_BASE_ANDROID)
+    //     if (strlen(user_info.shell) > 27) // android shell name was too long
+    //       user_info.shell += 27;
+    // #endif
+    //     user_info.model         = get_model();
+    //     user_info.kernel        = get_kernel();
+    //     user_info.os_name       = get_os_name();
+    //     user_info.cpu_model     = get_cpu_model();
+    //     user_info.gpus          = get_gpus();
+    //     user_info.packages      = get_packages();
+    //     user_info.term_size     = get_terminal_size();
+    //     user_info.screen_width  = get_screen_width();
+    //     user_info.screen_height = get_screen_height();
+    //     user_info.ram_total     = get_memory_total();
+    //     user_info.ram_used      = get_memory_used();
+    //     user_info.uptime        = get_uptime();
   }
 
   if (user_config_file.write_enabled) write_cache(&user_info);
