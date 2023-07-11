@@ -648,12 +648,9 @@ long get_uptime(void) {
 
 struct winsize get_terminal_size(void) {
   struct winsize terminal_size = {0};
-#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_FREEBSD)
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_FREEBSD) || defined(SYSTEM_BASE_ANDROID)
   LOG_I("getting terminal size with ioctl");
   ioctl(STDOUT_FILENO, TIOCGWINSZ, &terminal_size);
-#elif defined(SYSTEM_BASE_ANDROID)
-  LOG_E("Not implemented");
-  return (struct winsize){0};
 #elif defined(SYSTEM_BASE_OPENBSD)
   LOG_E("Not implemented");
   return (struct winsize){0};
