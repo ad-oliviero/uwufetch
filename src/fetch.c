@@ -66,7 +66,7 @@ static void* alloc(size_t size) {
 }
 
 static void dealloc_id(int i) {
-  if (!used_pointers[i]) {
+  if (used_pointers[i]) {
     free(pointers[i]);
     used_pointers[i] = false;
   }

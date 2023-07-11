@@ -109,6 +109,9 @@ endif
 debug: CFLAGS = $(CFLAGS_DEBUG)
 debug: build
 
+valgrind: # checks memory leak
+	valgrind --leak-check=full --show-leak-kinds=all ./$(NAME)
+
 run:
 	./$(NAME) $(ARGS)
 
