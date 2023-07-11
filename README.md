@@ -18,7 +18,7 @@ The day I wake up and every test passes on every supported system, is the day th
     - `get_gpus()`
     - test on systems different from arch linux
 - BSD (freebsd, openbsd)
-    - everything
+    - some functions need implementation
 - Mac OS, iOS
     - everything
 - Windows
