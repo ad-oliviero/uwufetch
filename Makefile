@@ -83,7 +83,8 @@ endif
 .PHONY: tests
 
 build: $(SRC_DIR)/$(BIN_FILES) lib
-	$(CC) $(CFLAGS) -o $(NAME) $(SRC_DIR)/$(BIN_FILES) lib$(LIB_FILES:.c=.a)
+	$(CC) $(CFLAGS) -c -o $(BIN_FILES:.c=.o) $(SRC_DIR)/$(BIN_FILES)
+	$(CC) $(CFLAGS) -o $(NAME) $(BIN_FILES:.c=.o) lib$(LIB_FILES:.c=.a)
 
 lib: $(SRC_DIR)/$(LIB_FILES)
 	$(CC) $(CFLAGS) -fPIC -c -o $(LIB_FILES:.c=.o) $(SRC_DIR)/$(LIB_FILES)

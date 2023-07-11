@@ -518,16 +518,16 @@ void uwu_pkgman(char* pkgman_name) {
 
 // uwufies everything
 void uwufy_all(struct info* user_info) {
-  LOG_I("uwufing everything");
-  uwu_kernel(user_info->kernel);
-  for (int i = 0; i < 256; i++)
-    if (user_info->gpus[i]) uwu_hw(user_info->gpus[i]);
-  uwu_hw(user_info->cpu_model);
-  LOG_V(user_info->cpu_model);
-  uwu_hw(user_info->model);
-  LOG_V(user_info->model);
-  uwu_pkgman(user_info->packages);
-  LOG_V(user_info->packages);
+  // LOG_I("uwufing everything");
+  // uwu_kernel(user_info->kernel);
+  // for (int i = 0; i < 256; i++)
+  //   if (user_info->gpus[i]) uwu_hw(user_info->gpus[i]);
+  // uwu_hw(user_info->cpu_model);
+  // LOG_V(user_info->cpu_model);
+  // uwu_hw(user_info->model);
+  // LOG_V(user_info->model);
+  // uwu_pkgman(user_info->packages);
+  // LOG_V(user_info->packages);
 }
 
 // prints all the collected info and returns the number of printed lines
@@ -545,7 +545,7 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
   // print collected info - from host to cpu info
   if (config_flags->user)
     responsively_printf(print_buf, "%s%s%s%s@%s", MOVE_CURSOR, NORMAL, BOLD, user_info->user_name, user_info->host_name);
-  uwu_name(user_info);
+  // uwu_name(user_info);
   if (config_flags->os)
     responsively_printf(print_buf, "%s%s%sOWOS     %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->os_name);
   if (config_flags->model)
@@ -555,11 +555,12 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
   if (config_flags->cpu)
     responsively_printf(print_buf, "%s%s%sCPUWU    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->cpu_model);
 
-  for (int i = 0; i < 256; i++) {
-    if (config_flags->gpu[i])
-      if (user_info->gpus[i])
-        responsively_printf(print_buf, "%s%s%sGPUWU    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->gpus[i]);
-  }
+  if (user_info->gpus)
+    for (int i = 0; i < 256; i++) {
+      if (config_flags->gpu[i])
+        if (user_info->gpus[i])
+          responsively_printf(print_buf, "%s%s%sGPUWU    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->gpus[i]);
+    }
 
   if (config_flags->ram)                                                                                                                              // print ram
     responsively_printf(print_buf, "%s%s%sMEMOWY   %s%lu MiB/%lu MiB", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->ram_used, user_info->ram_total); // from bytes to mega bytes, 2^20
@@ -668,32 +669,45 @@ int read_cache(struct info* user_info) {
 
 // prints logo (as ascii art) of the given system.
 int print_ascii(struct info* user_info) {
-  FILE* file;
-  char ascii_file[1024];
-  // First tries to get ascii art file from local directory. Useful for debugging
-  sprintf(ascii_file, "./res/ascii/%s.txt", user_info->os_name);
+  FILE* file            = NULL;
+  char ascii_file[1024] = "";
+#if defined(__DEBUG__)
+  #define PREFIX "./res/"
+#else
+  #if defined(SYSTEM_BASE_LINUX)
+    #define PREFIX "/usr/lib/uwufetch/"
+  #elif defined(SYSTEM_BASE_ANDROID)
+    #define PREFIX "/data/data/com.termux/files/usr/lib/uwufetch/"
+  #elif defined(SYSTEM_BASE_FREEBSD)
+  LOG_E("Not Implemented");
+  #elif defined(SYSTEM_BASE_OPENBSD)
+  LOG_E("Not Implemented");
+  #elif defined(SYSTEM_BASE_MACOS)
+    #define PREFIX "/usr/local/lib/uwufetch/"
+  #elif defined(SYSTEM_BASE_WINDOWS)
+  LOG_E("Not Implemented");
+  #else
+  LOG_E("System not supported or system base not specified");
+  #endif
+#endif
+  if (user_info->os_name)
+    sprintf(ascii_file, PREFIX "ascii/%s.txt", user_info->os_name);
+  else
+    sprintf(ascii_file, PREFIX "ascii/unknown.txt");
   LOG_V(ascii_file);
-  file = fopen(ascii_file, "r");
-  if (!file) { // if the file does not exist in the local directory, open it from the installation directory
-    if (strcmp(user_info->os_name, "android") == 0)
-      sprintf(ascii_file, "/data/data/com.termux/files/usr/lib/uwufetch/ascii/%s.txt", user_info->os_name);
-    else if (strcmp(user_info->os_name, "macos") == 0)
-      sprintf(ascii_file, "/usr/local/lib/uwufetch/ascii/%s.txt", user_info->os_name);
-    else
-      sprintf(ascii_file, "/usr/lib/uwufetch/ascii/%s.txt", user_info->os_name);
-    LOG_V(ascii_file);
 
-    file = fopen(ascii_file, "r");
-    if (!file) {
-      // Prevent infinite loops
+  file = fopen(ascii_file, "r");
+  if (!file) {
+    // Prevent infinite loops
+    if (user_info->os_name != NULL) {
       if (strcmp(user_info->os_name, "unknown") == 0) {
         LOG_E("No\nunknown\nascii\nfile\n\n\n\n");
         return 7;
       }
       sprintf(user_info->os_name, "unknown"); // current os is not supported
       LOG_V(user_info->os_name);
-      return print_ascii(user_info);
     }
+    return print_ascii(user_info);
   }
   char buffer[256]; // line buffer
   int line_count = 1;

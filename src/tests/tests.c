@@ -3,10 +3,11 @@
 #include "../logging.h"
 #include <stdbool.h>
 #include <stdio.h>
+#include <sys/ioctl.h>
 
 /*
  * the test consists in just comparing the output to NULL.
- * these kind of funcitons can not be tested with an expected
+ * these kind of functions can not be tested with an expected
  * output as it depends on the environment. Instead I chose to
  * not generate segfaults in the program that uses the library.
  */
@@ -62,6 +63,11 @@ bool test_get_uptime() {
   return get_uptime() > 0;
 }
 
+bool test_get_terminal_size() {
+  struct winsize ws = get_terminal_size();
+  return ws.ws_col > 0 && ws.ws_row > 0 && ws.ws_xpixel > 0 && ws.ws_ypixel > 0;
+}
+
 struct test {
   bool (*function)();
   const char* name;
@@ -81,6 +87,7 @@ struct test tests[] = {
     {test_get_memory_total, "get_memory_total"},
     {test_get_memory_used, "get_memory_used"},
     {test_get_uptime, "get_uptime"},
+    {test_get_terminal_size, "get_terminal_size"},
 };
 
 int main(void) {
@@ -100,5 +107,6 @@ int main(void) {
     }
   }
   LOG_I("%d tests <g>passed</>, %d <r>failed</>", passed_tests, failed_tests);
+  libfetch_cleanup();
   return 0;
 }
