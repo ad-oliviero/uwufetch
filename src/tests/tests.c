@@ -39,6 +39,10 @@ bool test_get_cpu_model() {
   return get_cpu_model() != NULL;
 }
 
+bool test_get_gpus() {
+  return get_gpus() != NULL;
+}
+
 bool test_get_packages() {
   return get_packages() != NULL;
 }
@@ -81,6 +85,7 @@ struct test tests[] = {
     {test_get_kernel, "get_kernel"},
     {test_get_os_name, "get_os_name"},
     {test_get_cpu_model, "get_cpu_model"},
+    {test_get_gpus, "get_gpus"},
     {test_get_packages, "get_packages"},
     {test_get_screen_width, "get_screen_width"},
     {test_get_screen_height, "get_screen_height"},

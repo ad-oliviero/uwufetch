@@ -686,7 +686,7 @@ int print_ascii(struct info* user_info) {
   #elif defined(SYSTEM_BASE_ANDROID)
     #define PREFIX "/data/data/com.termux/files/usr/lib/uwufetch/"
   #elif defined(SYSTEM_BASE_FREEBSD)
-  LOG_E("Not Implemented");
+    #define PREFIX "/usr/lib/uwufetch/"
   #elif defined(SYSTEM_BASE_OPENBSD)
   LOG_E("Not Implemented");
   #elif defined(SYSTEM_BASE_MACOS)

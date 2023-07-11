@@ -42,10 +42,10 @@ void set_libfetch_log_level(int level) {
 #if defined(SYSTEM_BASE_LINUX)
 static struct utsname GLOBAL_UTSNAME;
 static struct sysinfo GLOBAL_SYSINFO;
-#endif
 static char PROC_MEMINFO[256];
 static char PROC_CPUINFO[256];
 static char FB0_VIRTUAL_SIZE[256];
+#endif
 
 #define BUFFER_SIZE 1024
 #define PTR_CNT 12 // 12 strings
@@ -104,6 +104,8 @@ void libfetch_init(void) {
     fclose(fb0_virtual_size);
   }
   #endif
+#elif defined(SYSTEM_BASE_FREEBSD)
+  LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_OPENBSD)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_MACOS)
@@ -146,12 +148,16 @@ char* get_user_name(void) {
   }
 #elif defined(SYSTEM_BASE_OPENBSD)
   LOG_E("Not implemented");
+  return NULL;
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
+  return NULL;
 #elif defined(SYSTEM_BASE_WINDOWS)
   LOG_E("Not implemented");
+  return NULL;
 #else
   LOG_E("System not supported or system base not specified");
+  return NULL;
 #endif
   LOG_V(user_name);
   return user_name;
@@ -189,12 +195,16 @@ char* get_host_name(void) {
   #endif
 #elif defined(SYSTEM_BASE_OPENBSD)
   LOG_E("Not implemented");
+  return NULL;
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
+  return NULL;
 #elif defined(SYSTEM_BASE_WINDOWS)
   LOG_E("Not implemented");
+  return NULL;
 #else
   LOG_E("System not supported or system base not specified");
+  return NULL;
 #endif
   LOG_V(host_name);
   return host_name;
@@ -210,12 +220,16 @@ char* get_shell(void) {
   }
 #elif defined(SYSTEM_BASE_OPENBSD)
   LOG_E("Not implemented");
+  return NULL;
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
+  return NULL;
 #elif defined(SYSTEM_BASE_WINDOWS)
   LOG_E("Not implemented");
+  return NULL;
 #else
   LOG_E("System not supported or system base not specified");
+  return NULL;
 #endif
   LOG_V(shell_name);
   return shell_name;
@@ -267,12 +281,16 @@ char* get_model(void) {
   strcpy(model, buf);
 #elif defined(SYSTEM_BASE_OPENBSD)
   LOG_E("Not implemented");
+  return NULL;
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
+  return NULL;
 #elif defined(SYSTEM_BASE_WINDOWS)
   LOG_E("Not implemented");
+  return NULL;
 #else
   LOG_E("System not supported or system base not specified");
+  return NULL;
 #endif
   LOG_V(model);
   return model;
@@ -307,12 +325,16 @@ char* get_kernel(void) {
   if (kernel_name[len] == '\n') kernel_name[len] = '\0';
 #elif defined(SYSTEM_BASE_OPENBSD)
   LOG_E("Not implemented");
+  return NULL;
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
+  return NULL;
 #elif defined(SYSTEM_BASE_WINDOWS)
   LOG_E("Not implemented");
+  return NULL;
 #else
   LOG_E("System not supported or system base not specified");
+  return NULL;
 #endif
   LOG_V(kernel_name);
   return kernel_name;
@@ -335,12 +357,16 @@ char* get_os_name(void) {
   sprintf(os_name, "android");
 #elif defined(SYSTEM_BASE_OPENBSD)
   LOG_E("Not implemented");
+  return NULL;
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
+  return NULL;
 #elif defined(SYSTEM_BASE_WINDOWS)
   LOG_E("Not implemented");
+  return NULL;
 #else
   LOG_E("System not supported or system base not specified");
+  return NULL;
 #endif
   LOG_V(os_name);
   return os_name;
@@ -363,12 +389,16 @@ char* get_cpu_model(void) {
   strcpy(cpu_model, buf);
 #elif defined(SYSTEM_BASE_OPENBSD)
   LOG_E("Not implemented");
+  return NULL;
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
+  return NULL;
 #elif defined(SYSTEM_BASE_WINDOWS)
   LOG_E("Not implemented");
+  return NULL;
 #else
   LOG_E("System not supported or system base not specified");
+  return NULL;
 #endif
   LOG_V(cpu_model);
   return cpu_model;
@@ -379,18 +409,25 @@ char** get_gpus(void) {
   bzero(gpus, 256 * sizeof(char*));
 #if defined(SYSTEM_BASE_LINUX)
   LOG_E("Not implemented");
+  return NULL;
 #elif defined(SYSTEM_BASE_ANDROID)
   LOG_E("Not implemented");
+  return NULL;
 #elif defined(SYSTEM_BASE_FREEBSD)
   LOG_E("Not implemented");
+  return NULL;
 #elif defined(SYSTEM_BASE_OPENBSD)
   LOG_E("Not implemented");
+  return NULL;
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
+  return NULL;
 #elif defined(SYSTEM_BASE_WINDOWS)
   LOG_E("Not implemented");
+  return NULL;
 #else
   LOG_E("System not supported or system base not specified");
+  return NULL;
 #endif
 
   return gpus;
@@ -462,16 +499,22 @@ int get_screen_width(void) {
   sscanf(FB0_VIRTUAL_SIZE, "%d,%*d", &screen_width);
 #elif defined(SYSTEM_BASE_ANDROID)
   LOG_E("Not implemented");
+  return 0;
 #elif defined(SYSTEM_BASE_FREEBSD)
   LOG_E("Not implemented");
+  return 0;
 #elif defined(SYSTEM_BASE_OPENBSD)
   LOG_E("Not implemented");
+  return 0;
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
+  return 0;
 #elif defined(SYSTEM_BASE_WINDOWS)
   LOG_E("Not implemented");
+  return 0;
 #else
   LOG_E("System not supported or system base not specified");
+  return 0;
 #endif
   LOG_V(screen_width);
   return screen_width;
@@ -484,16 +527,22 @@ int get_screen_height(void) {
   sscanf(FB0_VIRTUAL_SIZE, "%*d,%d", &screen_height);
 #elif defined(SYSTEM_BASE_ANDROID)
   LOG_E("Not implemented");
+  return 0;
 #elif defined(SYSTEM_BASE_FREEBSD)
   LOG_E("Not implemented");
+  return 0;
 #elif defined(SYSTEM_BASE_OPENBSD)
   LOG_E("Not implemented");
+  return 0;
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
+  return 0;
 #elif defined(SYSTEM_BASE_WINDOWS)
   LOG_E("Not implemented");
+  return 0;
 #else
   LOG_E("System not supported or system base not specified");
+  return 0;
 #endif
   LOG_V(screen_height);
   return screen_height;
@@ -506,16 +555,20 @@ unsigned long get_memory_total(void) {
   memory_total = GLOBAL_SYSINFO.totalram;
 #elif defined(SYSTEM_BASE_FREEBSD)
   size_t len = sizeof(memory_total);
-  LOG_I("getting memory total from sysctlbyname") :;
+  LOG_I("getting memory total from sysctlbyname");
   CHECK_FN_NEG(sysctlbyname("vm.kmem_size", &memory_total, &len, NULL, 0));
 #elif defined(SYSTEM_BASE_OPENBSD)
   LOG_E("Not implemented");
+  return 0;
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
+  return 0;
 #elif defined(SYSTEM_BASE_WINDOWS)
   LOG_E("Not implemented");
+  return 0;
 #else
   LOG_E("System not supported or system base not specified");
+  return 0;
 #endif
   memory_total /= 1048576;
   LOG_V(memory_total);
@@ -548,12 +601,16 @@ unsigned long get_memory_used(void) {
   memory_used = (kmem_size - (pagesize * (v_free_count + v_inactive_count))) / 1048576;
 #elif defined(SYSTEM_BASE_OPENBSD)
   LOG_E("Not implemented");
+  return 0;
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
+  return 0;
 #elif defined(SYSTEM_BASE_WINDOWS)
   LOG_E("Not implemented");
+  return 0;
 #else
   LOG_E("System not supported or system base not specified");
+  return 0;
 #endif
   LOG_V(memory_used);
   return memory_used;
@@ -572,12 +629,16 @@ long get_uptime(void) {
   uptime = current_time - boottime.tv_sec;
 #elif defined(SYSTEM_BASE_OPENBSD)
   LOG_E("Not implemented");
+  return 0;
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
+  return 0;
 #elif defined(SYSTEM_BASE_WINDOWS)
   LOG_E("Not implemented");
+  return 0;
 #else
   LOG_E("System not supported or system base not specified");
+  return 0;
 #endif
   LOG_V(uptime);
   return uptime;
@@ -585,20 +646,24 @@ long get_uptime(void) {
 
 struct winsize get_terminal_size(void) {
   struct winsize terminal_size = {0};
-#if defined(SYSTEM_BASE_LINUX)
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_FREEBSD)
+  LOG_I("getting terminal size with ioctl");
   ioctl(STDOUT_FILENO, TIOCGWINSZ, &terminal_size);
 #elif defined(SYSTEM_BASE_ANDROID)
   LOG_E("Not implemented");
-#elif defined(SYSTEM_BASE_FREEBSD)
-  LOG_E("Not implemented");
+  return NULL;
 #elif defined(SYSTEM_BASE_OPENBSD)
   LOG_E("Not implemented");
+  return NULL;
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
+  return NULL;
 #elif defined(SYSTEM_BASE_WINDOWS)
   LOG_E("Not implemented");
+  return NULL;
 #else
   LOG_E("System not supported or system base not specified");
+  return (struct winsize){0};
 #endif
   LOG_V(terminal_size.ws_col);
   LOG_V(terminal_size.ws_row);
