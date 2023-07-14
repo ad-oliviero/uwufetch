@@ -35,7 +35,7 @@ TEST_STRING_FUNCTION(get_packages)
 
 TEST_COMPARE_FUNCTION(get_screen_width, == 0)
 TEST_COMPARE_FUNCTION(get_screen_height, == 0)
-TEST_COMPARE_FUNCTION(get_memory_total, == 0)
+TEST_COMPARE_FUNCTION(get_memory_total, > 0)
 TEST_COMPARE_FUNCTION(get_memory_used, > 0)
 TEST_COMPARE_FUNCTION(get_uptime, > 0)
 

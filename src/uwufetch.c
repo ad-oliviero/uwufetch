@@ -52,9 +52,6 @@
   #include <pthread.h> // linux only right now
   #include <sys/ioctl.h>
   #include <sys/utsname.h>
-#else // _WIN32
-  #include <windows.h>
-CONSOLE_SCREEN_BUFFER_INFO csbi;
 #endif // _WIN32
 
 #include <dirent.h>
@@ -85,11 +82,11 @@ CONSOLE_SCREEN_BUFFER_INFO csbi;
 #define PINK "\x1b[38;5;201m"
 #define LPINK "\x1b[38;5;213m"
 
+#define BLOCK_CHAR "\u2587"
+
 #ifdef _WIN32
-  #define BLOCK_CHAR "\xdb"     // block char for colors
 char* MOVE_CURSOR = "\033[21C"; // moves the cursor after printing the image or the ascii logo
 #else
-  #define BLOCK_CHAR "\u2587"
 char* MOVE_CURSOR = "\033[18C";
 #endif // _WIN32
 
@@ -693,8 +690,9 @@ int print_ascii(struct info* user_info) {
   LOG_E("System not supported or system base not specified");
   #endif
 #endif
-  if (strlen(user_info->os_name) == 0)
-    sprintf(user_info->os_name, "unknown");
+  if (user_info->os_name)
+    if (strlen(user_info->os_name) == 0)
+      sprintf(user_info->os_name, "unknown");
   sprintf(ascii_file, PREFIX "ascii/%s.txt", user_info->os_name);
   LOG_V(ascii_file);
 

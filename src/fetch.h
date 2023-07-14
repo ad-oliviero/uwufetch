@@ -64,8 +64,8 @@ char** get_gpus(void);
 char* get_packages(void);
 int get_screen_width(void);
 int get_screen_height(void);
-unsigned long get_memory_total(void);
-unsigned long get_memory_used(void);
+unsigned long long get_memory_total(void);
+unsigned long long get_memory_used(void);
 long get_uptime(void);
 struct winsize get_terminal_size(void);
 
