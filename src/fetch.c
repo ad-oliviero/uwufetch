@@ -255,6 +255,17 @@ char* get_shell(void) {
     LOG_I("getting shell name from environment variable");
     snprintf(shell_name, BUFFER_SIZE, "%s", env);
   }
+  if (SearchPath(NULL, "pwsh.exe", NULL, MAX_PATH, shell_name, NULL) != 0) {
+    LOG_I("getting shell name with SearchPath(\"pwsh.exe\", ...)");
+  } else {
+    if (SearchPath(NULL, "powershell.exe", NULL, MAX_PATH, shell_name, NULL) != 0) {
+      LOG_I("getting shell name with SearchPath(\"powershell.exe\", ...)");
+    } else {
+      if (SearchPath(NULL, "cmd.exe", NULL, MAX_PATH, shell_name, NULL) != 0)
+        LOG_I("getting shell name with SearchPath(\"powershell.exe\", ...)");
+    }
+  }
+
 #else
   LOG_E("System not supported or system base not specified");
 #endif
