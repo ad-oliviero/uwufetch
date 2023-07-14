@@ -703,6 +703,10 @@ int print_ascii(struct info* user_info) {
   LOG_V(ascii_file);
 
   file = fopen(ascii_file, "r");
+  if (!file) {
+    LOG_E("ascii file \"%s\" not found", ascii_file);
+    return 0;
+  }
   char buffer[256]; // line buffer
   int line_count = 1;
   printf("\n");

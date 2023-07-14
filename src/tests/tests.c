@@ -5,100 +5,79 @@
 #include <stdio.h>
 #include <sys/ioctl.h>
 
+#ifndef UWUFETCH_VERSION
+  #define UWUFETCH_VERSION "unkown" // needs to be changed by the build script
+#endif
+
 /*
  * the test consists in just comparing the output to NULL.
  * these kind of functions can not be tested with an expected
  * output as it depends on the environment. Instead I chose to
  * not generate segfaults in the program that uses the library.
  */
-bool test_get_user_name(void) {
-  return get_user_name() != NULL;
-}
 
-bool test_get_host_name(void) {
-  return get_user_name() != NULL;
-}
+#define TEST_FUNCTION(f) bool test_##f(void)
+#define TEST_COMPARE_FUNCTION(f, c) \
+  TEST_FUNCTION(f) { return f() c; }
+#define TEST_STRING_FUNCTION(f) TEST_COMPARE_FUNCTION(f, != NULL)
 
-bool test_get_shell(void) {
-  return get_shell() != NULL;
-}
+TEST_STRING_FUNCTION(get_user_name)
+TEST_STRING_FUNCTION(get_host_name)
+TEST_STRING_FUNCTION(get_shell)
+TEST_STRING_FUNCTION(get_model)
+TEST_STRING_FUNCTION(get_kernel)
+TEST_STRING_FUNCTION(get_os_name)
+TEST_STRING_FUNCTION(get_cpu_model)
+TEST_STRING_FUNCTION(get_gpus)
+TEST_STRING_FUNCTION(get_packages)
 
-bool test_get_model(void) {
-  return get_model() != NULL;
-}
+TEST_COMPARE_FUNCTION(get_screen_width, == 0)
+TEST_COMPARE_FUNCTION(get_screen_height, == 0)
+TEST_COMPARE_FUNCTION(get_memory_total, == 0)
+TEST_COMPARE_FUNCTION(get_memory_used, > 0)
+TEST_COMPARE_FUNCTION(get_uptime, > 0)
 
-bool test_get_kernel(void) {
-  return get_kernel() != NULL;
-}
-
-bool test_get_os_name(void) {
-  return get_os_name() != NULL;
-}
-
-bool test_get_cpu_model(void) {
-  return get_cpu_model() != NULL;
-}
-
-bool test_get_gpus(void) {
-  return get_gpus() != NULL;
-}
-
-bool test_get_packages(void) {
-  return get_packages() != NULL;
-}
-
-bool test_get_screen_width(void) {
-  return get_screen_width() != 0;
-}
-
-bool test_get_screen_height(void) {
-  return get_screen_height() != 0;
-}
-
-bool test_get_memory_total(void) {
-  return get_memory_total() != 0;
-}
-
-bool test_get_memory_used(void) {
-  return get_memory_used() > 0;
-}
-
-bool test_get_uptime(void) {
-  return get_uptime() > 0;
-}
-
-bool test_get_terminal_size(void) {
+TEST_FUNCTION(get_terminal_size) {
   struct winsize ws = get_terminal_size();
   return ws.ws_col > 0 && ws.ws_row > 0 && ws.ws_xpixel > 0 && ws.ws_ypixel > 0;
 }
 
+#define STRUCT_TEST(f) \
+  { test_##f, #f }
 struct test {
   bool (*function)(void);
   const char* name;
 };
 
 struct test tests[] = {
-    {test_get_user_name, "get_user_name"},
-    {test_get_host_name, "get_host_name"},
-    {test_get_shell, "get_shell"},
-    {test_get_model, "get_model"},
-    {test_get_kernel, "get_kernel"},
-    {test_get_os_name, "get_os_name"},
-    {test_get_cpu_model, "get_cpu_model"},
-    {test_get_gpus, "get_gpus"},
-    {test_get_packages, "get_packages"},
-    {test_get_screen_width, "get_screen_width"},
-    {test_get_screen_height, "get_screen_height"},
-    {test_get_memory_total, "get_memory_total"},
-    {test_get_memory_used, "get_memory_used"},
-    {test_get_uptime, "get_uptime"},
-    {test_get_terminal_size, "get_terminal_size"},
+    STRUCT_TEST(get_user_name),
+    STRUCT_TEST(get_host_name),
+    STRUCT_TEST(get_shell),
+    STRUCT_TEST(get_model),
+    STRUCT_TEST(get_kernel),
+    STRUCT_TEST(get_os_name),
+    STRUCT_TEST(get_cpu_model),
+    STRUCT_TEST(get_gpus),
+    STRUCT_TEST(get_packages),
+    STRUCT_TEST(get_screen_width),
+    STRUCT_TEST(get_screen_height),
+    STRUCT_TEST(get_memory_total),
+    STRUCT_TEST(get_memory_used),
+    STRUCT_TEST(get_uptime),
+    STRUCT_TEST(get_terminal_size),
 };
 
-int main(void) {
-  libfetch_init();
+int main(int argc, char** argv) {
   SET_LOG_LEVEL(LEVEL_MAX, "TESTS");
-  SET_LIBFETCH_LOG_LEVEL(LEVEL_MAX);
+  if (argc > 1) {
+    if (strcmp(argv[1], "-v") == 0) {
+      SET_LIBFETCH_LOG_LEVEL(LEVEL_MAX);
+    } else if (strcmp(argv[1], "-h") == 0) {
+      LOG_I("uwufetch testing version %s. To enable verbose libfetch logging use -v", UWUFETCH_VERSION);
+      return 0;
+    }
+  }
+  libfetch_init();
   LOG_W("Starting tests...");
   int passed_tests = 0;
   int failed_tests = 0;

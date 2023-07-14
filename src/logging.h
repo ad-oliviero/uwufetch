@@ -1,6 +1,7 @@
 #ifndef _LOGGING_H_
 #define _LOGGING_H_
 
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -52,8 +53,8 @@ enum LOG_LEVELS {
                                       : "",                           \
               __func__, __FILE__, __LINE__, buf);                 \
     }
-  #define CHECK_FN_NULL(fn) \
-    if (fn == NULL) LOG_E("%s returned NULL: %s", #fn, strerror(errno))
+  #define CHECK_FUNC(fn, err_val) \
+    if (fn == err_val) LOG_E("%s returned %s: %s", #fn, #err_val, strerror(errno))
   #define CHECK_FN_NEG(fn) \
     if (fn < 0) LOG_E("%s failed: %s", #fn, strerror(errno))
 static int logging_level = 0;
