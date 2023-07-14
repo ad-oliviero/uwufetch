@@ -55,12 +55,15 @@ static char FB0_VIRTUAL_SIZE[256];
 MEMORYSTATUSEX GLOBAL_MEMORY_STATUS_EX;
 #endif
 
+/* we set the first char to 0 in the init function
+so if it is still zero, the string didn't change
+and that means the function failed*/
 #define CHECK_GET_SUCCESS(s)       \
-  if (strlen(s) == 0) {            \
+  if (s[0] == 0) {                 \
     LOG_E("Failed to get %s", #s); \
     s = dealloc(s);                \
   } else {                         \
-    LOG_V(s)                       \
+    LOG_V(s);                      \
   }
 
 #define BUFFER_SIZE 1024
@@ -424,7 +427,22 @@ char* get_cpu_model(void) {
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
-  LOG_E("Not implemented");
+  HKEY hKey;
+  char value[BUFFER_SIZE];
+  DWORD valueSize = BUFFER_SIZE;
+  LONG result     = RegOpenKeyEx(HKEY_LOCAL_MACHINE, "HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0", 0, KEY_READ, &hKey);
+
+  if (result == ERROR_SUCCESS) {
+    result = RegQueryValueEx(hKey, "ProcessorNameString", NULL, NULL, (LPBYTE)&value, &valueSize);
+    if (result == ERROR_SUCCESS) {
+      LOG_I("getting model name from HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0\\ProcessorNameString");
+      strcpy(cpu_model, value);
+      unsigned long len = strlen(cpu_model);
+      while (cpu_model[len - 1] == '\n' && len > 0) len--;
+      cpu_model[len - 1] = '\0';
+    }
+    RegCloseKey(hKey);
+  }
 #else
   LOG_E("System not supported or system base not specified");
 #endif
