@@ -55,12 +55,12 @@ static char FB0_VIRTUAL_SIZE[256];
 MEMORYSTATUSEX GLOBAL_MEMORY_STATUS_EX;
 #endif
 
-#define CHECK_GET_SUCCESS(s)      \
-  if (strlen(s) == 0) {           \
-    s = dealloc(s);               \
-    LOG_E("Failed to get %s", s); \
-  } else {                        \
-    LOG_V(#s)                     \
+#define CHECK_GET_SUCCESS(s)       \
+  if (strlen(s) == 0) {            \
+    LOG_E("Failed to get %s", #s); \
+    s = dealloc(s);                \
+  } else {                         \
+    LOG_V(s)                       \
   }
 
 #define BUFFER_SIZE 1024
@@ -174,7 +174,7 @@ char* get_user_name(void) {
 #elif defined(SYSTEM_BASE_WINDOWS)
   char* env = getenv("USERNAME");
   if (env) {
-    LOG_I("getting user name from environment variable");
+    LOG_I("getting user name from $env:USERNAME");
     snprintf(user_name, BUFFER_SIZE, "%s", env);
   }
 #else
@@ -250,11 +250,6 @@ char* get_shell(void) {
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
-  char* env = getenv("PSVersionTable.PSVersion");
-  if (env) {
-    LOG_I("getting shell name from environment variable");
-    snprintf(shell_name, BUFFER_SIZE, "%s", env);
-  }
   if (SearchPath(NULL, "pwsh.exe", NULL, MAX_PATH, shell_name, NULL) != 0) {
     LOG_I("getting shell name with SearchPath(\"pwsh.exe\", ...)");
   } else {
@@ -265,7 +260,6 @@ char* get_shell(void) {
         LOG_I("getting shell name with SearchPath(\"powershell.exe\", ...)");
     }
   }
-
 #else
   LOG_E("System not supported or system base not specified");
 #endif
@@ -322,7 +316,19 @@ char* get_model(void) {
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
-  LOG_E("Not implemented");
+  HKEY hKey;
+  char value[BUFFER_SIZE];
+  DWORD valueSize = BUFFER_SIZE;
+  LONG result     = RegOpenKeyEx(HKEY_LOCAL_MACHINE, "HARDWARE\\DESCRIPTION\\System\\BIOS", 0, KEY_READ, &hKey);
+
+  if (result == ERROR_SUCCESS) {
+    result = RegQueryValueEx(hKey, "BaseBoardProduct", NULL, NULL, (LPBYTE)&value, &valueSize);
+    if (result == ERROR_SUCCESS) {
+      LOG_I("getting model name from HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System\\BIOS\\BaseBoardProduct");
+      strcpy(model, value);
+    }
+    RegCloseKey(hKey);
+  }
 #else
   LOG_E("System not supported or system base not specified");
 #endif
