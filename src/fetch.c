@@ -14,11 +14,13 @@
  */
 
 #include "fetch.h"
-#include <err.h>
-#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#if !defined(SYSTEM_BASE_WINDOWS)
+#include <err.h>
+#include <errno.h>
 #include <sys/ioctl.h>
+#endif
 #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
   #include <sys/sysinfo.h>
   #include <sys/utsname.h>
@@ -54,8 +56,8 @@ static char FB0_VIRTUAL_SIZE[256];
 static void* pointers[PTR_CNT]     = {0};
 static bool used_pointers[PTR_CNT] = {0};
 
-static void* alloc(size_t size) {
-  for (size_t i = 0; i < PTR_CNT; i++) {
+static void* alloc(unsigned long int size) {
+  for (unsigned long int i = 0; i < PTR_CNT; i++) {
     if (!used_pointers[i]) {
       used_pointers[i] = true;
       pointers[i]      = malloc(size);
@@ -85,7 +87,7 @@ void libfetch_init(void) {
   if (proc_meminfo) {
     LOG_I("reading /proc/meminfo");
     // reading only 256 bytes because every other line of the file is not really needed
-    size_t len        = fread(PROC_MEMINFO, 1, 256, proc_meminfo) - 1;
+    unsigned long int len        = fread(PROC_MEMINFO, 1, 256, proc_meminfo) - 1;
     PROC_MEMINFO[len] = '\0';
     fclose(proc_meminfo);
   }
@@ -93,7 +95,7 @@ void libfetch_init(void) {
   FILE* cpu_info = fopen("/proc/cpuinfo", "r");
   if (cpu_info) {
     LOG_I("reading /proc/cpuinfo");
-    size_t len        = fread(PROC_CPUINFO, 1, 256, cpu_info) - 1;
+    unsigned long int len        = fread(PROC_CPUINFO, 1, 256, cpu_info) - 1;
     PROC_CPUINFO[len] = '\0';
     fclose(cpu_info);
   }
@@ -101,7 +103,7 @@ void libfetch_init(void) {
   FILE* fb0_virtual_size = fopen("/sys/class/graphics/fb0/virtual_size", "r");
   if (fb0_virtual_size) {
     LOG_I("reading /sys/class/graphics/fb0/virtual_size");
-    size_t len            = fread(FB0_VIRTUAL_SIZE, 1, 256, fb0_virtual_size) - 1;
+    unsigned long int len            = fread(FB0_VIRTUAL_SIZE, 1, 256, fb0_virtual_size) - 1;
     FB0_VIRTUAL_SIZE[len] = '\0';
     fclose(fb0_virtual_size);
   }
@@ -120,17 +122,7 @@ void libfetch_init(void) {
 }
 
 void libfetch_cleanup(void) {
-#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_FREEBSD)
-  for (size_t i = 0; i < PTR_CNT; i++) dealloc_id(i);
-#elif defined(SYSTEM_BASE_OPENBSD)
-  LOG_E("Not implemented");
-#elif defined(SYSTEM_BASE_MACOS)
-  LOG_E("Not implemented");
-#elif defined(SYSTEM_BASE_WINDOWS)
-  LOG_E("Not implemented");
-#else
-  LOG_E("System not supported or system base not specified");
-#endif
+  for (unsigned long int i = 0; i < PTR_CNT; i++) dealloc_id(i);
 }
 
 char* get_user_name(void) {
@@ -168,7 +160,7 @@ char* get_user_name(void) {
 char* get_host_name(void) {
   char* host_name = alloc(BUFFER_SIZE);
 #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_FREEBSD)
-  size_t len = 0;
+  unsigned long int len = 0;
   #if !defined(SYSTEM_BASE_FREEBSD)
   len = strlen(GLOBAL_UTSNAME.nodename);
   if (len > 0) {
@@ -272,12 +264,12 @@ char* get_model(void) {
     LOG_I("getting model name with getprop");
     fgets(model, BUFFER_SIZE, marketname);
     pclose(marketname);
-    size_t len = strlen(model);
+    unsigned long int len = strlen(model);
     if (model[len - 1] == '\n') model[len - 1] = '\0';
   }
 #elif defined(SYSTEM_BASE_FREEBSD)
   char buf[BUFFER_SIZE] = {0};
-  size_t len            = sizeof(buf);
+  unsigned long int len            = sizeof(buf);
   LOG_I("getting model name with sysctlbyname()");
   CHECK_FN_NEG(sysctlbyname("hw.hv_vendor", &buf, &len, NULL, 0));
   strcpy(model, buf);
@@ -302,7 +294,7 @@ char* get_kernel(void) {
   char* kernel_name = alloc(BUFFER_SIZE);
 #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
   char* p    = kernel_name;
-  size_t len = 0;
+  unsigned long int len = 0;
   if (strlen(GLOBAL_UTSNAME.sysname) > 0) {
     LOG_I("getting kernel name from struct utsname's sysname");
     p += snprintf(p, BUFFER_SIZE, "%s ", GLOBAL_UTSNAME.sysname);
@@ -319,7 +311,7 @@ char* get_kernel(void) {
   }
 #elif defined(SYSTEM_BASE_FREEBSD)
   char buf[BUFFER_SIZE] = {0};
-  size_t len            = sizeof(buf);
+  unsigned long int len            = sizeof(buf);
   LOG_I("getting kernel name with sysctlbyname()");
   CHECK_FN_NEG(sysctlbyname("kern.version", &buf, &len, NULL, 0));
   strcpy(kernel_name, buf);
@@ -385,7 +377,7 @@ char* get_cpu_model(void) {
   } while ((p = strchr(p, '\n')));
 #elif defined(SYSTEM_BASE_FREEBSD)
   char buf[BUFFER_SIZE] = {0};
-  size_t len            = sizeof(buf);
+  unsigned long int len            = sizeof(buf);
   LOG_I("getting cpu model with sysctlbyname()");
   CHECK_FN_NEG(sysctlbyname("hw.model", &buf, &len, NULL, 0));
   strcpy(cpu_model, buf);
@@ -450,7 +442,7 @@ char* get_packages(void) {
     char* path;
     char* command;
     char* name;
-    size_t count;
+    unsigned long int count;
   };
 #define CMD_COUNT 16
   struct pkgcmd cmds[CMD_COUNT] = {
@@ -471,7 +463,7 @@ char* get_packages(void) {
       {PKGPATH "xbps-query", "xbps-query -l 2> /dev/null | wc -l", "(xbps)", 0},
       {PKGPATH "zypper", "zypper -q se --installed-only 2> /dev/null | wc -l", "(zypper)", 0},
   };
-  size_t total   = 0;
+  unsigned long int total   = 0;
   int last_valid = 0;
   for (int i = 0; i < CMD_COUNT; i++)
     if (access(cmds[i].path, F_OK) != -1) {
@@ -556,7 +548,7 @@ unsigned long get_memory_total(void) {
   LOG_I("getting memory total from struct sysinfo's totalram");
   memory_total = GLOBAL_SYSINFO.totalram;
 #elif defined(SYSTEM_BASE_FREEBSD)
-  size_t len = sizeof(memory_total);
+  unsigned long int len = sizeof(memory_total);
   LOG_I("getting memory total from sysctlbyname");
   CHECK_FN_NEG(sysctlbyname("vm.kmem_size", &memory_total, &len, NULL, 0));
 #elif defined(SYSTEM_BASE_OPENBSD)
@@ -595,7 +587,7 @@ unsigned long get_memory_used(void) {
   unsigned long pagesize         = 0;
   unsigned long v_free_count     = 0;
   unsigned long v_inactive_count = 0;
-  size_t len                     = sizeof(unsigned long);
+  unsigned long int len                     = sizeof(unsigned long);
   CHECK_FN_NEG(sysctlbyname("vm.kmem_size", &kmem_size, &len, NULL, 0));
   CHECK_FN_NEG(sysctlbyname("hw.pagesize", &pagesize, &len, NULL, 0));
   CHECK_FN_NEG(sysctlbyname("vm.stats.vm.v_free_count", &v_free_count, &len, NULL, 0));
@@ -624,7 +616,7 @@ long get_uptime(void) {
   uptime = GLOBAL_SYSINFO.uptime;
 #elif defined(SYSTEM_BASE_FREEBSD)
   struct timeval boottime;
-  size_t len = sizeof(boottime);
+  unsigned long int len = sizeof(boottime);
   CHECK_FN_NEG(sysctlbyname("kern.boottime", &boottime, &len, NULL, 0));
   time_t current_time;
   time(&current_time);

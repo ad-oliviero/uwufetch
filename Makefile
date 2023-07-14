@@ -119,7 +119,7 @@ run:
 	./$(NAME) $(ARGS)
 
 tests: debug
-	$(MAKE) -f src/tests/tests.mk SRC_DIR=$(SRC_DIR)/tests
+	$(MAKE) CC=$(CC) -f src/tests/tests.mk SRC_DIR=$(SRC_DIR)/tests
 
 install: build man
 	mkdir -pv $(DESTDIR)/$(PREFIX) $(DESTDIR)/$(LIBDIR)/$(NAME) $(DESTDIR)/$(MANDIR) $(ETC_DIR)/$(NAME) $(DESTDIR)/$(INCDIR)

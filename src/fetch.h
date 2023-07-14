@@ -35,6 +35,15 @@
   #error "System Base not specified!"
 #endif
 
+#if defined(SYSTEM_BASE_WINDOWS)
+struct winsize {
+  unsigned short ws_col;
+  unsigned short ws_row;
+  unsigned short ws_xpixel;
+  unsigned short ws_ypixel;
+};
+#endif
+
 #ifdef __DEBUG__
 void set_libfetch_log_level(int level);
   #define SET_LIBFETCH_LOG_LEVEL(level) set_libfetch_log_level(level)

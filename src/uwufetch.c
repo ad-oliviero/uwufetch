@@ -128,11 +128,7 @@ struct info {
   unsigned long ram_total, ram_used;
   long uptime;
 
-#ifndef _WIN32
   struct winsize term_size;
-#else  // _WIN32
-  int ws_col, ws_rows;
-#endif // _WIN32
 };
 
 // reads the config file

@@ -3,7 +3,9 @@
 #include "../logging.h"
 #include <stdbool.h>
 #include <stdio.h>
+#if !defined(SYSTEM_BASE_WINDOWS)
 #include <sys/ioctl.h>
+#endif
 
 #ifndef UWUFETCH_VERSION
   #define UWUFETCH_VERSION "unkown" // needs to be changed by the build script
