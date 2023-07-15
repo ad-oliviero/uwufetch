@@ -371,7 +371,12 @@ char* get_kernel(void) {
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
-  LOG_E("Not implemented");
+  OSVERSIONINFOEX osvi;
+  ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
+  osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+
+  if (GetVersionEx((LPOSVERSIONINFO)&osvi))
+    snprintf(kernel_name, BUFFER_SIZE, "Windows_NT %ld.%ld", osvi.dwMajorVersion, osvi.dwMinorVersion);
 #else
   LOG_E("System not supported or system base not specified");
 #endif
