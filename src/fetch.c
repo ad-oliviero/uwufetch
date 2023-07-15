@@ -474,8 +474,44 @@ char** get_gpus(void) {
   LOG_E("Not implemented");
   return NULL;
 #elif defined(SYSTEM_BASE_WINDOWS)
-  LOG_E("Not implemented");
-  return NULL;
+  unsigned int gpu_id = 0;
+  HKEY hKey;
+  LONG result;
+
+  result = RegOpenKeyEx(HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Control\\Video", 0, KEY_READ, &hKey);
+  if (result == ERROR_SUCCESS) {
+    unsigned int index = 0;
+    CHAR subkeyName[MAX_PATH];
+    DWORD subkeyNameSize = MAX_PATH;
+    while (RegEnumKeyEx(hKey, index, subkeyName, &subkeyNameSize, NULL, NULL, NULL, NULL) == ERROR_SUCCESS) {
+      HKEY subkey;
+      result                = RegOpenKeyEx(hKey, subkeyName, 0, KEY_READ, &subkey);
+      unsigned int subIndex = 0;
+      CHAR subSubkeyName[MAX_PATH];
+      DWORD subSubkeyNameSize = MAX_PATH;
+      if (result == ERROR_SUCCESS)
+        while (RegEnumKeyEx(subkey, subIndex, subSubkeyName, &subSubkeyNameSize, NULL, NULL, NULL, NULL) == ERROR_SUCCESS) {
+          HKEY subSubkey;
+          result = RegOpenKeyEx(subkey, subSubkeyName, 0, KEY_READ, &subSubkey);
+          if (result == ERROR_SUCCESS) {
+            CHAR gpuName[MAX_PATH];
+            DWORD gpuNameSize = sizeof(gpuName);
+            result            = RegQueryValueEx(subSubkey, "DriverDesc", NULL, NULL, (LPBYTE)gpuName, &gpuNameSize);
+            if (result == ERROR_SUCCESS) {
+              gpus[gpu_id] = alloc(BUFFER_SIZE);
+              strncpy(gpus[gpu_id++], gpuName, BUFFER_SIZE);
+              break;
+            }
+            RegCloseKey(subSubkey);
+          }
+          subIndex++;
+        }
+      RegCloseKey(subkey);
+      index++;
+      subkeyNameSize = MAX_PATH;
+    }
+    RegCloseKey(hKey);
+  }
 #else
   LOG_E("System not supported or system base not specified");
   return NULL;
@@ -506,7 +542,7 @@ char* get_packages(void) {
       {PKGPATH "apk", "apk info 2> /dev/null | wc -l", "(apk)", 0},
       {PKGPATH "qlist", "qlist -I 2> /dev/null | wc -l", "(emerge)", 0},
       {PKGPATH "flatpak", "flatpak list 2> /dev/null | wc -l", "(flatpak)", 0},
-      // {PKGPATH "snap", "snap list 2> /dev/null | wc -l", "(snap)", 0},
+      {PKGPATH "snap", "snap list 2> /dev/null | wc -l", "(snap)", 0},
       {PKGPATH "guix", "guix package --list-installed 2> /dev/null | wc -l", "(guix)", 0},
       {"/run/current-system/sw/bin/nix-store", "nix-store -q --requisites /run/current-system/sw 2> /dev/null | wc -l", "(nix)", 0},
       {PKGPATH "pacman", "pacman -Qq 2> /dev/null | wc -l", "(pacman)", 0},

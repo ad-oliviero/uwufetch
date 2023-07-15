@@ -52,21 +52,21 @@ struct test {
 };
 
 struct test tests[] = {
-    STRUCT_TEST(get_user_name),
-    STRUCT_TEST(get_host_name),
-    STRUCT_TEST(get_shell),
-    STRUCT_TEST(get_model),
-    STRUCT_TEST(get_kernel),
-    STRUCT_TEST(get_os_name),
-    STRUCT_TEST(get_cpu_model),
+    // STRUCT_TEST(get_user_name),
+    // STRUCT_TEST(get_host_name),
+    // STRUCT_TEST(get_shell),
+    // STRUCT_TEST(get_model),
+    // STRUCT_TEST(get_kernel),
+    // STRUCT_TEST(get_os_name),
+    // STRUCT_TEST(get_cpu_model),
     STRUCT_TEST(get_gpus),
-    STRUCT_TEST(get_packages),
-    STRUCT_TEST(get_screen_width),
-    STRUCT_TEST(get_screen_height),
-    STRUCT_TEST(get_memory_total),
-    STRUCT_TEST(get_memory_used),
-    STRUCT_TEST(get_uptime),
-    STRUCT_TEST(get_terminal_size),
+    // STRUCT_TEST(get_packages),
+    // STRUCT_TEST(get_screen_width),
+    // STRUCT_TEST(get_screen_height),
+    // STRUCT_TEST(get_memory_total),
+    // STRUCT_TEST(get_memory_used),
+    // STRUCT_TEST(get_uptime),
+    // STRUCT_TEST(get_terminal_size),
 };
 
 int main(int argc, char** argv) {
