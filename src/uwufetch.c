@@ -563,7 +563,7 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
     }
 
   if (config_flags->ram)                                                                                                                              // print ram
-    responsively_printf(print_buf, "%s%s%sMEMOWY   %s%lu MiB/%lu MiB", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->ram_used, user_info->ram_total); // from bytes to mega bytes, 2^20
+    responsively_printf(print_buf, "%s%s%sMEMOWY   %s%lu MiB/%lu MiB", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->ram_used, user_info->ram_total); 
   if (config_flags->resolution)                                                                                                                       // print resolution
     if (user_info->screen_width != 0 || user_info->screen_height != 0)
       responsively_printf(print_buf, "%s%s%sSCWEEN%s   %dx%d", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->screen_width, user_info->screen_height);
@@ -571,7 +571,6 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
     responsively_printf(print_buf, "%s%s%sSHEWW    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->shell);
   if (config_flags->pkgs) // print pkgs
     responsively_printf(print_buf, "%s%s%sPKGS     %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->packages);
-  // #endif
   if (config_flags->uptime) {
     // using chars because all the space provided by long or int types is not needed
     char secs  = user_info->uptime % 60;

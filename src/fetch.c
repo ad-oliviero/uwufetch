@@ -592,7 +592,7 @@ int get_screen_width(void) {
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
-  LOG_E("Not implemented");
+  screen_width = GetSystemMetrics(SM_CXSCREEN);
 #else
   LOG_E("System not supported or system base not specified");
 #endif
@@ -614,7 +614,7 @@ int get_screen_height(void) {
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
-  LOG_E("Not implemented");
+  screen_height= GetSystemMetrics(SM_CYSCREEN);
 #else
   LOG_E("System not supported or system base not specified");
 #endif
