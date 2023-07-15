@@ -914,7 +914,7 @@ int main(int argc, char* argv[]) {
   // print info and move cursor down if the number of printed lines is smaller that the default image height
   int to_move = print_info(&config_flags, &user_info);
   printf("\033[%d%c", to_move < 0 ? -to_move : to_move, to_move < 0 ? 'A' : 'B');
-  LOG_I("Execution completed successfully!");
   libfetch_cleanup();
+  LOG_I("Execution completed successfully with %d errors", logging_error_count);
   return 0;
 }

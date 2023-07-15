@@ -8,6 +8,8 @@
 #ifdef LOGGING_ENABLED
   #define LOG_BUF_SIZE 2048
 
+static int logging_level = 0;
+static int logging_error_count=0;
 static void escapeColors(char* buf);
 
 enum LOG_LEVELS {
@@ -24,7 +26,7 @@ enum LOG_LEVELS {
   #define LOG_W(format, ...) \
     if (logging_level >= LEVEL_WARNING) LOG(LEVEL_WARNING, format, ##__VA_ARGS__)
   #define LOG_E(format, ...) \
-    if (logging_level >= LEVEL_ERROR) LOG(LEVEL_ERROR, format, ##__VA_ARGS__)
+    if (logging_level >= LEVEL_ERROR) LOG(LEVEL_ERROR, format, ##__VA_ARGS__) logging_error_count++;
   #define LOG_V(var)                                                                    \
     if (logging_level >= LEVEL_VAR) {                                                   \
       static char format[1024] = "";                                                    \
@@ -53,7 +55,6 @@ enum LOG_LEVELS {
     if (fn == err_val) LOG_E("%s returned %s: %s", #fn, #err_val, strerror(errno))
   #define CHECK_FN_NEG(fn) \
     if (fn < 0) LOG_E("%s failed: %s", #fn, strerror(errno))
-static int logging_level = 0;
 static __attribute__((unused)) void set_logging_level(int level, char* additional_info) {
   if (level < LEVEL_DISABLE || level > LEVEL_MAX) {
     logging_level = LEVEL_ERROR;

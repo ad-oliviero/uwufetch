@@ -153,6 +153,7 @@ void libfetch_init(void) {
 
 void libfetch_cleanup(void) {
   for (unsigned long int i = 0; i < PTR_CNT; i++) dealloc_id(i);
+  LOG_I("libfetch cleaned up. During execution, %d errors were encountered!", logging_error_count);
 }
 
 char* get_user_name(void) {
