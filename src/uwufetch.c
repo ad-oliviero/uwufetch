@@ -562,9 +562,9 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
           responsively_printf(print_buf, "%s%s%sGPUWU    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->gpus[i]);
     }
 
-  if (config_flags->ram)                                                                                                                              // print ram
-    responsively_printf(print_buf, "%s%s%sMEMOWY   %s%lu MiB/%lu MiB", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->ram_used, user_info->ram_total); 
-  if (config_flags->resolution)                                                                                                                       // print resolution
+  if (config_flags->ram) // print ram
+    responsively_printf(print_buf, "%s%s%sMEMOWY   %s%lu MiB/%lu MiB", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->ram_used, user_info->ram_total);
+  if (config_flags->resolution) // print resolution
     if (user_info->screen_width != 0 || user_info->screen_height != 0)
       responsively_printf(print_buf, "%s%s%sSCWEEN%s   %dx%d", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->screen_width, user_info->screen_height);
   if (config_flags->shell) // print shell name
@@ -697,8 +697,11 @@ int print_ascii(struct info* user_info) {
 
   file = fopen(ascii_file, "r");
   if (!file) {
-    LOG_E("ascii file \"%s\" not found", ascii_file);
-    return 0;
+    LOG_E("ascii file \"%s\" not found, falling back to current directory", ascii_file);
+    sprintf(ascii_file, "./res/ascii/%s.txt", user_info->os_name);
+    LOG_V(ascii_file);
+    file = fopen(ascii_file, "r");
+    if (!file) return 0;
   }
   char buffer[256]; // line buffer
   int line_count = 1;
