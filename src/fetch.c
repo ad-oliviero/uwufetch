@@ -74,8 +74,8 @@ struct ptr {
 };
 struct ptr pointers[PTR_CNT];
 
-static void* alloc(unsigned long int size) {
-  for (unsigned long int i = 0; i < PTR_CNT; i++) {
+static void* alloc(size_t size) {
+  for (size_t i = 0; i < PTR_CNT; i++) {
     if (!pointers[i].active) {
       pointers[i].active  = true;
       pointers[i].pointer = malloc(size);
@@ -89,7 +89,7 @@ static void* alloc(unsigned long int size) {
   abort();
 }
 
-static void dealloc_id(int i) {
+static void dealloc_id(size_t i) {
   if (pointers[i].active) {
     free(pointers[i].pointer);
     pointers[i].active = false;
@@ -97,7 +97,7 @@ static void dealloc_id(int i) {
 }
 
 static void* dealloc(void* ptr) {
-  for (unsigned long int i = 0; i < PTR_CNT; i++)
+  for (size_t i = 0; i < PTR_CNT; i++)
     if (pointers[i].pointer == ptr && pointers[i].active) {
       dealloc_id(i);
       return NULL;
@@ -152,7 +152,7 @@ void libfetch_init(void) {
 }
 
 void libfetch_cleanup(void) {
-  for (unsigned long int i = 0; i < PTR_CNT; i++) dealloc_id(i);
+  for (size_t i = 0; i < PTR_CNT; i++) dealloc_id(i);
   LOG_I("libfetch cleaned up. During execution, %d errors were encountered!", logging_error_count);
 }
 
@@ -290,7 +290,7 @@ char* get_model(void) {
       fgets(tmp_model[i], BUFFER_SIZE, model_fp);
       fclose(model_fp);
     }
-    currentlen = strlen(tmp_model[i]);
+    currentlen = (int)strlen(tmp_model[i]);
     if (currentlen > best_len) {
       best_len      = currentlen;
       longest_model = i;
@@ -344,16 +344,16 @@ char* get_kernel(void) {
   char* kernel_name = alloc(BUFFER_SIZE);
 #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
   char* p               = kernel_name;
-  unsigned long int len = 0;
+  size_t len = 0;
   if (strlen(GLOBAL_UTSNAME.sysname) > 0) {
     LOG_I("getting kernel name from struct utsname's sysname");
     p += snprintf(p, BUFFER_SIZE, "%s ", GLOBAL_UTSNAME.sysname);
-    len = p - kernel_name;
+    len = (size_t)(p - kernel_name);
   }
   if (strlen(GLOBAL_UTSNAME.release) > 0) {
     LOG_I("getting kernel release from struct utsname's release");
     p += snprintf(p, BUFFER_SIZE - len, "%s ", GLOBAL_UTSNAME.release);
-    len = p - kernel_name;
+    len = (size_t)(p - kernel_name);
   }
   if (strlen(GLOBAL_UTSNAME.machine) > 0) {
     LOG_I("getting system architecture from struct utsname's machine")

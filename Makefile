@@ -4,7 +4,7 @@ LIB_FILES = fetch.c
 SRC_DIR = src
 UWUFETCH_VERSION = $(shell git describe --tags)
 CFLAGS = -O3 -pthread -DUWUFETCH_VERSION=\"$(UWUFETCH_VERSION)\"
-CFLAGS_DEBUG = -Wall -Wextra -Wpedantic -g -pthread -DUWUFETCH_VERSION=\"$(UWUFETCH_VERSION)\" -D__DEBUG__
+CFLAGS_DEBUG = -Wall -Wextra -Wpedantic -Wunused-result -Wconversion -Warith-conversion -Wshadow -Warray-bounds=2 -ftree-vrp -Wnull-dereference -Wcast-align=strict -g -pthread -DUWUFETCH_VERSION=\"$(UWUFETCH_VERSION)\" -D__DEBUG__
 CC = cc
 AR = ar
 DESTDIR = /usr
