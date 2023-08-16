@@ -37,7 +37,7 @@ Dewepyn, FemboyOWOS, KDE NeOwOn, nixOwOs, xuwulinux, Wocky Linuwu; Plus FweeBSD,
 
 Arch (Official Repos)
 
-[![uwufetch](https://img.shields.io/archlinux/v/community/x86_64/uwufetch?label=uwufetch&logo=arch-linux&style=for-the-badge)](https://archlinux.org/packages/community/x86_64/uwufetch/)
+[![uwufetch](https://img.shields.io/archlinux/v/extra/x86_64/uwufetch?label=uwufetch&logo=arch-linux&style=for-the-badge)](https://archlinux.org/packages/extra/x86_64/uwufetch/)
 
 
 From the AUR
