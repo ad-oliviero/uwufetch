@@ -85,9 +85,9 @@
 #define BLOCK_CHAR "\u2587"
 
 #ifdef _WIN32
-char* MOVE_CURSOR = "\033[21C"; // moves the cursor after printing the image or the ascii logo
+const char MOVE_CURSOR[] = "\033[21C"; // moves the cursor after printing the image or the ascii logo
 #else
-char* MOVE_CURSOR = "\033[18C";
+const char MOVE_CURSOR[] = "\033[18C";
 #endif // _WIN32
 
 // all configuration flags available
@@ -287,35 +287,39 @@ int print_image(struct info* user_info) {
 }
 
 // Replaces all terms in a string with another term.
-void replace(char* original, char* search, char* replacer) {
+void replace(char* original, const char* search, const char* replacer) {
   char* ch;
   char buffer[1024];
-  int offset = 0;
+  ssize_t offset = 0;
+  ssize_t search_len = (ssize_t)strlen(search);
+  ssize_t replacer_len = (ssize_t)strlen(replacer);
   while ((ch = strstr(original + offset, search))) {
-    strncpy(buffer, original, ch - original);
+    strncpy(buffer, original, (size_t)(ch - original));
     buffer[ch - original] = 0;
-    sprintf(buffer + (ch - original), "%s%s", replacer, ch + strlen(search));
+    sprintf(buffer + (ch - original), "%s%s", replacer, ch + search_len);
     original[0] = 0;
     strcpy(original, buffer);
-    offset = ch - original + strlen(replacer);
+    offset = ch - original + replacer_len;
   }
 }
 
 // Replaces all terms in a string with another term, case insensitive
-void replace_ignorecase(char* original, char* search, char* replacer) {
+void replace_ignorecase(char* original, const char* search, const char* replacer) {
   char* ch;
   char buffer[1024];
-  int offset = 0;
+  ssize_t offset = 0;
 #ifdef _WIN32
   #define strcasestr(o, s) strstr(o, s)
 #endif
+  ssize_t search_len = (ssize_t)strlen(search);
+  ssize_t replacer_len = (ssize_t)strlen(replacer);
   while ((ch = strcasestr(original + offset, search))) {
-    strncpy(buffer, original, ch - original);
+    strncpy(buffer, original, (size_t)(ch - original));
     buffer[ch - original] = 0;
-    sprintf(buffer + (ch - original), "%s%s", replacer, ch + strlen(search));
+    sprintf(buffer + (ch - original), "%s%s", replacer, ch + search_len);
     original[0] = 0;
     strcpy(original, buffer);
-    offset = ch - original + strlen(replacer);
+    offset = ch - original + replacer_len;
   }
 }
 
@@ -573,9 +577,9 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
     responsively_printf(print_buf, "%s%s%sPKGS     %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->packages);
   if (config_flags->uptime) {
     // using chars because all the space provided by long or int types is not needed
-    char secs  = user_info->uptime % 60;
-    char mins  = (user_info->uptime / 60) % 60;
-    char hours = (user_info->uptime / 3600) % 24;
+    char secs  = (char)(user_info->uptime % 60);
+    char mins  = (char)((user_info->uptime / 60) % 60);
+    char hours = (char)((user_info->uptime / 3600) % 24);
     long days  = user_info->uptime / 86400;
 
     char str_secs[6]  = "";

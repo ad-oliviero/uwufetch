@@ -66,12 +66,12 @@ static __attribute__((unused)) void set_logging_level(int level, char* additiona
 }
 
 static void escapeColors(char* str) {
-  char* color_strings[] = {"<r>", "<g>", "<b>", "</>"};
-  char* colors[]        = {"\033[31m", "\033[32m", "\033[33m", "\033[0m"};
+  const char* color_strings[] = {"<r>", "<g>", "<b>", "</>"};
+  const char* colors[]        = {"\033[31m", "\033[32m", "\033[33m", "\033[0m"};
   for (int i = 0; i < 4; i++) {
     char* pos;
-    int slen = strlen(color_strings[i]);
-    int rlen = strlen(colors[i]);
+    size_t slen = strlen(color_strings[i]);
+    size_t rlen = strlen(colors[i]);
     while ((pos = strstr(str, color_strings[i])) != NULL) {
       if (strlen(str) + rlen < LOG_BUF_SIZE) {
         memmove(pos + rlen, pos + slen, strlen(pos + slen) + 1);
