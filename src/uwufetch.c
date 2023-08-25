@@ -19,6 +19,7 @@
 
 #define _GNU_SOURCE // for strcasestr
 
+#include "actrie.h"
 #include "fetch.h"
 #ifdef __APPLE__
   #include <TargetConditionals.h> // for checking iOS
@@ -290,8 +291,8 @@ int print_image(struct info* user_info) {
 void replace(char* original, const char* search, const char* replacer) {
   char* ch;
   char buffer[1024];
-  ssize_t offset = 0;
-  ssize_t search_len = (ssize_t)strlen(search);
+  ssize_t offset       = 0;
+  ssize_t search_len   = (ssize_t)strlen(search);
   ssize_t replacer_len = (ssize_t)strlen(replacer);
   while ((ch = strstr(original + offset, search))) {
     strncpy(buffer, original, (size_t)(ch - original));
@@ -311,7 +312,7 @@ void replace_ignorecase(char* original, const char* search, const char* replacer
 #ifdef _WIN32
   #define strcasestr(o, s) strstr(o, s)
 #endif
-  ssize_t search_len = (ssize_t)strlen(search);
+  ssize_t search_len   = (ssize_t)strlen(search);
   ssize_t replacer_len = (ssize_t)strlen(replacer);
   while ((ch = strcasestr(original + offset, search))) {
     strncpy(buffer, original, (size_t)(ch - original));
@@ -393,145 +394,141 @@ void uwu_name(struct info* user_info) {
 }
 
 // uwufies kernel name
-void uwu_kernel(char* kernel) {
-#define KERNEL_TO_UWU(str, original, uwufied) \
-  if (strcmp(str, original) == 0) sprintf(str, "%s", uwufied)
-
+void uwu_kernel(const struct actrie_t* replacer, char* kernel) {
   LOG_I("uwufing kernel");
-
-  char* temp_kernel = kernel;
-  char* token;
-  char splitted[16][128] = {0};
-
-  int count = 0;
-  while ((token = strsep(&temp_kernel, " "))) { // split kernel name
-    strcpy(splitted[count], token);
-    count++;
-  }
-  if (kernel) strcpy(kernel, "");
-  for (int i = 0; i < 16; i++) {
-    // replace kernel name with uwufied version
-    KERNEL_TO_UWU(splitted[i], "Linux", "Linuwu");
-    else KERNEL_TO_UWU(splitted[i], "linux", "linuwu");
-    else KERNEL_TO_UWU(splitted[i], "alpine", "Nyalpine");
-    else KERNEL_TO_UWU(splitted[i], "amogos", "AmogOwOS");
-    else KERNEL_TO_UWU(splitted[i], "android", "Nyandroid");
-    else KERNEL_TO_UWU(splitted[i], "arch", "Nyarch Linuwu");
-    else KERNEL_TO_UWU(splitted[i], "artix", "Nyartix Linuwu");
-    else KERNEL_TO_UWU(splitted[i], "debian", "Debinyan");
-    else KERNEL_TO_UWU(splitted[i], "deepin", "Dewepyn");
-    else KERNEL_TO_UWU(splitted[i], "endeavouros", "endeavOwO");
-    else KERNEL_TO_UWU(splitted[i], "EndeavourOS", "endeavOwO");
-    else KERNEL_TO_UWU(splitted[i], "fedora", "Fedowa");
-    else KERNEL_TO_UWU(splitted[i], "femboyos", "FemboyOWOS");
-    else KERNEL_TO_UWU(splitted[i], "gentoo", "GentOwO");
-    else KERNEL_TO_UWU(splitted[i], "gnu", "gnUwU");
-    else KERNEL_TO_UWU(splitted[i], "guix", "gnUwU gUwUix");
-    else KERNEL_TO_UWU(splitted[i], "linuxmint", "LinUWU Miwint");
-    else KERNEL_TO_UWU(splitted[i], "manjaro", "Myanjawo");
-    else KERNEL_TO_UWU(splitted[i], "manjaro-arm", "Myanjawo AWM");
-    else KERNEL_TO_UWU(splitted[i], "neon", "KDE NeOwOn");
-    else KERNEL_TO_UWU(splitted[i], "nixos", "nixOwOs");
-    else KERNEL_TO_UWU(splitted[i], "opensuse-leap", "OwOpenSUSE Leap");
-    else KERNEL_TO_UWU(splitted[i], "opensuse-tumbleweed", "OwOpenSUSE Tumbleweed");
-    else KERNEL_TO_UWU(splitted[i], "pop", "PopOwOS");
-    else KERNEL_TO_UWU(splitted[i], "raspbian", "RaspNyan");
-    else KERNEL_TO_UWU(splitted[i], "rocky", "Wocky Linuwu");
-    else KERNEL_TO_UWU(splitted[i], "slackware", "Swackwawe");
-    else KERNEL_TO_UWU(splitted[i], "solus", "sOwOlus");
-    else KERNEL_TO_UWU(splitted[i], "ubuntu", "Uwuntu");
-    else KERNEL_TO_UWU(splitted[i], "void", "OwOid");
-    else KERNEL_TO_UWU(splitted[i], "xerolinux", "xuwulinux");
-
-    // BSD
-    else KERNEL_TO_UWU(splitted[i], "freebsd", "FweeBSD");
-    else KERNEL_TO_UWU(splitted[i], "openbsd", "OwOpenBSD");
-
-    // Apple family
-    else KERNEL_TO_UWU(splitted[i], "macos", "macOwOS");
-    else KERNEL_TO_UWU(splitted[i], "ios", "iOwOS");
-
-    // Windows
-    else KERNEL_TO_UWU(splitted[i], "windows", "WinyandOwOws");
-
-    if (kernel) {
-      if (i != 0) strcat(kernel, " ");
-      strcat(kernel, splitted[i]);
-    }
-  }
-#undef KERNEL_TO_UWU
+  actrie_t_replace_all_occurances(replacer, kernel);
   LOG_V(kernel);
 }
 
 // uwufies hardware names
-void uwu_hw(char* hwname) {
+void uwu_hw(const struct actrie_t* replacer, char* hwname) {
   LOG_I("uwufing hardware")
-#define HW_TO_UWU(original, uwuified) replace_ignorecase(hwname, original, uwuified);
-  HW_TO_UWU("lenovo", "LenOwO")
-  HW_TO_UWU("cpu", "CPUwU");
-  HW_TO_UWU("core", "Cowe");
-  HW_TO_UWU("gpu", "GPUwU")
-  HW_TO_UWU("graphics", "Gwaphics")
-  HW_TO_UWU("corporation", "COwOpowation")
-  HW_TO_UWU("nvidia", "NyaVIDIA")
-  HW_TO_UWU("mobile", "Mwobile")
-  HW_TO_UWU("intel", "Inteww")
-  HW_TO_UWU("radeon", "Radenyan")
-  HW_TO_UWU("geforce", "GeFOwOce")
-  HW_TO_UWU("raspberry", "Nyasberry")
-  HW_TO_UWU("broadcom", "Bwoadcom")
-  HW_TO_UWU("motorola", "MotOwOwa")
-  HW_TO_UWU("proliant", "ProLinyant")
-  HW_TO_UWU("poweredge", "POwOwEdge")
-  HW_TO_UWU("apple", "Nyapple")
-  HW_TO_UWU("electronic", "ElectrOwOnic")
-  HW_TO_UWU("processor", "Pwocessow")
-  HW_TO_UWU("microsoft", "MicOwOsoft")
-  HW_TO_UWU("ryzen", "Wyzen")
-  HW_TO_UWU("advanced", "Adwanced")
-  HW_TO_UWU("micro", "Micwo")
-  HW_TO_UWU("devices", "Dewices")
-  HW_TO_UWU("inc.", "Nyanc.")
-  HW_TO_UWU("lucienne", "Lucienyan")
-  HW_TO_UWU("tuxedo", "TUWUXEDO")
-  HW_TO_UWU("aura", "Uwura")
-#undef HW_TO_UWU
+  actrie_t_replace_all_occurances(replacer, hwname);
 }
 
 // uwufies package manager names
-void uwu_pkgman(char* pkgman_name) {
-  LOG_I("uwufing package managers")
-#define PKGMAN_TO_UWU(original, uwuified) replace_ignorecase(pkgman_name, original, uwuified);
-  // these package managers do not have edits yet:
-  // apk, apt, guix, nix, pkg, xbps
-  PKGMAN_TO_UWU("brew-cask", "bwew-cawsk");
-  PKGMAN_TO_UWU("brew-cellar", "bwew-cewwaw");
-  PKGMAN_TO_UWU("emerge", "emewge");
-  PKGMAN_TO_UWU("flatpak", "fwatpakkies");
-  PKGMAN_TO_UWU("pacman", "pacnyan");
-  PKGMAN_TO_UWU("port", "powt");
-  PKGMAN_TO_UWU("rpm", "rawrpm");
-  PKGMAN_TO_UWU("snap", "snyap");
-  PKGMAN_TO_UWU("zypper", "zyppew");
-#undef PKGMAN_TO_UWU
+void uwu_pkgman(const struct actrie_t* replacer, char* pkgman_name) {
+  LOG_I("uwufing package managers");
+  actrie_t_replace_all_occurances(replacer, pkgman_name);
 }
 
 // uwufies everything
 void uwufy_all(struct info* user_info) {
-#define UWU_HW(x) \
-  if (x) uwu_hw(x)
+  struct actrie_t replacer;
+  actrie_t_ctor(&replacer);
+
+  const size_t PATTERNS_COUNT = 73;
+  // Not necessary but recommended
+  actrie_t_reserve_patterns(&replacer, PATTERNS_COUNT);
+
+  // these package managers do not have edits yet:
+  // apk, apt, guix, nix, pkg, xbps
+  actrie_t_add_pattern(&replacer, "brew-cask", "bwew-cawsk");
+  actrie_t_add_pattern(&replacer, "brew-cellar", "bwew-cewwaw");
+  actrie_t_add_pattern(&replacer, "emerge", "emewge");
+  actrie_t_add_pattern(&replacer, "flatpak", "fwatpakkies");
+  actrie_t_add_pattern(&replacer, "pacman", "pacnyan");
+  actrie_t_add_pattern(&replacer, "port", "powt");
+  actrie_t_add_pattern(&replacer, "rpm", "rawrpm");
+  actrie_t_add_pattern(&replacer, "snap", "snyap");
+  actrie_t_add_pattern(&replacer, "zypper", "zyppew");
+
+  actrie_t_add_pattern(&replacer, "lenovo", "LenOwO");
+  actrie_t_add_pattern(&replacer, "cpu", "CPUwU");
+  actrie_t_add_pattern(&replacer, "core", "Cowe");
+  actrie_t_add_pattern(&replacer, "gpu", "GPUwU");
+  actrie_t_add_pattern(&replacer, "graphics", "Gwaphics");
+  actrie_t_add_pattern(&replacer, "corporation", "COwOpowation");
+  actrie_t_add_pattern(&replacer, "nvidia", "NyaVIDIA");
+  actrie_t_add_pattern(&replacer, "mobile", "Mwobile");
+  actrie_t_add_pattern(&replacer, "intel", "Inteww");
+  actrie_t_add_pattern(&replacer, "radeon", "Radenyan");
+  actrie_t_add_pattern(&replacer, "geforce", "GeFOwOce");
+  actrie_t_add_pattern(&replacer, "raspberry", "Nyasberry");
+  actrie_t_add_pattern(&replacer, "broadcom", "Bwoadcom");
+  actrie_t_add_pattern(&replacer, "motorola", "MotOwOwa");
+  actrie_t_add_pattern(&replacer, "proliant", "ProLinyant");
+  actrie_t_add_pattern(&replacer, "poweredge", "POwOwEdge");
+  actrie_t_add_pattern(&replacer, "apple", "Nyapple");
+  actrie_t_add_pattern(&replacer, "electronic", "ElectrOwOnic");
+  actrie_t_add_pattern(&replacer, "processor", "Pwocessow");
+  actrie_t_add_pattern(&replacer, "microsoft", "MicOwOsoft");
+  actrie_t_add_pattern(&replacer, "ryzen", "Wyzen");
+  actrie_t_add_pattern(&replacer, "advanced", "Adwanced");
+  actrie_t_add_pattern(&replacer, "micro", "Micwo");
+  actrie_t_add_pattern(&replacer, "devices", "Dewices");
+  actrie_t_add_pattern(&replacer, "inc.", "Nyanc.");
+  actrie_t_add_pattern(&replacer, "lucienne", "Lucienyan");
+  actrie_t_add_pattern(&replacer, "tuxedo", "TUWUXEDO");
+  actrie_t_add_pattern(&replacer, "aura", "Uwura");
+
+  actrie_t_add_pattern(&replacer, "linux", "Linuwu");
+  actrie_t_add_pattern(&replacer, "alpine", "Nyalpine");
+  actrie_t_add_pattern(&replacer, "amogos", "AmogOwOS");
+  actrie_t_add_pattern(&replacer, "android", "Nyandroid");
+  actrie_t_add_pattern(&replacer, "arch", "Nyarch Linuwu");
+
+  actrie_t_add_pattern(&replacer, "arcolinux", "ArcOwO Linuwu");
+
+  actrie_t_add_pattern(&replacer, "artix", "Nyartix Linuwu");
+  actrie_t_add_pattern(&replacer, "debian", "Debinyan");
+
+  actrie_t_add_pattern(&replacer, "devuan", "Devunyan");
+
+  actrie_t_add_pattern(&replacer, "deepin", "Dewepyn");
+  actrie_t_add_pattern(&replacer, "endeavouros", "endeavOwO");
+  actrie_t_add_pattern(&replacer, "fedora", "Fedowa");
+  actrie_t_add_pattern(&replacer, "femboyos", "FemboyOWOS");
+  actrie_t_add_pattern(&replacer, "gentoo", "GentOwO");
+  actrie_t_add_pattern(&replacer, "gnu", "gnUwU");
+  actrie_t_add_pattern(&replacer, "guix", "gnUwU gUwUix");
+  actrie_t_add_pattern(&replacer, "linuxmint", "LinUWU Miwint");
+  actrie_t_add_pattern(&replacer, "manjaro", "Myanjawo");
+  actrie_t_add_pattern(&replacer, "manjaro-arm", "Myanjawo AWM");
+  actrie_t_add_pattern(&replacer, "neon", "KDE NeOwOn");
+  actrie_t_add_pattern(&replacer, "nixos", "nixOwOs");
+  actrie_t_add_pattern(&replacer, "opensuse-leap", "OwOpenSUSE Leap");
+  actrie_t_add_pattern(&replacer, "opensuse-tumbleweed", "OwOpenSUSE Tumbleweed");
+  actrie_t_add_pattern(&replacer, "pop", "PopOwOS");
+  actrie_t_add_pattern(&replacer, "raspbian", "RaspNyan");
+  actrie_t_add_pattern(&replacer, "rocky", "Wocky Linuwu");
+  actrie_t_add_pattern(&replacer, "slackware", "Swackwawe");
+  actrie_t_add_pattern(&replacer, "solus", "sOwOlus");
+  actrie_t_add_pattern(&replacer, "ubuntu", "Uwuntu");
+  actrie_t_add_pattern(&replacer, "void", "OwOid");
+  actrie_t_add_pattern(&replacer, "xerolinux", "xuwulinux");
+
+  // BSD
+  actrie_t_add_pattern(&replacer, "freebsd", "FweeBSD");
+  actrie_t_add_pattern(&replacer, "openbsd", "OwOpenBSD");
+
+  // Apple family
+  actrie_t_add_pattern(&replacer, "macos", "macOwOS");
+  actrie_t_add_pattern(&replacer, "ios", "iOwOS");
+
+  // Windows
+  actrie_t_add_pattern(&replacer, "windows", "WinyandOwOws");
+
   LOG_I("uwufing everything");
-  uwu_kernel(user_info->kernel);
+  uwu_kernel(&replacer, user_info->kernel);
   if (user_info->gpus)
     for (int i = 0; i < 256; i++)
-      UWU_HW(user_info->gpus[i]);
-  UWU_HW(user_info->cpu_model);
+      if (user_info->gpus[i])
+        uwu_hw(&replacer, user_info->gpus[i]);
+
+  if (user_info->cpu_model)
+    uwu_hw(&replacer, user_info->cpu_model);
   LOG_V(user_info->cpu_model);
-  UWU_HW(user_info->model);
+
+  if (user_info->model)
+    uwu_hw(&replacer, user_info->model);
   LOG_V(user_info->model);
-  if (user_info->packages) uwu_pkgman(user_info->packages);
+
+  if (user_info->packages)
+    uwu_pkgman(&replacer, user_info->packages);
   LOG_V(user_info->packages);
-#undef UWU_HW
+
+  actrie_t_dtor(&replacer);
 }
 
 // prints all the collected info and returns the number of printed lines
