@@ -79,7 +79,7 @@ struct test_context_t {
 void test_run_text_callback(void* context, const char* found_word, size_t word_length, size_t start_index_in_original_text) {
   struct test_context_t* ctx = (struct test_context_t*)context;
   vector_uint32_t_emplace_back1(&(ctx->start_indexes_in_original_text), (uint32_t)start_index_in_original_text);
-  vector_string_t_emplace_back2(&(ctx->start_indexes_in_original_text), found_word, word_length);
+  vector_string_t_emplace_back2(&(ctx->found_occurances), found_word, word_length);
 }
 
 static bool run_test(
@@ -130,7 +130,9 @@ static bool run_test(
   }
 
   for (size_t i = 0; i < expected_occurances_size; i++) {
-    if (strcmp(expected_occurances[i], context.found_occurances.data[i].c_str) != 0 || expected_occurances_pos[i] != context.start_indexes_in_original_text.data[i]) {
+    size_t expected_length = strlen(expected_occurances[i]);
+    size_t found_lenght    = context.found_occurances.data[i].size;
+    if (expected_length != found_lenght || strncmp(expected_occurances[i], context.found_occurances.data[i].c_str, expected_length) != 0 || expected_occurances_pos[i] != context.start_indexes_in_original_text.data[i]) {
       goto cleanup;
     }
   }
@@ -179,7 +181,7 @@ bool test0_short() {
       41, 42, 43, 44, 45, 46};
 
   const size_t expected_occurances_size = sizeof(expected_occurances) / sizeof(expected_occurances[0]);
-  static_assert(expected_occurances_size == sizeof(expected_occurances_pos) / sizeof(expected_occurances_pos[0]));
+  static_assert(sizeof(expected_occurances) / sizeof(expected_occurances[0]) == sizeof(expected_occurances_pos) / sizeof(expected_occurances_pos[0]));
 
   char replacing_text[]                = "ababcdacafaasbfasbabcc  ";
   const char expected_replacing_text[] = "cdcdcdacafccsbxfasbxcdcc";
@@ -224,7 +226,7 @@ bool test1_short() {
       48, 49, 50, 51};
 
   const size_t expected_occurances_size = sizeof(expected_occurances) / sizeof(expected_occurances[0]);
-  static_assert(expected_occurances_size == sizeof(expected_occurances_pos) / sizeof(expected_occurances_pos[0]));
+  static_assert(sizeof(expected_occurances) / sizeof(expected_occurances[0]) == sizeof(expected_occurances_pos) / sizeof(expected_occurances_pos[0]));
 
   char replacing_text[]                = "ababcdacafaasbxfasbxabcc";
   const char expected_replacing_text[] = "cdcdcdacafccsbfasbcdcc";
@@ -256,7 +258,7 @@ bool test2_short() {
   const uint32_t expected_occurances_pos[] = {2, 20};
 
   const size_t expected_occurances_size = sizeof(expected_occurances) / sizeof(expected_occurances[0]);
-  static_assert(expected_occurances_size == sizeof(expected_occurances_pos) / sizeof(expected_occurances_pos[0]));
+  static_assert(sizeof(expected_occurances) / sizeof(expected_occurances[0]) == sizeof(expected_occurances_pos) / sizeof(expected_occurances_pos[0]));
 
   char replacing_text[]                = "ABCDEFGHIJKLMNOP             ";
   const char expected_replacing_text[] = "A2222222EF1111114444400003333";
@@ -293,7 +295,7 @@ bool test3_short() {
       57, 59, 62, 72, 74, 77};
 
   const size_t expected_occurances_size = sizeof(expected_occurances) / sizeof(expected_occurances[0]);
-  static_assert(expected_occurances_size == sizeof(expected_occurances_pos) / sizeof(expected_occurances_pos[0]));
+  static_assert(sizeof(expected_occurances) / sizeof(expected_occurances[0]) == sizeof(expected_occurances_pos) / sizeof(expected_occurances_pos[0]));
 
   char replacing_text[]                = "ABCDEFGHIJKLMNOP                      ";
   const char expected_replacing_text[] = "111111111111111111111111cdefGHIjkLMnoP";
@@ -331,7 +333,7 @@ bool test4_short() {
       74, 77, 85};
 
   const size_t expected_occurances_size = sizeof(expected_occurances) / sizeof(expected_occurances[0]);
-  static_assert(expected_occurances_size == sizeof(expected_occurances_pos) / sizeof(expected_occurances_pos[0]));
+  static_assert(sizeof(expected_occurances) / sizeof(expected_occurances[0]) == sizeof(expected_occurances_pos) / sizeof(expected_occurances_pos[0]));
 
   char replacing_text[]                = "ABCDEFGHIJKLMNOP                      ";
   const char expected_replacing_text[] = "abcdefGHIjkLM111111111111111111111111P";
@@ -369,7 +371,7 @@ bool test5_short() {
       74, 77, 85};
 
   const size_t expected_occurances_size = sizeof(expected_occurances) / sizeof(expected_occurances[0]);
-  static_assert(expected_occurances_size == sizeof(expected_occurances_pos) / sizeof(expected_occurances_pos[0]));
+  static_assert(sizeof(expected_occurances) / sizeof(expected_occurances[0]) == sizeof(expected_occurances_pos) / sizeof(expected_occurances_pos[0]));
 
   char replacing_text[]                = "ABCDEFGHIJKLMNOP                      ";
   const char expected_replacing_text[] = "abcd111111111111111111111111GHIjkLMnoP";
@@ -400,7 +402,7 @@ bool test6_short() {
   const uint32_t expected_occurances_pos[] = {0, 6, 14, 25, 36};
 
   const size_t expected_occurances_size = sizeof(expected_occurances) / sizeof(expected_occurances[0]);
-  static_assert(expected_occurances_size == sizeof(expected_occurances_pos) / sizeof(expected_occurances_pos[0]));
+  static_assert(sizeof(expected_occurances) / sizeof(expected_occurances[0]) == sizeof(expected_occurances_pos) / sizeof(expected_occurances_pos[0]));
 
   char replacing_text[]                = "linux kernel; debian os; ubuntu os; windows os        ";
   const char expected_replacing_text[] = "Linuwu Kewnel; Debinyan os; Uwuntu os; WinyandOwOws os";
@@ -529,7 +531,7 @@ bool test7_long() {
   };
 
   const size_t expected_occurances_size = sizeof(expected_occurances) / sizeof(expected_occurances[0]);
-  static_assert(expected_occurances_size == sizeof(expected_occurances_pos) / sizeof(expected_occurances_pos[0]));
+  static_assert(sizeof(expected_occurances) / sizeof(expected_occurances[0]) == sizeof(expected_occurances_pos) / sizeof(expected_occurances_pos[0]));
 
   char replacing_text[]                = "windows freebsd rocky; neon linux; fedora; pop os; solus; amogos; void; ryzen and intel processor                             ";
   const char expected_replacing_text[] = "WinyandOwOws FweeBSD Wocky Linuwu; KDE NeOwOn linuwu; Fedowa; PopOwOS os; sOwOlus; AmogOwOS; OwOid; Wyzen and Inteww Pwocessow";
@@ -663,7 +665,7 @@ bool test8_long() {
   };
 
   const size_t expected_occurances_size = sizeof(expected_occurances) / sizeof(expected_occurances[0]);
-  static_assert(expected_occurances_size == sizeof(expected_occurances_pos) / sizeof(expected_occurances_pos[0]));
+  static_assert(sizeof(expected_occurances) / sizeof(expected_occurances[0]) == sizeof(expected_occurances_pos) / sizeof(expected_occurances_pos[0]));
 
   return run_test(patterns_with_replacements,
                   patterns_size,
@@ -689,7 +691,7 @@ bool test9_short() {
   const uint32_t expected_occurances_pos[] = {1, 59, 62};
 
   const size_t expected_occurances_size = sizeof(expected_occurances) / sizeof(expected_occurances[0]);
-  static_assert(expected_occurances_size == sizeof(expected_occurances_pos) / sizeof(expected_occurances_pos[0]));
+  static_assert(sizeof(expected_occurances) / sizeof(expected_occurances[0]) == sizeof(expected_occurances_pos) / sizeof(expected_occurances_pos[0]));
 
   char replacing_text[]                = "Abghciashjdhwdjahwdjhabdabanabwc";
   const char expected_replacing_text[] = "Abghciashjdhwdjahwdjhabdabanabwc";
@@ -719,7 +721,7 @@ bool test10_short() {
   const uint32_t expected_occurances_pos[] = {1, 59, 62};
 
   const size_t expected_occurances_size = sizeof(expected_occurances) / sizeof(expected_occurances[0]);
-  static_assert(expected_occurances_size == sizeof(expected_occurances_pos) / sizeof(expected_occurances_pos[0]));
+  static_assert(sizeof(expected_occurances) / sizeof(expected_occurances[0]) == sizeof(expected_occurances_pos) / sizeof(expected_occurances_pos[0]));
 
   char replacing_text[]                = "Qghiabcabcghiabc";
   const char expected_replacing_text[] = "Qjkzabcabcghiabc";
