@@ -341,56 +341,18 @@ char* strsep(char** stringp, const char* delim) {
 #endif
 
 // uwufies distro name
-void uwu_name(struct info* user_info) {
-  if (!user_info->os_name) return;
-#define STRING_TO_UWU(original, uwufied) \
-  if (strcmp(user_info->os_name, original) == 0) sprintf(user_info->os_name, "%s", uwufied)
-  // linux
-  STRING_TO_UWU("alpine", "Nyalpine");
-  else STRING_TO_UWU("amogos", "AmogOwOS");
-  else STRING_TO_UWU("android", "Nyandroid");
-  else STRING_TO_UWU("arch", "Nyarch Linuwu");
-  else STRING_TO_UWU("arcolinux", "ArcOwO Linuwu");
-  else STRING_TO_UWU("artix", "Nyartix Linuwu");
-  else STRING_TO_UWU("debian", "Debinyan");
-  else STRING_TO_UWU("devuan", "Devunyan");
-  else STRING_TO_UWU("deepin", "Dewepyn");
-  else STRING_TO_UWU("endeavouros", "endeavOwO");
-  else STRING_TO_UWU("EndeavourOS", "endeavOwO");
-  else STRING_TO_UWU("fedora", "Fedowa");
-  else STRING_TO_UWU("femboyos", "FemboyOWOS");
-  else STRING_TO_UWU("gentoo", "GentOwO");
-  else STRING_TO_UWU("gnu", "gnUwU");
-  else STRING_TO_UWU("guix", "gnUwU gUwUix");
-  else STRING_TO_UWU("linuxmint", "LinUWU Miwint");
-  else STRING_TO_UWU("manjaro", "Myanjawo");
-  else STRING_TO_UWU("manjaro-arm", "Myanjawo AWM");
-  else STRING_TO_UWU("neon", "KDE NeOwOn");
-  else STRING_TO_UWU("nixos", "nixOwOs");
-  else STRING_TO_UWU("opensuse-leap", "OwOpenSUSE Leap");
-  else STRING_TO_UWU("opensuse-tumbleweed", "OwOpenSUSE Tumbleweed");
-  else STRING_TO_UWU("pop", "PopOwOS");
-  else STRING_TO_UWU("raspbian", "RaspNyan");
-  else STRING_TO_UWU("rocky", "Wocky Linuwu");
-  else STRING_TO_UWU("slackware", "Swackwawe");
-  else STRING_TO_UWU("solus", "sOwOlus");
-  else STRING_TO_UWU("ubuntu", "Uwuntu");
-  else STRING_TO_UWU("void", "OwOid");
-  else STRING_TO_UWU("xerolinux", "xuwulinux");
+void uwu_name(const struct actrie_t* replacer, struct info* user_info) {
+  char* os_name = user_info->os_name;
+  if (os_name == NULL) {
+    return;
+  }
 
-  // BSD
-  else STRING_TO_UWU("freebsd", "FweeBSD");
-  else STRING_TO_UWU("openbsd", "OwOpenBSD");
+  if (*os_name == '\0') {
+    sprintf(os_name, "%s", "unknown");
+    return;
+  }
 
-  // Apple family
-  else STRING_TO_UWU("macos", "macOwOS");
-  else STRING_TO_UWU("ios", "iOwOS");
-
-  // Windows
-  else STRING_TO_UWU("windows", "WinyandOwOws");
-
-  else sprintf(user_info->os_name, "%s", "unknown");
-#undef STRING_TO_UWU
+  actrie_t_replace_all_occurances(replacer, os_name);
 }
 
 // uwufies kernel name
@@ -530,6 +492,8 @@ void uwufy_all(struct info* user_info) {
     uwu_pkgman(&replacer, user_info->packages);
   LOG_V(user_info->packages);
 
+  uwu_name(&replacer, user_info);
+
   actrie_t_dtor(&replacer);
 }
 
@@ -548,7 +512,7 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
   // print collected info - from host to cpu info
   if (config_flags->user)
     responsively_printf(print_buf, "%s%s%s%s@%s", MOVE_CURSOR, NORMAL, BOLD, user_info->user_name, user_info->host_name);
-  uwu_name(user_info);
+
   if (config_flags->os)
     responsively_printf(print_buf, "%s%s%sOWOS     %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->os_name);
   if (config_flags->model)
