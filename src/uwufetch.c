@@ -509,6 +509,8 @@ void uwufy_all(struct info* user_info) {
   // Windows
   actrie_t_add_pattern(&replacer, "windows", "WinyandOwOws");
 
+  actrie_t_compute_links(&replacer);
+
   LOG_I("uwufing everything");
   uwu_kernel(&replacer, user_info->kernel);
   if (user_info->gpus)
