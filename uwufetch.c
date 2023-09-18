@@ -441,7 +441,6 @@ void uwu_pkgman(char* pkgman_name) {
   PKGMAN_TO_UWU("flatpak", "fwatpakkies");
   PKGMAN_TO_UWU("pacman", "pacnyan");
   PKGMAN_TO_UWU("port", "powt");
-  PKGMAN_TO_UWU("rpm", "rawrpm");
   PKGMAN_TO_UWU("snap", "snyap");
   PKGMAN_TO_UWU("zypper", "zyppew");
 #undef PKGMAN_TO_UWU

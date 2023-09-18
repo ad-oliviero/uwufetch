@@ -381,8 +381,7 @@ void* get_pkg(void* argp) { // this is just a function that returns the total of
       {PKGPATH "brew", "find $(brew --cellar 2>/dev/stdout) -maxdepth 1 -type d 2> /dev/null | wc -l | awk '{print $1}'", "(brew-cellar)"},
       {PKGPATH "brew", "find $(brew --caskroom 2>/dev/stdout) -maxdepth 1 -type d 2> /dev/null | wc -l | awk '{print $1}'", "(brew-cask)"},
       {PKGPATH "rpm", "rpm -qa --last 2> /dev/null | wc -l", "(rpm)"},
-      {PKGPATH "xbps-query", "xbps-query -l 2> /dev/null | wc -l", "(xbps)"},
-      {PKGPATH "zypper", "zypper -q se --installed-only 2> /dev/null | wc -l", "(zypper)"}};
+      {PKGPATH "xbps-query", "xbps-query -l 2> /dev/null | wc -l", "(xbps)"}};
   #endif
 #else
   struct package_manager pkgmans[] = {{"/usr/local/bin/brew", "find $(brew --cellar 2>/dev/stdout) -maxdepth 1 -type d 2> /dev/null | wc -l | awk '{print $1}' > /tmp/uwufetch_brew_tmp", "(brew-cellar)"},
