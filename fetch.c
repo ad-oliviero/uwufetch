@@ -696,7 +696,7 @@ void get_info(struct flags flags, struct info* user_info) {
     if (!tmp_shell)
       sprintf(user_info->shell, "%s", "");
     else
-      sprintf(user_info->shell, "%s", tmp_shell);
+      snprintf(user_info->shell, sizeof user_info->shell, "%s", tmp_shell);
   #ifdef __linux__
     if (strlen(user_info->shell) > 16) // android shell name was too long
       memmove(&user_info->shell, &user_info->shell[27], strlen(user_info->shell));
