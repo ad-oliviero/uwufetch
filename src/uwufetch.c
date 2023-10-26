@@ -474,7 +474,7 @@ void uwufy_all(struct info* user_info) {
   actrie_t_compute_links(&replacer);
 
   LOG_I("uwufing everything");
-  uwu_kernel(&replacer, user_info->kernel);
+  if (user_info->kernel) uwu_kernel(&replacer, user_info->kernel);
   if (user_info->gpus)
     for (int i = 0; i < 256; i++)
       if (user_info->gpus[i])
@@ -875,7 +875,6 @@ int main(int argc, char* argv[]) {
   if (user_config_file.write_enabled) write_cache(&user_info);
   if (custom_distro_name) sprintf(user_info.os_name, "%s", custom_distro_name);
   if (custom_image_name) sprintf(user_info.image_name, "%s", custom_image_name);
-
 
   // print ascii or image and align cursor for print_info()
   printf("\033[%dA", config_flags.image ? print_image(&user_info) : print_ascii(&user_info));
