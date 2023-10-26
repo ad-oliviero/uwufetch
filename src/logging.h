@@ -1,3 +1,18 @@
+/*
+ *  UwUfetch is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #ifndef _LOGGING_H_
 #define _LOGGING_H_
 
@@ -5,11 +20,15 @@
 #include <stdio.h>
 #include <string.h>
 
-#ifdef LOGGING_ENABLED
+#if defined(__DEBUG__)
+  #define LOGGING_ENABLED
+#endif
+
+#if defined(LOGGING_ENABLED)
   #define LOG_BUF_SIZE 2048
 
-static int logging_level = 0;
-static int logging_error_count=0;
+static int logging_level       = 0;
+static int logging_error_count = 0;
 static void escapeColors(char* buf);
 
 enum LOG_LEVELS {
@@ -25,8 +44,9 @@ enum LOG_LEVELS {
     if (logging_level >= LEVEL_INFO) LOG(LEVEL_INFO, format, ##__VA_ARGS__)
   #define LOG_W(format, ...) \
     if (logging_level >= LEVEL_WARNING) LOG(LEVEL_WARNING, format, ##__VA_ARGS__)
-  #define LOG_E(format, ...) \
-    if (logging_level >= LEVEL_ERROR) LOG(LEVEL_ERROR, format, ##__VA_ARGS__); logging_error_count++;
+  #define LOG_E(format, ...)                                                   \
+    if (logging_level >= LEVEL_ERROR) LOG(LEVEL_ERROR, format, ##__VA_ARGS__); \
+    logging_error_count++;
   #define LOG_V(var)                                                                    \
     if (logging_level >= LEVEL_VAR) {                                                   \
       static char format[1024] = "";                                                    \
@@ -64,7 +84,6 @@ static __attribute__((unused)) void set_logging_level(int level, char* additiona
   logging_level = level;
   LOG(LEVEL_INFO, "%s; logging level set to %d", additional_info, level);
 }
-
 static void escapeColors(char* str) {
   const char* color_strings[] = {"<r>", "<g>", "<b>", "</>"};
   const char* colors[]        = {"\033[31m", "\033[32m", "\033[33m", "\033[0m"};
@@ -86,8 +105,8 @@ static void escapeColors(char* str) {
   #define LOG_E(format, ...)
   #define LOG_V(var)
   #define LOG(type, format, ...)
-  #define CHECK_FN_NULL(fn)
-  #define CHECK_FN_NEG(fn)
+  #define CHECK_FUNC(fn, err_val) fn;
+  #define CHECK_FN_NEG(fn) fn;
 #endif // LOGGING_ENABLED
 
 #endif // _LOGGING_H_

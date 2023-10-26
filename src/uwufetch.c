@@ -63,9 +63,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#ifdef __DEBUG__
-  #define LOGGING_ENABLED
-#endif
 #include "logging.h"
 
 // COLORS
@@ -779,12 +776,12 @@ int main(int argc, char* argv[]) {
       {"list", no_argument, NULL, 'l'},
       {"read-cache", no_argument, NULL, 'r'},
       {"version", no_argument, NULL, 'V'},
-#ifdef __DEBUG__
+#ifdef LOGGING_ENABLED
       {"verbose", optional_argument, NULL, 'v'},
 #endif
       {"write-cache", no_argument, NULL, 'w'},
       {0}};
-#ifdef __DEBUG__
+#ifdef LOGGING_ENABLED
   #define OPT_STRING "c:d:hi::lrVv::w"
 #else
   #define OPT_STRING "c:d:hi::lrVw"
@@ -816,7 +813,7 @@ int main(int argc, char* argv[]) {
     case 'V':
       printf("UwUfetch version %s\n", UWUFETCH_VERSION);
       return 0;
-#ifdef LOGGING_ENABLED
+#if defined(LOGGING_ENABLED)
     case 'v':
       if (argv[optind]) {
         SET_LOG_LEVEL(atoi(argv[optind]), "uwufetch");

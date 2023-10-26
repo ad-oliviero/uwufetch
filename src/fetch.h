@@ -15,6 +15,7 @@
 
 #ifndef _FETCH_H_
 #define _FETCH_H_
+#include "logging.h"
 #include <stdbool.h>
 
 #if defined(__linux__)
@@ -44,7 +45,7 @@ struct winsize {
 };
 #endif
 
-#ifdef __DEBUG__
+#ifdef LOGGING_ENABLED
 void set_libfetch_log_level(int level);
   #define SET_LIBFETCH_LOG_LEVEL(level) set_libfetch_log_level(level)
 #else

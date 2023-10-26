@@ -31,11 +31,8 @@
   #include <sys/time.h>
   #include <sys/types.h>
 #endif
-#include <unistd.h>
-#if defined(__DEBUG__)
-  #define LOGGING_ENABLED
-#endif
 #include "logging.h"
+#include <unistd.h>
 #if defined(LOGGING_ENABLED)
 void set_libfetch_log_level(int level) {
   // the logging_level variable used in logging.h is static, a new variable is not needed
@@ -343,7 +340,7 @@ char* get_model(void) {
 char* get_kernel(void) {
   char* kernel_name = alloc(BUFFER_SIZE);
 #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
-  char* p               = kernel_name;
+  char* p    = kernel_name;
   size_t len = 0;
   if (strlen(GLOBAL_UTSNAME.sysname) > 0) {
     LOG_I("getting kernel name from struct utsname's sysname");
@@ -593,7 +590,7 @@ int get_screen_width(void) {
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
-  screen_width = GetSystemMetrics(SM_CXSCREEN);
+  screen_width  = GetSystemMetrics(SM_CXSCREEN);
 #else
   LOG_E("System not supported or system base not specified");
 #endif
@@ -615,7 +612,7 @@ int get_screen_height(void) {
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
-  screen_height= GetSystemMetrics(SM_CYSCREEN);
+  screen_height = GetSystemMetrics(SM_CYSCREEN);
 #else
   LOG_E("System not supported or system base not specified");
 #endif
