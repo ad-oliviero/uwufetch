@@ -876,10 +876,11 @@ int main(int argc, char* argv[]) {
   if (custom_distro_name) sprintf(user_info.os_name, "%s", custom_distro_name);
   if (custom_image_name) sprintf(user_info.image_name, "%s", custom_image_name);
 
-  uwufy_all(&user_info);
 
   // print ascii or image and align cursor for print_info()
   printf("\033[%dA", config_flags.image ? print_image(&user_info) : print_ascii(&user_info));
+
+  uwufy_all(&user_info);
 
   // print info and move cursor down if the number of printed lines is smaller that the default image height
   int to_move = print_info(&config_flags, &user_info);
