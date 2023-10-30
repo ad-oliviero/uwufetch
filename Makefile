@@ -1,14 +1,23 @@
-NAME = uwufetch
-BIN_FILES = uwufetch.c
-LIB_FILES = fetch.c
-SRC_DIR = src
+TARGET = uwufetch
 UWUFETCH_VERSION = $(shell git describe --tags)
-CFLAGS = -O3 -pthread -DUWUFETCH_VERSION=\"$(UWUFETCH_VERSION)\"
+
+SRC_DIR = src
+BUILD_DIR = build
+TEST_DIR = $(SRC_DIR)/tests
+DEST_DIR = /usr
+
+SRCS = $(wildcard $(SRC_DIR)/*.c)
+OBJS = $(patsubst $(SRC_DIR)/%,$(BUILD_DIR)/%,$(SRCS:.c=.o))
+LIB_FILES = AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
+CC = gcc
+CSTD = gnu18
+CFLAGS = -O3 -DUWUFETCH_VERSION=\"$(UWUFETCH_VERSION)\" -std=$(CSTD)
 CFLAGS_DEBUG = -Wall -Wextra -Wpedantic -Wunused-result -Wconversion -Warith-conversion -Wshadow -Warray-bounds=2 -ftree-vrp -Wnull-dereference -Wcast-align=strict -g -pthread -DUWUFETCH_VERSION=\"$(UWUFETCH_VERSION)\" -D__DEBUG__
-CC = cc
-AR = ar
-DESTDIR = /usr
+LDFLAGS =
+
 RELEASE_SCRIPTS = release_scripts/*.sh
+
 ifeq ($(OS), Windows_NT)
 	PLATFORM = $(OS)
 else
@@ -20,135 +29,83 @@ ifeq ($(shell $(CC) -v 2>&1 | grep clang >/dev/null; echo $$?), 0) # if the comp
 	# macros give a lot of errors for ##__VA_ARGS__
 	CFLAGS_DEBUG += -Wno-gnu-zero-variadic-macro-arguments
 endif
+include platform_fixes.mk
+.PHONY: all clean tests libfetch
 
-ifeq ($(PLATFORM), Linux)
-	PREFIX		= bin
-	LIBDIR		= lib
-	INCDIR		= include
-	ETC_DIR		= /etc
-	MANDIR		= share/man/man1
-	PLATFORM_ABBR = linux
-	ifeq ($(shell uname -o), Android)
-		CFLAGS				+= -D__ANDROID__
-		CFLAGS_DEBUG	+= -D__ANDROID__
-		DESTDIR				= /data/data/com.termux/files/usr
-		ETC_DIR				= $(DESTDIR)/etc
-		PLATFORM_ABBR	= android
-	endif
-else ifeq ($(PLATFORM), Darwin)
-	PREFIX		= local/bin
-	LIBDIR		= local/lib
-	INCDIR		= local/include
-	ETC_DIR		= /etc
-	MANDIR		= local/share/man/man1
-	PLATFORM_ABBR = macos
-else ifeq ($(PLATFORM), FreeBSD)
-	CFLAGS		+= -D__FREEBSD__ -D__BSD__
-	CFLAGS_DEBUG += -D__FREEBSD__ -D__BSD__
-	PREFIX		= bin
-	LIBDIR		= lib
-	INCDIR		= include
-	ETC_DIR		= /etc
-	MANDIR		= share/man/man1
-	PLATFORM_ABBR = freebsd
-else ifeq ($(PLATFORM), OpenBSD)
-	CFLAGS		+= -D__OPENBSD__ -D__BSD__
-	CFLAGS_DEBUG += -D__OPENBSD__ -D__BSD__
-	PREFIX		= bin
-	LIBDIR		= lib
-	INCDIR		= include
-	ETC_DIR		= /etc
-	MANDIR		= share/man/man1
-	PLATFORM_ABBR = openbsd
-else ifeq ($(PLATFORM), Windows_NT)
-	CC					= gcc
-	PREFIX			= "C:\Program Files"
-	LIBDIR			=
-	INCDIR			=
-	MANDIR			=
-	RELEASE_SCRIPTS = release_scripts/*.ps1
-	PLATFORM_ABBR	= win64
-	EXT				= .exe
-else ifeq ($(PLATFORM), linux4win)
-	CC				= x86_64-w64-mingw32-gcc
-	PREFIX			=
-	CFLAGS			+= -D_WIN32
-	LIBDIR			=
-	INCDIR		    =
-	MANDIR			=
-	RELEASE_SCRIPTS = release_scripts/*.ps1
-	PLATFORM_ABBR	= win64
-	EXT				= .exe
-endif
-.PHONY: tests
+all: dirs $(TARGET)
 
-build: $(SRC_DIR)/$(BIN_FILES) lib
-	$(CC) $(CFLAGS) -c -o $(BIN_FILES:.c=.o) $(SRC_DIR)/$(BIN_FILES)
-	$(CC) $(CFLAGS) -o $(NAME) $(BIN_FILES:.c=.o) lib$(LIB_FILES:.c=.a)
+dirs:
+	@mkdir -pv $(BUILD_DIR)
 
-lib: $(SRC_DIR)/$(LIB_FILES)
-	$(CC) $(CFLAGS) -fPIC -c -o $(LIB_FILES:.c=.o) $(SRC_DIR)/$(LIB_FILES)
-	$(AR) rcs lib$(LIB_FILES:.c=.a) $(LIB_FILES:.c=.o)
-	$(CC) $(CFLAGS) -shared -o lib$(LIB_FILES:.c=.so) $(LIB_FILES:.c=.o)
+$(TARGET): $(OBJS) libfetch
+	$(CC) $(CFLAGS) -o $(BUILD_DIR)/$(TARGET) $(OBJS) $(LDFLAGS) $(BUILD_DIR)/libfetch.a
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+libfetch: BUILD_DIR := ../../$(BUILD_DIR)
+export
+libfetch:
+	@$(MAKE) -C $(SRC_DIR)/libfetch
 
 release: build man
-	mkdir -pv $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
-	cp $(RELEASE_SCRIPTS) $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
-	cp -r res $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
-	cp $(NAME)$(EXT) $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
-	cp $(NAME).1.gz $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
-	cp lib$(LIB_FILES:.c=.so) $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
-	cp $(SRC_DIR)/$(LIB_FILES:.c=.h) $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
-	cp default.config $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
+	mkdir -pv $(TARGET)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
+	cp $(RELEASE_SCRIPTS) $(TARGET)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
+	cp -r res $(TARGET)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
+	cp $(TARGET)$(EXT) $(TARGET)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
+	cp $(TARGET).1.gz $(TARGET)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
+	cp lib$(LIB_FILES:.c=.so) $(TARGET)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
+	cp $(SRC_DIR)/$(LIB_FILES:.c=.h) $(TARGET)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
+	cp default.config $(TARGET)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
 ifeq ($(PLATFORM), linux4win)
-	zip -9r $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR).zip $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
+	zip -9r $(TARGET)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR).zip $(TARGET)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
 else
-	tar -czf $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR).tar.gz $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
+	tar -czf $(TARGET)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR).tar.gz $(TARGET)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
 endif
 
 debug: CFLAGS = $(CFLAGS_DEBUG)
 debug: build
 
 valgrind: # checks memory leak
-	valgrind --leak-check=full --show-leak-kinds=all ./$(NAME)
+	valgrind --leak-check=full --show-leak-kinds=all ./$(TARGET)
 
 gdb:
-	gdb ./$(NAME) -ex="set confirm off"
+	gdb ./$(TARGET) -ex="set confirm off"
 
 run:
-	./$(NAME) $(ARGS)
+	./$(TARGET) $(ARGS)
 
 tests: debug
-	$(MAKE) CC=$(CC) -f src/tests/tests.mk SRC_DIR=$(SRC_DIR)/tests
+	@$(MAKE) -C $(TEST_DIR)
 
 install: build man
-	mkdir -pv $(DESTDIR)/$(PREFIX) $(DESTDIR)/$(LIBDIR)/$(NAME) $(DESTDIR)/$(MANDIR) $(ETC_DIR)/$(NAME) $(DESTDIR)/$(INCDIR)
-	cp $(NAME) $(DESTDIR)/$(PREFIX)
-	cp lib$(LIB_FILES:.c=.so) $(DESTDIR)/$(LIBDIR)
-	cp $(LIB_FILES:.c=.h) $(DESTDIR)/$(INCDIR)
-	cp -r res/* $(DESTDIR)/$(LIBDIR)/$(NAME)
-	cp default.config $(ETC_DIR)/$(NAME)/config
-	cp ./$(NAME).1.gz $(DESTDIR)/$(MANDIR)
+	mkdir -pv $(DEST_DIR)/$(PREFIX) $(DEST_DIR)/$(LIBDIR)/$(TARGET) $(DEST_DIR)/$(MANDIR) $(ETC_DIR)/$(TARGET) $(DEST_DIR)/$(INCDIR)
+	cp $(TARGET) $(DEST_DIR)/$(PREFIX)
+	cp lib$(LIB_FILES:.c=.so) $(DEST_DIR)/$(LIBDIR)
+	cp $(LIB_FILES:.c=.h) $(DEST_DIR)/$(INCDIR)
+	cp -r res/* $(DEST_DIR)/$(LIBDIR)/$(TARGET)
+	cp default.config $(ETC_DIR)/$(TARGET)/config
+	cp ./$(TARGET).1.gz $(DEST_DIR)/$(MANDIR)
 
 uninstall:
-	rm -f $(DESTDIR)/$(PREFIX)/$(NAME)
-	rm -rf $(DESTDIR)/$(LIBDIR)/uwufetch
-	rm -f $(DESTDIR)/$(LIBDIR)/lib$(LIB_FILES:.c=.so)
-	rm -f $(DESTDIR)/include/$(LIB_FILES:.c=.h)
+	rm -f $(DEST_DIR)/$(PREFIX)/$(TARGET)
+	rm -rf $(DEST_DIR)/$(LIBDIR)/uwufetch
+	rm -f $(DEST_DIR)/$(LIBDIR)/lib$(LIB_FILES:.c=.so)
+	rm -f $(DEST_DIR)/include/$(LIB_FILES:.c=.h)
 	rm -rf $(ETC_DIR)/uwufetch
-	rm -f $(DESTDIR)/$(MANDIR)/$(NAME).1.gz
+	rm -f $(DEST_DIR)/$(MANDIR)/$(TARGET).1.gz
 
 clean:
 	$(MAKE) -f src/tests/tests.mk clean
-	rm -rf $(NAME) $(NAME)_* *.o *.so *.a *.exe
+	rm -rf $(TARGET) $(TARGET)_* *.o *.so *.a *.exe
 
 ascii_debug: build
 ascii_debug:
-	ls res/ascii/$(ASCII).txt | entr -c ./$(NAME) -d $(ASCII)
+	ls res/ascii/$(ASCII).txt | entr -c ./$(TARGET) -d $(ASCII)
 
 man:
-	sed "s/{DATE}/$(shell date '+%d %B %Y')/g" $(NAME).1 | sed "s/{UWUFETCH_VERSION}/$(UWUFETCH_VERSION)/g" | gzip > $(NAME).1.gz
+	sed "s/{DATE}/$(shell date '+%d %B %Y')/g" $(TARGET).1 | sed "s/{UWUFETCH_VERSION}/$(UWUFETCH_VERSION)/g" | gzip > $(TARGET).1.gz
 
 man_debug:
 	@clear
-	man -P cat ./$(NAME).1
+	man -P cat ./$(TARGET).1

@@ -1,16 +1,9 @@
-uwufetch
-uwufetch_*
-*.gz
 *.core
 *.zip
 *.idea
 *.vscode
 .DS_STORE
 .prettierrc
-*.exe
-*.o
-*.so
-*.a
 *.dSYM
 .nvim-session
-uwutest
+build

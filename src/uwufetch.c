@@ -20,7 +20,8 @@
 #define _GNU_SOURCE // for strcasestr
 
 #include "actrie.h"
-#include "fetch.h"
+#include "libfetch/fetch.h"
+#include "libfetch/logging.h"
 #ifdef __APPLE__
   #include <TargetConditionals.h> // for checking iOS
 #endif
@@ -62,8 +63,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-#include "logging.h"
 
 // COLORS
 #define NORMAL "\x1b[0m"
