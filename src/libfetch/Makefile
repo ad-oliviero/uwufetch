@@ -1,21 +1,21 @@
-TARGET = libfetch
-TARGET_STATIC = $(TARGET).a
-TARGET_SHARED = $(TARGET).so
-SOURCES := $(wildcard *.c)
-OBJECTS = $(SOURCES:.c=.o)
+TARGET_STATIC = libfetch.a
+TARGET_SHARED = libfetch.so
+SOURCES = $(wildcard *.c)
+OBJECTS = $(patsubst %.c,$(BUILD_DIR)/%.o,$(SOURCES))
 AR = ar
-.PHONY: all clean
 
 ifndef UWUFETCH_VERSION
 $(error This makefile should be called by the main makefile)
 endif
 
-all: $(TARGET)
+$(BUILD_DIR)/$(TARGET_STATIC): $(OBJECTS)
+	$(AR) rcs $(BUILD_DIR)/$(TARGET_STATIC) $(OBJECTS)
 
-$(TARGET):
-	$(CC) $(CFLAGS) -fPIC -c -o $(BUILD_DIR)/$(OBJECTS) $(SOURCES)
-	$(AR) rcs $(BUILD_DIR)/$(TARGET_STATIC) $(BUILD_DIR)/$(OBJECTS)
-	$(CC) $(CFLAGS) -shared -o $(BUILD_DIR)/$(TARGET_SHARED) $(BUILD_DIR)/$(OBJECTS)
+$(BUILD_DIR)/$(TARGET_SHARED): $(OBJECTS)
+	$(CC) $(CFLAGS) -shared -o $(BUILD_DIR)/$(TARGET_SHARED) $(OBJECTS)
+
+$(BUILD_DIR)/%.o: %.c
+	$(CC) $(CFLAGS) -fPIC -c -o $@ $<
 
 install: $(TARGET)
 	mkdir -pv $(DESTDIR)/$(PREFIX) $(DESTDIR)/$(LIBDIR)/$(TARGET) $(DESTDIR)/$(MANDIR) $(ETC_DIR)/$(TARGET) $(DESTDIR)/$(INCDIR)
@@ -27,7 +27,4 @@ uninstall:
 	rm -f $(DESTDIR)/$(LIBDIR)/$(TARGET_SHARED)
 	rm -f $(DESTDIR)/$(LIBDIR)/$(TARGET_STATIC)
 	rm -f $(DESTDIR)/include/$(LIB_FILES:.c=.h)
-
-clean:
-	rm -rf $(TARGET) $(OBJECTS) $(TARGET_STATIC) $(TARGET_SHARED)
 

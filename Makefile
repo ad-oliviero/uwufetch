@@ -30,7 +30,7 @@ ifeq ($(shell $(CC) -v 2>&1 | grep clang >/dev/null; echo $$?), 0) # if the comp
 	CFLAGS_DEBUG += -Wno-gnu-zero-variadic-macro-arguments
 endif
 include platform_fixes.mk
-.PHONY: all clean tests libfetch
+.PHONY: all clean libfetch
 
 all: dirs $(TARGET)
 
@@ -43,10 +43,17 @@ $(TARGET): $(OBJS) libfetch
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-libfetch: BUILD_DIR := ../../$(BUILD_DIR)
+libfetch: dirs $(BUILD_DIR)/libfetch.a $(BUILD_DIR)/libfetch.so
+
+$(BUILD_DIR)/libfetch.a: BUILD_DIR:=../../$(BUILD_DIR)
 export
-libfetch:
-	@$(MAKE) -C $(SRC_DIR)/libfetch
+$(BUILD_DIR)/libfetch.a:
+	@$(MAKE) -C $(SRC_DIR)/libfetch $(BUILD_DIR)/libfetch.a
+
+$(BUILD_DIR)/libfetch.so: BUILD_DIR := ../../$(BUILD_DIR)
+export
+$(BUILD_DIR)/libfetch.so:
+	@$(MAKE) -C $(SRC_DIR)/libfetch $(BUILD_DIR)/libfetch.so
 
 release: build man
 	mkdir -pv $(TARGET)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
@@ -63,8 +70,9 @@ else
 	tar -czf $(TARGET)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR).tar.gz $(TARGET)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
 endif
 
-debug: CFLAGS = $(CFLAGS_DEBUG)
-debug: build
+debug: CFLAGS=$(CFLAGS_DEBUG)
+debug: all
+	@echo $(CFLAGS)
 
 valgrind: # checks memory leak
 	valgrind --leak-check=full --show-leak-kinds=all ./$(TARGET)
@@ -73,7 +81,7 @@ gdb:
 	gdb ./$(TARGET) -ex="set confirm off"
 
 run:
-	./$(TARGET) $(ARGS)
+	$(BUILD_DIR)/$(TARGET) $(ARGS)
 
 tests: debug
 	@$(MAKE) -C $(TEST_DIR)
@@ -96,8 +104,7 @@ uninstall:
 	rm -f $(DEST_DIR)/$(MANDIR)/$(TARGET).1.gz
 
 clean:
-	$(MAKE) -f src/tests/tests.mk clean
-	rm -rf $(TARGET) $(TARGET)_* *.o *.so *.a *.exe
+	@rm -rvf $(BUILD_DIR)
 
 ascii_debug: build
 ascii_debug:
