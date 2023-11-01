@@ -2,12 +2,12 @@ TARGET = uwufetch
 UWUFETCH_VERSION = $(shell git describe --tags)
 
 # project directories and files
+PROJECT_ROOT = $(shell pwd)
 SRC_DIR = src
 BUILD_DIR = build
 TEST_DIR = $(SRC_DIR)/tests
 SRCS = $(wildcard $(SRC_DIR)/*.c)
 OBJS = $(patsubst $(SRC_DIR)/%,$(BUILD_DIR)/%,$(SRCS:.c=.o))
-PROJECT_ROOT = $(PWD)
 
 # installation directories
 PREFIX_DIR =
@@ -98,7 +98,7 @@ install: clean $(BUILD_DIR)/$(TARGET) man
 	@install -CDvm 755 $(BUILD_DIR)/$(TARGET) -t $(BIN_DIR)
 	@install -CDvm 644 $(shell find res/ -type f -print) -t $(LIB_DIR)/$(TARGET)
 	@install -CDvm 644 $(shell find res/ascii -type f -print) -t $(LIB_DIR)/$(TARGET)/ascii
-	@install -CDvm 644 default.config -t $(ETC_DIR)/$(TARGET)/config
+	@install -CDvm 644 default.config -t $(ETC_DIR)/$(TARGET)
 	@install -CDvm 644 $(BUILD_DIR)/$(TARGET).1.gz -t $(MAN_DIR)
 	@$(MAKE) -C $(SRC_DIR)/libfetch install
 
