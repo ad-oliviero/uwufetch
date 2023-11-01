@@ -22,7 +22,7 @@ INC_DIR = $(USR_DIR)/include
 CC = gcc
 CSTD = gnu18
 CFLAGS = -O3 -DUWUFETCH_VERSION=\"$(UWUFETCH_VERSION)\" -std=$(CSTD)
-CFLAGS_DEBUG = -Wall -Wextra -Wpedantic -Wunused-result -Wconversion -Warith-conversion -Wshadow -Warray-bounds=2 -ftree-vrp -Wnull-dereference -Wcast-align=strict -g -pthread -DUWUFETCH_VERSION=\"$(UWUFETCH_VERSION)\" -D__DEBUG__
+CFLAGS_DEBUG = -Wall -Wextra -Wpedantic -Wunused-result -Wconversion -Wshadow -Wnull-dereference -Wcast-align -g -pthread -DUWUFETCH_VERSION=\"$(UWUFETCH_VERSION)\" -D__DEBUG__
 LDFLAGS =
 ifeq ($(shell $(CC) -v 2>&1 | grep clang >/dev/null; echo $$?), 0) # if the compiler is clang
 	# macros give a lot of errors for ##__VA_ARGS__
