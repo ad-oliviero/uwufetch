@@ -7,3 +7,5 @@
 *.dSYM
 .nvim-session
 build
+*.gz
+uwufetch_*

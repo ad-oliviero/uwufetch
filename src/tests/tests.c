@@ -1,6 +1,6 @@
-#include "../fetch.h"
+#include "../libfetch/fetch.h"
 #define LOGGING_ENABLED
-#include "../logging.h"
+#include "../libfetch/logging.h"
 #include <stdbool.h>
 #include <stdio.h>
 #if !defined(SYSTEM_BASE_WINDOWS)
