@@ -610,8 +610,8 @@ int read_cache(struct info* user_info) {
   long max_host_name_len    = sysconf(_SC_HOST_NAME_MAX);
   user_info->user_name      = malloc(max_user_name_len > 0 ? (size_t)max_user_name_len : DEFAULT_MAX_STRLEN);
   user_info->host_name      = malloc(max_host_name_len > 0 ? (size_t)max_host_name_len : DEFAULT_MAX_STRLEN);
-  snprintf(user_name_format, sizeof(user_name_format), "user=%%%ld[^\\n]", max_user_name_len);
-  snprintf(host_name_format, sizeof(host_name_format), "host=%%%ld[^\\n]", max_host_name_len);
+  snprintf(user_name_format, sizeof(user_name_format), "user=%%%ld[^\n]", max_user_name_len);
+  snprintf(host_name_format, sizeof(host_name_format), "host=%%%ld[^\n]", max_host_name_len);
   user_info->os_name   = malloc(DEFAULT_MAX_STRLEN);
   user_info->model     = malloc(DEFAULT_MAX_STRLEN);
   user_info->kernel    = malloc(DEFAULT_MAX_STRLEN);

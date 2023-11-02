@@ -46,6 +46,25 @@ RELEASE_NAME := $(TARGET)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
 
 all: $(BUILD_DIR)/$(TARGET)
 
+$(BUILD_DIR):
+	@mkdir -pv $(BUILD_DIR)
+
+$(BUILD_DIR)/$(TARGET): $(OBJS) $(BUILD_DIR)/libfetch.a | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(BUILD_DIR)/libfetch.a
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+libfetch: $(BUILD_DIR)/libfetch.a $(BUILD_DIR)/libfetch.so
+
+export
+$(BUILD_DIR)/libfetch.a: $(wildcard $(SRC_DIR)/libfetch/*.c)
+	@$(MAKE) -C $(SRC_DIR)/libfetch $(PROJECT_ROOT)/$(BUILD_DIR)/libfetch.a
+
+export
+$(BUILD_DIR)/libfetch.so: $(wildcard $(SRC_DIR)/libfetch/*.c)
+	@$(MAKE) -C $(SRC_DIR)/libfetch $(PROJECT_ROOT)/$(BUILD_DIR)/libfetch.so
+
 debug: CFLAGS=$(CFLAGS_DEBUG)
 debug: all
 
@@ -76,25 +95,8 @@ man_debug:
 	@clear
 	man -P cat ./$(TARGET).1
 
-$(BUILD_DIR):
-	@mkdir -pv $(BUILD_DIR)
-
-$(BUILD_DIR)/$(TARGET): $(OBJS) $(BUILD_DIR)/libfetch.a | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(BUILD_DIR)/libfetch.a
-
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-libfetch: $(BUILD_DIR)/libfetch.a $(BUILD_DIR)/libfetch.so
 export
-$(BUILD_DIR)/libfetch.a: $(wildcard $(SRC_DIR)/libfetch/*.c)
-	@$(MAKE) -C $(SRC_DIR)/libfetch $(PROJECT_ROOT)/$(BUILD_DIR)/libfetch.a
-export
-$(BUILD_DIR)/libfetch.so: $(wildcard $(SRC_DIR)/libfetch/*.c)
-	@$(MAKE) -C $(SRC_DIR)/libfetch $(PROJECT_ROOT)/$(BUILD_DIR)/libfetch.so
-
-export
-install: clean $(BUILD_DIR)/$(TARGET) man
+install: clean $(BUILD_DIR)/$(TARGET) $(BUILD_DIR)/libfetch.so man
 	@install -CDvm 755 $(BUILD_DIR)/$(TARGET) -t $(BIN_DIR)
 	@install -CDvm 644 $(shell find res/ -type f -print) -t $(LIB_DIR)/$(TARGET)
 	@install -CDvm 644 $(shell find res/ascii -type f -print) -t $(LIB_DIR)/$(TARGET)/ascii
