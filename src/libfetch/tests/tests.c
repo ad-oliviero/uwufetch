@@ -28,6 +28,8 @@
 #include "../logging.h"
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 #if !defined(SYSTEM_BASE_WINDOWS)
   #include <sys/ioctl.h>
 #endif
@@ -100,7 +102,7 @@ int main(int argc, char** argv) {
     if (strcmp(argv[1], "-v") == 0) {
       SET_LIBFETCH_LOG_LEVEL(LEVEL_MAX);
     } else if (strcmp(argv[1], "-h") == 0) {
-      LOG_I("uwufetch testing version %s. To enable verbose libfetch logging use -v", UWUFETCH_VERSION);
+      LOG_I("libfetch testing version %s. To enable verbose libfetch logging use -v", UWUFETCH_VERSION);
       return 0;
     }
   }
@@ -108,12 +110,29 @@ int main(int argc, char** argv) {
   LOG_W("Starting tests...");
   int passed_tests = 0;
   int failed_tests = 0;
+  // tests will be ran in a random order to make sure they do not depend on each other
+#define TEST_COUNT (sizeof(tests) / sizeof(struct test))
+  size_t test_order[TEST_COUNT] = {0};
+  srand((unsigned int)time(NULL));
+  for (size_t i = 0; i < TEST_COUNT;) {
+    size_t new_id = (size_t)(rand() % (int)TEST_COUNT);
+    bool exists   = false;
+    for (size_t j = 0; j < i; j++) {
+      if (test_order[j] == new_id) {
+        exists = true;
+        break;
+      }
+    }
+    if (!exists) test_order[i++] = new_id;
+  }
+#undef TEST_COUNT
   for (size_t i = 0; i < sizeof(tests) / sizeof(struct test); i++) {
-    if (tests[i].function()) {
-      LOG_I("%s <g>PASSED</>", tests[i].name);
+    size_t id = test_order[i];
+    if (tests[id].function()) {
+      LOG_I("%s <g>PASSED</>", tests[id].name);
       passed_tests++;
     } else {
-      LOG_E("%s <r>FAILED</>", tests[i].name);
+      LOG_E("%s <r>FAILED</>", tests[id].name);
       failed_tests++;
     }
   }
