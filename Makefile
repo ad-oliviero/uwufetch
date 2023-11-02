@@ -1,3 +1,4 @@
+.PHONY: all debug clean
 TARGET = uwufetch
 UWUFETCH_VERSION = $(shell git describe --tags)
 
@@ -42,7 +43,6 @@ PLATFORM_ABBR = $(PLATFORM)
 
 include platform_fixes.mk
 RELEASE_NAME := $(TARGET)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
-.PHONY: all debug clean
 
 all: $(BUILD_DIR)/$(TARGET)
 
@@ -55,19 +55,21 @@ valgrind: debug # checks memory leak
 gdb: debug
 	gdb $(BUILD_DIR)/$(TARGET) -ex="set confirm off"
 
-tests: CFLAGS=$(CFLAGS_DEBUG)
-tests: libfetch
+test: $(BUILD_DIR)/uwutest
+	$(BUILD_DIR)/uwutest $(ARGS)
+$(BUILD_DIR)/uwutest: CFLAGS=$(CFLAGS_DEBUG)
 export
-tests:
+$(BUILD_DIR)/uwutest: $(TEST_DIR)/tests.c $(BUILD_DIR)/libfetch.a
 	@$(MAKE) -C $(TEST_DIR)
 
-run:
+run: $(BUILD_DIR)/$(TARGET)
 	$(BUILD_DIR)/$(TARGET) $(ARGS)
 
 ascii_debug: debug
 	ls res/ascii/$(ASCII).txt | entr -c $(BUILD_DIR)/$(TARGET) -d $(ASCII)
 
-man:
+man: $(BUILD_DIR)/$(TARGET).1.gz
+$(BUILD_DIR)/$(TARGET).1.gz: $(BUILD_DIR) $(TARGET).1
 	sed "s/{DATE}/$(shell date '+%d %B %Y')/g" $(TARGET).1 | sed "s/{UWUFETCH_VERSION}/$(UWUFETCH_VERSION)/g" | gzip > $(BUILD_DIR)/$(TARGET).1.gz
 
 man_debug:
@@ -84,11 +86,9 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 libfetch: $(BUILD_DIR)/libfetch.a $(BUILD_DIR)/libfetch.so
-
 export
 $(BUILD_DIR)/libfetch.a: $(wildcard $(SRC_DIR)/libfetch/*.c)
 	@$(MAKE) -C $(SRC_DIR)/libfetch $(PROJECT_ROOT)/$(BUILD_DIR)/libfetch.a
-
 export
 $(BUILD_DIR)/libfetch.so: $(wildcard $(SRC_DIR)/libfetch/*.c)
 	@$(MAKE) -C $(SRC_DIR)/libfetch $(PROJECT_ROOT)/$(BUILD_DIR)/libfetch.so
