@@ -5,7 +5,7 @@ UWUFETCH_VERSION = $(shell git describe --tags)
 PROJECT_ROOT = $(shell pwd)
 SRC_DIR = src
 BUILD_DIR = build
-TEST_DIR = $(SRC_DIR)/tests
+TEST_DIR = $(SRC_DIR)/libfetch/tests
 SRCS = $(wildcard $(SRC_DIR)/*.c)
 OBJS = $(patsubst $(SRC_DIR)/%,$(BUILD_DIR)/%,$(SRCS:.c=.o))
 
@@ -44,7 +44,7 @@ include platform_fixes.mk
 RELEASE_NAME := $(TARGET)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
 .PHONY: all debug clean
 
-all: $(BUILD_DIR) $(BUILD_DIR)/$(TARGET)
+all: $(BUILD_DIR)/$(TARGET)
 
 debug: CFLAGS=$(CFLAGS_DEBUG)
 debug: all
@@ -77,13 +77,13 @@ man_debug:
 $(BUILD_DIR):
 	@mkdir -pv $(BUILD_DIR)
 
-$(BUILD_DIR)/$(TARGET): $(OBJS) $(BUILD_DIR)/libfetch.a
+$(BUILD_DIR)/$(TARGET): $(OBJS) $(BUILD_DIR)/libfetch.a | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(BUILD_DIR)/libfetch.a
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-libfetch: $(BUILD_DIR) $(BUILD_DIR)/libfetch.a $(BUILD_DIR)/libfetch.so
+libfetch: $(BUILD_DIR)/libfetch.a $(BUILD_DIR)/libfetch.so
 
 export
 $(BUILD_DIR)/libfetch.a: $(wildcard $(SRC_DIR)/libfetch/*.c)
