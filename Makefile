@@ -26,7 +26,9 @@ CFLAGS_DEBUG = -Wall -Wextra -Wpedantic -Wunused-result -Wconversion -Wshadow -W
 LDFLAGS =
 ifeq ($(shell $(CC) -v 2>&1 | grep clang >/dev/null; echo $$?), 0) # if the compiler is clang
 	# macros give a lot of errors for ##__VA_ARGS__
-	CFLAGS_DEBUG += -Wno-gnu-zero-variadic-macro-arguments
+	TEMP_CFLAG_FIXES = -Wno-c2x-extensions -Wno-unknown-pragmas -Wno-string-conversion -Wno-unused-function
+	CFLAGS_DEBUG += -Wno-gnu-zero-variadic-macro-arguments $(TEMP_CFLAG_FIXES)
+	CFLAGS += $(TEMP_CFLAG_FIXES)
 endif
 
 RELEASE_SCRIPTS = release_scripts/*.sh
@@ -42,7 +44,7 @@ include platform_fixes.mk
 RELEASE_NAME := $(TARGET)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
 .PHONY: all debug clean
 
-all: $(BUILD_DIR)/$(TARGET)
+all: $(BUILD_DIR) $(BUILD_DIR)/$(TARGET)
 
 debug: CFLAGS=$(CFLAGS_DEBUG)
 debug: all
@@ -75,7 +77,7 @@ man_debug:
 $(BUILD_DIR):
 	@mkdir -pv $(BUILD_DIR)
 
-$(BUILD_DIR)/$(TARGET): $(OBJS) $(BUILD_DIR)/libfetch.a | $(BUILD_DIR)
+$(BUILD_DIR)/$(TARGET): $(OBJS) $(BUILD_DIR)/libfetch.a
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(BUILD_DIR)/libfetch.a
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
