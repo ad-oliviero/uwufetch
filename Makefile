@@ -40,7 +40,7 @@ PLATFORM_ABBR = $(PLATFORM)
 
 include platform_fixes.mk
 RELEASE_NAME := $(TARGET)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
-.PHONY: all clean
+.PHONY: all debug clean
 
 all: $(BUILD_DIR)/$(TARGET)
 
@@ -72,25 +72,23 @@ man_debug:
 	@clear
 	man -P cat ./$(TARGET).1
 
-dirs:
+$(BUILD_DIR):
 	@mkdir -pv $(BUILD_DIR)
 
-$(BUILD_DIR)/$(TARGET): dirs $(OBJS) libfetch
+$(BUILD_DIR)/$(TARGET): $(OBJS) $(BUILD_DIR)/libfetch.a | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(BUILD_DIR)/libfetch.a
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-libfetch: dirs $(BUILD_DIR)/libfetch.a $(BUILD_DIR)/libfetch.so
+libfetch: $(BUILD_DIR) $(BUILD_DIR)/libfetch.a $(BUILD_DIR)/libfetch.so
 
-$(BUILD_DIR)/libfetch.a:
 export
-$(BUILD_DIR)/libfetch.a:
+$(BUILD_DIR)/libfetch.a: $(wildcard $(SRC_DIR)/libfetch/*.c)
 	@$(MAKE) -C $(SRC_DIR)/libfetch $(PROJECT_ROOT)/$(BUILD_DIR)/libfetch.a
 
-$(BUILD_DIR)/libfetch.so:
 export
-$(BUILD_DIR)/libfetch.so:
+$(BUILD_DIR)/libfetch.so: $(wildcard $(SRC_DIR)/libfetch/*.c)
 	@$(MAKE) -C $(SRC_DIR)/libfetch $(PROJECT_ROOT)/$(BUILD_DIR)/libfetch.so
 
 export

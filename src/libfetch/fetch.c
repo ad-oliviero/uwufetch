@@ -154,7 +154,8 @@ void libfetch_cleanup(void) {
 }
 
 char* get_user_name(void) {
-  char* user_name = alloc(BUFFER_SIZE);
+  long max_user_name_len = sysconf(_SC_LOGIN_NAME_MAX);
+  char* user_name       = alloc(max_user_name_len > 0 ? max_user_name_len : BUFFER_SIZE);
 #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_FREEBSD)
   char* env = getenv("USER");
   if (env) {
@@ -186,7 +187,8 @@ char* get_user_name(void) {
 }
 
 char* get_host_name(void) {
-  char* host_name = alloc(BUFFER_SIZE);
+  long max_host_name_len = sysconf(_SC_HOST_NAME_MAX);
+  char* host_name       = alloc(max_host_name_len > 0 ? max_host_name_len : BUFFER_SIZE);
 #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_FREEBSD)
   unsigned long int len = 0;
   #if !defined(SYSTEM_BASE_FREEBSD)

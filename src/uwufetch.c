@@ -554,12 +554,12 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
     responsively_printf(print_buf, "%s%s%sUWUPTIME %s%s%s%s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, days > 0 ? str_days : "", hours > 0 ? str_hours : "", mins > 0 ? str_mins : "", secs > 0 ? str_secs : "");
   }
   // clang-format off
-	if (config_flags->colors)
-		printf("%s"	BOLD BLACK BLOCK_CHAR BLOCK_CHAR RED BLOCK_CHAR
-								BLOCK_CHAR GREEN BLOCK_CHAR BLOCK_CHAR YELLOW
-								BLOCK_CHAR BLOCK_CHAR BLUE BLOCK_CHAR BLOCK_CHAR
-								MAGENTA BLOCK_CHAR BLOCK_CHAR CYAN BLOCK_CHAR
-								BLOCK_CHAR WHITE BLOCK_CHAR BLOCK_CHAR NORMAL "\n", MOVE_CURSOR);
+  if (config_flags->colors)
+    printf("%s" BOLD BLACK BLOCK_CHAR BLOCK_CHAR RED BLOCK_CHAR
+                BLOCK_CHAR GREEN BLOCK_CHAR BLOCK_CHAR YELLOW
+                BLOCK_CHAR BLOCK_CHAR BLUE BLOCK_CHAR BLOCK_CHAR
+                MAGENTA BLOCK_CHAR BLOCK_CHAR CYAN BLOCK_CHAR
+                BLOCK_CHAR WHITE BLOCK_CHAR BLOCK_CHAR NORMAL "\n", MOVE_CURSOR);
   // clang-format on
   return line_count;
 }
@@ -583,44 +583,64 @@ void write_cache(struct info* user_info) {
       user_info->user_name, user_info->host_name, user_info->os_name, user_info->model, user_info->kernel,
       user_info->cpu_model, user_info->screen_width, user_info->screen_height, user_info->shell, user_info->packages);
 
-  for (int i = 0; i < 256; i++) // writing gpu names to file
-    if (user_info->gpus[i]) fprintf(cache_fp, "gpu=%s\n", user_info->gpus[i]);
+  // TODO: re-enable gpu array caching
+  // for (int i = 0; i < 256; i++) // writing gpu names to file
+  //   if (user_info->gpus[i]) fprintf(cache_fp, "gpu=%s\n", user_info->gpus[i]);
 
   fclose(cache_fp);
   return;
 }
 
 // reads cache file if it exists
-// TODO: currently generates a segfault
 int read_cache(struct info* user_info) {
   LOG_I("reading cache");
   char cache_file[512];
-  sprintf(cache_file, "%s/.cache/uwufetch.cache", getenv("HOME")); // cache file location
+  sprintf(cache_file, "%s/.cache/uwufetch.cache", getenv("HOME"));
   LOG_V(cache_file);
   FILE* cache_fp = fopen(cache_file, "r");
   if (cache_fp == NULL) return 0;
-  char buffer[256];                                 // line buffer
-  int gpuc = 0;                                     // gpu counter
+  char buffer[256];
+  // int gpuc = 0;
+
+// allocating memory
+#define DEFAULT_MAX_STRLEN 1024
+  char user_name_format[32] = "";
+  char host_name_format[32] = "";
+  long max_user_name_len    = sysconf(_SC_LOGIN_NAME_MAX);
+  long max_host_name_len    = sysconf(_SC_HOST_NAME_MAX);
+  user_info->user_name      = malloc((size_t)(max_user_name_len > 0 ? max_user_name_len : DEFAULT_MAX_STRLEN));
+  user_info->host_name      = malloc((size_t)(max_host_name_len > 0 ? max_host_name_len : DEFAULT_MAX_STRLEN));
+  snprintf(user_name_format, sizeof(user_name_format), "user=%%%ld[^\\n]", max_user_name_len);
+  snprintf(host_name_format, sizeof(host_name_format), "host=%%%ld[^\\n]", max_host_name_len);
+  user_info->os_name   = malloc(DEFAULT_MAX_STRLEN);
+  user_info->model     = malloc(DEFAULT_MAX_STRLEN);
+  user_info->kernel    = malloc(DEFAULT_MAX_STRLEN);
+  user_info->cpu_model = malloc(DEFAULT_MAX_STRLEN);
+  // user_info->gpus[0] = malloc(DEFAULT_MAX_STRLEN);
+  user_info->packages = malloc(DEFAULT_MAX_STRLEN);
+
   while (fgets(buffer, sizeof(buffer), cache_fp)) { // reading the file
-    sscanf(buffer, "user=%99[^\n]", user_info->user_name);
-    sscanf(buffer, "host=%99[^\n]", user_info->host_name);
+    sscanf(buffer, user_name_format, user_info->user_name);
+    sscanf(buffer, host_name_format, user_info->host_name);
     sscanf(buffer, "version_name=%99[^\n]", user_info->os_name);
     sscanf(buffer, "host_model=%99[^\n]", user_info->model);
     sscanf(buffer, "kernel=%99[^\n]", user_info->kernel);
     sscanf(buffer, "cpu=%99[^\n]", user_info->cpu_model);
-    if (sscanf(buffer, "gpu=%99[^\n]", user_info->gpus[gpuc]) != 0) gpuc++;
+    // TODO: re-enable gpu array cache reading
+    // if (sscanf(buffer, "gpu=%99[^\n]", user_info->gpus[gpuc]) != 0) gpuc++;
     sscanf(buffer, "screen_width=%i", &user_info->screen_width);
     sscanf(buffer, "screen_height=%i", &user_info->screen_height);
     sscanf(buffer, "shell=%99[^\n]", user_info->shell);
     sscanf(buffer, "pkgs=%99[^\n]", user_info->packages);
   }
+#undef DEFAULT_MAX_STRLEN
   LOG_V(user_info->user_name);
   LOG_V(user_info->host_name);
   LOG_V(user_info->os_name);
   LOG_V(user_info->model);
   LOG_V(user_info->kernel);
   LOG_V(user_info->cpu_model);
-  LOG_V(user_info->gpus[gpuc]);
+  // LOG_V(user_info->gpus[gpuc]);
   LOG_V(user_info->screen_width);
   LOG_V(user_info->screen_height);
   LOG_V(user_info->shell);
@@ -807,7 +827,8 @@ int main(int argc, char* argv[]) {
       list(argv[0]);
       return 0;
     case 'r':
-      user_config_file.read_enabled = true;
+      user_config_file.read_enabled  = true;
+      user_config_file.write_enabled = false;
       break;
     case 'V':
       printf("UwUfetch version %s\n", UWUFETCH_VERSION);
@@ -838,12 +859,12 @@ int main(int argc, char* argv[]) {
       user_config_file.read_enabled  = false;
       user_config_file.write_enabled = true;
     } else {
-      // if (config_flags.ram) get_ram(&vargp);
-      if (config_flags.uptime) {
-        LOG_I("getting additional not-cached info");
-        // get_sys(user_info);
-        // get_upt(&vargp);
+      LOG_I("getting additional not-cached info");
+      if (config_flags.ram) {
+        user_info.ram_total = get_memory_total();
+        user_info.ram_used  = get_memory_used();
       }
+      if (config_flags.uptime) user_info.uptime = get_uptime();
     }
   }
   if (!user_config_file.read_enabled) {
@@ -881,6 +902,18 @@ int main(int argc, char* argv[]) {
   int to_move = print_info(&config_flags, &user_info);
   printf("\033[%d%c", to_move < 0 ? -to_move : to_move, to_move < 0 ? 'A' : 'B');
   libfetch_cleanup();
+  if (user_config_file.read_enabled) {
+    if (user_info.user_name) free(user_info.user_name);
+    if (user_info.host_name) free(user_info.host_name);
+    if (user_info.shell) free(user_info.shell);
+    if (user_info.model) free(user_info.model);
+    if (user_info.kernel) free(user_info.kernel);
+    if (user_info.os_name) free(user_info.os_name);
+    if (user_info.cpu_model) free(user_info.cpu_model);
+    if (user_info.gpus) free(user_info.gpus);
+    if (user_info.packages) free(user_info.packages);
+    if (user_info.image_name) free(user_info.image_name);
+  }
   LOG_I("Execution completed successfully with %d errors", logging_error_count);
   return 0;
 }
