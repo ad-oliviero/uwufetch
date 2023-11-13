@@ -6,24 +6,35 @@
 The day I wake up and every test passes on every supported system, is the day this branch will be merged with [main](https://github.com/TheDarkBug/uwufetch).
 
 ### What is the progress right now?
-- Linux is "complete"
-- Everything needs testing
-- Every other platform is currently not supported
-- New rules should be added to [CONTRIBUTING.md](/CONTRIBUTING.md)
+| Function (libfetch) | Arch Linux | Linux (not Arch) | Android | FreeBSD | OpenBSD | MacOS | Windows |
+|---|---|---|---|---|---|---|---|
+|`get_user_name`|✅ ✅|✅ ❌|✅ ❌|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
+|`get_host_name`|✅ ✅|✅ ❌|✅ ❌|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
+|`get_shell`|✅ ✅|✅ ❌|✅ ❌|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
+|`get_model`|✅ ✅|✅ ❌|✅ ❌|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
+|`get_kernel`|✅ ✅|✅ ❌|✅ ❌|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
+|`get_os_name`|✅ ✅|✅ ❌|✅ ✅|✅ ❌|❌ ❌|❌ ❌|✅ ✅|
+|`get_cpu_model`|✅ ✅|✅ ❌|❌ ❌|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
+|`get_gpus`|❌ ❌|❌ ❌|❌ ❌|❌ ❌|❌ ❌|❌ ❌|✅ ✅|
+|`get_packages`|✅ ✅|✅ ❌|✅ ❌|✅ ❌|✅ ❌|✅ ❌|❌ ❌|
+|`get_screen_width`|✅ ✅|✅ ❌|❌ ❌|❌ ❌|❌ ❌|❌ ❌|✅ ✅|
+|`get_screen_height`|✅ ✅|✅ ❌|❌ ❌|❌ ❌|❌ ❌|❌ ❌|✅ ✅|
+|`get_memory_total`|✅ ✅|✅ ❌|✅ ❌|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
+|`get_memory_used`|✅ ✅|✅ ❌|✅ ❌|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
+|`get_uptime`|✅ ✅|✅ ❌|✅ ❌|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
+|`get_terminal_size`|✅ ✅|✅ ❌|✅ ❌|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
+
+### Meaning of the table above
+Two ckeckboxes are available: **[** *implemented* **]** **[** *tested* **]**
 
 ## TODO list
-- Linux
-    - Android
-        - `get_cpu_model()` (this function may work)
-    - `get_gpus()`
-    - test on systems different from arch linux
-- BSD (freebsd, openbsd)
-    - some functions need implementation
-- Mac OS, iOS
-    - everything
-- Windows
-    - everything
-
+- [ ] Create a man page for `libfetch`
+- [ ] GitHub actions for more platforms
+- [ ] `--full` option that overrides the config file to print everything
+- [ ] Multi threading
+- [ ] New rules should be added to [CONTRIBUTING.md](/CONTRIBUTING.md)
+- [ ] Move "thing" "uwuthing" translation data to external file
+- [ ] Embed static files (except images) in the executable (if performance is not impacted)
 
 
 # UwUFetch
