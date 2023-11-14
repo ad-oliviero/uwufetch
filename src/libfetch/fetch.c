@@ -24,7 +24,11 @@
   #include <Windows.h>
 #endif
 #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
-  #include <pci/pci.h>
+  #if defined(SYSTEM_BASE_ANDROID)
+    #include <sys/system_properties.h>
+  #else
+    #include <pci/pci.h>
+  #endif
   #include <sys/sysinfo.h>
   #include <sys/utsname.h>
 #elif defined(SYSTEM_BASE_FREEBSD)
@@ -301,14 +305,8 @@ char* get_model(void) {
   if (model[best_len - 1] == '\n') model[best_len - 1] = '\0';
   LOG_V(model);
 #elif defined(SYSTEM_BASE_ANDROID)
-  FILE* marketname = popen("getprop ro.product.marketname", "r");
-  if (marketname) {
-    LOG_I("getting model name with getprop");
-    fgets(model, BUFFER_SIZE, marketname);
-    pclose(marketname);
-    unsigned long int len = strlen(model);
-    if (model[len - 1] == '\n') model[len - 1] = '\0';
-  }
+  LOG_I("getting model name with getprop (__system_property_get())");
+  __system_property_get("ro.product.marketname", model);
 #elif defined(SYSTEM_BASE_FREEBSD)
   char buf[BUFFER_SIZE] = {0};
   unsigned long int len = sizeof(buf);
@@ -415,13 +413,22 @@ char* get_os_name(void) {
 
 char* get_cpu_model(void) {
   char* cpu_model = alloc(BUFFER_SIZE);
-#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
+#if defined(SYSTEM_BASE_LINUX)
   char* p = PROC_CPUINFO - 1;
   LOG_I("reading cpu model from /proc/cpuinfo");
   do {
     p++;
     sscanf(p, "model name%*[ |	]: %[^\n]", cpu_model);
   } while ((p = strchr(p, '\n')));
+#elif defined(SYSTEM_BASE_ANDROID)
+  /* The following function call does not get the full
+   * cpu name, but just the product code (if available).
+   * Getting full cpu name (just like the gpu name) is possible,
+   * but I would need to use the android ndk (basically
+   * calling some java functions). IMO, it makes no sense in this library.
+   * Maybe a solution would be to use the termux api
+   */
+  __system_property_get("ro.soc.model", cpu_model);
 #elif defined(SYSTEM_BASE_FREEBSD)
   char buf[BUFFER_SIZE] = {0};
   unsigned long int len = sizeof(buf);
@@ -475,8 +482,21 @@ char** get_gpus(void) {
   }
   pci_cleanup(pacc);
 #elif defined(SYSTEM_BASE_ANDROID)
-  LOG_E("Not implemented");
-  return NULL;
+  /* I really doubt that some phone has more than one gpu.
+   * maybe on an android x86 system it could happen, if I
+   * get some more free time, I might install android on
+   * my x86 desktop pc with two gpus to test it
+   */
+  gpus[0] = alloc(BUFFER_SIZE);
+
+  /* The following function call does not get the full
+   * gpu name, but just the manufacturer name (if available).
+   * Getting full gpu name (just like the cpu name) is possible,
+   * but I would need to use the android ndk (basically
+   * calling some java functions). IMO, it makes no sense in this library.
+   * Maybe a solution would be to use the termux api
+   */
+  __system_property_get("ro.hardware.egl", gpus[0]);
 #elif defined(SYSTEM_BASE_FREEBSD)
   LOG_E("Not implemented");
   return NULL;

@@ -14,8 +14,8 @@ The day I wake up and every test passes on every supported system, is the day th
 |`get_model`|✅ ✅|✅ ❌|✅ ❌|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
 |`get_kernel`|✅ ✅|✅ ❌|✅ ❌|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
 |`get_os_name`|✅ ✅|✅ ❌|✅ ✅|✅ ❌|❌ ❌|❌ ❌|✅ ✅|
-|`get_cpu_model`|✅ ✅|✅ ❌|❌ ❌|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
-|`get_gpus`|✅ ✅|❌ ❌|❌ ❌|❌ ❌|❌ ❌|❌ ❌|✅ ✅|
+|`get_cpu_model`|✅ ✅|✅ ✅|❌ ❌|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
+|`get_gpus`|✅ ✅|✅ ✅|❌ ❌|❌ ❌|❌ ❌|❌ ❌|✅ ✅|
 |`get_packages`|✅ ✅|✅ ❌|✅ ❌|✅ ❌|✅ ❌|✅ ❌|❌ ❌|
 |`get_screen_width`|✅ ✅|✅ ❌|❌ ❌|❌ ❌|❌ ❌|❌ ❌|✅ ✅|
 |`get_screen_height`|✅ ✅|✅ ❌|❌ ❌|❌ ❌|❌ ❌|❌ ❌|✅ ✅|

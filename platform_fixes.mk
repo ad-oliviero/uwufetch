@@ -8,6 +8,8 @@ ifeq ($(PLATFORM), Linux)
 		CFLAGS_DEBUG += -D__ANDROID__
 		PREFIX_DIR = /data/data/com.termux/files/usr
 		PLATFORM_ABBR	= android
+	else
+		LDFLAGS += -lpci
 	endif
 else ifeq ($(PLATFORM), Darwin)
 	USR_DIR = $(PREFIX_DIR)/usr/local
