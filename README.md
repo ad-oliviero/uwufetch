@@ -1,6 +1,6 @@
 # NOTES ABOUT THIS BRANCH
 - **NOT STABLE** This branch is work in progress and while it *does* work, it might crash.
-- **LINUX and ANDROID ONLY** I just (13/06/23) "completed" `fetch.c` for linux, any other system does not work.
+- **LINUX and ANDROID ONLY** I just (14/11/23) completed `fetch.c` for linux and android (at least on my device). Tests are needed though.
 
 ### When will this branch be complete?
 The day I wake up and every test passes on every supported system, is the day this branch will be merged with [main](https://github.com/TheDarkBug/uwufetch).
