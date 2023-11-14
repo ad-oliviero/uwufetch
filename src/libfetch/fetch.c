@@ -24,6 +24,7 @@
   #include <Windows.h>
 #endif
 #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
+  #include <pci/pci.h>
   #include <sys/sysinfo.h>
   #include <sys/utsname.h>
 #elif defined(SYSTEM_BASE_FREEBSD)
@@ -456,11 +457,23 @@ char* get_cpu_model(void) {
 }
 
 char** get_gpus(void) {
-  char** gpus = alloc(256 * sizeof(char*));
-  memset(gpus, 0, 256 * sizeof(char*));
+  char** gpus = alloc(BUFFER_SIZE * sizeof(char*));
+  memset(gpus, 0, BUFFER_SIZE * sizeof(char*));
+  unsigned int gpu_id = 0;
 #if defined(SYSTEM_BASE_LINUX)
-  LOG_E("Not implemented");
-  return NULL;
+  struct pci_access* pacc = pci_alloc();
+  struct pci_dev* dev;
+  pci_init(pacc);
+  pci_scan_bus(pacc);
+
+  for (dev = pacc->devices; dev; dev = dev->next) {
+    pci_fill_info(dev, PCI_FILL_IDENT | PCI_FILL_CLASS);
+    if (dev->device_class == PCI_CLASS_DISPLAY_VGA) {
+      gpus[gpu_id] = alloc(BUFFER_SIZE);
+      pci_lookup_name(pacc, gpus[gpu_id++], BUFFER_SIZE, PCI_LOOKUP_DEVICE, dev->vendor_id, dev->device_id, 0);
+    }
+  }
+  pci_cleanup(pacc);
 #elif defined(SYSTEM_BASE_ANDROID)
   LOG_E("Not implemented");
   return NULL;
@@ -474,7 +487,6 @@ char** get_gpus(void) {
   LOG_E("Not implemented");
   return NULL;
 #elif defined(SYSTEM_BASE_WINDOWS)
-  unsigned int gpu_id = 0;
   HKEY hKey;
   LONG result;
 
