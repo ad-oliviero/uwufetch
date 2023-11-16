@@ -44,9 +44,11 @@ enum LOG_LEVELS {
     if (logging_level >= LEVEL_INFO) LOG(LEVEL_INFO, format, ##__VA_ARGS__)
   #define LOG_W(format, ...) \
     if (logging_level >= LEVEL_WARNING) LOG(LEVEL_WARNING, format, ##__VA_ARGS__)
-  #define LOG_E(format, ...)                                                   \
-    if (logging_level >= LEVEL_ERROR) LOG(LEVEL_ERROR, format, ##__VA_ARGS__); \
-    logging_error_count++;
+  #define LOG_E(format, ...)                   \
+    if (logging_level >= LEVEL_ERROR) {        \
+      LOG(LEVEL_ERROR, format, ##__VA_ARGS__); \
+      logging_error_count++;                   \
+    }
   #define LOG_V(var)                                                                    \
     if (logging_level >= LEVEL_VAR) {                                                   \
       static char format[1024] = "";                                                    \
@@ -102,6 +104,7 @@ static void escapeColors(char* str) {
 #else
   #define SET_LOG_LEVEL(level, additional_info)
   #define LOG_I(format, ...)
+  #define LOG_W(format, ...)
   #define LOG_E(format, ...)
   #define LOG_V(var)
   #define LOG(type, format, ...)

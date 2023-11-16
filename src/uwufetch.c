@@ -81,27 +81,18 @@
 
 #define BLOCK_CHAR "\u2587"
 
+// moves the cursor after printing the image or the ascii logo
 #ifdef _WIN32
-const char MOVE_CURSOR[] = "\033[21C"; // moves the cursor after printing the image or the ascii logo
+const char MOVE_CURSOR[] = "\033[21C";
 #else
 const char MOVE_CURSOR[] = "\033[18C";
 #endif // _WIN32
 
 // all configuration flags available
 struct configuration {
-  bool user, shell, model, kernel, get_gpu,
-      os, cpu, resolution, ram, pkgs, uptime; // all true by default
-  bool image,                                 // false by default
-      colors;                                 // true by default
-  bool gpu[256];
-  bool gpus; // global gpu toggle
-};
-
-// user's config stored on the disk
-struct user_config {
-  char *config_directory, // configuration directory name
-      *cache_content;     // cache file content
-  int read_enabled, write_enabled;
+  bool user_name, shell, model, kernel, os_name, cpu,
+      gpu_list, screen, memory, packages, uptime, colors; // all true by default
+  char* logo_path;
 };
 
 // info that will be printed with the logo
@@ -112,32 +103,34 @@ struct info {
       *model,
       *kernel,
       *os_name,
-      *cpu_model,
-      **gpus,
+      *cpu,
+      **gpu_list,
       *packages,
-      *image_name;
+      *logo;
   int screen_width,
       screen_height,
       total_pkgs;
-  unsigned long ram_total, ram_used;
+  unsigned long memory_total, memory_used;
   long uptime;
 
-  struct winsize term_size;
+  struct winsize terminal_size;
 };
 
 // reads the config file
-struct configuration parse_config(struct info* user_info, struct user_config* user_config_file) {
-  LOG_I("parsing config");
+struct configuration parse_config(char* config_path) {
   char buffer[256]; // buffer for the current line
+  FILE* config = NULL;
   // enabling all flags by default
-  struct configuration config_flags;
-  memset(&config_flags, true, sizeof(config_flags));
+  struct configuration configuration;
+  memset(&configuration, true, sizeof(configuration));
+  configuration.logo_path = malloc(sizeof(char) * 256);
 
-  config_flags.image = false;
-
-  FILE* config = NULL; // config file pointer
-
-  if (user_config_file->config_directory == NULL) { // if config directory is not set, try to open the default
+  LOG_I("parsing config from");
+#if defined(__DEBUG__)
+  if (config_path == NULL)
+    config_path = "./default.config";
+#endif
+  if (config_path == NULL) { // if config directory is not set, try to open the default
     if (getenv("HOME") != NULL) {
       char homedir[512];
       sprintf(homedir, "%s/.config/uwufetch/config", getenv("HOME"));
@@ -149,106 +142,54 @@ struct configuration parse_config(struct info* user_info, struct user_config* us
           sprintf(prefixed_etc, "%s/etc/uwufetch/config", getenv("PREFIX"));
           LOG_V(prefixed_etc);
           config = fopen(prefixed_etc, "r");
-        } else
+        } else {
           config = fopen("/etc/uwufetch/config", "r");
+          LOG_V("/etc/uwufetch/config");
+        }
       }
     }
-  } else
-    config = fopen(user_config_file->config_directory, "r");
-  if (config == NULL) return config_flags; // if config file does not exist, return the defaults
-
-  int gpu_cfg_count = 0;
+  } else {
+    config = fopen(config_path, "r");
+    LOG_V(config_path);
+  }
+  if (config == NULL) return configuration; // if config file does not exist, return the defaults
 
   // reading the config file
   while (fgets(buffer, sizeof(buffer), config)) {
-    sscanf(buffer, "distro=%s", user_info->os_name);
-    if (sscanf(buffer, "image=\"%[^\"]\"", user_info->image_name)) {
-      if (user_info->image_name[0] == '~') {                                                          // replacing the ~ character with the home directory
-        memmove(&user_info->image_name[0], &user_info->image_name[1], strlen(user_info->image_name)); // remove the first char
-        char temp[128] = "/home/";
-        strcat(temp, user_info->user_name);
-        strcat(temp, user_info->image_name);
-        sprintf(user_info->image_name, "%s", temp);
-      }
-      config_flags.image = 1; // enable the image flag
-    }
-
-    // reading other values
-    if (sscanf(buffer, "user=%[truefalse]", buffer)) {
-      config_flags.user = !strcmp(buffer, "true");
-      LOG_V(config_flags.user);
-    }
-    if (sscanf(buffer, "os=%[truefalse]", buffer)) {
-      config_flags.os = strcmp(buffer, "false");
-      LOG_V(config_flags.os);
-    }
-    if (sscanf(buffer, "host=%[truefalse]", buffer)) {
-      config_flags.model = strcmp(buffer, "false");
-      LOG_V(config_flags.model);
-    }
-    if (sscanf(buffer, "kernel=%[truefalse]", buffer)) {
-      config_flags.kernel = strcmp(buffer, "false");
-      LOG_V(config_flags.kernel);
-    }
-    if (sscanf(buffer, "cpu=%[truefalse]", buffer)) {
-      config_flags.cpu = strcmp(buffer, "false");
-      LOG_V(config_flags.cpu);
-    }
-    if (sscanf(buffer, "gpu=%d", &gpu_cfg_count)) {
-      if (gpu_cfg_count > 255) {
-        LOG_E("gpu config index is too high, setting it to 255");
-        gpu_cfg_count = 255;
-      } else if (gpu_cfg_count < 0) {
-        LOG_E("gpu config index is too low, setting it to 0");
-        gpu_cfg_count = 0;
-      }
-      config_flags.gpu[gpu_cfg_count] = false;
-      LOG_V(config_flags.gpu[gpu_cfg_count]);
-    }
-    if (sscanf(buffer, "gpus=%[truefalse]", buffer)) { // global gpu toggle
-      if (strcmp(buffer, "false") == 0) {
-        config_flags.gpus    = false;
-        config_flags.get_gpu = false; // enable getting gpu info
-      } else {
-        config_flags.gpus    = true;
-        config_flags.get_gpu = true;
-      }
-      LOG_V(config_flags.gpus);
-      LOG_V(config_flags.gpu);
-    }
-    if (sscanf(buffer, "ram=%[truefalse]", buffer)) {
-      config_flags.ram = strcmp(buffer, "false");
-      LOG_V(config_flags.ram);
-    }
-    if (sscanf(buffer, "resolution=%[truefalse]", buffer)) {
-      config_flags.resolution = strcmp(buffer, "false");
-      LOG_V(config_flags.resolution);
-    }
-    if (sscanf(buffer, "shell=%[truefalse]", buffer)) {
-      config_flags.shell = strcmp(buffer, "false");
-      LOG_V(config_flags.shell);
-    }
-    if (sscanf(buffer, "pkgs=%[truefalse]", buffer)) {
-      config_flags.pkgs = strcmp(buffer, "false");
-      LOG_V(config_flags.pkgs);
-    }
-    if (sscanf(buffer, "uptime=%[truefalse]", buffer)) {
-      config_flags.uptime = strcmp(buffer, "false");
-      LOG_V(config_flags.uptime);
-    }
-    if (sscanf(buffer, "colors=%[truefalse]", buffer)) {
-      config_flags.colors = strcmp(buffer, "false");
-      LOG_V(config_flags.colors);
-    }
+    if (sscanf(buffer, "logo=%s", configuration.logo_path) > 0) LOG_V(configuration.logo_path);
+#define FIND_CFG_VAR(name)                        \
+  if (sscanf(buffer, #name "="                    \
+                           "%[truefalse]",        \
+             buffer)) {                           \
+    configuration.name = strcmp(buffer, "false"); \
+    LOG_V(configuration.name);                    \
   }
-  LOG_V(user_info->os_name);
-  LOG_V(user_info->image_name);
+    // reading other values
+    FIND_CFG_VAR(user_name);
+    FIND_CFG_VAR(os_name);
+    FIND_CFG_VAR(model);
+    FIND_CFG_VAR(kernel);
+    FIND_CFG_VAR(cpu);
+    FIND_CFG_VAR(gpu_list);
+    FIND_CFG_VAR(memory);
+    FIND_CFG_VAR(screen);
+    FIND_CFG_VAR(shell);
+    FIND_CFG_VAR(packages);
+    FIND_CFG_VAR(uptime);
+    FIND_CFG_VAR(colors);
+#undef FIND_CFG_VAR
+  }
   fclose(config);
-  return config_flags;
+  if (strlen(configuration.logo_path) == 0) {
+    free(configuration.logo_path);
+    configuration.logo_path = NULL;
+  }
+  return configuration;
 }
 
 // prints logo (as an image) of the given system.
-int print_image(struct info* user_info) {
+int print_image(__attribute__((unused)) struct info* user_info) {
+  /*
   LOG_I("printing image");
 #ifndef __IPHONE__
   char command[256];
@@ -280,6 +221,8 @@ int print_image(struct info* user_info) {
          "  disabled on iOS.\n\n",
          RED);
 #endif
+  */
+  LOG_E("image currently disabled");
   return 9;
 }
 
@@ -471,14 +414,14 @@ void uwufy_all(struct info* user_info) {
 
   LOG_I("uwufing everything");
   if (user_info->kernel) uwu_kernel(&replacer, user_info->kernel);
-  if (user_info->gpus)
-    for (int i = 0; i < 256; i++)
-      if (user_info->gpus[i])
-        uwu_hw(&replacer, user_info->gpus[i]);
+  if (user_info->gpu_list)
+    for (size_t i = 1; i <= (size_t)user_info->gpu_list[0]; i++)
+      if (user_info->gpu_list[i])
+        uwu_hw(&replacer, user_info->gpu_list[i]);
 
-  if (user_info->cpu_model)
-    uwu_hw(&replacer, user_info->cpu_model);
-  LOG_V(user_info->cpu_model);
+  if (user_info->cpu)
+    uwu_hw(&replacer, user_info->cpu);
+  LOG_V(user_info->cpu);
 
   if (user_info->model)
     uwu_hw(&replacer, user_info->model);
@@ -494,47 +437,47 @@ void uwufy_all(struct info* user_info) {
 }
 
 // prints all the collected info and returns the number of printed lines
-int print_info(struct configuration* config_flags, struct info* user_info) {
+int print_info(struct configuration* configuration, struct info* user_info) {
   int line_count = 0;
 // prints without overflowing the terminal width
-#define responsively_printf(buf, format, ...)               \
-  {                                                         \
-    sprintf(buf, format, __VA_ARGS__);                      \
-    printf("%.*s\n", user_info->term_size.ws_col - 1, buf); \
-    line_count++;                                           \
+#define responsively_printf(buf, format, ...)                   \
+  {                                                             \
+    sprintf(buf, format, __VA_ARGS__);                          \
+    printf("%.*s\n", user_info->terminal_size.ws_col - 1, buf); \
+    line_count++;                                               \
   }
   char print_buf[1024]; // for responsively print
 
   // print collected info - from host to cpu info
-  if (config_flags->user)
+  if (configuration->user_name)
     responsively_printf(print_buf, "%s%s%s%s@%s", MOVE_CURSOR, NORMAL, BOLD, user_info->user_name, user_info->host_name);
 
-  if (config_flags->os)
+  if (configuration->os_name)
     responsively_printf(print_buf, "%s%s%sOWOS     %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->os_name);
-  if (config_flags->model)
+  if (configuration->model)
     responsively_printf(print_buf, "%s%s%sMOWODEL  %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->model);
-  if (config_flags->kernel)
+  if (configuration->kernel)
     responsively_printf(print_buf, "%s%s%sKEWNEL   %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->kernel);
-  if (config_flags->cpu)
-    responsively_printf(print_buf, "%s%s%sCPUWU    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->cpu_model);
+  if (configuration->cpu)
+    responsively_printf(print_buf, "%s%s%sCPUWU    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->cpu);
 
-  if (user_info->gpus)
-    for (int i = 0; i < 256; i++) {
-      if (config_flags->gpu[i])
-        if (user_info->gpus[i])
-          responsively_printf(print_buf, "%s%s%sGPUWU    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->gpus[i]);
+  if (configuration->gpu_list && user_info->gpu_list) {
+    for (size_t i = 1; i <= (size_t)user_info->gpu_list[0]; i++) {
+      if (user_info->gpu_list[i])
+        responsively_printf(print_buf, "%s%s%sGPUWU    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->gpu_list[i]);
     }
+  }
 
-  if (config_flags->ram) // print ram
-    responsively_printf(print_buf, "%s%s%sMEMOWY   %s%lu MiB/%lu MiB", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->ram_used, user_info->ram_total);
-  if (config_flags->resolution) // print resolution
+  if (configuration->memory) // print ram
+    responsively_printf(print_buf, "%s%s%sMEMOWY   %s%lu MiB/%lu MiB", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->memory_used, user_info->memory_total);
+  if (configuration->screen) // print resolution
     if (user_info->screen_width != 0 || user_info->screen_height != 0)
       responsively_printf(print_buf, "%s%s%sSCWEEN%s   %dx%d", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->screen_width, user_info->screen_height);
-  if (config_flags->shell) // print shell name
+  if (configuration->shell) // print shell name
     responsively_printf(print_buf, "%s%s%sSHEWW    %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->shell);
-  if (config_flags->pkgs) // print pkgs
+  if (configuration->packages) // print pkgs
     responsively_printf(print_buf, "%s%s%sPKGS     %s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, user_info->packages);
-  if (config_flags->uptime) {
+  if (configuration->uptime) {
     // using chars because all the space provided by long or int types is not needed
     char secs  = (char)(user_info->uptime % 60);
     char mins  = (char)((user_info->uptime / 60) % 60);
@@ -554,7 +497,7 @@ int print_info(struct configuration* config_flags, struct info* user_info) {
     responsively_printf(print_buf, "%s%s%sUWUPTIME %s%s%s%s%s", MOVE_CURSOR, NORMAL, BOLD, NORMAL, days > 0 ? str_days : "", hours > 0 ? str_hours : "", mins > 0 ? str_mins : "", secs > 0 ? str_secs : "");
   }
   // clang-format off
-  if (config_flags->colors)
+  if (configuration->colors)
     printf("%s" BOLD BLACK BLOCK_CHAR BLOCK_CHAR RED BLOCK_CHAR
                 BLOCK_CHAR GREEN BLOCK_CHAR BLOCK_CHAR YELLOW
                 BLOCK_CHAR BLOCK_CHAR BLUE BLOCK_CHAR BLOCK_CHAR
@@ -570,123 +513,112 @@ void write_cache(struct info* user_info) {
   char cache_file[512];
   sprintf(cache_file, "%s/.cache/uwufetch.cache", getenv("HOME")); // default cache file location
   LOG_V(cache_file);
-  FILE* cache_fp = fopen(cache_file, "w");
+  FILE* cache_fp = fopen(cache_file, "wb");
   if (cache_fp == NULL) {
     LOG_E("Failed to write to %s!", cache_file);
     return;
   }
-  // writing all info to the cache file
-  fprintf( // writing most of the values to config file
+  // writing most of the values to config file
+  uint32_t cache_size = (uint32_t)fprintf(
       cache_fp,
-      "user=%s\nhost=%s\nversion_name=%s\nhost_model=%s\nkernel=%s\ncpu=%"
-      "s\nscreen_width=%d\nscreen_height=%d\nshell=%s\npkgs=%s\n",
-      user_info->user_name, user_info->host_name, user_info->os_name, user_info->model, user_info->kernel,
-      user_info->cpu_model, user_info->screen_width, user_info->screen_height, user_info->shell, user_info->packages);
+      "0000"                         // placeholder for the cache size
+      "%s;%s;%s;%s;%s;%s;%s;%s;%s;", // no need to be human readable
+      user_info->user_name, user_info->host_name, user_info->os_name, user_info->model,
+      user_info->kernel, user_info->cpu, user_info->shell, user_info->packages, user_info->logo);
 
-  // TODO: re-enable gpu array caching
-  // for (int i = 0; i < 256; i++) // writing gpu names to file
-  //   if (user_info->gpus[i]) fprintf(cache_fp, "gpu=%s\n", user_info->gpus[i]);
+  // writing numbers before gpus (because gpus are a variable amount)
+  cache_size += (uint32_t)(fwrite(&user_info->screen_width, sizeof(user_info->screen_width), 1, cache_fp) * sizeof(user_info->screen_width));
+  cache_size += (uint32_t)(fwrite(&user_info->screen_height, sizeof(user_info->screen_height), 1, cache_fp) * sizeof(user_info->screen_height));
+
+  // the first element of gpu_list is the number of gpus
+  cache_size += (uint32_t)(fwrite(&user_info->gpu_list[0], sizeof(user_info->gpu_list[0]), 1, cache_fp) * sizeof(user_info->gpu_list[0]));
+
+  for (size_t i = 1; i <= (size_t)user_info->gpu_list[0]; i++) // writing gpu names to file
+    cache_size += (uint32_t)fprintf(cache_fp, ";%s", user_info->gpu_list[i]);
+
+  // writing cache size at the beginning of the file
+  fseek(cache_fp, 0, SEEK_SET);
+  fwrite(&cache_size, sizeof(cache_size), 1, cache_fp);
 
   fclose(cache_fp);
   return;
 }
 
 // reads cache file if it exists
-int read_cache(struct info* user_info) {
+char* read_cache(struct info* user_info) {
   LOG_I("reading cache");
-  char cache_file[512];
-  sprintf(cache_file, "%s/.cache/uwufetch.cache", getenv("HOME"));
-  LOG_V(cache_file);
-  FILE* cache_fp = fopen(cache_file, "r");
-  if (cache_fp == NULL) return 0;
-  char buffer[256];
-  // int gpuc = 0;
-
-// allocating memory
-#define DEFAULT_MAX_STRLEN 1024
-  char user_name_format[32] = "";
-  char host_name_format[32] = "";
-  long max_user_name_len    = sysconf(_SC_LOGIN_NAME_MAX);
-  long max_host_name_len    = sysconf(_SC_HOST_NAME_MAX);
-  user_info->user_name      = malloc(max_user_name_len > 0 ? (size_t)max_user_name_len : DEFAULT_MAX_STRLEN);
-  user_info->host_name      = malloc(max_host_name_len > 0 ? (size_t)max_host_name_len : DEFAULT_MAX_STRLEN);
-  snprintf(user_name_format, sizeof(user_name_format), "user=%%%ld[^\n]", max_user_name_len);
-  snprintf(host_name_format, sizeof(host_name_format), "host=%%%ld[^\n]", max_host_name_len);
-  user_info->os_name   = malloc(DEFAULT_MAX_STRLEN);
-  user_info->model     = malloc(DEFAULT_MAX_STRLEN);
-  user_info->kernel    = malloc(DEFAULT_MAX_STRLEN);
-  user_info->cpu_model = malloc(DEFAULT_MAX_STRLEN);
-  // user_info->gpus[0] = malloc(DEFAULT_MAX_STRLEN);
-  user_info->packages = malloc(DEFAULT_MAX_STRLEN);
-
-  while (fgets(buffer, sizeof(buffer), cache_fp)) { // reading the file
-    sscanf(buffer, user_name_format, user_info->user_name);
-    sscanf(buffer, host_name_format, user_info->host_name);
-    sscanf(buffer, "version_name=%99[^\n]", user_info->os_name);
-    sscanf(buffer, "host_model=%99[^\n]", user_info->model);
-    sscanf(buffer, "kernel=%99[^\n]", user_info->kernel);
-    sscanf(buffer, "cpu=%99[^\n]", user_info->cpu_model);
-    // TODO: re-enable gpu array cache reading
-    // if (sscanf(buffer, "gpu=%99[^\n]", user_info->gpus[gpuc]) != 0) gpuc++;
-    sscanf(buffer, "screen_width=%i", &user_info->screen_width);
-    sscanf(buffer, "screen_height=%i", &user_info->screen_height);
-    sscanf(buffer, "shell=%99[^\n]", user_info->shell);
-    sscanf(buffer, "pkgs=%99[^\n]", user_info->packages);
+  char cache_fn[512];
+  sprintf(cache_fn, "%s/.cache/uwufetch.cache", getenv("HOME"));
+  LOG_V(cache_fn);
+  FILE* cache_fp = fopen(cache_fn, "rb");
+  if (cache_fp == NULL) {
+    LOG_E("Failed to read from %s!", cache_fn);
+    return NULL;
   }
-#undef DEFAULT_MAX_STRLEN
+  uint32_t cache_size = 0;
+  fread(&cache_size, sizeof(cache_size), 1, cache_fp);
+  char* start = malloc(cache_size);
+  fread(start, cache_size, 1, cache_fp);
+  fclose(cache_fp);
+  char* buffer = start;
+
+  // allocating memory
+  user_info->user_name = start;
+  user_info->host_name = strchr(user_info->user_name, ';') + 1;
+  user_info->os_name   = strchr(user_info->host_name, ';') + 1;
+  user_info->model     = strchr(user_info->os_name, ';') + 1;
+  user_info->kernel    = strchr(user_info->model, ';') + 1;
+  user_info->cpu       = strchr(user_info->kernel, ';') + 1;
+  user_info->shell     = strchr(user_info->cpu, ';') + 1;
+  user_info->packages  = strchr(user_info->shell, ';') + 1;
+  user_info->logo      = strchr(user_info->packages, ';') + 1;
+  buffer               = strchr(user_info->logo, ';') + 1;
+  memcpy(&user_info->screen_width, buffer, sizeof(user_info->screen_width));
+  buffer += sizeof(user_info->screen_width);
+  memcpy(&user_info->screen_height, buffer, sizeof(user_info->screen_height));
+  buffer += sizeof(user_info->screen_height);
+  user_info->gpu_list = malloc(sizeof(char*));
+  memcpy(&user_info->gpu_list[0], buffer, sizeof(user_info->gpu_list[0]));
+  buffer += sizeof(user_info->gpu_list[0]) + 1;
+  user_info->gpu_list = realloc(user_info->gpu_list, (size_t)user_info->gpu_list[0] + 1);
+  memset(user_info->gpu_list + 1, 0, (size_t)user_info->gpu_list[0] * sizeof(char*));
+  for (size_t i = 1; i <= (size_t)user_info->gpu_list[0]; i++) {
+    user_info->gpu_list[i] = buffer;
+    buffer                 = strchr(user_info->gpu_list[i], ';') + 1;
+  }
+
+  for (size_t i = 0; i < cache_size; i++)
+    if (start[i] == ';') start[i] = 0;
+
   LOG_V(user_info->user_name);
   LOG_V(user_info->host_name);
   LOG_V(user_info->os_name);
   LOG_V(user_info->model);
   LOG_V(user_info->kernel);
-  LOG_V(user_info->cpu_model);
-  // LOG_V(user_info->gpus[gpuc]);
+  LOG_V(user_info->cpu);
   LOG_V(user_info->screen_width);
   LOG_V(user_info->screen_height);
   LOG_V(user_info->shell);
   LOG_V(user_info->packages);
-  fclose(cache_fp);
-  return 1;
+  LOG_V(user_info->logo);
+  LOG_V(user_info->screen_width);
+  LOG_V(user_info->screen_height);
+  for (size_t i = 1; i <= (size_t)user_info->gpu_list[0]; i++)
+    LOG_V(user_info->gpu_list[i]);
+  return start;
 }
 
 // prints logo (as ascii art) of the given system.
-int print_ascii(struct info* user_info) {
-  FILE* file            = NULL;
-  char ascii_file[1024] = "";
-#if defined(__DEBUG__)
-  #define PREFIX "./res/"
-#else
-  #if defined(SYSTEM_BASE_LINUX)
-    #define PREFIX "/usr/lib/uwufetch/"
-  #elif defined(SYSTEM_BASE_ANDROID)
-    #define PREFIX "/data/data/com.termux/files/usr/lib/uwufetch/"
-  #elif defined(SYSTEM_BASE_FREEBSD)
-    #define PREFIX "/usr/lib/uwufetch/"
-  #elif defined(SYSTEM_BASE_OPENBSD)
-  LOG_E("Not Implemented");
-  #elif defined(SYSTEM_BASE_MACOS)
-    #define PREFIX "/usr/local/lib/uwufetch/"
-  #elif defined(SYSTEM_BASE_WINDOWS)
-  LOG_E("Not Implemented");
-  #else
-  LOG_E("System not supported or system base not specified");
-  #endif
-#endif
-  if (user_info->os_name)
-    if (strlen(user_info->os_name) == 0)
-      sprintf(user_info->os_name, "unknown");
-  sprintf(ascii_file, PREFIX "ascii/%s.txt", user_info->os_name);
-  LOG_V(ascii_file);
+int print_ascii(char* path) {
+  FILE* file = NULL;
 
-  file = fopen(ascii_file, "r");
+  file = fopen(path, "r");
   if (!file) {
-    LOG_E("ascii file \"%s\" not found, falling back to current directory", ascii_file);
-    sprintf(ascii_file, "./res/ascii/%s.txt", user_info->os_name);
-    LOG_V(ascii_file);
-    file = fopen(ascii_file, "r");
-    if (!file) return 0;
+    LOG_E("Failed to open %s!", path);
+    printf("Failed to open\n%s!", path);
+    return 2;
   }
-  char buffer[256]; // line buffer
+  char buffer[256];
   int line_count = 1;
   printf("\n");
   while (fgets(buffer, 256, file)) { // replacing color placecholders
@@ -773,17 +705,108 @@ void usage(char* arg) {
          NORMAL);
 }
 
+// count the number of ansi escape code-related characters
+size_t aeccount(const char* str) {
+  size_t count = 0;
+  while (*str != 0) {
+    if (*str == '\x1b') {
+      while (*str != '\0' && *str != 'm') {
+        str++;
+        count++;
+      }
+    }
+    str++;
+  }
+  return count;
+}
+
+char* render(struct info* user_info, struct configuration* configuration) {
+  // yes this is ugly and bad to maintain, I'll find a better solution later
+  size_t enabled_flags = (size_t)(configuration->user_name + configuration->shell + configuration->model + configuration->kernel +
+                                  configuration->os_name + configuration->cpu + configuration->screen + configuration->memory +
+                                  configuration->packages + configuration->uptime + configuration->colors) +
+                         ((size_t)configuration->gpu_list * (size_t)user_info->gpu_list[0]);
+  const size_t width  = (size_t)(user_info->terminal_size.ws_col);
+  const size_t height = (size_t)(enabled_flags < user_info->terminal_size.ws_row ? enabled_flags : user_info->terminal_size.ws_row);
+  const size_t buf_sz = ((width * height) + 1) * 2;
+  char* buffer        = malloc(buf_sz);
+  memset(buffer, ' ', buf_sz);
+  size_t current_line = 0;
+#define LOGO_OFFSET 20
+  size_t cursor = (width * current_line++) + LOGO_OFFSET;
+#define PRINTLN_BUF(offset, format, ...)                                                     \
+  {                                                                                          \
+    snprintf(buffer + cursor, width - offset + aeccount(format) + 3, format, ##__VA_ARGS__); \
+    cursor += strlen(buffer + cursor) + (size_t)offset + 1;                                  \
+  }
+
+  if (configuration->user_name) PRINTLN_BUF(LOGO_OFFSET, BOLD "%s@%s" NORMAL, user_info->user_name, user_info->host_name);
+  if (configuration->os_name) PRINTLN_BUF(LOGO_OFFSET, BOLD "OWOS" NORMAL "     %s", user_info->os_name);
+  if (configuration->model) PRINTLN_BUF(LOGO_OFFSET, BOLD "MOWODEL" NORMAL "  %s", user_info->model);
+  if (configuration->kernel) PRINTLN_BUF(LOGO_OFFSET, BOLD "KEWNEL" NORMAL "   %s", user_info->kernel);
+  if (configuration->cpu) PRINTLN_BUF(LOGO_OFFSET, BOLD "CPUWU" NORMAL "    %s", user_info->cpu);
+  if (configuration->gpu_list && user_info->gpu_list)
+    for (size_t i = 1; i <= (size_t)user_info->gpu_list[0]; i++)
+      PRINTLN_BUF(LOGO_OFFSET, BOLD "GPUWU" NORMAL "    %s", user_info->gpu_list[i]);
+  if (configuration->memory) PRINTLN_BUF(LOGO_OFFSET, BOLD "MEMOWY" NORMAL "   %lu MiB/%lu MiB", user_info->memory_used, user_info->memory_total);
+  if (configuration->screen && (user_info->screen_width != 0 || user_info->screen_height != 0))
+    PRINTLN_BUF(LOGO_OFFSET, BOLD "SCWEEN" NORMAL "   %dx%d", user_info->screen_width, user_info->screen_height);
+  if (configuration->shell) PRINTLN_BUF(LOGO_OFFSET, BOLD "SHEWW" NORMAL "    %s", user_info->shell);
+  if (configuration->packages) PRINTLN_BUF(LOGO_OFFSET, BOLD "PKGS" NORMAL "     %s", user_info->packages);
+  if (configuration->uptime) {
+    // split the uptime before printing it
+    char secs  = (char)(user_info->uptime % 60);
+    char mins  = (char)((user_info->uptime / 60) % 60);
+    char hours = (char)((user_info->uptime / 3600) % 24);
+    long days  = user_info->uptime / 86400;
+
+    char str_secs[6]  = "";
+    char str_mins[6]  = "";
+    char str_hours[6] = "";
+    char str_days[20] = "";
+
+    sprintf(str_secs, "%is ", secs);
+    sprintf(str_mins, "%im ", mins);
+    sprintf(str_hours, "%ih ", hours);
+    sprintf(str_days, "%lid ", days);
+    PRINTLN_BUF(LOGO_OFFSET, BOLD "UWUPTIME" NORMAL " %s%s%s%s", days > 0 ? str_days : "", hours > 0 ? str_hours : "", mins > 0 ? str_mins : "", secs > 0 ? str_secs : "");
+  }
+
+  // clang-format off
+    if (configuration->colors) {
+#define COLOR_STRING BOLD WHITE BLOCK_CHAR BLOCK_CHAR CYAN BLOCK_CHAR \
+                       BLOCK_CHAR MAGENTA BLOCK_CHAR BLOCK_CHAR BLUE \
+                       BLOCK_CHAR BLOCK_CHAR YELLOW BLOCK_CHAR BLOCK_CHAR \
+                       GREEN BLOCK_CHAR BLOCK_CHAR RED BLOCK_CHAR \
+                       BLOCK_CHAR BLACK BLOCK_CHAR BLOCK_CHAR NORMAL
+#define COLOR_STRING_LEN sizeof(COLOR_STRING)
+      snprintf(buffer + cursor, width - COLOR_STRING_LEN, COLOR_STRING);
+      cursor += COLOR_STRING_LEN;
+    }
+  // clang-format on
+
+  // replace all the null terminators added by snprintf
+  for (size_t i = 0; i < buf_sz; i++)
+    if (buffer[i] == 0) buffer[i] = '\n';
+
+  // null terminate after the last char
+  buffer[cursor < buf_sz ? cursor : buf_sz - 1] = 0;
+  return buffer;
+}
+
 // the main function is on the bottom of the file to avoid double function declarations
-int main(int argc, char* argv[]) {
-  struct user_config user_config_file = {0};
-  struct info user_info               = {0};
-  struct configuration config_flags   = parse_config(&user_info, &user_config_file);
-  char* custom_distro_name            = NULL;
-  char* custom_image_name             = NULL;
+int main(int argc, char** argv) {
+  struct configuration configuration = parse_config(NULL);
+  struct info user_info              = {0};
+  struct {
+    char* content;
+    bool read,
+        write;
+  } cache = {NULL, false, false};
 
 #ifdef _WIN32
   // packages disabled by default because chocolatey is too slow
-  config_flags.pkgs = 0;
+  configuration.packages = 0;
 #endif
 
   int opt                      = 0;
@@ -810,25 +833,24 @@ int main(int argc, char* argv[]) {
   while ((opt = getopt_long(argc, argv, OPT_STRING, long_options, NULL)) != -1) {
     switch (opt) {
     case 'c': // set the config directory
-      user_config_file.config_directory = optarg;
-      config_flags                      = parse_config(&user_info, &user_config_file);
+      configuration = parse_config(optarg);
       break;
     case 'd': // set the distribution name
-      custom_distro_name = optarg;
+      // custom_distro_name = optarg;
       break;
     case 'h':
       usage(argv[0]);
       return 0;
     case 'i': // set ascii logo as output
-      config_flags.image = true;
-      if (argv[optind]) custom_image_name = argv[optind];
+      // configuration.image = true;
+      // if (argv[optind]) custom_image_name = argv[optind];
       break;
     case 'l':
       list(argv[0]);
       return 0;
     case 'r':
-      user_config_file.read_enabled  = true;
-      user_config_file.write_enabled = false;
+      cache.read  = true;
+      cache.write = false;
       break;
     case 'V':
       printf("UwUfetch version %s\n", UWUFETCH_VERSION);
@@ -845,7 +867,7 @@ int main(int argc, char* argv[]) {
       break;
 #endif
     case 'w':
-      user_config_file.write_enabled = true;
+      cache.write = true;
       break;
     default:
       return 1;
@@ -853,66 +875,93 @@ int main(int argc, char* argv[]) {
   }
   libfetch_init();
 
-  if (user_config_file.read_enabled) {
+  if (cache.read) {
+    cache.content = read_cache(&user_info);
     // if no cache file found write to it
-    if (!read_cache(&user_info)) {
-      user_config_file.read_enabled  = false;
-      user_config_file.write_enabled = true;
-    } else {
-      LOG_I("getting additional not-cached info");
-      if (config_flags.ram) {
-        user_info.ram_total = get_memory_total();
-        user_info.ram_used  = get_memory_used();
-      }
-      if (config_flags.uptime) user_info.uptime = get_uptime();
+    if (!cache.content) {
+      cache.read  = false;
+      cache.write = true;
     }
   }
-  if (!user_config_file.read_enabled) {
-    user_info.user_name = get_user_name();
-    user_info.host_name = get_host_name();
-    user_info.shell     = get_shell();
+  if (!cache.read) {
+#define IF_ENABLED_GET(name) \
+  if (configuration.name) user_info.name = get_##name();
+    if (configuration.user_name) {
+      user_info.user_name = get_user_name();
+      user_info.host_name = get_host_name();
+    }
+    IF_ENABLED_GET(shell);
+    IF_ENABLED_GET(model);
+    IF_ENABLED_GET(kernel);
+    if (!user_info.os_name) user_info.os_name = get_os_name(); // get os name only if it was not set by either the configuration or the cli args
+    IF_ENABLED_GET(cpu);
+    IF_ENABLED_GET(gpu_list);
+    IF_ENABLED_GET(packages);
+    user_info.terminal_size = get_terminal_size();
+    if (configuration.screen) {
+      user_info.screen_height = get_screen_height();
+      user_info.screen_width  = get_screen_width();
+    }
 #if defined(SYSTEM_BASE_ANDROID)
-    if (strlen(user_info.shell) > 27) // android shell name was too long
-      user_info.shell += 27;
+    if (configuration->shell)
+      if (strlen(user_info.shell) > 27) // android shell name was too long
+        user_info.shell += 27;
 #endif
-    user_info.model         = get_model();
-    user_info.kernel        = get_kernel();
-    user_info.os_name       = get_os_name();
-    user_info.cpu_model     = get_cpu_model();
-    user_info.gpus          = get_gpus();
-    user_info.packages      = get_packages();
-    user_info.term_size     = get_terminal_size();
-    user_info.screen_width  = get_screen_width();
-    user_info.screen_height = get_screen_height();
-    user_info.ram_total     = get_memory_total();
-    user_info.ram_used      = get_memory_used();
-    user_info.uptime        = get_uptime();
   }
-
-  if (user_config_file.write_enabled) write_cache(&user_info);
-  if (custom_distro_name) sprintf(user_info.os_name, "%s", custom_distro_name);
-  if (custom_image_name) sprintf(user_info.image_name, "%s", custom_image_name);
+  if (configuration.memory) {
+    user_info.memory_total = get_memory_total();
+    user_info.memory_used  = get_memory_used();
+  }
+  IF_ENABLED_GET(uptime);
+#undef IF_ENABLED_GET
 
   // print ascii or image and align cursor for print_info()
-  printf("\033[%dA", config_flags.image ? print_image(&user_info) : print_ascii(&user_info));
-  uwufy_all(&user_info);
-
-  // print info and move cursor down if the number of printed lines is smaller that the default image height
-  int to_move = print_info(&config_flags, &user_info);
-  printf("\033[%d%c", to_move < 0 ? -to_move : to_move, to_move < 0 ? 'A' : 'B');
-  libfetch_cleanup();
-  if (user_config_file.read_enabled) {
-    if (user_info.user_name) free(user_info.user_name);
-    if (user_info.host_name) free(user_info.host_name);
-    if (user_info.shell) free(user_info.shell);
-    if (user_info.model) free(user_info.model);
-    if (user_info.kernel) free(user_info.kernel);
-    if (user_info.os_name) free(user_info.os_name);
-    if (user_info.cpu_model) free(user_info.cpu_model);
-    if (user_info.gpus) free(user_info.gpus);
-    if (user_info.packages) free(user_info.packages);
-    if (user_info.image_name) free(user_info.image_name);
+#if defined(__DEBUG__)
+  #define PREFIX "./res/"
+#else
+  #if defined(SYSTEM_BASE_LINUX)
+    #define PREFIX "/usr/lib/uwufetch/"
+  #elif defined(SYSTEM_BASE_ANDROID)
+    #define PREFIX "/data/data/com.termux/files/usr/lib/uwufetch/"
+  #elif defined(SYSTEM_BASE_FREEBSD)
+    #define PREFIX "/usr/lib/uwufetch/"
+  #elif defined(SYSTEM_BASE_OPENBSD)
+  LOG_E("Not Implemented");
+  #elif defined(SYSTEM_BASE_MACOS)
+    #define PREFIX "/usr/local/lib/uwufetch/"
+  #elif defined(SYSTEM_BASE_WINDOWS)
+  LOG_E("Not Implemented");
+  #else
+  LOG_E("System not supported or system base not specified");
+  #endif
+#endif
+  // TODO: implement image printing
+  if (!configuration.logo_path) {
+    if (!user_info.os_name) {
+      configuration.logo_path = malloc(sizeof(char) * (strlen(PREFIX) + strlen("ascii/unknown.txt") + 1));
+      sprintf(configuration.logo_path, PREFIX "ascii/unknown.txt");
+    } else {
+      configuration.logo_path = malloc(sizeof(char) * (strlen(PREFIX) + strlen("ascii/.txt") + strlen(user_info.os_name) + 1));
+      sprintf(configuration.logo_path, PREFIX "ascii/%s.txt", user_info.os_name);
+    }
   }
+  LOG_V(configuration.logo_path);
+  user_info.logo = configuration.logo_path;
+  if (!cache.read) uwufy_all(&user_info);
+  if (cache.write) write_cache(&user_info);
+
+  char* render_buf = render(&user_info, &configuration);
+  if (render_buf) {
+    printf("%s\n", render_buf);
+    free(render_buf);
+  }
+
+  libfetch_cleanup();
+  if (cache.read) {
+    if (cache.content) free(cache.content);
+    if (user_info.gpu_list) free(user_info.gpu_list);
+  }
+  if (configuration.logo_path) free(configuration.logo_path);
   LOG_I("Execution completed successfully with %d errors", logging_error_count);
   return 0;
 }

@@ -411,14 +411,14 @@ char* get_os_name(void) {
   return os_name;
 }
 
-char* get_cpu_model(void) {
-  char* cpu_model = alloc(BUFFER_SIZE);
+char* get_cpu(void) {
+  char* cpu = alloc(BUFFER_SIZE);
 #if defined(SYSTEM_BASE_LINUX)
   char* p = PROC_CPUINFO - 1;
   LOG_I("reading cpu model from /proc/cpuinfo");
   do {
     p++;
-    sscanf(p, "model name%*[ |	]: %[^\n]", cpu_model);
+    sscanf(p, "model name%*[ |	]: %[^\n]", cpu);
   } while ((p = strchr(p, '\n')));
 #elif defined(SYSTEM_BASE_ANDROID)
   /* The following function call does not get the full
@@ -428,13 +428,13 @@ char* get_cpu_model(void) {
    * calling some java functions). IMO, it makes no sense in this library.
    * Maybe a solution would be to use the termux api
    */
-  __system_property_get("ro.soc.model", cpu_model);
+  __system_property_get("ro.soc.model", cpu);
 #elif defined(SYSTEM_BASE_FREEBSD)
   char buf[BUFFER_SIZE] = {0};
   unsigned long int len = sizeof(buf);
   LOG_I("getting cpu model with sysctlbyname()");
   CHECK_FN_NEG(sysctlbyname("hw.model", &buf, &len, NULL, 0));
-  strcpy(cpu_model, buf);
+  strcpy(cpu, buf);
 #elif defined(SYSTEM_BASE_OPENBSD)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_MACOS)
@@ -449,24 +449,24 @@ char* get_cpu_model(void) {
     result = RegQueryValueEx(hKey, "ProcessorNameString", NULL, NULL, (LPBYTE)&value, &valueSize);
     if (result == ERROR_SUCCESS) {
       LOG_I("getting model name from HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0\\ProcessorNameString");
-      strcpy(cpu_model, value);
-      unsigned long len = strlen(cpu_model);
-      while (cpu_model[len - 1] == '\n' && len > 0) len--;
-      cpu_model[len - 1] = '\0';
+      strcpy(cpu, value);
+      unsigned long len = strlen(cpu);
+      while (cpu[len - 1] == '\n' && len > 0) len--;
+      cpu[len - 1] = '\0';
     }
     RegCloseKey(hKey);
   }
 #else
   LOG_E("System not supported or system base not specified");
 #endif
-  CHECK_GET_SUCCESS(cpu_model);
-  return cpu_model;
+  CHECK_GET_SUCCESS(cpu);
+  return cpu;
 }
 
-char** get_gpus(void) {
-  char** gpus = alloc(BUFFER_SIZE * sizeof(char*));
-  memset(gpus, 0, BUFFER_SIZE * sizeof(char*));
-  unsigned int gpu_id = 0;
+char** get_gpu_list(void) {
+  char** gpu_list = alloc(BUFFER_SIZE * sizeof(char*));
+  memset(gpu_list, 0, BUFFER_SIZE * sizeof(char*));
+  long unsigned int gpu_id = 1; // the [0] element is the "gpu count"
 #if defined(SYSTEM_BASE_LINUX)
   struct pci_access* pacc = pci_alloc();
   struct pci_dev* dev;
@@ -476,8 +476,8 @@ char** get_gpus(void) {
   for (dev = pacc->devices; dev; dev = dev->next) {
     pci_fill_info(dev, PCI_FILL_IDENT | PCI_FILL_CLASS);
     if (dev->device_class == PCI_CLASS_DISPLAY_VGA) {
-      gpus[gpu_id] = alloc(BUFFER_SIZE);
-      pci_lookup_name(pacc, gpus[gpu_id++], BUFFER_SIZE, PCI_LOOKUP_DEVICE, dev->vendor_id, dev->device_id, 0);
+      gpu_list[gpu_id] = alloc(BUFFER_SIZE);
+      pci_lookup_name(pacc, gpu_list[gpu_id++], BUFFER_SIZE, PCI_LOOKUP_DEVICE, dev->vendor_id, dev->device_id, 0);
     }
   }
   pci_cleanup(pacc);
@@ -487,7 +487,7 @@ char** get_gpus(void) {
    * get some more free time, I might install android on
    * my x86 desktop pc with two gpus to test it
    */
-  gpus[0] = alloc(BUFFER_SIZE);
+  gpu_list[0] = alloc(BUFFER_SIZE);
 
   /* The following function call does not get the full
    * gpu name, but just the manufacturer name (if available).
@@ -496,7 +496,7 @@ char** get_gpus(void) {
    * calling some java functions). IMO, it makes no sense in this library.
    * Maybe a solution would be to use the termux api
    */
-  __system_property_get("ro.hardware.egl", gpus[0]);
+  __system_property_get("ro.hardware.egl", gpu_list[0]);
 #elif defined(SYSTEM_BASE_FREEBSD)
   LOG_E("Not implemented");
   return NULL;
@@ -530,8 +530,8 @@ char** get_gpus(void) {
             DWORD gpuNameSize = sizeof(gpuName);
             result            = RegQueryValueEx(subSubkey, "DriverDesc", NULL, NULL, (LPBYTE)gpuName, &gpuNameSize);
             if (result == ERROR_SUCCESS) {
-              gpus[gpu_id] = alloc(BUFFER_SIZE);
-              strncpy(gpus[gpu_id++], gpuName, BUFFER_SIZE);
+              gpu_list[gpu_id] = alloc(BUFFER_SIZE);
+              strncpy(gpu_list[gpu_id++], gpuName, BUFFER_SIZE);
               break;
             }
             RegCloseKey(subSubkey);
@@ -548,7 +548,10 @@ char** get_gpus(void) {
   LOG_E("System not supported or system base not specified");
   return NULL;
 #endif
-  return gpus;
+  LOG_I("keep in mind that the first element of the array is the gpu count");
+  gpu_list[0] = (char*)(gpu_id - 1); // the [0] element is the "gpu count"
+  LOG_V((size_t)gpu_list[0])
+  return gpu_list;
 }
 
 char* get_packages(void) {

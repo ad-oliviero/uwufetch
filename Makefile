@@ -68,7 +68,7 @@ debug: CFLAGS=$(CFLAGS_DEBUG)
 debug: all
 
 valgrind: debug # checks memory leak
-	valgrind --leak-check=full --show-leak-kinds=all $(BUILD_DIR)/$(TARGET)
+	valgrind --leak-check=full --show-leak-kinds=all $(BUILD_DIR)/$(TARGET) $(ARGS)
 
 gdb: debug
 	gdb $(BUILD_DIR)/$(TARGET) -ex="set confirm off"

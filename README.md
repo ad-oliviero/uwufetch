@@ -28,6 +28,7 @@ The day I wake up and every test passes on every supported system, is the day th
 Two ckeckboxes are available: **[** *implemented* **]** **[** *tested* **]**
 
 ## TODO list
+- [ ] Add a pre-config argument parser function
 - [ ] Create a man page for `libfetch`
 - [ ] GitHub actions for more platforms
 - [ ] `--full` option that overrides the config file to print everything
