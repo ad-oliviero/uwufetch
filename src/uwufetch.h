@@ -31,7 +31,6 @@
 struct configuration {
   bool user_name, shell, model, kernel, os_name, cpu,
       gpu_list, screen, memory, packages, uptime, colors; // all true by default
-  char* logo_path;
 };
 
 // info that will be printed with the logo
@@ -44,11 +43,11 @@ struct info {
       *os_name,
       *cpu,
       **gpu_list,
-      *packages,
-      *logo;
+      *packages;
   int screen_width,
       screen_height,
-      total_pkgs;
+      total_pkgs,
+      logo_id;
   unsigned long memory_total, memory_used;
   long uptime;
 

@@ -1,7 +1,7 @@
 #include "libfetch/logging.h"
 #include "uwufetch.h"
-#include <stdlib.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 // writes cache to cache file
 void write_cache(struct info* user_info) {
@@ -17,14 +17,15 @@ void write_cache(struct info* user_info) {
   // writing most of the values to config file
   uint32_t cache_size = (uint32_t)fprintf(
       cache_fp,
-      "0000"                         // placeholder for the cache size
-      "%s;%s;%s;%s;%s;%s;%s;%s;%s;", // no need to be human readable
+      "0000"                      // placeholder for the cache size
+      "%s;%s;%s;%s;%s;%s;%s;%s;", // no need to be human readable
       user_info->user_name, user_info->host_name, user_info->os_name, user_info->model,
-      user_info->kernel, user_info->cpu, user_info->shell, user_info->packages, user_info->logo);
+      user_info->kernel, user_info->cpu, user_info->shell, user_info->packages);
 
   // writing numbers before gpus (because gpus are a variable amount)
   cache_size += (uint32_t)(fwrite(&user_info->screen_width, sizeof(user_info->screen_width), 1, cache_fp) * sizeof(user_info->screen_width));
   cache_size += (uint32_t)(fwrite(&user_info->screen_height, sizeof(user_info->screen_height), 1, cache_fp) * sizeof(user_info->screen_height));
+  cache_size += (uint32_t)(fwrite(&user_info->logo_id, sizeof(user_info->screen_height), 1, cache_fp) * sizeof(user_info->logo_id));
 
   // the first element of gpu_list is the number of gpus
   cache_size += (uint32_t)(fwrite(&user_info->gpu_list[0], sizeof(user_info->gpu_list[0]), 1, cache_fp) * sizeof(user_info->gpu_list[0]));
@@ -58,7 +59,7 @@ char* read_cache(struct info* user_info) {
   fclose(cache_fp);
   char* buffer = start;
 
-  // allocating memory
+  // reading strings
   user_info->user_name = start;
   user_info->host_name = strchr(user_info->user_name, ';') + 1;
   user_info->os_name   = strchr(user_info->host_name, ';') + 1;
@@ -67,12 +68,17 @@ char* read_cache(struct info* user_info) {
   user_info->cpu       = strchr(user_info->kernel, ';') + 1;
   user_info->shell     = strchr(user_info->cpu, ';') + 1;
   user_info->packages  = strchr(user_info->shell, ';') + 1;
-  user_info->logo      = strchr(user_info->packages, ';') + 1;
-  buffer               = strchr(user_info->logo, ';') + 1;
+  buffer               = strchr(user_info->packages, ';') + 1;
+
+  // reading numbers
   memcpy(&user_info->screen_width, buffer, sizeof(user_info->screen_width));
   buffer += sizeof(user_info->screen_width);
   memcpy(&user_info->screen_height, buffer, sizeof(user_info->screen_height));
   buffer += sizeof(user_info->screen_height);
+  memcpy(&user_info->logo_id, buffer, sizeof(user_info->logo_id));
+  buffer += sizeof(user_info->logo_id);
+
+  // reading gpus
   user_info->gpu_list = malloc(sizeof(char*));
   memcpy(&user_info->gpu_list[0], buffer, sizeof(user_info->gpu_list[0]));
   buffer += sizeof(user_info->gpu_list[0]) + 1;
@@ -96,9 +102,9 @@ char* read_cache(struct info* user_info) {
   LOG_V(user_info->screen_height);
   LOG_V(user_info->shell);
   LOG_V(user_info->packages);
-  LOG_V(user_info->logo);
   LOG_V(user_info->screen_width);
   LOG_V(user_info->screen_height);
+  LOG_V(user_info->logo_id);
   for (size_t i = 1; i <= (size_t)user_info->gpu_list[0]; i++)
     LOG_V(user_info->gpu_list[i]);
   return start;

@@ -14,8 +14,8 @@
  */
 
 #include "uwufetch.h"
-#include "cache.h"
 #include "actrie.h"
+#include "cache.h"
 #include "libfetch/fetch.h"
 #include "libfetch/logging.h"
 #include "translation.h"
@@ -60,7 +60,6 @@ struct configuration parse_config(char* config_path) {
   // enabling all flags by default
   struct configuration configuration;
   memset(&configuration, true, sizeof(configuration));
-  configuration.logo_path = malloc(sizeof(char) * 256);
 
   LOG_I("parsing config from");
 #if defined(__DEBUG__)
@@ -93,7 +92,7 @@ struct configuration parse_config(char* config_path) {
 
   // reading the config file
   while (fgets(buffer, sizeof(buffer), config)) {
-    if (sscanf(buffer, "logo=%s", configuration.logo_path) > 0) LOG_V(configuration.logo_path);
+    // if (sscanf(buffer, "logo=%s", configuration.logo_path) > 0) LOG_V(configuration.logo_path);
 #define FIND_CFG_VAR(name)                        \
   if (sscanf(buffer, #name "="                    \
                            "%[truefalse]",        \
@@ -117,13 +116,8 @@ struct configuration parse_config(char* config_path) {
 #undef FIND_CFG_VAR
   }
   fclose(config);
-  if (strlen(configuration.logo_path) == 0) {
-    free(configuration.logo_path);
-    configuration.logo_path = NULL;
-  }
   return configuration;
 }
-
 
 /* prints distribution list
    distributions are listed by distribution branch
@@ -373,7 +367,6 @@ int main(int argc, char** argv) {
     IF_ENABLED_GET(cpu);
     IF_ENABLED_GET(gpu_list);
     IF_ENABLED_GET(packages);
-    user_info.terminal_size = get_terminal_size();
     if (configuration.screen) {
       user_info.screen_height = get_screen_height();
       user_info.screen_width  = get_screen_width();
@@ -389,40 +382,9 @@ int main(int argc, char** argv) {
     user_info.memory_used  = get_memory_used();
   }
   IF_ENABLED_GET(uptime);
+  user_info.terminal_size = get_terminal_size();
 #undef IF_ENABLED_GET
 
-  // print ascii or image and align cursor for print_info()
-#if defined(__DEBUG__)
-  #define PREFIX "./res/"
-#else
-  #if defined(SYSTEM_BASE_LINUX)
-    #define PREFIX "/usr/lib/uwufetch/"
-  #elif defined(SYSTEM_BASE_ANDROID)
-    #define PREFIX "/data/data/com.termux/files/usr/lib/uwufetch/"
-  #elif defined(SYSTEM_BASE_FREEBSD)
-    #define PREFIX "/usr/lib/uwufetch/"
-  #elif defined(SYSTEM_BASE_OPENBSD)
-  LOG_E("Not Implemented");
-  #elif defined(SYSTEM_BASE_MACOS)
-    #define PREFIX "/usr/local/lib/uwufetch/"
-  #elif defined(SYSTEM_BASE_WINDOWS)
-  LOG_E("Not Implemented");
-  #else
-  LOG_E("System not supported or system base not specified");
-  #endif
-#endif
-  // TODO: implement image printing
-  if (!configuration.logo_path) {
-    if (!user_info.os_name) {
-      configuration.logo_path = malloc(sizeof(char) * (strlen(PREFIX) + strlen("ascii/unknown.txt") + 1));
-      sprintf(configuration.logo_path, PREFIX "ascii/unknown.txt");
-    } else {
-      configuration.logo_path = malloc(sizeof(char) * (strlen(PREFIX) + strlen("ascii/.txt") + strlen(user_info.os_name) + 1));
-      sprintf(configuration.logo_path, PREFIX "ascii/%s.txt", user_info.os_name);
-    }
-  }
-  LOG_V(configuration.logo_path);
-  user_info.logo = configuration.logo_path;
   if (!cache.read) uwufy_all(&user_info);
   if (cache.write) write_cache(&user_info);
 
@@ -437,7 +399,6 @@ int main(int argc, char** argv) {
     if (cache.content) free(cache.content);
     if (user_info.gpu_list) free(user_info.gpu_list);
   }
-  if (configuration.logo_path) free(configuration.logo_path);
   LOG_I("Execution completed successfully with %d errors", logging_error_count);
   return 0;
 }
