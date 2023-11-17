@@ -1,0 +1,5 @@
+uchr=($(grep '^unsigned char' src/ascii_embed.h | sed 's/unsigned char //g;s/\[\] = {/,/g'))
+uint=($(grep '^unsigned int' src/ascii_embed.h | awk '{ print $5 }' | sed 's/;/,/g'))
+printf "\nstruct logo_embed* logos = {" >> src/ascii_embed.h
+i=0;while [ $i -lt ${#uchr} ]; do printf "{${uchr[i]}, ${uint[i]}, $i}," >> src/ascii_embed.h; i=$((i+1));done
+

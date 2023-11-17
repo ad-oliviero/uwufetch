@@ -9,3 +9,4 @@
 build
 *.gz
 uwufetch_*
+ascii_embed.h

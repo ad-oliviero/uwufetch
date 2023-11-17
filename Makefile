@@ -9,6 +9,7 @@ BUILD_DIR = build
 TEST_DIR = $(SRC_DIR)/libfetch/tests
 SRCS = $(wildcard $(SRC_DIR)/*.c)
 OBJS = $(patsubst $(SRC_DIR)/%,$(BUILD_DIR)/%,$(SRCS:.c=.o))
+HEADERS = $(wildcard $(SRC_DIR)/*.h) + $(SRC_DIR)/ascii_embed.h
 
 # installation directories
 PREFIX_DIR =
@@ -18,6 +19,8 @@ BIN_DIR = $(USR_DIR)/bin
 LIB_DIR = $(USR_DIR)/lib
 MAN_DIR = $(USR_DIR)/share/man/man1
 INC_DIR = $(USR_DIR)/include
+
+RELEASE_SCRIPTS = release_scripts/*.sh
 
 # compiler "settings"
 CC = gcc
@@ -30,8 +33,6 @@ ifeq ($(shell $(CC) -v 2>&1 | grep clang >/dev/null; echo $$?), 0) # if the comp
 	CFLAGS_DEBUG += -Wno-gnu-zero-variadic-macro-arguments $(TEMP_CFLAG_FIXES)
 	CFLAGS += $(TEMP_CFLAG_FIXES)
 endif
-
-RELEASE_SCRIPTS = release_scripts/*.sh
 
 ifeq ($(OS), Windows_NT)
 	PLATFORM = $(OS)
@@ -48,11 +49,23 @@ all: $(BUILD_DIR)/$(TARGET)
 $(BUILD_DIR):
 	@mkdir -pv $(BUILD_DIR)
 
-$(BUILD_DIR)/$(TARGET): $(OBJS) $(BUILD_DIR)/libfetch.a | $(BUILD_DIR)
+$(BUILD_DIR)/$(TARGET): $(OBJS) $(HEADERS) $(BUILD_DIR)/libfetch.a | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(BUILD_DIR)/libfetch.a
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(SRC_DIR)/ascii_embed.h:
+	@printf "#ifndef _ASCII_EMBED_H_\n#define _ASCII_EMBED_H_\n\n" >> $@
+	@printf "struct logo_embed {unsigned char* content; unsigned int length; unsigned int id;};\n\n" >> $@
+	@$(foreach f,$(wildcard res/ascii/*.txt),xxd -n "$(basename $f)" -i "$f" >> $@;)
+	uchr=($$(grep '^unsigned char' $@ | sed 's/unsigned char //g;s/\[\] = {//g')); \
+	uint=($$(grep '^unsigned int' $@ | awk '{ print $$5 }' | sed 's/;//g')); \
+	printf "\nstruct logo_embed* logos = {" >> $@; \
+	i=0;while [ $$i -lt $${#uchr} ]; do printf "{$${uchr[i]}, $${uint[i]}, $$i}," >> src/ascii_embed.h; i=$$((i+1));done
+	sed -i 's/^unsigned/static unsigned/g' $@
+	printf "};\n#endif\n" >> $@
+
 
 libfetch: $(BUILD_DIR)/libfetch.a $(BUILD_DIR)/libfetch.so
 
@@ -129,4 +142,5 @@ endif
 clean:
 	@rm -rvf $(BUILD_DIR)
 	@rm -rvf $(RELEASE_NAME)*
+	@rm -fv $(SRC_DIR)/ascii_embed.h
 
