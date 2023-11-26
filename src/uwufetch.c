@@ -259,6 +259,9 @@ char* render(struct info* user_info, struct configuration* configuration) {
   for (size_t i = 0; i < buf_sz; i++)
     if (buffer[i] == 0) buffer[i] = '\n';
 
+  for (size_t i = 0; i < ; i++)
+
+
   // null terminate after the last char
   buffer[cursor < buf_sz ? cursor : buf_sz - 1] = 0;
   return buffer;

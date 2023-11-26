@@ -9,7 +9,7 @@ BUILD_DIR = build
 TEST_DIR = $(SRC_DIR)/libfetch/tests
 SRCS = $(wildcard $(SRC_DIR)/*.c)
 OBJS = $(patsubst $(SRC_DIR)/%,$(BUILD_DIR)/%,$(SRCS:.c=.o))
-HEADERS = $(wildcard $(SRC_DIR)/*.h) + $(SRC_DIR)/ascii_embed.h
+HEADERS = $(wildcard $(SRC_DIR)/*.h) $(SRC_DIR)/ascii_embed.h
 
 # installation directories
 PREFIX_DIR =
@@ -55,10 +55,10 @@ $(BUILD_DIR)/$(TARGET): $(OBJS) $(HEADERS) $(BUILD_DIR)/libfetch.a | $(BUILD_DIR
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-$(SRC_DIR)/ascii_embed.h:
+$(SRC_DIR)/ascii_embed.h: $(BUILD_DIR)
 	@printf "#ifndef _ASCII_EMBED_H_\n#define _ASCII_EMBED_H_\n\n" >> $@
 	@printf "struct logo_embed {unsigned char* content; unsigned int length; unsigned int id;};\n\n" >> $@
-	@$(foreach f,$(wildcard res/ascii/*.txt),xxd -n "$(basename $f)" -i "$f" >> $@;)
+	@$(foreach f,$(wildcard res/ascii/*.txt),cat $f | $(shell cat res/ascii/colors.sh) | xxd -i "$f" >> $@;)
 	uchr=($$(grep '^unsigned char' $@ | sed 's/unsigned char //g;s/\[\] = {//g')); \
 	uint=($$(grep '^unsigned int' $@ | awk '{ print $$5 }' | sed 's/;//g')); \
 	printf "\nstruct logo_embed* logos = {" >> $@; \
