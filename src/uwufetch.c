@@ -15,6 +15,7 @@
 
 #include "uwufetch.h"
 #include "actrie.h"
+#include "ascii_embed.h"
 #include "cache.h"
 #include "libfetch/fetch.h"
 #include "libfetch/logging.h"
@@ -256,11 +257,23 @@ char* render(struct info* user_info, struct configuration* configuration) {
   // clang-format on
 
   // replace all the null terminators added by snprintf
-  for (size_t i = 0; i < buf_sz; i++)
-    if (buffer[i] == 0) buffer[i] = '\n';
+  int* lines    = malloc(buf_sz);
+  int linecount = 0;
+  for (size_t i = buf_sz; i > 0; i--) { // going backwards so I can decrement linecount later
+    if (buffer[i] == 0) {
+      buffer[i]          = '\n';
+      lines[linecount++] = i + 1;
+    }
+  }
 
-  for (size_t i = 0; i < ; i++)
-
+  cursor = 0;
+  for (size_t i = 0; i < logos[user_info->logo_id].length; i++) {
+    if (logos[user_info->logo_id].content[i] == '\n')
+      cursor = lines[linecount--]; // decrementing linecount because the array is reversed
+    else
+      buffer[cursor++] = logos[user_info->logo_id].content[i];
+  }
+  free(lines);
 
   // null terminate after the last char
   buffer[cursor < buf_sz ? cursor : buf_sz - 1] = 0;

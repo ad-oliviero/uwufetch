@@ -49,22 +49,17 @@ all: $(BUILD_DIR)/$(TARGET)
 $(BUILD_DIR):
 	@mkdir -pv $(BUILD_DIR)
 
-$(BUILD_DIR)/$(TARGET): $(OBJS) $(HEADERS) $(BUILD_DIR)/libfetch.a | $(BUILD_DIR)
+$(BUILD_DIR)/$(TARGET): $(HEADERS) $(OBJS) $(BUILD_DIR)/libfetch.a | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(BUILD_DIR)/libfetch.a
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-$(SRC_DIR)/ascii_embed.h: $(BUILD_DIR)
+$(SRC_DIR)/ascii_embed.h:
 	@printf "#ifndef _ASCII_EMBED_H_\n#define _ASCII_EMBED_H_\n\n" >> $@
-	@printf "struct logo_embed {unsigned char* content; unsigned int length; unsigned int id;};\n\n" >> $@
-	@$(foreach f,$(wildcard res/ascii/*.txt),cat $f | $(shell cat res/ascii/colors.sh) | xxd -i "$f" >> $@;)
-	uchr=($$(grep '^unsigned char' $@ | sed 's/unsigned char //g;s/\[\] = {//g')); \
-	uint=($$(grep '^unsigned int' $@ | awk '{ print $$5 }' | sed 's/;//g')); \
-	printf "\nstruct logo_embed* logos = {" >> $@; \
-	i=0;while [ $$i -lt $${#uchr} ]; do printf "{$${uchr[i]}, $${uint[i]}, $$i}," >> src/ascii_embed.h; i=$$((i+1));done
-	sed -i 's/^unsigned/static unsigned/g' $@
-	printf "};\n#endif\n" >> $@
+	@printf "struct logo_embed {unsigned char* content; unsigned int length; unsigned int id;};\n\nstatic struct logo_embed logos[] = {\n" >> $@
+	@$(foreach f,$(wildcard res/ascii/*.txt),cat $f | $(shell cat res/ascii/colors.sh) | xxd -n content -i "$f" | awk 'BEGIN {print "(struct logo_embed){"} {print "  " $$0} END {print "  .id = 0}," }' | sed 's/unsigned int content_len/.length/g;s/unsigned char /./g;s/\[\] = /= \(unsigned char\[\]\)/g;s/;/,/g' >> $@;)
+	printf "};\n\n#endif\n" >> $@
 
 
 libfetch: $(BUILD_DIR)/libfetch.a $(BUILD_DIR)/libfetch.so
