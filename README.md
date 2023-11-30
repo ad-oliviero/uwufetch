@@ -1,12 +1,25 @@
+# DEVELOPMENT BRANCH
+- Stable? No.
+
 # NOTES ABOUT THIS BRANCH
-- Initially, in this branch I was just rewriting `libfetch`, but for some reason that I can't remember, I started rewriting some parts of the 'frontend' (basically files not in `src/libfetch`)
+- I created this branch because I started working on a rewrite of `libfetch` in the `libfetch-rewrite`, but my work expanded to basically rewriting the whole project.
 - **NOT STABLE** This branch is work in progress and while it *does* work, it might crash.
-- **LINUX and ANDROID ONLY** I just (14/11/23) completed `fetch.c` for linux and android (at least on my device). Tests are needed though.
 
-### When will this branch be complete?
-The day I wake up and every test passes on every supported system, is the day this branch will be merged with [main](https://github.com/TheDarkBug/uwufetch).
+## TODO list
+- [ ] Add a pre-config argument parser function
+- [ ] Create a man page for `libfetch`
+- [ ] GitHub actions for more platforms
+- [ ] `--full` option that overrides the config file to print everything
+- [ ] Multi threading
+- [ ] New rules should be added to [CONTRIBUTING.md](/CONTRIBUTING.md)
+- [ ] Move "thing" "uwuthing" translation data to external file
+- [x] Embed static files (except images) in the executable (if performance is not impacted)
+- [ ] Rewrite `ascii_debug` makefile target
+- [ ] Write a new "rendering" function
+- [ ] Review the `actrie.c` and `actrie.h` files
+- [ ] Write a new "supported distros" list
 
-### What is the progress right now?
+### What does work?
 | Function (libfetch) | Arch Linux | Linux (not Arch) | Android | FreeBSD | OpenBSD | MacOS | Windows |
 |---|---|---|---|---|---|---|---|
 |`get_user_name`|✅ ✅|✅ ❌|✅ ❌|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
@@ -25,22 +38,10 @@ The day I wake up and every test passes on every supported system, is the day th
 |`get_uptime`|✅ ✅|✅ ❌|✅ ❌|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
 |`get_terminal_size`|✅ ✅|✅ ❌|✅ ❌|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
 
+TODO: add list of things that work or do not work in "the frontend" (and define what "the frontend" means)
+
 ### Meaning of the table above
 Two ckeckboxes are available: **[** *implemented* **]** **[** *tested* **]**
-
-## TODO list
-- [ ] Add a pre-config argument parser function
-- [ ] Create a man page for `libfetch`
-- [ ] GitHub actions for more platforms
-- [ ] `--full` option that overrides the config file to print everything
-- [ ] Multi threading
-- [ ] New rules should be added to [CONTRIBUTING.md](/CONTRIBUTING.md)
-- [ ] Move "thing" "uwuthing" translation data to external file
-- [x] Embed static files (except images) in the executable (if performance is not impacted)
-- [ ] Rewrite `ascii_debug` makefile target
-- [ ] Write a new "rendering" function
-- [ ] Review the `actrie.c` and `actrie.h` files
-
 
 # UwUFetch
 
