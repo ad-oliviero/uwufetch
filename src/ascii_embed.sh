@@ -6,7 +6,7 @@ out_file=$SRC_DIR/ascii_embed.h
 txts=$(find res/ascii -name "*.txt" -print)
 txtsc=$(printf "$txts\n" | wc -l)
 
-printf "#ifndef _ASCII_EMBED_H_\n#define _ASCII_EMBED_H_\n\n#include <stdint.h>\n\nstruct logo_embed {uint64_t id; unsigned int length; char content[8192];};\n\nstatic struct logo_embed logos[$txtsc] __attribute__((unused)) = {\n" >> $out_file
+printf "#ifndef _ASCII_EMBED_H_\n#define _ASCII_EMBED_H_\n\n#include <stdint.h>\n\nstruct logo_embed {uint64_t id; unsigned int length; unsigned char content[8192];};\n\nstatic struct logo_embed logos[$txtsc] __attribute__((unused)) = {\n" >> $out_file
 
 for f in $txts; do
   bn=$(basename $f | sed "s/.txt//g")
@@ -34,7 +34,6 @@ print(hex(h & 0xffffffffffffffff), end="")
   content=$(printf "$content" | grep -v "content_len")
   printf "    .length = %s,\n" $clen >> $out_file
   printf "    $content},\n" | sed "s/unsigned char /./g;s/\[\]//g" | tr -d ';' >> $out_file
-  break
 done
 
 printf "};\nstatic unsigned int logos_count __attribute__((unused)) = $txtsc;\n\n#endif\n" >> $out_file
