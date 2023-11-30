@@ -9,7 +9,7 @@ uint64_t jenkins_hash(const char* key, size_t length) {
   size_t i      = 0;
   uint64_t hash = 0;
   while (i != length) {
-    hash += key[i++];
+    hash += (uint64_t)key[i++];
     hash += hash << 10;
     hash ^= hash >> 6;
   }

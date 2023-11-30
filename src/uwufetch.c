@@ -257,7 +257,7 @@ char* render(struct info* user_info, struct configuration* configuration) {
   // clang-format on
 
   // replace all the null terminators added by snprintf
-  int* lines    = malloc(buf_sz);
+  size_t* lines = malloc(buf_sz);
   int linecount = 0;
   for (size_t i = buf_sz; i > 0; i--) { // going backwards so I can decrement linecount later
     if (buffer[i] == 0) {
