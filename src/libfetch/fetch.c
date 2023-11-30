@@ -307,6 +307,7 @@ char* get_model(void) {
 #elif defined(SYSTEM_BASE_ANDROID)
   LOG_I("getting model name with getprop (__system_property_get())");
   __system_property_get("ro.product.marketname", model);
+  if (!model) __system_property_get("ro.product.vendor.marketname", model);
 #elif defined(SYSTEM_BASE_FREEBSD)
   char buf[BUFFER_SIZE] = {0};
   unsigned long int len = sizeof(buf);
