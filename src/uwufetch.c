@@ -266,6 +266,7 @@ char* render(struct info* user_info, struct configuration* configuration) {
     }
   }
 
+  LOG_W("TODO: a new rendering system for the logo should be implemented");
   // for (size_t i = 0; i < logos_count; i++) {
   //   if (logos[i].id == user_info->logo_id) {
   //     cursor = 0;

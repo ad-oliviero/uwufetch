@@ -1,4 +1,5 @@
 # NOTES ABOUT THIS BRANCH
+- Initially, in this branch I was just rewriting `libfetch`, but for some reason that I can't remember, I started rewriting some parts of the 'frontend' (basically files not in `src/libfetch`)
 - **NOT STABLE** This branch is work in progress and while it *does* work, it might crash.
 - **LINUX and ANDROID ONLY** I just (14/11/23) completed `fetch.c` for linux and android (at least on my device). Tests are needed though.
 
