@@ -266,18 +266,18 @@ char* render(struct info* user_info, struct configuration* configuration) {
     }
   }
 
-  for (size_t i = 0; i < logos_count; i++) {
-    if (logos[i].id == user_info->logo_id) {
-      cursor = 0;
-      for (size_t j = 0; j < logos[i].length; j++) {
-        if (logos[i].content[j] == '\n')
-          cursor = lines[linecount--]; // decrementing linecount because the array is reversed
-        else
-          buffer[cursor++] = logos[user_info->logo_id].content[i];
-      }
-      break;
-    }
-  }
+  // for (size_t i = 0; i < logos_count; i++) {
+  //   if (logos[i].id == user_info->logo_id) {
+  //     cursor = 0;
+  //     for (size_t j = 0; j < logos[i].length; j++) {
+  //       if (logos[i].content[j] == '\n')
+  //         cursor = lines[linecount--]; // decrementing linecount because the array is reversed
+  //       else
+  //         buffer[cursor++] = logos[i].content[j];
+  //     }
+  //     break;
+  //   }
+  // }
 
   free(lines);
 
@@ -409,8 +409,6 @@ int main(int argc, char** argv) {
 
   // before we "uwufy" the os name, we need to calculate the jenkins hash of it
   if (user_info.os_name) user_info.logo_id = jenkins_hash(user_info.os_name, strlen(user_info.os_name));
-  printf("'%s' 0x%016lx\n", user_info.os_name, user_info.logo_id);
-  exit(0);
   if (!cache.read) uwufy_all(&user_info);
   if (cache.write) write_cache(&user_info);
 
