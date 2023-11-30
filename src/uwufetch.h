@@ -6,6 +6,7 @@
 #endif
 
 #include <stdbool.h>
+#include <stdint.h>
 #ifndef _WIN32
   #include <sys/ioctl.h>
 #endif // _WIN32
@@ -46,8 +47,8 @@ struct info {
       *packages;
   int screen_width,
       screen_height,
-      total_pkgs,
-      logo_id;
+      total_pkgs;
+  uint64_t logo_id;
   unsigned long memory_total, memory_used;
   long uptime;
 

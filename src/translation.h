@@ -1,6 +1,10 @@
 #ifndef __TRANSLATION_H__
 #define __TRANSLATION_H__
+#include <stdint.h>
+#include <stdlib.h>
 
+// calculate the id of the distro logo, taken from wikipedia
+uint64_t jenkins_hash(const char*, size_t);
 // Replaces all terms in a string with another term.
 void replace(char*, const char*, const char*);
 // Replaces all terms in a string with another term, case insensitive

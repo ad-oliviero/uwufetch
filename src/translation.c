@@ -4,6 +4,21 @@
 #include "libfetch/logging.h"
 #include "uwufetch.h"
 
+// calculate the id of the distro logo, taken from wikipedia
+uint64_t jenkins_hash(const char* key, size_t length) {
+  size_t i      = 0;
+  uint64_t hash = 0;
+  while (i != length) {
+    hash += key[i++];
+    hash += hash << 10;
+    hash ^= hash >> 6;
+  }
+  hash += hash << 3;
+  hash ^= hash >> 11;
+  hash += hash << 15;
+  return hash;
+}
+
 // Replaces all terms in a string with another term.
 void replace(char* original, const char* search, const char* replacer) {
   char* ch;
