@@ -1,3 +1,4 @@
+# Development of new features was moved to [development](https://github.com/TheDarkBug/uwufetch/tree/development)
 # NOTES ABOUT THIS BRANCH
 - Initially, in this branch I was just rewriting `libfetch`, but for some reason that I can't remember, I started rewriting some parts of the 'frontend' (basically files not in `src/libfetch`)
 - **NOT STABLE** This branch is work in progress and while it *does* work, it might crash.
