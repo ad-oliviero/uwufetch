@@ -36,7 +36,10 @@ Two ckeckboxes are available: **[** *implemented* **]** **[** *tested* **]**
 - [ ] Multi threading
 - [ ] New rules should be added to [CONTRIBUTING.md](/CONTRIBUTING.md)
 - [ ] Move "thing" "uwuthing" translation data to external file
-- [ ] Embed static files (except images) in the executable (if performance is not impacted)
+- [x] Embed static files (except images) in the executable (if performance is not impacted)
+- [ ] Rewrite `ascii_debug` makefile target
+- [ ] Write a new "rendering" function
+- [ ] Review the `actrie.c` and `actrie.h` files
 
 
 # UwUFetch
