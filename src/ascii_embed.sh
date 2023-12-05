@@ -6,7 +6,7 @@ out_file=$SRC_DIR/ascii_embed.h
 txts=$(find res/ascii -name "*.txt" -print)
 txtsc=$(printf "$txts\n" | wc -l)
 
-printf "#ifndef _ASCII_EMBED_H_\n#define _ASCII_EMBED_H_\n\n#include <stdint.h>\n\nstruct logo_embed {uint64_t id; unsigned int length; unsigned char content[8192];};\n\nstatic struct logo_embed logos[$txtsc] __attribute__((unused)) = {\n" >> $out_file
+printf "#ifndef _ASCII_EMBED_H_\n#define _ASCII_EMBED_H_\n\n#include <stdint.h>\n\nstruct logo_embed {uint64_t id; unsigned int length; unsigned char content[$(expr $(du -b $txts | cut -f1 | sort -rn | head -n1) + 1)];};\n\nstatic struct logo_embed logos[$txtsc] __attribute__((unused)) = {\n" >> $out_file
 
 for f in $txts; do
   bn=$(basename $f | sed "s/.txt//g")
