@@ -204,12 +204,20 @@ char* render(struct info* user_info, struct configuration* configuration) {
   memset(buffer, ' ', buf_sz);
   size_t current_line = 0;
 #define LOGO_OFFSET 20
-  size_t cursor = (width * current_line++) + LOGO_OFFSET;
+  size_t cursor = (width * current_line++);
 
-  size_t logo_size   = logos[user_info->logo_id].length;
-  char* logo_content = (char*)logos[user_info->logo_id].content;
+  size_t logo_idx = 0;
 
-  for (size_t i = 0; i < logo_size; i++) {
+  for (size_t i = 0; i < logos_count; i++) {
+    if (user_info->logo_id == logos[i].id) {
+      logo_idx = i;
+      break;
+    }
+  }
+  for (size_t i = 0; i < logos[logo_idx].line_count; i++) {
+    size_t llen = logos[logo_idx].lines[i].length;
+    cursor += (size_t)snprintf(buffer + cursor, llen, "%s", logos[logo_idx].lines[i].content);
+    buffer[cursor - 1] = '\n';
   }
 
   goto end_label;

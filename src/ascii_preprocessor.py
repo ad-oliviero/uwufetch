@@ -89,16 +89,14 @@ if __name__ == "__main__":
             newContent += f".line_count={len(lines)},.lines={{"
             # convert every line in its hex representation
             for l in lines:
-                lac = [ord(c) for c in l]
-                # replace unicode chars with its \u representation
-                for i, c in enumerate(lac):
-                    if c > 255:
-                        lac[i : i + 1] = [ord(cc) for cc in "\\u{:04x}".format(c)]
-                llen = len(lac) + 1
+                lineAsciiCodes = [c for c in l.encode("utf-8")]
+                llen = len(lineAsciiCodes)
                 if llen > maxLineLength:
                     maxLineLength = llen
                 newContent += (
-                    f"{{.length = {llen},.content={{" + ",".join(map(hex, lac)) + ", 0x0}},"
+                    f"{{.length = {llen},.content={{"
+                    + ",".join(map(hex, lineAsciiCodes))
+                    + "}},"
                 )
 
         newContent += "},},\n"
