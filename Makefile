@@ -56,7 +56,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(SRC_DIR)/ascii_embed.h:
-	bash $(SRC_DIR)/ascii_embed.sh
+	python $(SRC_DIR)/ascii_preprocessor.py
 
 libfetch: $(BUILD_DIR)/libfetch.a $(BUILD_DIR)/libfetch.so
 

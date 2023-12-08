@@ -205,6 +205,14 @@ char* render(struct info* user_info, struct configuration* configuration) {
   size_t current_line = 0;
 #define LOGO_OFFSET 20
   size_t cursor = (width * current_line++) + LOGO_OFFSET;
+
+  size_t logo_size   = logos[user_info->logo_id].length;
+  char* logo_content = (char*)logos[user_info->logo_id].content;
+
+  for (size_t i = 0; i < logo_size; i++) {
+  }
+
+  goto end_label;
 #define PRINTLN_BUF(offset, format, ...)                                                     \
   {                                                                                          \
     snprintf(buffer + cursor, width - offset + aeccount(format) + 3, format, ##__VA_ARGS__); \
@@ -265,22 +273,8 @@ char* render(struct info* user_info, struct configuration* configuration) {
       lines[linecount++] = i + 1;
     }
   }
-
-  LOG_W("TODO: a new rendering system for the logo should be implemented");
-  // for (size_t i = 0; i < logos_count; i++) {
-  //   if (logos[i].id == user_info->logo_id) {
-  //     cursor = 0;
-  //     for (size_t j = 0; j < logos[i].length; j++) {
-  //       if (logos[i].content[j] == '\n')
-  //         cursor = lines[linecount--]; // decrementing linecount because the array is reversed
-  //       else
-  //         buffer[cursor++] = logos[i].content[j];
-  //     }
-  //     break;
-  //   }
-  // }
-
   free(lines);
+end_label:
 
   // null terminate after the last char
   buffer[cursor < buf_sz ? cursor : buf_sz - 1] = 0;
