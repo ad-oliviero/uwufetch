@@ -201,13 +201,11 @@ char* render(struct info* user_info, struct configuration* configuration) {
   const size_t height = (size_t)(enabled_flags < user_info->terminal_size.ws_row ? enabled_flags : user_info->terminal_size.ws_row);
   const size_t buf_sz = ((width * height) + 1) * 2;
   char* buffer        = malloc(buf_sz);
-  memset(buffer, ' ', buf_sz);
-  size_t current_line = 0;
+  memset(buffer, '-', buf_sz);
 #define LOGO_OFFSET 20
-  size_t cursor = (width * current_line++);
+  size_t cursor = 0;
 
   size_t logo_idx = 0;
-
   for (size_t i = 0; i < logos_count; i++) {
     if (user_info->logo_id == logos[i].id) {
       logo_idx = i;
@@ -215,11 +213,10 @@ char* render(struct info* user_info, struct configuration* configuration) {
     }
   }
   for (size_t i = 0; i < logos[logo_idx].line_count; i++) {
-    size_t llen = logos[logo_idx].lines[i].length;
-    cursor += (size_t)snprintf(buffer + cursor, llen, "%s", logos[logo_idx].lines[i].content);
-    buffer[cursor - 1] = '\n';
+    strncpy(&buffer[(i * width) + cursor], (char*)logos[logo_idx].lines[i].content, logos[logo_idx].lines[i].length);
+    cursor += logos[logo_idx].lines[i].visual_length + 9; // I have no idea about why I have to add a 9
   }
-
+  cursor = buf_sz;
   goto end_label;
 #define PRINTLN_BUF(offset, format, ...)                                                     \
   {                                                                                          \
@@ -272,18 +269,11 @@ char* render(struct info* user_info, struct configuration* configuration) {
     }
   // clang-format on
 
-  // replace all the null terminators added by snprintf
-  size_t* lines = malloc(buf_sz);
-  int linecount = 0;
-  for (size_t i = buf_sz; i > 0; i--) { // going backwards so I can decrement linecount later
-    if (buffer[i] == 0) {
-      buffer[i]          = '\n';
-      lines[linecount++] = i + 1;
-    }
-  }
-  free(lines);
 end_label:
-
+  // replace all the null terminators added by snprintf
+  for (size_t i = 0; i < buf_sz; i++)
+    if (buffer[i] == 0)
+      buffer[i] = '\n';
   // null terminate after the last char
   buffer[cursor < buf_sz ? cursor : buf_sz - 1] = 0;
   return buffer;

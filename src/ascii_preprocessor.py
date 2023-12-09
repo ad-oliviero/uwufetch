@@ -47,26 +47,29 @@ def ph2c(src: str) -> str:
 
 # MaKe Line Indipendent
 # separates colors (placeholders) for each line
-def mkli(src: str, color: list[tuple]) -> str:
+def mkli(src: str, color: list[tuple]) -> tuple[str, int]:
+    in_line_colors = [(s.group(), s.start()) for s in re.finditer(ALL_COLORS_REGEX, l)]
+    cc = len(in_line_colors)
     if src != "":
-        lc = [(s.group(), s.start()) for s in re.finditer(ALL_COLORS_REGEX, src)]
-        if lc != []:
-            if lc[0][1] != 0 and color[0] != None:
+        if in_line_colors != []:
+            if in_line_colors[0][1] != 0 and color[0] != None:
                 src = color[0][0] + src
-            if lc[-1][0] != "{NORMAL}":
-                color[0] = lc[len(lc) - 1]
+            if in_line_colors[-1][0] != "{NORMAL}":
+                color[0] = in_line_colors[len(in_line_colors) - 1]
                 src += "{NORMAL}"
+                cc += 1
         else:
             if color[0] != None:
                 src = color[0][0] + src
             src += "{NORMAL}"
-    return src
+            cc += 1
+    return (src, cc)
 
 
 if __name__ == "__main__":
     newContent = ""
     txts = [e for e in os.listdir(ASCII_DIR) if e.endswith(".txt")]
-    newContent += f"static struct logo_embed logos[{len(txts)}] = {{\n"
+    newContent += f"static const struct logo_embed logos[{len(txts)}] = {{\n"
     maxLineLength = 0
     maxLineCount = 0
     for fn in txts:
@@ -81,7 +84,7 @@ if __name__ == "__main__":
             # convert every color_placeholder
             for l in content.split("\n"):
                 if l != "":
-                    l = mkli(l, current_color)
+                    l, cc = mkli(l, current_color)
                     lines.append(ph2c(l))
             lc = len(lines)
             if lc > maxLineCount:
@@ -89,12 +92,16 @@ if __name__ == "__main__":
             newContent += f".line_count={len(lines)},.lines={{"
             # convert every line in its hex representation
             for l in lines:
+                visualLength = 0
+                # increment visual length if some chars are not ascii
+                for c in l:
+                    visualLength += ord(c) > 255
                 lineAsciiCodes = [c for c in l.encode("utf-8")]
                 llen = len(lineAsciiCodes)
                 if llen > maxLineLength:
                     maxLineLength = llen
                 newContent += (
-                    f"{{.length = {llen},.content={{"
+                    f"{{.length = {llen},.visual_length={visualLength},.content={{"
                     + ",".join(map(hex, lineAsciiCodes))
                     + "}},"
                 )
@@ -110,20 +117,20 @@ if __name__ == "__main__":
 #include <unistd.h>
 
 struct logo_line {{
-  size_t length;
-  unsigned char content[{maxLineLength}];
+  const size_t length, visual_length;
+  const unsigned char content[{maxLineLength}];
 }};
 
 struct logo_embed {{
-  uint64_t id;
-  size_t line_count;
-  struct logo_line lines[{maxLineCount}];
+  const uint64_t id;
+  const size_t line_count;
+  const struct logo_line lines[{maxLineCount}];
 }};
 
 """
         + newContent
         + f"""}};
-static unsigned int logos_count __attribute__((unused)) = {len(txts)};
+static const unsigned int logos_count __attribute__((unused)) = {len(txts)};
 #endif // _ASCII_EMBED_H_
 """
     )
