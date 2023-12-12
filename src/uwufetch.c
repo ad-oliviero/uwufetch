@@ -378,7 +378,7 @@ int main(int argc, char** argv) {
       user_info.screen_width  = get_screen_width();
     }
 #if defined(SYSTEM_BASE_ANDROID)
-    if (configuration->shell)
+    if (configuration.shell)
       if (strlen(user_info.shell) > 27) // android shell name was too long
         user_info.shell += 27;
 #endif
