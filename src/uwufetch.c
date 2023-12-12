@@ -177,34 +177,18 @@ void usage(char* arg) {
 }
 
 // count the number of ansi escape code-related characters
-size_t aeccount(const char* str) {
+size_t nasciicount(const unsigned char* str, const size_t len) {
   size_t count = 0;
-  while (*str != 0) {
-    if (*str == '\x1b') {
-      while (*str != '\0' && *str != 'm') {
-        str++;
-        count++;
-      }
+  for (size_t i = 0; i < len; i++) {
+    if (str[i] > 127) {
+      count++;
+      i++;
     }
-    str++;
   }
   return count;
 }
 
-char* render(struct info* user_info, struct configuration* configuration) {
-  // yes this is ugly and bad to maintain, I'll find a better solution later
-  size_t enabled_flags = (size_t)(configuration->user_name + configuration->shell + configuration->model + configuration->kernel +
-                                  configuration->os_name + configuration->cpu + configuration->screen + configuration->memory +
-                                  configuration->packages + configuration->uptime + configuration->colors) +
-                         ((size_t)configuration->gpu_list * (size_t)user_info->gpu_list[0]);
-  const size_t width  = (size_t)(user_info->terminal_size.ws_col);
-  const size_t height = (size_t)(enabled_flags < user_info->terminal_size.ws_row ? enabled_flags : user_info->terminal_size.ws_row);
-  const size_t buf_sz = ((width * height) + 1) * 2;
-  char* buffer        = malloc(buf_sz);
-  memset(buffer, '-', buf_sz);
-#define LOGO_OFFSET 20
-  size_t cursor = 0;
-
+void show_info(struct info* user_info, struct configuration* configuration) {
   size_t logo_idx = 0;
   for (size_t i = 0; i < logos_count; i++) {
     if (user_info->logo_id == logos[i].id) {
@@ -212,31 +196,47 @@ char* render(struct info* user_info, struct configuration* configuration) {
       break;
     }
   }
-  for (size_t i = 0; i < logos[logo_idx].line_count; i++) {
-    strncpy(&buffer[(i * width) + cursor], (char*)logos[logo_idx].lines[i].content, logos[logo_idx].lines[i].length);
-    cursor += logos[logo_idx].lines[i].visual_length + 9; // I have no idea about why I have to add a 9
-  }
-  cursor = buf_sz;
-  goto end_label;
-#define PRINTLN_BUF(offset, format, ...)                                                     \
-  {                                                                                          \
-    snprintf(buffer + cursor, width - offset + aeccount(format) + 3, format, ##__VA_ARGS__); \
-    cursor += strlen(buffer + cursor) + (size_t)offset + 1;                                  \
+  const struct logo_embed* logo = &(logos[logo_idx]);
+
+  const size_t width = (size_t)(user_info->terminal_size.ws_col);
+  const size_t lsize = logo->max_length, isize = (width - logo->max_length);
+  char* lbuf          = malloc(lsize + 1);
+  char* ibuf          = malloc(isize + 1);
+  char* pbuf          = malloc(width + 1);
+  size_t current_line = 0;
+
+  memset(lbuf, 0, lsize + 1);
+  memset(ibuf, 0, isize + 1);
+  memset(pbuf, 0, width + 1);
+
+#define PRINTLN_BUF(format, ...)                                                                                         \
+  {                                                                                                                      \
+    const struct logo_line* ll = &logo->lines[current_line];                                                             \
+    if (current_line < logo->line_count)                                                                                 \
+      snprintf(lbuf, lsize, "%s", ll->content);                                                                          \
+    else if (lbuf) {                                                                                                     \
+      free(lbuf);                                                                                                        \
+      lbuf = NULL;                                                                                                       \
+    }                                                                                                                    \
+    snprintf(ibuf, isize, format, ##__VA_ARGS__);                                                                        \
+    snprintf(pbuf, width, "%-*s%s", (int)(logo->max_length + (lbuf ? ll->visual_length : 0)), lbuf ? lbuf : "", ibuf); \
+    printf("%.*s\n", (int)width, pbuf);                                                                                  \
+    current_line++;                                                                                                      \
   }
 
-  if (configuration->user_name) PRINTLN_BUF(LOGO_OFFSET, BOLD "%s@%s" NORMAL, user_info->user_name, user_info->host_name);
-  if (configuration->os_name) PRINTLN_BUF(LOGO_OFFSET, BOLD "OWOS" NORMAL "     %s", user_info->os_name);
-  if (configuration->model) PRINTLN_BUF(LOGO_OFFSET, BOLD "MOWODEL" NORMAL "  %s", user_info->model);
-  if (configuration->kernel) PRINTLN_BUF(LOGO_OFFSET, BOLD "KEWNEL" NORMAL "   %s", user_info->kernel);
-  if (configuration->cpu) PRINTLN_BUF(LOGO_OFFSET, BOLD "CPUWU" NORMAL "    %s", user_info->cpu);
+  if (configuration->user_name) PRINTLN_BUF(BOLD "%s@%s" NORMAL, user_info->user_name, user_info->host_name);
+  if (configuration->os_name) PRINTLN_BUF(BOLD "OWOS" NORMAL "     %s", user_info->os_name);
+  if (configuration->model) PRINTLN_BUF(BOLD "MOWODEL" NORMAL "  %s", user_info->model);
+  if (configuration->kernel) PRINTLN_BUF(BOLD "KEWNEL" NORMAL "   %s", user_info->kernel);
+  if (configuration->cpu) PRINTLN_BUF(BOLD "CPUWU" NORMAL "    %s", user_info->cpu);
   if (configuration->gpu_list && user_info->gpu_list)
     for (size_t i = 1; i <= (size_t)user_info->gpu_list[0]; i++)
-      PRINTLN_BUF(LOGO_OFFSET, BOLD "GPUWU" NORMAL "    %s", user_info->gpu_list[i]);
-  if (configuration->memory) PRINTLN_BUF(LOGO_OFFSET, BOLD "MEMOWY" NORMAL "   %lu MiB/%lu MiB", user_info->memory_used, user_info->memory_total);
+      PRINTLN_BUF(BOLD "GPUWU" NORMAL "    %s", user_info->gpu_list[i]);
+  if (configuration->memory) PRINTLN_BUF(BOLD "MEMOWY" NORMAL "   %lu MiB/%lu MiB", user_info->memory_used, user_info->memory_total);
   if (configuration->screen && (user_info->screen_width != 0 || user_info->screen_height != 0))
-    PRINTLN_BUF(LOGO_OFFSET, BOLD "SCWEEN" NORMAL "   %dx%d", user_info->screen_width, user_info->screen_height);
-  if (configuration->shell) PRINTLN_BUF(LOGO_OFFSET, BOLD "SHEWW" NORMAL "    %s", user_info->shell);
-  if (configuration->packages) PRINTLN_BUF(LOGO_OFFSET, BOLD "PKGS" NORMAL "     %s", user_info->packages);
+    PRINTLN_BUF(BOLD "SCWEEN" NORMAL "   %dx%d", user_info->screen_width, user_info->screen_height);
+  if (configuration->shell) PRINTLN_BUF(BOLD "SHEWW" NORMAL "    %s", user_info->shell);
+  if (configuration->packages) PRINTLN_BUF(BOLD "PKGS" NORMAL "     %s", user_info->packages);
   if (configuration->uptime) {
     // split the uptime before printing it
     char secs  = (char)(user_info->uptime % 60);
@@ -253,30 +253,21 @@ char* render(struct info* user_info, struct configuration* configuration) {
     sprintf(str_mins, "%im ", mins);
     sprintf(str_hours, "%ih ", hours);
     sprintf(str_days, "%lid ", days);
-    PRINTLN_BUF(LOGO_OFFSET, BOLD "UWUPTIME" NORMAL " %s%s%s%s", days > 0 ? str_days : "", hours > 0 ? str_hours : "", mins > 0 ? str_mins : "", secs > 0 ? str_secs : "");
+    PRINTLN_BUF(BOLD "UWUPTIME" NORMAL " %s%s%s%s", days > 0 ? str_days : "", hours > 0 ? str_hours : "", mins > 0 ? str_mins : "", secs > 0 ? str_secs : "");
   }
 
   // clang-format off
-    if (configuration->colors) {
-#define COLOR_STRING BOLD WHITE BLOCK_CHAR BLOCK_CHAR CYAN BLOCK_CHAR \
-                       BLOCK_CHAR MAGENTA BLOCK_CHAR BLOCK_CHAR BLUE \
-                       BLOCK_CHAR BLOCK_CHAR YELLOW BLOCK_CHAR BLOCK_CHAR \
-                       GREEN BLOCK_CHAR BLOCK_CHAR RED BLOCK_CHAR \
-                       BLOCK_CHAR BLACK BLOCK_CHAR BLOCK_CHAR NORMAL
-#define COLOR_STRING_LEN sizeof(COLOR_STRING)
-      snprintf(buffer + cursor, width - COLOR_STRING_LEN, COLOR_STRING);
-      cursor += COLOR_STRING_LEN;
-    }
+  if (configuration->colors) {
+  #define COLOR_STRING BOLD WHITE BLOCK_CHAR BLOCK_CHAR CYAN BLOCK_CHAR \
+                    BLOCK_CHAR MAGENTA BLOCK_CHAR BLOCK_CHAR BLUE \
+                    BLOCK_CHAR BLOCK_CHAR YELLOW BLOCK_CHAR BLOCK_CHAR \
+                    GREEN BLOCK_CHAR BLOCK_CHAR RED BLOCK_CHAR \
+                    BLOCK_CHAR BLACK BLOCK_CHAR BLOCK_CHAR NORMAL
+   PRINTLN_BUF( COLOR_STRING);
+  }
   // clang-format on
-
-end_label:
-  // replace all the null terminators added by snprintf
-  for (size_t i = 0; i < buf_sz; i++)
-    if (buffer[i] == 0)
-      buffer[i] = '\n';
-  // null terminate after the last char
-  buffer[cursor < buf_sz ? cursor : buf_sz - 1] = 0;
-  return buffer;
+  free(ibuf);
+  if (lbuf) free(lbuf);
 }
 
 // the main function is on the bottom of the file to avoid double function declarations
@@ -405,11 +396,7 @@ int main(int argc, char** argv) {
   if (!cache.read) uwufy_all(&user_info);
   if (cache.write) write_cache(&user_info);
 
-  char* render_buf = render(&user_info, &configuration);
-  if (render_buf) {
-    printf("%s\n", render_buf);
-    free(render_buf);
-  }
+  show_info(&user_info, &configuration);
 
   libfetch_cleanup();
   if (cache.read) {

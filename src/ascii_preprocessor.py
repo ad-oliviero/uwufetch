@@ -75,6 +75,7 @@ if __name__ == "__main__":
     for fn in txts:
         bnfn = fn.replace(".txt", "")
         newContent += f"{{.id={hex(jenkins_hash(bnfn))}, // file name: {bnfn}\n"
+        localMaxLineLength = 0
         with open(f"{ASCII_DIR}/{fn}", "r") as af:
             content = af.read()
             lines = []
@@ -89,7 +90,7 @@ if __name__ == "__main__":
             lc = len(lines)
             if lc > maxLineCount:
                 maxLineCount = lc
-            newContent += f".line_count={len(lines)},.lines={{"
+            newContent += f".line_count={len(lines)},.max_length={{MAX_LENGTH_PLACEHOLDER_{fn}}},.lines={{"
             # convert every line in its hex representation
             for l in lines:
                 visualLength = 0
@@ -100,11 +101,16 @@ if __name__ == "__main__":
                 llen = len(lineAsciiCodes)
                 if llen > maxLineLength:
                     maxLineLength = llen
+                if llen > localMaxLineLength:
+                    localMaxLineLength = llen
                 newContent += (
-                    f"{{.length = {llen},.visual_length={visualLength},.content={{"
+                    f"{{.length = {llen+1},.visual_length={visualLength},.content={{"
                     + ",".join(map(hex, lineAsciiCodes))
                     + "}},"
                 )
+            newContent = newContent.replace(
+                f"{{MAX_LENGTH_PLACEHOLDER_{fn}}}", str(localMaxLineLength)
+            )
 
         newContent += "},},\n"
 
@@ -123,7 +129,7 @@ struct logo_line {{
 
 struct logo_embed {{
   const uint64_t id;
-  const size_t line_count;
+  const size_t line_count, max_length;
   const struct logo_line lines[{maxLineCount}];
 }};
 
