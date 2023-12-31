@@ -2,11 +2,24 @@ NAME = uwufetch
 BIN_FILES = uwufetch.c
 LIB_FILES = fetch.c
 UWUFETCH_VERSION = $(shell git describe --tags)
-CFLAGS = -O3 -pthread -DUWUFETCH_VERSION=\"$(UWUFETCH_VERSION)\"
-CFLAGS_DEBUG = -Wall -Wextra -g -pthread -DUWUFETCH_VERSION=\"$(UWUFETCH_VERSION)\" -D__DEBUG__
-CC = cc
-AR = ar
-DESTDIR = /usr
+COMMON_FLAGS = -pthread -DUWUFETCH_VERSION=\"$(UWUFETCH_VERSION)\"
+ALL_CFLAGS = -O3 $(COMMON_FLAGS) $(CFLAGS)
+ALL_CFLAGS_DEBUG = -Wall -Wextra -g $(COMMON_FLAGS) -D__DEBUG__ $(CFLAGS)
+
+INSTALL ?= install
+INSTALL_PROGRAM = $(INSTALL)
+INSTALL_DATA = $(INSTALL) -m 644
+prefix ?= /usr/local
+exec_prefix ?= $(prefix)
+bindir ?= $(exec_prefix)/bin
+datarootdir ?= $(prefix)/share
+sysconfdir ?= $(prefix)/etc
+includedir ?= $(prefix)/include
+libdir ?= $(exec_prefix)/lib
+mandir ?= $(datarootdir)/man
+man1dir ?= $(mandir)/man1
+manext ?= .1
+
 RELEASE_SCRIPTS = release_scripts/*.sh
 ifeq ($(OS), Windows_NT)
 	PLATFORM = $(OS)
@@ -16,79 +29,58 @@ endif
 PLATFORM_ABBR = $(PLATFORM)
 
 ifeq ($(PLATFORM), Linux)
-	PREFIX		= bin
-	LIBDIR		= lib
-	INCDIR		= include
-	ETC_DIR		= /etc
-	MANDIR		= share/man/man1
 	PLATFORM_ABBR = linux
 	ifeq ($(shell uname -o), Android)
-		CFLAGS				+= -DPKGPATH=\"/data/data/com.termux/files/usr/bin/\"
-		CFLAGS_DEBUG	+= -DPKGPATH=\"/data/data/com.termux/files/usr/bin/\"
-		DESTDIR				= /data/data/com.termux/files/usr
-		ETC_DIR				= $(DESTDIR)/etc
+		COMMON_FLAGS += -DPKGPATH=\"/data/data/com.termux/files/usr/bin/\"
 		PLATFORM_ABBR	= android
 	endif
 else ifeq ($(PLATFORM), Darwin)
-	PREFIX		= local/bin
-	LIBDIR		= local/lib
-	INCDIR		= local/include
-	ETC_DIR		= /etc
-	MANDIR		= local/share/man/man1
 	PLATFORM_ABBR = macos
 else ifeq ($(PLATFORM), FreeBSD)
-	CFLAGS		+= -D__FREEBSD__ -D__BSD__
-	CFLAGS_DEBUG += -D__FREEBSD__ -D__BSD__
-	PREFIX		= bin
-	LIBDIR		= lib
-	INCDIR		= include
-	ETC_DIR		= /etc
-	MANDIR		= share/man/man1
+	COMMON_FLAGS += -D__FREEBSD__ -D__BSD__
 	PLATFORM_ABBR = freebsd
 else ifeq ($(PLATFORM), OpenBSD)
-	CFLAGS		+= -D__OPENBSD__ -D__BSD__
-	CFLAGS_DEBUG += -D__OPENBSD__ -D__BSD__
-	PREFIX		= bin
-	LIBDIR		= lib
-	INCDIR		= include
-	ETC_DIR		= /etc
-	MANDIR		= share/man/man1
+	COMMON_FLAGS += -D__OPENBSD__ -D__BSD__
 	PLATFORM_ABBR = openbsd
 else ifeq ($(PLATFORM), Windows_NT)
-	CC					= gcc
-	PREFIX			= "C:\Program Files"
-	LIBDIR			=
-	INCDIR			=
-	MANDIR			=
+	CC		= gcc
+	bindir 		= "C:\Program Files"
+	libdir		=
+	includedir	=
+	man1dir		=
 	RELEASE_SCRIPTS = release_scripts/*.ps1
 	PLATFORM_ABBR	= win64
-	EXT				= .exe
+	EXT		= .exe
 else ifeq ($(PLATFORM), linux4win)
-	CC				= x86_64-w64-mingw32-gcc
-	PREFIX			=
-	CFLAGS			+= -D_WIN32
-	LIBDIR			=
-	INCDIR		    =
-	MANDIR			=
+	CC		= x86_64-w64-mingw32-gcc
+	COMMON_FLAGS	+= -D_WIN32
+	bindir		=
+	libdir		=
+	includedir	=
+	man1dir		=
 	RELEASE_SCRIPTS = release_scripts/*.ps1
 	PLATFORM_ABBR	= win64
-	EXT				= .exe
+	EXT		= .exe
 endif
 
-build: $(BIN_FILES) lib
-	$(CC) $(CFLAGS) -o $(NAME) $(BIN_FILES) lib$(LIB_FILES:.c=.a)
+all: $(NAME) libs
+libs: libfetch.a libfetch.so
 
-lib: $(LIB_FILES)
-	$(CC) $(CFLAGS) -fPIC -c -o $(LIB_FILES:.c=.o) $(LIB_FILES)
-	$(AR) rcs lib$(LIB_FILES:.c=.a) $(LIB_FILES:.c=.o)
-	$(CC) $(CFLAGS) -shared -o lib$(LIB_FILES:.c=.so) $(LIB_FILES:.c=.o)
+$(NAME): $(BIN_FILES) libfetch.a
+	$(CC) $(ALL_CFLAGS) -o $@ $^
+fetch.o: $(LIB_FILES)
+	$(CC) -fPIC -c $(ALL_CFLAGS) -o $@ $^
+libfetch.so: fetch.o
+	$(CC) $(ALL_CFLAGS) -shared -o $@ $^
+libfetch.a: fetch.o
+	$(AR) rcs $@ $^
 
-release: build man
+release: all man
 	mkdir -pv $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
 	cp $(RELEASE_SCRIPTS) $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
 	cp -r res $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
 	cp $(NAME)$(EXT) $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
-	cp $(NAME).1.gz $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
+	cp $(NAME)$(manext).gz $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
 	cp lib$(LIB_FILES:.c=.so) $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
 	cp $(LIB_FILES:.c=.h) $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
 	cp default.config $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
@@ -98,37 +90,45 @@ else
 	tar -czf $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR).tar.gz $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
 endif
 
-debug: CFLAGS = $(CFLAGS_DEBUG)
-debug: build
+debug: ALL_CFLAGS = $(ALL_CFLAGS_DEBUG)
+debug: $(NAME)
 	./$(NAME) $(ARGS)
 
-install: build man
-	mkdir -pv $(DESTDIR)/$(PREFIX) $(DESTDIR)/$(LIBDIR)/$(NAME) $(DESTDIR)/$(MANDIR) $(ETC_DIR)/$(NAME) $(DESTDIR)/$(INCDIR)
-	cp $(NAME) $(DESTDIR)/$(PREFIX)
-	cp lib$(LIB_FILES:.c=.so) $(DESTDIR)/$(LIBDIR)
-	cp $(LIB_FILES:.c=.h) $(DESTDIR)/$(INCDIR)
-	cp -r res/* $(DESTDIR)/$(LIBDIR)/$(NAME)
-	cp default.config $(ETC_DIR)/$(NAME)/config
-	cp ./$(NAME).1.gz $(DESTDIR)/$(MANDIR)
+# Make sure all installation directories (e.g. $(bindir))
+# actually exist by making them if necessary.
+installdirs:
+	$(INSTALL) -d \
+	$(DESTDIR)$(bindir) $(DESTDIR)$(datadir) \
+	$(DESTDIR)$(libdir)/$(NAME)/ascii $(DESTDIR)$(includedir) \
+	$(DESTDIR)$(man1dir) $(DESTDIR)$(sysconfdir)/$(NAME)
+
+install: $(NAME) libfetch.so installdirs man
+	$(INSTALL_PROGRAM) $(NAME) $(DESTDIR)$(bindir)
+	$(INSTALL_PROGRAM) libfetch.so $(DESTDIR)$(libdir)
+	$(INSTALL_DATA) res/*.png $(DESTDIR)$(libdir)/$(NAME)
+	$(INSTALL_DATA) res/ascii/* $(DESTDIR)$(libdir)/$(NAME)/ascii
+	$(INSTALL_DATA) $(LIB_FILES:.c=.h) $(DESTDIR)$(includedir)
+	$(INSTALL_DATA) default.config $(DESTDIR)$(sysconfdir)/$(NAME)/config
+	$(INSTALL_DATA) $(NAME)$(manext).gz $(DESTDIR)$(man1dir)
 
 uninstall:
-	rm -f $(DESTDIR)/$(PREFIX)/$(NAME)
-	rm -rf $(DESTDIR)/$(LIBDIR)/uwufetch
-	rm -f $(DESTDIR)/$(LIBDIR)/lib$(LIB_FILES:.c=.so)
-	rm -f $(DESTDIR)/include/$(LIB_FILES:.c=.h)
-	rm -rf $(ETC_DIR)/uwufetch
-	rm -f $(DESTDIR)/$(MANDIR)/$(NAME).1.gz
+	$(RM) $(DESTDIR)$(bindir)/$(NAME)
+	$(RM) -r $(DESTDIR)$(libdir)/$(NAME)
+	$(RM) $(DESTDIR)$(libdir)/libfetch.so
+	$(RM) $(DESTDIR)$(includedir)/$(LIB_FILES:.c=.h)
+	$(RM) -r $(DESTDIR)$(sysconfdir)/$(NAME)
+	$(RM) $(DESTDIR)$(man1dir)/$(NAME)$(manext).gz
 
 clean:
-	rm -rf $(NAME) $(NAME)_* *.o *.so *.a *.exe
+	$(RM) -r $(NAME) $(NAME)_* *.o *.so *.a *.exe
 
 ascii_debug: build
 ascii_debug:
 	ls res/ascii/$(ASCII).txt | entr -c ./$(NAME) -d $(ASCII)
 
 man:
-	sed "s/{DATE}/$(shell date '+%d %B %Y')/g" $(NAME).1 | sed "s/{UWUFETCH_VERSION}/$(UWUFETCH_VERSION)/g" | gzip > $(NAME).1.gz
+	sed "s/{DATE}/$(shell date '+%d %B %Y')/g" $(NAME).1 | sed "s/{UWUFETCH_VERSION}/$(UWUFETCH_VERSION)/g" | gzip > $(NAME)$(manext).gz
 
 man_debug:
 	@clear
-	man -P cat ./$(NAME).1
+	man -P cat ./$(NAME)$(manext)
