@@ -61,6 +61,7 @@ Build requisites:
 - Make
 - A C compiler
   - A iOS patched SDK (if you build UwUfetch under iOS device)
+- git
 
 To install UwUfetch from the source, type these commands in the terminal:
 
