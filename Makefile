@@ -67,11 +67,11 @@ all: $(NAME) libs
 libs: libfetch.a libfetch.so
 
 $(NAME): $(BIN_FILES) libfetch.a
-	$(CC) $(ALL_CFLAGS) -o $@ $^
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $^
 fetch.o: $(LIB_FILES)
 	$(CC) -fPIC -c $(ALL_CFLAGS) -o $@ $^
 libfetch.so: fetch.o
-	$(CC) $(ALL_CFLAGS) -shared -o $@ $^
+	$(CC) $(ALL_CFLAGS) -shared -Wl,-soname,$@.$(UWUFETCH_VERSION) $(LDFLAGS) -o $@ $^
 libfetch.a: fetch.o
 	$(AR) rcs $@ $^
 
@@ -104,7 +104,7 @@ installdirs:
 
 install: $(NAME) libfetch.so installdirs man
 	$(INSTALL_PROGRAM) $(NAME) $(DESTDIR)$(bindir)
-	$(INSTALL_PROGRAM) libfetch.so $(DESTDIR)$(libdir)
+	$(INSTALL_PROGRAM) libfetch.so $(DESTDIR)$(libdir)/libfetch.so.$(UWUFETCH_VERSION)
 	$(INSTALL_DATA) res/*.png $(DESTDIR)$(libdir)/$(NAME)
 	$(INSTALL_DATA) res/ascii/* $(DESTDIR)$(libdir)/$(NAME)/ascii
 	$(INSTALL_DATA) $(LIB_FILES:.c=.h) $(DESTDIR)$(includedir)
@@ -114,7 +114,7 @@ install: $(NAME) libfetch.so installdirs man
 uninstall:
 	$(RM) $(DESTDIR)$(bindir)/$(NAME)
 	$(RM) -r $(DESTDIR)$(libdir)/$(NAME)
-	$(RM) $(DESTDIR)$(libdir)/libfetch.so
+	$(RM) $(DESTDIR)$(libdir)/libfetch.so.$(UWUFETCH_VERSION)
 	$(RM) $(DESTDIR)$(includedir)/$(LIB_FILES:.c=.h)
 	$(RM) -r $(DESTDIR)$(sysconfdir)/$(NAME)
 	$(RM) $(DESTDIR)$(man1dir)/$(NAME)$(manext).gz
