@@ -80,7 +80,7 @@ release: all man
 	cp $(RELEASE_SCRIPTS) $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
 	cp -r res $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
 	cp $(NAME)$(EXT) $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
-	cp $(NAME)$(manext).gz $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
+	cp $(NAME)$(manext) $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
 	cp lib$(LIB_FILES:.c=.so) $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
 	cp $(LIB_FILES:.c=.h) $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
 	cp default.config $(NAME)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
@@ -109,7 +109,7 @@ install: $(NAME) libfetch.so installdirs man
 	$(INSTALL_DATA) res/ascii/* $(DESTDIR)$(libdir)/$(NAME)/ascii
 	$(INSTALL_DATA) $(LIB_FILES:.c=.h) $(DESTDIR)$(includedir)
 	$(INSTALL_DATA) default.config $(DESTDIR)$(sysconfdir)/$(NAME)/config
-	$(INSTALL_DATA) $(NAME)$(manext).gz $(DESTDIR)$(man1dir)
+	$(INSTALL_DATA) $(NAME)$(manext) $(DESTDIR)$(man1dir)
 
 uninstall:
 	$(RM) $(DESTDIR)$(bindir)/$(NAME)
@@ -117,7 +117,7 @@ uninstall:
 	$(RM) $(DESTDIR)$(libdir)/libfetch.so.$(UWUFETCH_VERSION)
 	$(RM) $(DESTDIR)$(includedir)/$(LIB_FILES:.c=.h)
 	$(RM) -r $(DESTDIR)$(sysconfdir)/$(NAME)
-	$(RM) $(DESTDIR)$(man1dir)/$(NAME)$(manext).gz
+	$(RM) $(DESTDIR)$(man1dir)/$(NAME)$(manext)
 
 clean:
 	$(RM) -r $(NAME) $(NAME)_* *.o *.so *.a *.exe
@@ -127,7 +127,8 @@ ascii_debug:
 	ls res/ascii/$(ASCII).txt | entr -c ./$(NAME) -d $(ASCII)
 
 man:
-	sed "s/{DATE}/$(shell date '+%d %B %Y')/g" $(NAME).1 | sed "s/{UWUFETCH_VERSION}/$(UWUFETCH_VERSION)/g" | gzip > $(NAME)$(manext).gz
+	sed -i -e "s/{DATE}/$(shell date '+%d %B %Y')/g" \
+		-e "s/{UWUFETCH_VERSION}/$(UWUFETCH_VERSION)/g" $(NAME)$(manext)
 
 man_debug:
 	@clear

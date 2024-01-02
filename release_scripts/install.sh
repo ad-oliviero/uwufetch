@@ -7,6 +7,6 @@ cp libfetch.so /usr/lib
 cp fetch.h /usr/include
 cp -r res/* /usr/lib/uwufetch
 cp default.config /etc/uwufetch/config
-cp ./uwufetch.1.gz /usr/share/man/man1
+cp ./uwufetch.1 /usr/share/man/man1
 printf "Done!\n"
 
