@@ -59,13 +59,14 @@ Build requisites:
 - Make
 - A C compiler
   - A iOS patched SDK (if you build UwUfetch under iOS device)
+- git
 
 To install UwUfetch from the source, type these commands in the terminal:
 
 ```shell
 git clone https://github.com/TheDarkBug/uwufetch.git
 cd uwufetch
-make build # add "CFLAGS+=-D__IPHONE__" if you are building for iOS
+make # add "CFLAGS=-D__IPHONE__" if you are building for iOS
 sudo make install
 ```
 
@@ -79,11 +80,11 @@ sudo make uninstall
 #### Available Make targets
 
 ```shell
-make build              # builds uwufetch and libfetch
-make lib                # builds only libfetch
-make debug              # use for debug
-make install            # installs uwufetch (needs root permissons)
-make uninstall          # uninstalls uwufetch (needs root permissons)
+make all                # builds uwufetch and libfetch (shared and static)
+make libs               # builds only libfetch (shared and static)
+make ARGS="..." debug   # run "./uwufetch $(ARGS)" in debugging mode
+make install            # installs uwufetch
+make uninstall          # uninstalls uwufetch
 make clean              # removes all build output
 make man                # compiles man page
 make man_debug          # compiles man page and shows 'man' output
