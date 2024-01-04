@@ -1,7 +1,3 @@
-## NOTE: libfetch-rewrite
-I am currently rewriting the "fetching system", so issues related to the main branch will not be fixed until the rewrite session is completed (when [libfetch-rewrite](https://github.com/TheDarkBug/uwufetch/tree/libfetch-rewrite) will be merged with main).
-
-
 # UwUFetch
 
 A meme system info tool for (almost) all your Linux/Unix-based systems, based on the nyan/UwU trend on r/linuxmasterrace.
@@ -10,6 +6,8 @@ A meme system info tool for (almost) all your Linux/Unix-based systems, based on
 ## Contributing
 
 All kinds of contributions are welcome, but before contributing **please** read [CONTRIBUTING.md](/CONTRIBUTING.md).
+### NOTE:
+Every contribution should be pushed to [development](https://github.com/TheDarkBug/uwufetch/tree/development).
 
 ## Currently supported distros
 
