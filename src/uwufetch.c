@@ -176,52 +176,26 @@ void usage(char* arg) {
          NORMAL);
 }
 
-// count the number of ansi escape code-related characters
-size_t nasciicount(const unsigned char* str, const size_t len) {
-  size_t count = 0;
-  for (size_t i = 0; i < len; i++) {
-    if (str[i] > 127) {
-      count++;
-      i++;
-    }
-  }
-  return count;
+// count the number of not visible characters
+int nvccount(const unsigned char* str, const int len) {
+  int count = 0;
+  for (int i = 0; i < len; i++) count += str[i] > 127;
+  return count + 7;
 }
 
-void show_info(struct info* user_info, struct configuration* configuration) {
-  size_t logo_idx = 0;
-  for (size_t i = 0; i < logos_count; i++) {
-    if (user_info->logo_id == logos[i].id) {
-      logo_idx = i;
-      break;
-    }
-  }
-  const struct logo_embed* logo = &(logos[logo_idx]);
+size_t show_info(struct info* user_info, struct configuration* configuration) {
+  const struct logo_embed* logo = &(logos[user_info->logo_idx]);
+  int buf_len                   = user_info->terminal_size.ws_col * 3;
+  size_t printed_lines          = 0;
+  char* buf                     = malloc((size_t)buf_len);
 
-  const size_t width = (size_t)(user_info->terminal_size.ws_col);
-  const size_t lsize = logo->max_length, isize = (width - logo->max_length);
-  char* lbuf          = malloc(lsize + 1);
-  char* ibuf          = malloc(isize + 1);
-  char* pbuf          = malloc(width + 1);
-  size_t current_line = 0;
+  memset(buf, 0, (size_t)buf_len);
 
-  memset(lbuf, 0, lsize + 1);
-  memset(ibuf, 0, isize + 1);
-  memset(pbuf, 0, width + 1);
-
-#define PRINTLN_BUF(format, ...)                                                \
-  {                                                                             \
-    const struct logo_line* ll = &logo->lines[current_line];                    \
-    if (current_line < logo->line_count)                                        \
-      snprintf(lbuf, lsize, "%s", ll->content);                                 \
-    else if (lbuf) {                                                            \
-      free(lbuf);                                                               \
-      lbuf = NULL;                                                              \
-    }                                                                           \
-    snprintf(ibuf, isize, format, ##__VA_ARGS__);                               \
-    snprintf(pbuf, width, "%s%lu%s", lbuf ? lbuf : "", logo->max_length, ibuf); \
-    printf("%.*s\n", (int)width, pbuf);                                         \
-    current_line++;                                                             \
+#define PRINTLN_BUF(format, ...)                                                                                                                                                                            \
+  {                                                                                                                                                                                                         \
+    snprintf(buf, (size_t)buf_len, format, ##__VA_ARGS__);                                                                                                                                                  \
+    printf("\x1b[%luD\x1b[%luC%.*s\n", (size_t)user_info->terminal_size.ws_col, logo->width + 1, (int)(user_info->terminal_size.ws_col - logo->width) + nvccount((const unsigned char*)buf, buf_len), buf); \
+    printed_lines++;                                                                                                                                                                                        \
   }
 
   if (configuration->user_name) PRINTLN_BUF(BOLD "%s@%s" NORMAL, user_info->user_name, user_info->host_name);
@@ -263,11 +237,25 @@ void show_info(struct info* user_info, struct configuration* configuration) {
                     BLOCK_CHAR BLOCK_CHAR YELLOW BLOCK_CHAR BLOCK_CHAR \
                     GREEN BLOCK_CHAR BLOCK_CHAR RED BLOCK_CHAR \
                     BLOCK_CHAR BLACK BLOCK_CHAR BLOCK_CHAR NORMAL
-   PRINTLN_BUF( COLOR_STRING);
+  #define COLOR_STRING_LEN 58 // strlen(COLOR_STRING) - nvccount(COLOR_STRING); it makes no sense to calculate it everytime since it is static
+    printf("\x1b[%luD\x1b[%luC%.*s\n", (size_t)user_info->terminal_size.ws_col, logo->width + 1, (int)(user_info->terminal_size.ws_col- logo->width) + COLOR_STRING_LEN, COLOR_STRING);
+    printed_lines++;
   }
   // clang-format on
-  free(ibuf);
-  if (lbuf) free(lbuf);
+  free(buf);
+  return printed_lines;
+}
+void show_logo(struct info* user_info, struct configuration* configuration, size_t printed_lines) {
+  if (configuration->ascii_logo) {
+    const struct logo_embed* logo = &(logos[user_info->logo_idx]);
+    size_t goback                 = printed_lines - ((printed_lines - logo->line_count) / 2);
+    printf("\x1b[%luA", goback);
+    for (size_t i = 0; i < logo->line_count; i++)
+      puts((const char*)logo->lines[i].content);
+    printf("\x1b[%luB", printed_lines - goback + 1);
+  } else {
+    LOG_E("TODO: implement image logo");
+  }
 }
 
 // the main function is on the bottom of the file to avoid double function declarations
@@ -392,11 +380,20 @@ int main(int argc, char** argv) {
 #undef IF_ENABLED_GET
 
   // before we "uwufy" the os name, we need to calculate the jenkins hash of it
-  if (user_info.os_name) user_info.logo_id = jenkins_hash(user_info.os_name, strlen(user_info.os_name));
+  if (user_info.os_name) {
+    user_info.logo_id = jenkins_hash(user_info.os_name, strlen(user_info.os_name));
+    for (size_t i = 0; i < logos_count; i++) {
+      if (user_info.logo_id == logos[i].id) {
+        user_info.logo_idx = i;
+        break;
+      }
+    }
+  }
   if (!cache.read) uwufy_all(&user_info);
   if (cache.write) write_cache(&user_info);
 
-  show_info(&user_info, &configuration);
+  size_t printed_lines = show_info(&user_info, &configuration);
+  show_logo(&user_info, printed_lines);
 
   libfetch_cleanup();
   if (cache.read) {

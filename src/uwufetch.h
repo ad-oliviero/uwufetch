@@ -7,6 +7,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 #ifndef _WIN32
   #include <sys/ioctl.h>
 #endif // _WIN32
@@ -31,7 +32,7 @@
 // all configuration flags available
 struct configuration {
   bool user_name, shell, model, kernel, os_name, cpu,
-      gpu_list, screen, memory, packages, uptime, colors; // all true by default
+      gpu_list, screen, memory, packages, uptime, colors, ascii_logo; // all true by default
 };
 
 // info that will be printed with the logo
@@ -48,7 +49,8 @@ struct info {
   int screen_width,
       screen_height,
       total_pkgs;
-  uint64_t logo_id;
+  uint64_t logo_id; // hash calculated on the logo's name
+  size_t logo_idx; // index of the element of the logos list
   unsigned long memory_total, memory_used;
   long uptime;
 

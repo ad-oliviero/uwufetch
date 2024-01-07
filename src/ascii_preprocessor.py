@@ -47,9 +47,13 @@ def ph2c(src: str) -> str:
 
 # MaKe Line Indipendent
 # separates colors (placeholders) for each line
-def mkli(src: str, color: list[tuple]) -> tuple[str, int]:
+def mkli(src: str, color: list[tuple]) -> tuple[str, int, int]:
     in_line_colors = [(s.group(), s.start()) for s in re.finditer(ALL_COLORS_REGEX, l)]
     cc = len(in_line_colors)
+    ncst = src
+    for s in [k for k in COLOR_PHS]:
+        ncst = ncst.replace(s, "")
+    width = len(ncst)
     if src != "":
         if in_line_colors != []:
             if in_line_colors[0][1] != 0 and color[0] != None:
@@ -63,7 +67,7 @@ def mkli(src: str, color: list[tuple]) -> tuple[str, int]:
                 src = color[0][0] + src
             src += "{NORMAL}"
             cc += 1
-    return (src, cc)
+    return (src, cc, width)
 
 
 if __name__ == "__main__":
@@ -80,23 +84,26 @@ if __name__ == "__main__":
             content = af.read()
             lines = []
             current_color = [("", 0)]
+            width = 0
             # split every line,
             # make it "indipendent" and
             # convert every color_placeholder
             for l in content.split("\n"):
                 if l != "":
-                    l, cc = mkli(l, current_color)
+                    l, cc, width = mkli(l, current_color)
                     lines.append(ph2c(l))
             lc = len(lines)
             if lc > maxLineCount:
                 maxLineCount = lc
-            newContent += f".line_count={len(lines)},.max_length={{MAX_LENGTH_PLACEHOLDER_{fn}}},.lines={{"
+            newContent += f".line_count={len(lines)},.max_length={{MAX_LENGTH_PLACEHOLDER_{fn}}},.width={{WIDTH_PLACEHOLDER_{fn}}},.lines={{"
             # convert every line in its hex representation
             for l in lines:
                 visualLength = 0
                 # increment visual length if some chars are not ascii
                 for c in l:
-                    visualLength += ord(c) > 255
+                    isUnicode = ord(c) > 255
+                    visualLength += isUnicode
+                    width += isUnicode
                 lineAsciiCodes = [c for c in l.encode("utf-8")]
                 llen = len(lineAsciiCodes)
                 if llen > maxLineLength:
@@ -110,7 +117,7 @@ if __name__ == "__main__":
                 )
             newContent = newContent.replace(
                 f"{{MAX_LENGTH_PLACEHOLDER_{fn}}}", str(localMaxLineLength)
-            )
+            ).replace(f"{{WIDTH_PLACEHOLDER_{fn}}}", str(width))
 
         newContent += "},},\n"
 
@@ -129,7 +136,7 @@ struct logo_line {{
 
 struct logo_embed {{
   const uint64_t id;
-  const size_t line_count, max_length;
+  const size_t line_count, max_length, width;
   const struct logo_line lines[{maxLineCount}];
 }};
 
