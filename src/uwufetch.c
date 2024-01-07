@@ -393,7 +393,7 @@ int main(int argc, char** argv) {
   if (cache.write) write_cache(&user_info);
 
   size_t printed_lines = show_info(&user_info, &configuration);
-  show_logo(&user_info, printed_lines);
+  show_logo(&user_info, &configuration, printed_lines);
 
   libfetch_cleanup();
   if (cache.read) {

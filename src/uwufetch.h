@@ -1,10 +1,6 @@
 #ifndef __UWUFETCH_H__
 #define __UWUFETCH_H__
 
-#ifndef UWUFETCH_VERSION
-  #define UWUFETCH_VERSION "unkown" // needs to be changed by the build script
-#endif
-
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -50,7 +46,7 @@ struct info {
       screen_height,
       total_pkgs;
   uint64_t logo_id; // hash calculated on the logo's name
-  size_t logo_idx; // index of the element of the logos list
+  size_t logo_idx;  // index of the element of the logos list
   unsigned long memory_total, memory_used;
   long uptime;
 
