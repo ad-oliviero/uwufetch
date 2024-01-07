@@ -24,13 +24,6 @@
   #define LOGGING_ENABLED
 #endif
 
-#if defined(LOGGING_ENABLED)
-  #define LOG_BUF_SIZE 2048
-
-static int logging_level       = 0;
-static int logging_error_count = 0;
-static void escapeColors(char* buf);
-
 enum LOG_LEVELS {
   LEVEL_DISABLE,
   LEVEL_ERROR,
@@ -39,6 +32,14 @@ enum LOG_LEVELS {
   LEVEL_VAR,
   LEVEL_MAX = LEVEL_VAR
 };
+
+#if defined(LOGGING_ENABLED)
+  #define LOG_BUF_SIZE 2048
+
+static int logging_level       = 0;
+static int logging_error_count = 0;
+static void escapeColors(char* buf);
+
   #define SET_LOG_LEVEL(level, additional_info) set_logging_level(level, additional_info)
   #define LOG_I(format, ...) \
     if (logging_level >= LEVEL_INFO) LOG(LEVEL_INFO, format, ##__VA_ARGS__)
@@ -107,7 +108,7 @@ static void escapeColors(char* str) {
   #define LOG_W(format, ...)
   #define LOG_E(format, ...)
   #define LOG_V(var)
-  #define LOG(type, format, ...)
+  #define LOG(type, format, ...) printf(format "\n", ##__VA_ARGS__);
   #define CHECK_FUNC(fn, err_val) fn;
   #define CHECK_FN_NEG(fn) fn;
 #endif // LOGGING_ENABLED

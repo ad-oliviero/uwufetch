@@ -1,6 +1,5 @@
 .PHONY: all debug clean
 TARGET = uwufetch
-UWUFETCH_VERSION = $(shell git describe --tags)
 
 # project directories and files
 PROJECT_ROOT = $(shell pwd)
@@ -22,11 +21,21 @@ INC_DIR = $(USR_DIR)/include
 
 RELEASE_SCRIPTS = release_scripts/*.sh
 
-# compiler "settings"
+# compiler "settings" and compile-time info flags
 CC = gcc
 CSTD = gnu18
-CFLAGS = -O3 -DUWUFETCH_VERSION=\"$(UWUFETCH_VERSION)\" -std=$(CSTD)
-CFLAGS_DEBUG = -Wall -Wextra -Wpedantic -Wunused-result -Wconversion -Wshadow -Wnull-dereference -Wcast-align -g -pthread -DUWUFETCH_VERSION=\"$(UWUFETCH_VERSION)\" -D__DEBUG__
+UWUFETCH_VERSION := -DUWUFETCH_VERSION=\""2.1"\"
+UWUFETCH_COMPILER_VERSION := -DUWUFETCH_COMPILER_VERSION=\""$(shell $(CC) --version | head -n1)"\"
+VERSION_FLAGS := $(UWUFETCH_VERSION) $(UWUFETCH_COMPILER_VERSION) $(UWUFETCH_GIT_COMMIT) $(UWUFETCH_GIT_BRANCH)
+ifneq ($(wildcard .git),)
+ifneq ($(shell which git),)
+UWUFETCH_GIT_COMMIT := -DUWUFETCH_GIT_COMMIT=\""$(shell git describe --tags)"\"
+UWUFETCH_GIT_BRANCH := -DUWUFETCH_GIT_BRANCH=\""$(shell git branch --show-current)"\"
+VERSION_FLAGS += $(UWUFETCH_GIT_COMMIT) $(UWUFETCH_GIT_COMMIT)
+endif
+endif
+CFLAGS = -O3 -std=$(CSTD) $(VERSION_FLAGS)
+CFLAGS_DEBUG = -Wall -Wextra -Wpedantic -Wunused-result -Wconversion -Wshadow -Wnull-dereference -Wcast-align -g -pthread $(VERSION_FLAGS) -D__DEBUG__
 ifeq ($(shell $(CC) -v 2>&1 | grep clang >/dev/null; echo $$?), 0) # if the compiler is clang
 	# macros give a lot of errors for ##__VA_ARGS__
 	TEMP_CFLAG_FIXES = -Wno-c2x-extensions -Wno-unknown-pragmas -Wno-string-conversion -Wno-unused-function

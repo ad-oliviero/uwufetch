@@ -143,7 +143,7 @@ void list(char* arg) {
 }
 
 // prints the usage
-void usage(char* arg) {
+void show_usage(char* arg) {
   LOG_I("printing usage");
   // TODO: add some more info
   printf("Usage: %s <args>\n"
@@ -174,6 +174,21 @@ void usage(char* arg) {
          RED,
 #endif
          NORMAL);
+}
+
+void show_version() {
+#ifdef UWUFETCH_VERSION
+  LOG(LEVEL_INFO, "UwUfetch version: %s", UWUFETCH_VERSION);
+#endif
+#ifdef UWUFETCH_GIT_COMMIT
+  LOG(LEVEL_INFO, "git commit: %s", UWUFETCH_GIT_COMMIT);
+#endif
+#ifdef UWUFETCH_GIT_BRANCH
+  LOG(LEVEL_INFO, "git branch: %s", UWUFETCH_GIT_BRANCH);
+#endif
+#ifdef UWUFETCH_COMPILER_VERSION
+  LOG(LEVEL_INFO, "compiled with: %s", UWUFETCH_COMPILER_VERSION);
+#endif
 }
 
 // count the number of not visible characters
@@ -303,7 +318,7 @@ int main(int argc, char** argv) {
       // custom_distro_name = optarg;
       break;
     case 'h':
-      usage(argv[0]);
+      show_usage(argv[0]);
       return 0;
     case 'i': // set ascii logo as output
       // configuration.image = true;
@@ -317,7 +332,7 @@ int main(int argc, char** argv) {
       cache.write = false;
       break;
     case 'V':
-      printf("UwUfetch version %s\n", UWUFETCH_VERSION);
+      show_version();
       return 0;
 #if defined(LOGGING_ENABLED)
     case 'v':
@@ -327,7 +342,7 @@ int main(int argc, char** argv) {
         if (sep) *(sep++) = '\0';
         SET_LIBFETCH_LOG_LEVEL(atoi(sep ? sep : argv[optind]));
       }
-      LOG_I("version %s", UWUFETCH_VERSION);
+      show_version();
       break;
 #endif
     case 'w':
