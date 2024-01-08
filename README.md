@@ -24,26 +24,28 @@
 ### What does work?
 | Function (libfetch) | Arch Linux | Linux (not Arch) | Android | FreeBSD | OpenBSD | MacOS | Windows |
 |---|---|---|---|---|---|---|---|
-|`get_user_name`|✅ ✅|✅ ❌|✅ ❌|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
-|`get_host_name`|✅ ✅|✅ ❌|✅ ❌|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
-|`get_shell`|✅ ✅|✅ ❌|✅ ❌|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
-|`get_model`|✅ ✅|✅ ❌|✅ ❌|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
-|`get_kernel`|✅ ✅|✅ ❌|✅ ❌|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
-|`get_os_name`|✅ ✅|✅ ❌|✅ ✅|✅ ❌|❌ ❌|❌ ❌|✅ ✅|
-|`get_cpu_model`|✅ ✅|✅ ✅|❌ ❌|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
-|`get_gpus`|✅ ✅|✅ ✅|❌ ❌|❌ ❌|❌ ❌|❌ ❌|✅ ✅|
-|`get_packages`|✅ ✅|✅ ❌|✅ ❌|✅ ❌|✅ ❌|✅ ❌|❌ ❌|
-|`get_screen_width`|✅ ✅|✅ ❌|❌ ❌|❌ ❌|❌ ❌|❌ ❌|✅ ✅|
-|`get_screen_height`|✅ ✅|✅ ❌|❌ ❌|❌ ❌|❌ ❌|❌ ❌|✅ ✅|
-|`get_memory_total`|✅ ✅|✅ ❌|✅ ❌|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
-|`get_memory_used`|✅ ✅|✅ ❌|✅ ❌|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
-|`get_uptime`|✅ ✅|✅ ❌|✅ ❌|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
-|`get_terminal_size`|✅ ✅|✅ ❌|✅ ❌|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
+|`get_user_name`    |✅ ✅|✅ ❌|✅ ✅|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
+|`get_host_name`    |✅ ✅|✅ ❌|✅ ✅|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
+|`get_shell`        |✅ ✅|✅ ❌|✅ ✅|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
+|`get_model`        |✅ ✅|✅ ❌|✅ ✅|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
+|`get_kernel`       |✅ ✅|✅ ❌|✅ ✅|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
+|`get_os_name`      |✅ ✅|✅ ❌|✅ ✅|✅ ❌|❌ ❌|❌ ❌|✅ ✅|
+|`get_cpu_model`    |✅ ✅|✅ ✅|✅ ✅|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
+|`get_gpus`         |✅ ✅|✅ ✅|✅ ✅|❌ ❌|❌ ❌|❌ ❌|✅ ✅|
+|`get_packages`     |✅ ✅|✅ ❌|✅ ✅|✅ ❌|✅ ❌|✅ ❌|❌ ❌|
+|`get_screen_width` |✅ ✅|✅ ❌| --- |❌ ❌|❌ ❌|❌ ❌|✅ ✅|
+|`get_screen_height`|✅ ✅|✅ ❌| --- |❌ ❌|❌ ❌|❌ ❌|✅ ✅|
+|`get_memory_total` |✅ ✅|✅ ❌|✅ ✅|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
+|`get_memory_used`  |✅ ✅|✅ ❌|✅ ✅|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
+|`get_uptime`       |✅ ✅|✅ ❌|✅ ✅|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
+|`get_terminal_size`|✅ ✅|✅ ❌|✅ ✅|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
 
 TODO: add list of things that work or do not work in "the frontend" (and define what "the frontend" means)
 
 ### Meaning of the table above
 Two ckeckboxes are available: **[** *implemented* **]** **[** *tested* **]**
+
+If the space is filled with " --- ", it means that the selected function will **not** be implemented. The reasons are given inside the function as `LOG_W()` calls.
 
 # UwUFetch
 
