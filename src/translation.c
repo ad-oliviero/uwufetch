@@ -18,7 +18,6 @@ uint32_t str2id(const char* key, int length) {
   hash += (hash << 15);
 
   LOG_V(hash);
-  printf("%x\n", hash);
   return hash;
 }
 

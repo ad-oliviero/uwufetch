@@ -176,7 +176,7 @@ void show_usage(char* arg) {
          NORMAL);
 }
 
-void show_version() {
+void show_version(void) {
 #ifdef UWUFETCH_VERSION
   LOG(LEVEL_INFO, "UwUfetch version: %s", UWUFETCH_VERSION);
 #endif
