@@ -263,8 +263,8 @@ size_t show_info(struct info* user_info, struct configuration* configuration) {
 void show_logo(struct info* user_info, struct configuration* configuration, size_t printed_lines) {
   if (configuration->ascii_logo) {
     const struct logo_embed* logo = &(logos[user_info->logo_idx]);
-    size_t goback                 = printed_lines - ((printed_lines - logo->line_count) / 2);
-    printf("\x1b[%luA", goback);
+    size_t goback                 = printed_lines > logo->line_count ? printed_lines - ((printed_lines - logo->line_count) / 2) : printed_lines;
+    printf("\x1b[%luA\x1b[0G", goback);
     for (size_t i = 0; i < logo->line_count; i++)
       puts((const char*)logo->lines[i].content);
     printf("\x1b[%luB", printed_lines - goback + 1);
@@ -292,6 +292,7 @@ int main(int argc, char** argv) {
   struct option long_options[] = {
       {"config", required_argument, NULL, 'c'},
       {"distro", required_argument, NULL, 'd'},
+      {"full", no_argument, NULL, 'f'},
       {"help", no_argument, NULL, 'h'},
       {"image", optional_argument, NULL, 'i'},
       {"list", no_argument, NULL, 'l'},
@@ -303,9 +304,9 @@ int main(int argc, char** argv) {
       {"write-cache", no_argument, NULL, 'w'},
       {0}};
 #ifdef LOGGING_ENABLED
-  #define OPT_STRING "c:d:hi::lrVv::w"
+  #define OPT_STRING "c:d:fhi::lrVv::w"
 #else
-  #define OPT_STRING "c:d:hi::lrVw"
+  #define OPT_STRING "c:d:fhi::lrVw"
 #endif
 
   // reading cmdline options
@@ -316,6 +317,9 @@ int main(int argc, char** argv) {
       break;
     case 'd': // set the distribution name
       // custom_distro_name = optarg;
+      break;
+    case 'f':
+      memset(&configuration, 1, sizeof(struct configuration));
       break;
     case 'h':
       show_usage(argv[0]);
