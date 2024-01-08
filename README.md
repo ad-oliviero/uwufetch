@@ -6,16 +6,16 @@
 - **NOT STABLE** This branch is work in progress and while it *does* work, it might crash.
 
 ## TODO list
+- [x] `--full` option that overrides the config file to print everything
+- [x] Move "thing" "uwuthing" translation data to external file
+- [x] Embed static files (except images) in the executable (if performance is not impacted)
+- [x] Write a new "rendering" function
+- [ ] New rules should be added to [CONTRIBUTING.md](/CONTRIBUTING.md)
+- [ ] Rewrite `ascii_debug` makefile target
 - [ ] Add a pre-config argument parser function
 - [ ] Create a man page for `libfetch`
 - [ ] GitHub actions for more platforms
-- [ ] `--full` option that overrides the config file to print everything
 - [ ] Multi threading
-- [ ] New rules should be added to [CONTRIBUTING.md](/CONTRIBUTING.md)
-- [ ] Move "thing" "uwuthing" translation data to external file
-- [x] Embed static files (except images) in the executable (if performance is not impacted)
-- [ ] Rewrite `ascii_debug` makefile target
-- [ ] Write a new "rendering" function
 - [ ] Review the `actrie.c` and `actrie.h` files
 - [ ] Write a new "supported distros" list
 
