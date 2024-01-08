@@ -7,7 +7,6 @@ SortIncludes: true
 AlignAfterOpenBracket: true
 AlignConsecutiveAssignments: true
 AlignEscapedNewlinesLeft: true
-AlignEscapedNewlinesLeft: true
 AlignTrailingComments: true
 AllowShortIfStatementsOnASingleLine: true
 AllowShortLoopsOnASingleLine: true

@@ -488,16 +488,28 @@ char** get_gpu_list(void) {
    * get some more free time, I might install android on
    * my x86 desktop pc with two gpus to test it
    */
-  gpu_list[0] = alloc(BUFFER_SIZE);
+  gpu_list[gpu_id] = alloc(BUFFER_SIZE);
 
-  /* The following function call does not get the full
-   * gpu name, but just the manufacturer name (if available).
-   * Getting full gpu name (just like the cpu name) is possible,
-   * but I would need to use the android ndk (basically
-   * calling some java functions). IMO, it makes no sense in this library.
-   * Maybe a solution would be to use the termux api
+  /* I don't know if this path is standard in android systems,
+   * however this file contains the full name of the gpu
    */
-  __system_property_get("ro.hardware.egl", gpu_list[0]);
+  FILE* gpu_model = fopen("/sys/class/kgsl/kgsl-3d0/gpu_model", "r");
+  if (gpu_model) {
+    fgets(gpu_list[gpu_id], BUFFER_SIZE, gpu_model);
+    size_t gpu_len = strlen(gpu_list[gpu_id]);
+    if (gpu_list[gpu_id][gpu_len - 1] == '\n') gpu_list[gpu_id][gpu_len - 1] = 0;
+    gpu_id++;
+    fclose(gpu_model);
+  } else {
+    /* The following function call does not get the full
+     * gpu name, but just the manufacturer name (if available).
+     * Getting full gpu name (just like the cpu name) is possible,
+     * but I would need to use the android ndk (basically
+     * calling some java functions). IMO, it makes no sense in this library.
+     * Maybe a solution would be to use the termux api
+     */
+    __system_property_get("ro.hardware.egl", gpu_list[gpu_id++]);
+  }
 #elif defined(SYSTEM_BASE_FREEBSD)
   LOG_E("Not implemented");
   return NULL;
@@ -620,7 +632,7 @@ int get_screen_width(void) {
   LOG_I("getting screen width from /sys/class/graphics/fb0/virtual_size");
   sscanf(FB0_VIRTUAL_SIZE, "%d,%*d", &screen_width);
 #elif defined(SYSTEM_BASE_ANDROID)
-  LOG_E("Not implemented");
+  LOG_W("After some research, turns out that the only way to get display size would be to use 'adb wm size' or even root access. This function will not be implemented");
 #elif defined(SYSTEM_BASE_FREEBSD)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_OPENBSD)
@@ -628,7 +640,7 @@ int get_screen_width(void) {
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
-  screen_width  = GetSystemMetrics(SM_CXSCREEN);
+  screen_width = GetSystemMetrics(SM_CXSCREEN);
 #else
   LOG_E("System not supported or system base not specified");
 #endif
@@ -642,7 +654,7 @@ int get_screen_height(void) {
   LOG_I("getting screen height from /sys/class/graphics/fb0/virtual_size");
   sscanf(FB0_VIRTUAL_SIZE, "%*d,%d", &screen_height);
 #elif defined(SYSTEM_BASE_ANDROID)
-  LOG_E("Not implemented");
+  LOG_W("After some research, turns out that the only way to get display size would be to use 'adb wm size' or even root access. This function will not be implemented");
 #elif defined(SYSTEM_BASE_FREEBSD)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_OPENBSD)
@@ -710,7 +722,7 @@ unsigned long long get_memory_used(void) {
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
-  memory_used  = (GLOBAL_MEMORY_STATUS_EX.ullTotalPhys - GLOBAL_MEMORY_STATUS_EX.ullAvailPhys) / (1024 * 1024);
+  memory_used = (GLOBAL_MEMORY_STATUS_EX.ullTotalPhys - GLOBAL_MEMORY_STATUS_EX.ullAvailPhys) / (1024 * 1024);
 #else
   LOG_E("System not supported or system base not specified");
 #endif
@@ -734,7 +746,7 @@ long get_uptime(void) {
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
-  uptime       = GetTickCount() / 1000;
+  uptime = GetTickCount() / 1000;
 #else
   LOG_E("System not supported or system base not specified");
 #endif
