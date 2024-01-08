@@ -4,18 +4,21 @@
 #include "libfetch/logging.h"
 #include "uwufetch.h"
 
-// calculate the id of the distro logo, taken from wikipedia
-uint64_t jenkins_hash(const char* key, size_t length) {
-  size_t i      = 0;
-  uint64_t hash = 0;
-  while (i != length) {
-    hash += (uint64_t)key[i++];
-    hash += hash << 10;
-    hash ^= hash >> 6;
+// calculate the id of the distro logo, https://en.wikipedia.org/wiki/Jenkins_hash_function
+uint32_t str2id(const char* key, int length) {
+  uint32_t hash = 0;
+  for (int i = 0; i < length; ++i) {
+    hash += (uint8_t)key[i];
+    hash += (hash << 10);
+    hash ^= (hash >> 6);
   }
-  hash += hash << 3;
-  hash ^= hash >> 11;
-  hash += hash << 15;
+
+  hash += (hash << 3);
+  hash ^= (hash >> 11);
+  hash += (hash << 15);
+
+  LOG_V(hash);
+  printf("%x\n", hash);
   return hash;
 }
 

@@ -400,7 +400,7 @@ int main(int argc, char** argv) {
 
   // before we "uwufy" the os name, we need to calculate the jenkins hash of it
   if (user_info.os_name) {
-    user_info.logo_id = jenkins_hash(user_info.os_name, strlen(user_info.os_name));
+    user_info.logo_id = str2id(user_info.os_name, (int)strlen(user_info.os_name));
     for (size_t i = 0; i < logos_count; i++) {
       if (user_info.logo_id == logos[i].id) {
         user_info.logo_idx = i;

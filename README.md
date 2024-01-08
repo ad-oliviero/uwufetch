@@ -12,12 +12,14 @@
 - [x] Write a new "rendering" function
 - [ ] New rules should be added to [CONTRIBUTING.md](/CONTRIBUTING.md)
 - [ ] Rewrite `ascii_debug` makefile target
+- [ ] Fix logging not working in some .c files
 - [ ] Add a pre-config argument parser function
 - [ ] Create a man page for `libfetch`
 - [ ] GitHub actions for more platforms
 - [ ] Multi threading
 - [ ] Review the `actrie.c` and `actrie.h` files
 - [ ] Write a new "supported distros" list
+- [ ] Add options to filter the log
 
 ### What does work?
 | Function (libfetch) | Arch Linux | Linux (not Arch) | Android | FreeBSD | OpenBSD | MacOS | Windows |

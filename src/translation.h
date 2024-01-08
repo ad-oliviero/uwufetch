@@ -3,8 +3,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-// calculate the id of the distro logo, taken from wikipedia
-uint64_t jenkins_hash(const char*, size_t);
+// calculate the id of the distro logo, https://en.wikipedia.org/wiki/Jenkins_hash_function
+uint32_t str2id(const char*, int);
 // Replaces all terms in a string with another term.
 void replace(char*, const char*, const char*);
 // Replaces all terms in a string with another term, case insensitive

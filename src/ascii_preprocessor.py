@@ -30,12 +30,17 @@ def jenkins_hash(key: str) -> int:
     h = 0
     for c in key:
         h += ord(c)
+        h &= 0xFFFFFFFF
         h += h << 10
+        h &= 0xFFFFFFFF
         h ^= h >> 6
+        h &= 0xFFFFFFFF
     h += h << 3
+    h &= 0xFFFFFFFF
     h ^= h >> 11
+    h &= 0xFFFFFFFF
     h += h << 15
-    return h & 0xFFFFFFFFFFFFFFFF
+    return h & 0xFFFFFFFF
 
 
 # PlaceHolder to ansi escape Color
@@ -135,7 +140,7 @@ struct logo_line {{
 }};
 
 struct logo_embed {{
-  const uint64_t id;
+  const uint32_t id;
   const size_t line_count, max_length, width;
   const struct logo_line lines[{maxLineCount}];
 }};
