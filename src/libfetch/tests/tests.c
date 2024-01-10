@@ -56,8 +56,8 @@ TEST_STRING_FUNCTION(get_shell)
 TEST_STRING_FUNCTION(get_model)
 TEST_STRING_FUNCTION(get_kernel)
 TEST_STRING_FUNCTION(get_os_name)
-TEST_STRING_FUNCTION(get_cpu_model)
-TEST_STRING_FUNCTION(get_gpus)
+TEST_STRING_FUNCTION(get_cpu)
+TEST_STRING_FUNCTION(get_gpu_list)
 TEST_STRING_FUNCTION(get_packages)
 
 TEST_COMPARE_FUNCTION(get_screen_width, > 0)
@@ -85,8 +85,8 @@ struct test tests[] = {
     STRUCT_TEST(get_model),
     STRUCT_TEST(get_kernel),
     STRUCT_TEST(get_os_name),
-    STRUCT_TEST(get_cpu_model),
-    STRUCT_TEST(get_gpus),
+    STRUCT_TEST(get_cpu),
+    STRUCT_TEST(get_gpu_list),
     STRUCT_TEST(get_packages),
     STRUCT_TEST(get_screen_width),
     STRUCT_TEST(get_screen_height),
