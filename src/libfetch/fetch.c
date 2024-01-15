@@ -640,7 +640,7 @@ int get_screen_width(void) {
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
-  screen_width = GetSystemMetrics(SM_CXSCREEN);
+  screen_width  = GetSystemMetrics(SM_CXSCREEN);
 #else
   LOG_E("System not supported or system base not specified");
 #endif
@@ -722,7 +722,7 @@ unsigned long long get_memory_used(void) {
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
-  memory_used = (GLOBAL_MEMORY_STATUS_EX.ullTotalPhys - GLOBAL_MEMORY_STATUS_EX.ullAvailPhys) / (1024 * 1024);
+  memory_used  = (GLOBAL_MEMORY_STATUS_EX.ullTotalPhys - GLOBAL_MEMORY_STATUS_EX.ullAvailPhys) / (1024 * 1024);
 #else
   LOG_E("System not supported or system base not specified");
 #endif
@@ -746,7 +746,7 @@ long get_uptime(void) {
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
-  uptime = GetTickCount() / 1000;
+  uptime       = GetTickCount() / 1000;
 #else
   LOG_E("System not supported or system base not specified");
 #endif

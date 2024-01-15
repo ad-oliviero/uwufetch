@@ -1,6 +1,5 @@
 # platform (os) specific variable modifications
 
-
 ifeq ($(PLATFORM), Linux)
 	PLATFORM_ABBR = linux
 	ifeq ($(shell uname -o), Android)

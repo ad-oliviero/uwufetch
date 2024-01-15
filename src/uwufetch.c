@@ -17,6 +17,7 @@
 #include "actrie.h"
 #include "ascii_embed.h"
 #include "cache.h"
+#include "common.h"
 #include "libfetch/fetch.h"
 #include "libfetch/logging.h"
 #include "translation.h"
@@ -402,6 +403,7 @@ int main(int argc, char** argv) {
   if (user_info.os_name) {
     user_info.logo_id = str2id(user_info.os_name, (int)strlen(user_info.os_name));
     for (size_t i = 0; i < logos_count; i++) {
+      user_info.logo_idx = i;
       if (user_info.logo_id == logos[i].id) {
         user_info.logo_idx = i;
         break;

@@ -3,16 +3,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-// calculate the id of the distro logo, https://en.wikipedia.org/wiki/Jenkins_hash_function
-uint32_t str2id(const char*, int);
-// Replaces all terms in a string with another term.
-void replace(char*, const char*, const char*);
-// Replaces all terms in a string with another term, case insensitive
-void replace_ignorecase(char*, const char*, const char*);
-#ifdef _WIN32
-// windows sucks and hasn't a strstep, so I copied one from https://stackoverflow.com/questions/8512958/is-there-a-windows-variant-of-strsep-function
-char* strsep(char**, const char*);
-#endif
 // uwufies distro name
 void uwu_name(const struct actrie_t*, struct info*);
 // uwufies kernel name

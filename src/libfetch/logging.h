@@ -23,6 +23,7 @@
 #if defined(__DEBUG__)
   #define LOGGING_ENABLED
 #endif
+#define LOGGING_ENABLED
 
 enum LOG_LEVELS {
   LEVEL_DISABLE,
@@ -76,8 +77,43 @@ static void escapeColors(char* buf);
     }
   #define CHECK_FUNC(fn, err_val) \
     if (fn == err_val) LOG_E("%s returned %s: %s", #fn, #err_val, strerror(errno))
+  #define CHECK_FUNC_NOT(fn, err_val) \
+    if (fn == err_val) LOG_E("%s returned %s: %s", #fn, #err_val, strerror(errno))
   #define CHECK_FN_NEG(fn) \
     if (fn < 0) LOG_E("%s failed: %s", #fn, strerror(errno))
+  #define CHECK_FN_NULL(fn) \
+    if (fn == NULL) LOG_E("%s failed: %s", #fn, strerror(errno));
+  #define CHECK_ERRNO(fn) \
+    if (errno != 0) LOG_E("%s failed: %s", #fn, strerror(errno));
+
+  #define CHECK_FUNC_EXIT(fn, err_val)                            \
+    if (fn == err_val) {                                          \
+      LOG_E("%s returned %s: %s", #fn, #err_val, strerror(errno)) \
+      exit(1);                                                    \
+    }
+  #define CHECK_FUNC_NOT_EXIT(fn, err_val)                        \
+    if (fn != err_val) {                                          \
+      LOG_E("%s returned %s: %s", #fn, #err_val, strerror(errno)) \
+      exit(1);                                                    \
+    }
+  #define CHECK_FN_NEG_EXIT(fn)                    \
+    if (fn < 0) {                                  \
+      LOG_E("%s failed: %s", #fn, strerror(errno)) \
+      exit(1);                                     \
+    }
+  #define CHECK_FN_NULL_EXIT(fn)                    \
+    if (fn == NULL) {                               \
+      LOG_E("%s failed: %s", #fn, strerror(errno)); \
+      exit(1);                                      \
+    }
+  #define CHECK_ERRNO_EXIT(fn)                        \
+    {                                                 \
+      fn;                                             \
+      if (errno != 0) {                               \
+        LOG_E("%s failed: %s", #fn, strerror(errno)); \
+      }                                               \
+    }
+// exit(1);                                      
 static __attribute__((unused)) void set_logging_level(int level, char* additional_info) {
   if (level < LEVEL_DISABLE || level > LEVEL_MAX) {
     logging_level = LEVEL_ERROR;

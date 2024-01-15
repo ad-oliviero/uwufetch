@@ -10,6 +10,7 @@
 - [x] Move "thing" "uwuthing" translation data to external file
 - [x] Embed static files (except images) in the executable (if performance is not impacted)
 - [x] Write a new "rendering" function
+- [ ] Make the code more secure (like by using custom `string` types that use a `len` value instead of `'\0'`)
 - [ ] New rules should be added to [CONTRIBUTING.md](/CONTRIBUTING.md)
 - [ ] Rewrite `ascii_debug` makefile target
 - [ ] Fix logging not working in some .c files
@@ -30,8 +31,8 @@
 |`get_model`        |✅ ✅|✅ ❌|✅ ✅|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
 |`get_kernel`       |✅ ✅|✅ ❌|✅ ✅|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
 |`get_os_name`      |✅ ✅|✅ ❌|✅ ✅|✅ ❌|❌ ❌|❌ ❌|✅ ✅|
-|`get_cpu_model`    |✅ ✅|✅ ✅|✅ ✅|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
-|`get_gpus`         |✅ ✅|✅ ✅|✅ ✅|❌ ❌|❌ ❌|❌ ❌|✅ ✅|
+|`get_cpu`          |✅ ✅|✅ ✅|✅ ✅|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
+|`get_gpu_list`     |✅ ✅|✅ ✅|✅ ✅|❌ ❌|❌ ❌|❌ ❌|✅ ✅|
 |`get_packages`     |✅ ✅|✅ ❌|✅ ✅|✅ ❌|✅ ❌|✅ ❌|❌ ❌|
 |`get_screen_width` |✅ ✅|✅ ❌| --- |❌ ❌|❌ ❌|❌ ❌|✅ ✅|
 |`get_screen_height`|✅ ✅|✅ ❌| --- |❌ ❌|❌ ❌|❌ ❌|✅ ✅|

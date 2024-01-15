@@ -8,7 +8,8 @@ BUILD_DIR = build
 TEST_DIR = $(SRC_DIR)/libfetch/tests
 SRCS = $(wildcard $(SRC_DIR)/*.c)
 OBJS = $(patsubst $(SRC_DIR)/%,$(BUILD_DIR)/%,$(SRCS:.c=.o))
-HEADERS = $(wildcard $(SRC_DIR)/*.h) $(SRC_DIR)/ascii_embed.h
+ASCII_EMBED_HEADER = $(SRC_DIR)/ascii_embed.h
+HEADERS = $(wildcard $(SRC_DIR)/*.h) $(ASCII_EMBED_HEADER)
 
 # installation directories
 PREFIX_DIR =
@@ -28,7 +29,7 @@ UWUFETCH_VERSION := -DUWUFETCH_VERSION=\""2.1"\"
 UWUFETCH_COMPILER_VERSION := -DUWUFETCH_COMPILER_VERSION=\""$(shell $(CC) --version | head -n1)"\"
 VERSION_FLAGS := $(UWUFETCH_VERSION) $(UWUFETCH_COMPILER_VERSION) $(UWUFETCH_GIT_COMMIT) $(UWUFETCH_GIT_BRANCH)
 ifneq ($(wildcard .git),)
-ifneq ($(shell which git),)
+ifneq ($(shell command -v git 2> /dev/null),)
 UWUFETCH_GIT_COMMIT := -DUWUFETCH_GIT_COMMIT=\""$(shell git describe --tags)"\"
 UWUFETCH_GIT_BRANCH := -DUWUFETCH_GIT_BRANCH=\""$(shell git branch --show-current)"\"
 VERSION_FLAGS += $(UWUFETCH_GIT_COMMIT) $(UWUFETCH_GIT_COMMIT)
@@ -64,8 +65,8 @@ $(BUILD_DIR)/$(TARGET): $(HEADERS) $(OBJS) $(BUILD_DIR)/libfetch.a | $(BUILD_DIR
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-$(SRC_DIR)/ascii_embed.h:
-	python $(SRC_DIR)/ascii_preprocessor.py
+$(ASCII_EMBED_HEADER): $(BUILD_DIR)/common.o $(BUILD_DIR)/actrie.o
+	@$(MAKE) -C $(SRC_DIR)/ascii_preproc run
 
 libfetch: $(BUILD_DIR)/libfetch.a $(BUILD_DIR)/libfetch.so
 
@@ -142,5 +143,6 @@ endif
 clean:
 	@rm -rvf $(BUILD_DIR)
 	@rm -rvf $(RELEASE_NAME)*
-	@rm -fv $(SRC_DIR)/ascii_embed.h
+	@rm -fv $(ASCII_EMBED_HEADER)
+	@rm -fv $(SRC)/ascii_preproc/ap
 
