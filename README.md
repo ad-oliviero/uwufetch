@@ -10,9 +10,9 @@
 - [x] Move "thing" "uwuthing" translation data to external file
 - [x] Embed static files (except images) in the executable (if performance is not impacted)
 - [x] Write a new "rendering" function
+- [x] Rewrite `ascii_debug` makefile target
 - [ ] Make the code more secure (like by using custom `string` types that use a `len` value instead of `'\0'`)
 - [ ] New rules should be added to [CONTRIBUTING.md](/CONTRIBUTING.md)
-- [ ] Rewrite `ascii_debug` makefile target
 - [ ] Fix logging not working in some .c files
 - [ ] Add a pre-config argument parser function
 - [ ] Create a man page for `libfetch`

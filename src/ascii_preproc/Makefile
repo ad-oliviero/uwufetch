@@ -11,4 +11,4 @@ $(TARGET): $(TARGET).c
 		-o $@ $< $(BUILD_DIR)/common.o $(BUILD_DIR)/actrie.o
 
 run: $(TARGET)
-	./$(TARGET)
+	./$(TARGET) $(ARGS)

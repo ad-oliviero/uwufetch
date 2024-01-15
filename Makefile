@@ -97,8 +97,8 @@ $(BUILD_DIR)/uwutest: $(TEST_DIR)/tests.c $(BUILD_DIR)/libfetch.a
 run: $(BUILD_DIR)/$(TARGET)
 	$(BUILD_DIR)/$(TARGET) $(ARGS)
 
-ascii_debug: debug
-	ls res/ascii/$(ASCII).txt | entr -c $(BUILD_DIR)/$(TARGET) -d $(ASCII)
+ascii_debug:
+	ls res/ascii/$(LOGO).txt | entr -c $(MAKE) -C $(SRC_DIR)/ascii_preproc run ARGS="$(LOGO)"
 
 man: $(BUILD_DIR)/$(TARGET).1.gz
 $(BUILD_DIR)/$(TARGET).1.gz: $(BUILD_DIR) $(TARGET).1

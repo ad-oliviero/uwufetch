@@ -87,12 +87,47 @@ void replace(string* src, string* find, string* replace) {
   long int diff = (long int)find->len - (long int)replace->len;
   string ptr    = {src->str, src->len};
   while ((ptr.str = strnstr(ptr.str, find->str, ptr.len))) {
-    ptr.len = src->len - (ptr.str - src->str);
+    ptr.len = src->len - (size_t)(ptr.str - src->str);
     if (diff) memmove(ptr.str + replace->len, ptr.str + find->len, ptr.len); // making space for the replaced string
     memcpy(ptr.str, replace->str, replace->len);
     ptr.str += replace->len;
-    src->len += diff;
+    src->len += (size_t)diff;
   }
+}
+
+void load_ascii_file(struct logo_embed* logo, char* path) {
+  FILE* af = NULL;
+  CHECK_FN_NULL_EXIT((af = fopen(path, "rb")));
+  fseek(af, 0, SEEK_END);
+  logo->content.len = (size_t)ftell(af);
+  fseek(af, 0, SEEK_SET);
+  // TODO:
+  // CHECK_FN_NULL_EXIT((logo->content.str = malloc((logo->content.len + 1) * sizeof(char))));
+  CHECK_FN_NULL_EXIT((logo->content.str = malloc(4096 > logo->content.len + 1 ? 4096 : logo->content.len + 1)));
+  fread(logo->content.str, sizeof(char), logo->content.len, af);
+  logo->content.str[logo->content.len] = 0;
+  CHECK_FN_NEG_EXIT(fclose(af));
+}
+
+void replace_all_colors(string* fcontent) {
+  replace(fcontent, &LITERAL_STR("{RED}"), &LITERAL_STR("\x1b[31m"));
+  replace(fcontent, &LITERAL_STR("{BOLD}"), &LITERAL_STR("\x1b[1m"));
+  replace(fcontent, &LITERAL_STR("{BLACK}"), &LITERAL_STR("\x1b[30m"));
+  replace(fcontent, &LITERAL_STR("{BLUE}"), &LITERAL_STR("\x1b[34m"));
+  replace(fcontent, &LITERAL_STR("{CYAN}"), &LITERAL_STR("\x1b[36m"));
+  replace(fcontent, &LITERAL_STR("{PINK}"), &LITERAL_STR("\x1b[38;5;201m"));
+  replace(fcontent, &LITERAL_STR("{GREEN}"), &LITERAL_STR("\x1b[32m"));
+  replace(fcontent, &LITERAL_STR("{WHITE}"), &LITERAL_STR("\x1b[37m"));
+  replace(fcontent, &LITERAL_STR("{LPINK}"), &LITERAL_STR("\x1b[38;5;213m"));
+  replace(fcontent, &LITERAL_STR("{BLOCK}"), &LITERAL_STR("▇"));
+  replace(fcontent, &LITERAL_STR("{NORMAL}"), &LITERAL_STR("\x1b[0m"));
+  replace(fcontent, &LITERAL_STR("{YELLOW}"), &LITERAL_STR("\x1b[33m"));
+  replace(fcontent, &LITERAL_STR("{MAGENTA}"), &LITERAL_STR("\x1b[0;35m"));
+  replace(fcontent, &LITERAL_STR("{SPRING_GREEN}"), &LITERAL_STR("\x1b[38;5;120m"));
+  replace(fcontent, &LITERAL_STR("{BLOCK_VERTICAL}"), &LITERAL_STR("▇"));
+  replace(fcontent, &LITERAL_STR("{BACKGROUND_RED}"), &LITERAL_STR("\x1b[0;41m"));
+  replace(fcontent, &LITERAL_STR("{BACKGROUND_GREEN}"), &LITERAL_STR("\x1b[0;42m"));
+  replace(fcontent, &LITERAL_STR("{BACKGROUND_WHITE}"), &LITERAL_STR("\x1b[0;47m"));
 }
 
 struct logo_embed* load_files(DIR* d, struct file_consts* consts /*, struct actrie_t* replacer*/) {
@@ -131,42 +166,14 @@ struct logo_embed* load_files(DIR* d, struct file_consts* consts /*, struct actr
       CHECK_ERRNO_EXIT(memcpy(path_end.str, txtfs->d_name, nlen));
       full_path.str[RES_ASCII_PATH_LEN + nlen - 1] = 0;
 
-      FILE* af = NULL;
-      CHECK_FN_NULL_EXIT((af = fopen(full_path.str, "rb")));
-      fseek(af, 0, SEEK_END);
-      files[consts->file_count].content.len = (size_t)ftell(af);
-      fseek(af, 0, SEEK_SET);
-      // TODO:
-      // CHECK_FN_NULL_EXIT((files[consts->file_count].content.str = malloc((files[consts->file_count].content.len + 1) * sizeof(char))));
-      CHECK_FN_NULL_EXIT((files[consts->file_count].content.str = malloc(4096 > files[consts->file_count].content.len + 1 ? 4096 : files[consts->file_count].content.len + 1)));
-      fread(files[consts->file_count].content.str, sizeof(char), files[consts->file_count].content.len, af);
-      files[consts->file_count].content.str[files[consts->file_count].content.len] = 0;
-      CHECK_FN_NEG_EXIT(fclose(af));
-
       files[consts->file_count].name.len = nlen;
       CHECK_FN_NULL_EXIT((files[consts->file_count].name.str = malloc((files[consts->file_count].name.len + 1) * sizeof(char))));
       memcpy(files[consts->file_count].name.str, txtfs->d_name, files[consts->file_count].name.len);
       files[consts->file_count].name.str[files[consts->file_count].name.len] = 0;
+      load_ascii_file(&files[consts->file_count], full_path.str);
 
       // files[consts->file_count].content.len = actrie_t_replace_all_occurances(replacer, (char*)files[consts->file_count].content.str);
-      replace(&files[consts->file_count].content, &LITERAL_STR("{RED}"), &LITERAL_STR("\x1b[31m"));
-      replace(&files[consts->file_count].content, &LITERAL_STR("{BOLD}"), &LITERAL_STR("\x1b[1m"));
-      replace(&files[consts->file_count].content, &LITERAL_STR("{BLACK}"), &LITERAL_STR("\x1b[30m"));
-      replace(&files[consts->file_count].content, &LITERAL_STR("{BLUE}"), &LITERAL_STR("\x1b[34m"));
-      replace(&files[consts->file_count].content, &LITERAL_STR("{CYAN}"), &LITERAL_STR("\x1b[36m"));
-      replace(&files[consts->file_count].content, &LITERAL_STR("{PINK}"), &LITERAL_STR("\x1b[38;5;201m"));
-      replace(&files[consts->file_count].content, &LITERAL_STR("{GREEN}"), &LITERAL_STR("\x1b[32m"));
-      replace(&files[consts->file_count].content, &LITERAL_STR("{WHITE}"), &LITERAL_STR("\x1b[37m"));
-      replace(&files[consts->file_count].content, &LITERAL_STR("{LPINK}"), &LITERAL_STR("\x1b[38;5;213m"));
-      replace(&files[consts->file_count].content, &LITERAL_STR("{BLOCK}"), &LITERAL_STR("▇"));
-      replace(&files[consts->file_count].content, &LITERAL_STR("{NORMAL}"), &LITERAL_STR("\x1b[0m"));
-      replace(&files[consts->file_count].content, &LITERAL_STR("{YELLOW}"), &LITERAL_STR("\x1b[33m"));
-      replace(&files[consts->file_count].content, &LITERAL_STR("{MAGENTA}"), &LITERAL_STR("\x1b[0;35m"));
-      replace(&files[consts->file_count].content, &LITERAL_STR("{SPRING_GREEN}"), &LITERAL_STR("\x1b[38;5;120m"));
-      replace(&files[consts->file_count].content, &LITERAL_STR("{BLOCK_VERTICAL}"), &LITERAL_STR("▇"));
-      replace(&files[consts->file_count].content, &LITERAL_STR("{BACKGROUND_RED}"), &LITERAL_STR("\x1b[0;41m"));
-      replace(&files[consts->file_count].content, &LITERAL_STR("{BACKGROUND_GREEN}"), &LITERAL_STR("\x1b[0;42m"));
-      replace(&files[consts->file_count].content, &LITERAL_STR("{BACKGROUND_WHITE}"), &LITERAL_STR("\x1b[0;47m"));
+      replace_all_colors(&files[consts->file_count].content);
 
       string line       = files[consts->file_count].content;
       char* prevline    = line.str;
@@ -189,8 +196,35 @@ struct logo_embed* load_files(DIR* d, struct file_consts* consts /*, struct actr
   return files;
 }
 
-int main() {
+void debug_logo(char* logo_name) {
+  struct logo_embed logo = {.name = (string){logo_name, strlen(logo_name)}};
+  logo.id                = str2id(logo.name.str, (int)logo.name.len);
+  char* path             = malloc(RES_ASCII_PATH_LEN + logo.name.len + 6); // +2 for \0 and +4 for .txt
+  memcpy(path, RES_ASCII_DIR_NAME, RES_ASCII_PATH_LEN);
+  memcpy(path + RES_ASCII_PATH_LEN - 1, logo.name.str, logo.name.len);
+  memcpy(path + RES_ASCII_PATH_LEN + logo.name.len - 1, ".txt", sizeof(".txt"));
+  path[RES_ASCII_PATH_LEN + logo.name.len + 5] = 0;
+  load_ascii_file(&logo, path);
+  LOG_V(logo.id);
+  LOG_V(logo.name.str);
+  LOG_V(path);
+
+  replace_all_colors(&logo.content);
+  for (size_t i = 0; i < logo.content.len; i++)
+    putc(logo.content.str[0], stdout);
+
+  puts("\x1b[0m");
+
+  free(logo.content.str);
+  free(path);
+}
+
+int main(int argc, char** argv) {
   logging_level = 4;
+  if (argc > 1) {
+    debug_logo(argv[1]);
+    exit(0);
+  }
   /*
    * ---- variable definitions ----
    */
@@ -264,7 +298,6 @@ int main() {
    */
 
   for (size_t i = 0; i < consts.file_count; i++) {
-  // for (size_t i = 20; i <= 20; i++) {
     size_t line_count = 0;
     size_t logo_width = 0;
     string line       = files[i].content;
