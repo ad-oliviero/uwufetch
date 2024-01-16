@@ -23,19 +23,20 @@ void write_cache(struct info* user_info) {
       user_info->kernel, user_info->cpu, user_info->shell, user_info->packages);
 
   // writing numbers before gpus (because gpus are a variable amount)
-  cache_size += (uint32_t)(fwrite(&user_info->screen_width, sizeof(user_info->screen_width), 1, cache_fp) * sizeof(user_info->screen_width));
-  cache_size += (uint32_t)(fwrite(&user_info->screen_height, sizeof(user_info->screen_height), 1, cache_fp) * sizeof(user_info->screen_height));
-  cache_size += (uint32_t)(fwrite(&user_info->logo_id, sizeof(user_info->screen_height), 1, cache_fp) * sizeof(user_info->logo_id));
+  cache_size += (uint32_t)(fwrite(&user_info->screen_width, sizeof(char), sizeof(user_info->screen_width), cache_fp) * sizeof(user_info->screen_width));
+  cache_size += (uint32_t)(fwrite(&user_info->screen_height, sizeof(char), sizeof(user_info->screen_height), cache_fp) * sizeof(user_info->screen_height));
+  cache_size += (uint32_t)(fwrite(&user_info->logo_id, sizeof(char), sizeof(user_info->screen_height), cache_fp) * sizeof(user_info->logo_id));
 
   // the first element of gpu_list is the number of gpus
-  cache_size += (uint32_t)(fwrite(&user_info->gpu_list[0], sizeof(user_info->gpu_list[0]), 1, cache_fp) * sizeof(user_info->gpu_list[0]));
+  cache_size += (uint32_t)(fwrite(&user_info->gpu_list[0], sizeof(char), sizeof(user_info->gpu_list[0]), cache_fp) * sizeof(user_info->gpu_list[0]));
+  printf("%lu\n", (size_t)user_info->gpu_list[0]);
 
   for (size_t i = 1; i <= (size_t)user_info->gpu_list[0]; i++) // writing gpu names to file
     cache_size += (uint32_t)fprintf(cache_fp, ";%s", user_info->gpu_list[i]);
 
   // writing cache size at the beginning of the file
   fseek(cache_fp, 0, SEEK_SET);
-  fwrite(&cache_size, sizeof(cache_size), 1, cache_fp);
+  fwrite(&cache_size, sizeof(char), sizeof(cache_size), cache_fp);
 
   fclose(cache_fp);
   return;
@@ -55,7 +56,7 @@ char* read_cache(struct info* user_info) {
   uint32_t cache_size = 0;
   fread(&cache_size, sizeof(cache_size), 1, cache_fp);
   char* start = malloc(cache_size);
-  fread(start, cache_size, 1, cache_fp);
+  fread(start, sizeof(char), cache_size, cache_fp);
   fclose(cache_fp);
   char* buffer = start;
 
@@ -79,10 +80,11 @@ char* read_cache(struct info* user_info) {
   buffer += sizeof(user_info->logo_id);
 
   // reading gpus
-  user_info->gpu_list = malloc(sizeof(char*));
-  memcpy(&user_info->gpu_list[0], buffer, sizeof(user_info->gpu_list[0]));
-  buffer += sizeof(user_info->gpu_list[0]) + 1;
-  user_info->gpu_list = realloc(user_info->gpu_list, (size_t)user_info->gpu_list[0] + 1);
+  char* gpu_count = 0;
+  memcpy(&gpu_count, buffer, sizeof(gpu_count));
+  buffer += sizeof(gpu_count) + 1;
+  user_info->gpu_list    = malloc(sizeof(char*) * (size_t)gpu_count + 1);
+  user_info->gpu_list[0] = (char*)gpu_count;
   memset(user_info->gpu_list + 1, 0, (size_t)user_info->gpu_list[0] * sizeof(char*));
   for (size_t i = 1; i <= (size_t)user_info->gpu_list[0]; i++) {
     user_info->gpu_list[i] = buffer;
@@ -105,7 +107,9 @@ char* read_cache(struct info* user_info) {
   LOG_V(user_info->screen_width);
   LOG_V(user_info->screen_height);
   LOG_V(user_info->logo_id);
+#ifdef LOGGING_ENABLED
   for (size_t i = 1; i <= (size_t)user_info->gpu_list[0]; i++)
     LOG_V(user_info->gpu_list[i]);
+#endif
   return start;
 }

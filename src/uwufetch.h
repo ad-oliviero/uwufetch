@@ -45,7 +45,7 @@ struct info {
   int screen_width,
       screen_height,
       total_pkgs;
-  uint64_t logo_id; // hash calculated on the logo's name
+  uint32_t logo_id; // hash calculated on the logo's name
   size_t logo_idx;  // index of the element of the logos list
   unsigned long memory_total, memory_used;
   long uptime;
