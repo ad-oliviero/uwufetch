@@ -5,7 +5,7 @@ ifeq ($(PLATFORM), Linux)
 	ifeq ($(shell uname -o), Android)
 		CFLAGS += -D__ANDROID__
 		CFLAGS_DEBUG += -D__ANDROID__
-		PREFIX_DIR = /data/data/com.termux/files/usr
+		PREFIX_DIR = /data/data/com.termux/files
 		PLATFORM_ABBR	= android
 	else
 		LDFLAGS += -lpci

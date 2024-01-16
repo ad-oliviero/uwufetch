@@ -29,7 +29,6 @@ void write_cache(struct info* user_info) {
 
   // the first element of gpu_list is the number of gpus
   cache_size += (uint32_t)(fwrite(&user_info->gpu_list[0], sizeof(char), sizeof(user_info->gpu_list[0]), cache_fp) * sizeof(user_info->gpu_list[0]));
-  printf("%lu\n", (size_t)user_info->gpu_list[0]);
 
   for (size_t i = 1; i <= (size_t)user_info->gpu_list[0]; i++) // writing gpu names to file
     cache_size += (uint32_t)fprintf(cache_fp, ";%s", user_info->gpu_list[i]);

@@ -112,7 +112,6 @@ export
 install: clean $(BUILD_DIR)/$(TARGET) $(BUILD_DIR)/libfetch.so man
 	@install -CDvm 755 $(BUILD_DIR)/$(TARGET) -t $(BIN_DIR)
 	@install -CDvm 644 $(shell find res/ -type f -print) -t $(LIB_DIR)/$(TARGET)
-	@install -CDvm 644 $(shell find res/ascii -type f -print) -t $(LIB_DIR)/$(TARGET)/ascii
 	@install -CDvm 644 default.config -t $(ETC_DIR)/$(TARGET)
 	@install -CDvm 644 $(BUILD_DIR)/$(TARGET).1.gz -t $(MAN_DIR)
 	@$(MAKE) -C $(SRC_DIR)/libfetch install

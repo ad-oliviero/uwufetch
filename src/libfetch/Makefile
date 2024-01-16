@@ -6,7 +6,6 @@ CFLAGS ?= -O3 -std=$(CSTD)
 
 PROJECT_ROOT ?= .
 ifneq ($(PREFIX_DIR),) # if PREFIX_DIR is not system root
-override PREFIX_DIR := $(PROJECT_ROOT)/$(PREFIX_DIR)
 USR_DIR := $(PREFIX_DIR)/usr
 ETC_DIR := $(PREFIX_DIR)/etc
 BIN_DIR := $(USR_DIR)/bin
