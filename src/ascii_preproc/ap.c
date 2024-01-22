@@ -326,7 +326,7 @@ int main(int argc, char** argv) {
    * ----completing output file----
    */
 
-  CHECK_ERRNO_EXIT(fprintf(outf, "};\nstatic const unsigned int logos_count __attribute__((unused)) = 35;\n#endif // _ASCII_EMBED_H_"));
+  CHECK_ERRNO_EXIT(fprintf(outf, "};\nstatic const unsigned int logos_count __attribute__((unused)) = 35;\n#endif // _ASCII_EMBED_H_\n"));
 
   /*
    * ---- releasing resources ----

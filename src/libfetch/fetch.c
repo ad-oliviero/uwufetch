@@ -39,6 +39,10 @@
   #include <fcntl.h>
   #include <sys/time.h>
 // clang-format on
+#elif defined(SYSTEM_BASE_OPENBSD)
+  #include <pci/pci.h>
+  #include <sys/sysctl.h>
+  #include <sys/time.h>
 #endif
 #include "logging.h"
 #include <unistd.h>
@@ -184,7 +188,7 @@ void libfetch_cleanup(void) {
 char* get_user_name(void) {
   long max_user_name_len = sysconf(_SC_LOGIN_NAME_MAX);
   char* user_name        = alloc(max_user_name_len > 0 ? (size_t)max_user_name_len : BUFFER_SIZE);
-#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_FREEBSD)
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_FREEBSD) || defined(SYSTEM_BASE_OPENBSD)
   char* env = getenv("USER");
   if (env) {
     LOG_I("getting user name from environment variable");
@@ -197,8 +201,6 @@ char* get_user_name(void) {
       pclose(pp);
     }
   }
-#elif defined(SYSTEM_BASE_OPENBSD)
-  LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
@@ -217,9 +219,9 @@ char* get_user_name(void) {
 char* get_host_name(void) {
   long max_host_name_len = sysconf(_SC_HOST_NAME_MAX);
   char* host_name        = alloc(max_host_name_len > 0 ? (size_t)max_host_name_len : BUFFER_SIZE);
-#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_FREEBSD)
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_FREEBSD) || defined(SYSTEM_BASE_OPENBSD)
   unsigned long int len = 0;
-  #if !defined(SYSTEM_BASE_FREEBSD)
+  #if !defined(SYSTEM_BASE_FREEBSD) && !defined(SYSTEM_BASE_OPENBSD)
   len = strlen(GLOBAL_UTSNAME.nodename);
   if (len > 0) {
     LOG_I("getting host name from struct utsname's nodename");
@@ -242,11 +244,9 @@ char* get_host_name(void) {
         gethostname(host_name, BUFFER_SIZE);
       }
     }
-  #if !defined(SYSTEM_BASE_FREEBSD)
+  #if !defined(SYSTEM_BASE_FREEBSD) && !defined(SYSTEM_BASE_OPENBSD)
   }
   #endif
-#elif defined(SYSTEM_BASE_OPENBSD)
-  LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
@@ -270,14 +270,12 @@ char* get_host_name(void) {
 
 char* get_shell(void) {
   char* shell_name = alloc(BUFFER_SIZE);
-#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_FREEBSD)
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_FREEBSD) || defined(SYSTEM_BASE_OPENBSD)
   char* env = getenv("SHELL");
   if (env) {
     LOG_I("getting shell name from environment variable");
     snprintf(shell_name, BUFFER_SIZE, "%s", env);
   }
-#elif defined(SYSTEM_BASE_OPENBSD)
-  LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
@@ -338,7 +336,12 @@ char* get_model(void) {
   CHECK_FN_NEG(sysctlbyname("hw.hv_vendor", &buf, &len, NULL, 0));
   strcpy(model, buf);
 #elif defined(SYSTEM_BASE_OPENBSD)
-  LOG_E("Not implemented");
+  char buf[BUFFER_SIZE] = {0};
+  unsigned long int len = sizeof(buf);
+  LOG_I("getting model name with sysctl()");
+  int mib[2] = {CTL_HW, HW_VENDOR};
+  CHECK_FN_NEG(sysctl(mib, 2, &buf, &len, NULL, 0));
+  strcpy(model, buf);
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
@@ -390,7 +393,25 @@ char* get_kernel(void) {
   len = strlen(kernel_name) - 1;
   if (kernel_name[len] == '\n') kernel_name[len] = '\0';
 #elif defined(SYSTEM_BASE_OPENBSD)
-  LOG_E("Not implemented");
+  char buf[BUFFER_SIZE]  = {0};
+  unsigned long int blen = sizeof(buf);
+  LOG_I("getting kernel name with sysctl()");
+  int mib[2] = {CTL_KERN, KERN_OSTYPE};
+  CHECK_FN_NEG(sysctl(mib, 2, &buf, &blen, NULL, 0));
+  char* p    = kernel_name;
+  size_t len = 0;
+  if (strlen(buf) > 0) {
+    LOG_I("getting kernel name from struct utsname's sysname");
+    p += snprintf(p, BUFFER_SIZE, "%s ", buf);
+    len = (size_t)(p - kernel_name);
+  }
+  mib[1] = KERN_OSRELEASE;
+  CHECK_FN_NEG(sysctl(mib, 2, &buf, &blen, NULL, 0));
+  if (strlen(buf) > 0) {
+    LOG_I("getting kernel release from struct utsname's release");
+    p += snprintf(p, BUFFER_SIZE - len, "%s ", buf);
+    len = (size_t)(p - kernel_name);
+  }
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
@@ -423,7 +444,7 @@ char* get_os_name(void) {
 #elif defined(SYSTEM_BASE_ANDROID)
   sprintf(os_name, "android");
 #elif defined(SYSTEM_BASE_OPENBSD)
-  LOG_E("Not implemented");
+  sprintf(os_name, "openbsd");
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
@@ -460,7 +481,12 @@ char* get_cpu(void) {
   CHECK_FN_NEG(sysctlbyname("hw.model", &buf, &len, NULL, 0));
   strcpy(cpu, buf);
 #elif defined(SYSTEM_BASE_OPENBSD)
-  LOG_E("Not implemented");
+  char buf[BUFFER_SIZE] = {0};
+  unsigned long int len = sizeof(buf);
+  int mib[2]            = {CTL_HW, HW_MODEL};
+  LOG_I("getting cpu model with sysctl()");
+  CHECK_FN_NEG(sysctl(mib, 2, &buf, &len, NULL, 0));
+  strcpy(cpu, buf);
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
@@ -491,7 +517,13 @@ char** get_gpu_list(void) {
   char** gpu_list = alloc(BUFFER_SIZE * sizeof(char*));
   memset(gpu_list, 0, BUFFER_SIZE * sizeof(char*));
   long unsigned int gpu_id = 1; // the [0] element is the "gpu count"
-#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_FREEBSD)
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_FREEBSD) || defined(SYSTEM_BASE_OPENBSD)
+  #if defined(SYSTEM_BASE_OPENBSD)
+  if (getuid()) {
+    LOG_E("on OpenBSD you can access pci devices only with root permissions!");
+    return NULL;
+  }
+  #endif
   struct pci_access* pacc = pci_alloc();
   struct pci_dev* dev;
   pci_init(pacc);
@@ -533,12 +565,6 @@ char** get_gpu_list(void) {
      */
     __system_property_get("ro.hardware.egl", gpu_list[gpu_id++]);
   }
-// #elif
-// LOG_E("Not implemented");
-// return NULL;
-#elif defined(SYSTEM_BASE_OPENBSD)
-  LOG_E("Not implemented");
-  return NULL;
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
   return NULL;
@@ -596,9 +622,9 @@ char* get_packages(void) {
   #define PKGPATH "/data/data/com.termux/files/usr/bin/"
 #elif defined(SYSTEM_BASE_MACOS)
   #define PKGPATH "/usr/local/bin/"
-#elif defined(SYSTEM_BASE_FREEBSD)
+#elif defined(SYSTEM_BASE_FREEBSD) || defined(SYSTEM_BASE_OPENBSD)
   #define PKGPATH "/usr/sbin/"
-#else // Linux, OpenBSD, FreeBSD
+#else // Linux
   #define PKGPATH "/usr/bin/"
 #endif
   struct pkgcmd {
@@ -660,7 +686,7 @@ int get_screen_width(void) {
   LOG_I("getting screen width from /var/run/dmesg.boot");
   sscanf(FB0_VIRTUAL_SIZE, "%dx%*d", &screen_width);
 #elif defined(SYSTEM_BASE_OPENBSD)
-  LOG_E("Not implemented");
+  LOG_E("Display size in OpenBSD can only be retrieved if there is a graphical environment (x11) (at least that's what my research led me to).\nIf someone requests this feature I will implement it, but then uwufetch will depend on Xlib.");
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
@@ -683,7 +709,7 @@ int get_screen_height(void) {
   LOG_I("getting screen height from /var/run/dmesg.boot");
   sscanf(FB0_VIRTUAL_SIZE, "%*dx%d", &screen_height);
 #elif defined(SYSTEM_BASE_OPENBSD)
-  LOG_E("Not implemented");
+  LOG_E("Display size in OpenBSD can only be retrieved if there is a graphical environment (x11) (at least that's what my research led me to).\nIf someone requests this feature I will implement it, but then uwufetch will depend on Xlib.");
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
@@ -702,10 +728,11 @@ unsigned long long get_memory_total(void) {
   memory_total = GLOBAL_SYSINFO.totalram;
 #elif defined(SYSTEM_BASE_FREEBSD)
   unsigned long int len = sizeof(memory_total);
-  LOG_I("getting memory total from sysctlbyname");
+  LOG_I("getting total memory from sysctlbyname");
   CHECK_FN_NEG(sysctlbyname("vm.kmem_size", &memory_total, &len, NULL, 0));
 #elif defined(SYSTEM_BASE_OPENBSD)
-  LOG_E("Not implemented");
+  // https://stackoverflow.com/a/9147419
+  memory_total = (unsigned long long)(sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGESIZE));
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
@@ -737,13 +764,15 @@ unsigned long long get_memory_used(void) {
   unsigned long long v_free_count     = 0;
   unsigned long long v_inactive_count = 0;
   unsigned long int len               = sizeof(unsigned long);
+  LOG_I("getting free memory from sysctlbyname");
   CHECK_FN_NEG(sysctlbyname("vm.kmem_size", &kmem_size, &len, NULL, 0));
   CHECK_FN_NEG(sysctlbyname("hw.pagesize", &pagesize, &len, NULL, 0));
   CHECK_FN_NEG(sysctlbyname("vm.stats.vm.v_free_count", &v_free_count, &len, NULL, 0));
   CHECK_FN_NEG(sysctlbyname("vm.stats.vm.v_inactive_count", &v_inactive_count, &len, NULL, 0));
   memory_used = (kmem_size - (pagesize * (v_free_count + v_inactive_count))) / 1048576;
 #elif defined(SYSTEM_BASE_OPENBSD)
-  LOG_E("Not implemented");
+  // https://stackoverflow.com/a/9147419
+  memory_used = (unsigned long long)(((sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGESIZE)) - (sysconf(_SC_AVPHYS_PAGES) * sysconf(_SC_PAGESIZE))) >> 20);
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
@@ -759,19 +788,23 @@ long get_uptime(void) {
   long uptime = 0;
 #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
   uptime = GLOBAL_SYSINFO.uptime;
-#elif defined(SYSTEM_BASE_FREEBSD)
+#elif defined(SYSTEM_BASE_FREEBSD) || defined(SYSTEM_BASE_OPENBSD)
   struct timeval boottime;
   unsigned long int len = sizeof(boottime);
+  LOG_I("getting uptime with sysctl()");
+  #if defined(SYSTEM_BASE_FREEBSD)
   CHECK_FN_NEG(sysctlbyname("kern.boottime", &boottime, &len, NULL, 0));
+  #else
+  int mib[2] = {CTL_KERN, KERN_BOOTTIME};
+  CHECK_FN_NEG(sysctl(mib, 2, &boottime, &len, NULL, 0));
+  #endif
   time_t current_time;
   time(&current_time);
   uptime = current_time - boottime.tv_sec;
-#elif defined(SYSTEM_BASE_OPENBSD)
-  LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
-  uptime       = GetTickCount() / 1000;
+  uptime = GetTickCount() / 1000;
 #else
   LOG_E("System not supported or system base not specified");
 #endif
@@ -781,11 +814,9 @@ long get_uptime(void) {
 
 struct winsize get_terminal_size(void) {
   struct winsize terminal_size = {0};
-#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_FREEBSD) || defined(SYSTEM_BASE_ANDROID)
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_FREEBSD) || defined(SYSTEM_BASE_OPENBSD) || defined(SYSTEM_BASE_ANDROID)
   LOG_I("getting terminal size with ioctl");
   ioctl(STDOUT_FILENO, TIOCGWINSZ, &terminal_size);
-#elif defined(SYSTEM_BASE_OPENBSD)
-  LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)

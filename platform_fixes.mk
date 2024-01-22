@@ -24,8 +24,10 @@ else ifeq ($(PLATFORM), FreeBSD)
 	LDFLAGS += -lpci
 	PLATFORM_ABBR = freebsd
 else ifeq ($(PLATFORM), OpenBSD)
-	CFLAGS += -D__OPENBSD__ -D__BSD__
-	CFLAGS_DEBUG += -D__OPENBSD__ -D__BSD__
+	CC = cc
+	CFLAGS += -D__OPENBSD__ -D__BSD__ -I/usr/local/include
+	CFLAGS_DEBUG += -D__OPENBSD__ -D__BSD__ -I/usr/local/include
+	LDFLAGS += -L/usr/local/lib -lpci -lz
 	PLATFORM_ABBR = openbsd
 else ifeq ($(PLATFORM), Windows_NT)
 	CC = gcc

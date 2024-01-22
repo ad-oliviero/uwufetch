@@ -21,10 +21,19 @@ MAN_DIR = $(USR_DIR)/share/man/man1
 INC_DIR = $(USR_DIR)/include
 
 RELEASE_SCRIPTS = release_scripts/*.sh
+RELEASE_NAME := $(TARGET)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
+
+ifeq ($(OS), Windows_NT)
+	PLATFORM = $(OS)
+else
+	PLATFORM = $(shell uname)
+endif
+PLATFORM_ABBR = $(PLATFORM)
+include platform_fixes.mk
 
 # compiler "settings" and compile-time info flags
-CC = gcc
-CSTD = gnu18
+CC ?= gcc
+CSTD ?= gnu18
 UWUFETCH_VERSION := -DUWUFETCH_VERSION=\""2.1"\"
 UWUFETCH_COMPILER_VERSION := -DUWUFETCH_COMPILER_VERSION=\""$(shell $(CC) --version | head -n1)"\"
 VERSION_FLAGS := $(UWUFETCH_VERSION) $(UWUFETCH_COMPILER_VERSION) $(UWUFETCH_GIT_COMMIT) $(UWUFETCH_GIT_BRANCH)
@@ -35,8 +44,8 @@ UWUFETCH_GIT_BRANCH := -DUWUFETCH_GIT_BRANCH=\""$(shell git branch --show-curren
 VERSION_FLAGS += $(UWUFETCH_GIT_COMMIT) $(UWUFETCH_GIT_COMMIT)
 endif
 endif
-CFLAGS = -O3 -std=$(CSTD) $(VERSION_FLAGS)
-CFLAGS_DEBUG = -Wall -Wextra -Wpedantic -Wunused-result -Wconversion -Wshadow -Wnull-dereference -Wcast-align -g -pthread $(VERSION_FLAGS) -D__DEBUG__
+CFLAGS += -O3 -std=$(CSTD) $(VERSION_FLAGS)
+CFLAGS_DEBUG += -Wall -Wextra -Wpedantic -Wunused-result -Wconversion -Wshadow -Wnull-dereference -Wcast-align -g -pthread $(VERSION_FLAGS) -D__DEBUG__
 ifeq ($(shell $(CC) -v 2>&1 | grep clang >/dev/null; echo $$?), 0) # if the compiler is clang
 	# macros give a lot of errors for ##__VA_ARGS__
 	TEMP_CFLAG_FIXES = -Wno-c2x-extensions -Wno-unknown-pragmas -Wno-string-conversion -Wno-unused-function
@@ -44,20 +53,11 @@ ifeq ($(shell $(CC) -v 2>&1 | grep clang >/dev/null; echo $$?), 0) # if the comp
 	CFLAGS += $(TEMP_CFLAG_FIXES)
 endif
 
-ifeq ($(OS), Windows_NT)
-	PLATFORM = $(OS)
-else
-	PLATFORM = $(shell uname)
-endif
-PLATFORM_ABBR = $(PLATFORM)
-
-include platform_fixes.mk
-RELEASE_NAME := $(TARGET)_$(UWUFETCH_VERSION)-$(PLATFORM_ABBR)
 
 all: $(BUILD_DIR)/$(TARGET)
 
 $(BUILD_DIR):
-	@mkdir -pv $(BUILD_DIR)
+	@mkdir -p $(BUILD_DIR)
 
 $(BUILD_DIR)/$(TARGET): $(HEADERS) $(OBJS) $(BUILD_DIR)/libfetch.a | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(BUILD_DIR)/libfetch.a
@@ -126,7 +126,7 @@ uninstall:
 
 
 release: clean $(BUILD_DIR)/$(TARGET) man
-	mkdir -pv $(RELEASE_NAME)/libfetch
+	mkdir -p $(RELEASE_NAME)/libfetch
 	cp $(RELEASE_SCRIPTS) $(RELEASE_NAME)
 	cp -r res $(RELEASE_NAME)
 	cp $(BUILD_DIR)/$(TARGET)$(EXT) $(RELEASE_NAME)
