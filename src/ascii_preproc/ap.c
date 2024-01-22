@@ -133,8 +133,8 @@ void replace_all_colors(string* fcontent) {
 struct logo_embed* load_files(DIR* d, struct file_consts* consts /*, struct actrie_t* replacer*/) {
   struct dirent* txtfs     = NULL;
   struct logo_embed* files = NULL;
-  string full_path         = {NULL};
-  string path_end          = {NULL};
+  string full_path         = {NULL, 0};
+  string path_end          = {NULL, 0};
   full_path.len            = RES_ASCII_PATH_LEN + consts->max_name_len;
   CHECK_FN_NULL_EXIT((full_path.str = malloc(full_path.len)));
 
