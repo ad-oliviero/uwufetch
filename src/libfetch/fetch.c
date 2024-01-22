@@ -123,10 +123,10 @@ void libfetch_init(void) {
   FILE* proc_meminfo = fopen("/proc/meminfo", "r");
   if (proc_meminfo) {
     LOG_I("reading /proc/meminfo");
-    PROC_MEMINFO = alloc(SMALL_BUFFER_SIZE)
-        // reading only SMALL_BUFFER_SIZE (256) bytes because every other line of the file is not really needed
-        unsigned long int len = fread(PROC_MEMINFO, 1, SMALL_BUFFER_SIZE, proc_meminfo) - 1;
-    PROC_MEMINFO[len]         = '\0';
+    PROC_MEMINFO = alloc(SMALL_BUFFER_SIZE);
+    // reading only SMALL_BUFFER_SIZE (256) bytes because every other line of the file is not really needed
+    unsigned long int len = fread(PROC_MEMINFO, 1, SMALL_BUFFER_SIZE, proc_meminfo) - 1;
+    PROC_MEMINFO[len]     = '\0';
     fclose(proc_meminfo);
   }
 
