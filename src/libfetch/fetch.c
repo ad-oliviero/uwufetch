@@ -75,7 +75,7 @@ and that means the function failed*/
 
 #define BUFFER_SIZE 1024
 #define SMALL_BUFFER_SIZE 256 // used for small buffers to hold small files' content
-#define PTR_CNT 12            // 12 strings
+#define PTR_CNT 15            // 12 strings
 struct ptr {
   void* pointer;
   bool active;
@@ -301,16 +301,16 @@ char* get_shell(void) {
 char* get_model(void) {
   char* model = alloc(BUFFER_SIZE);
 #if defined(SYSTEM_BASE_LINUX)
-  FILE* model_fp;
-  char* model_filename[4] = {
+  FILE* model_fp          = NULL;
+  char* model_filename[3] = {
       "/sys/devices/virtual/dmi/id/product_version",
       "/sys/devices/virtual/dmi/id/product_name",
       "/sys/devices/virtual/dmi/id/board_name",
   };
 
-  char tmp_model[4][BUFFER_SIZE] = {0}; // temporary variable to store the contents of all 3 files
+  char tmp_model[3][BUFFER_SIZE] = {0}; // temporary variable to store the contents of all 3 files
   int longest_model = 0, best_len = 0, currentlen = 0;
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < 3; i++) {
     model_fp = fopen(model_filename[i], "r");
     if (model_fp) {
       LOG_I("reading %s", model_filename[i]);
