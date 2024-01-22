@@ -35,10 +35,10 @@
   #ifdef __BSD__
   #else // defined(__BSD__) || defined(_WIN32)
     #ifndef _WIN32
-      #ifndef __OPENBSD__
-        #include <sys/sysinfo.h>
-      #else  // __OPENBSD__
-      #endif // __OPENBSD__
+      // #ifndef __OPENBSD__
+      //   #include <sys/sysinfo.h>
+      // #else  // __OPENBSD__
+      // #endif // __OPENBSD__
     #else    // _WIN32
       #include <sysinfoapi.h>
     #endif // _WIN32

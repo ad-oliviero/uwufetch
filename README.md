@@ -26,21 +26,21 @@
 ### What does work?
 | Function (libfetch) | Arch Linux | Linux (not Arch) | Android | FreeBSD | OpenBSD | MacOS | Windows |
 |---|---|---|---|---|---|---|---|
-|`get_user_name`    |✅ ✅|✅ ❌|✅ ✅|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
-|`get_host_name`    |✅ ✅|✅ ❌|✅ ✅|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
-|`get_shell`        |✅ ✅|✅ ❌|✅ ✅|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
-|`get_model`        |✅ ✅|✅ ❌|✅ ✅|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
-|`get_kernel`       |✅ ✅|✅ ❌|✅ ✅|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
-|`get_os_name`      |✅ ✅|✅ ❌|✅ ✅|✅ ❌|❌ ❌|❌ ❌|✅ ✅|
-|`get_cpu`          |✅ ✅|✅ ✅|✅ ✅|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
-|`get_gpu_list`     |✅ ✅|✅ ✅|✅ ✅|❌ ❌|❌ ❌|❌ ❌|✅ ✅|
-|`get_packages`     |✅ ✅|✅ ❌|✅ ✅|✅ ❌|✅ ❌|✅ ❌|❌ ❌|
-|`get_screen_width` |✅ ✅|✅ ❌| --- |❌ ❌|❌ ❌|❌ ❌|✅ ✅|
-|`get_screen_height`|✅ ✅|✅ ❌| --- |❌ ❌|❌ ❌|❌ ❌|✅ ✅|
-|`get_memory_total` |✅ ✅|✅ ❌|✅ ✅|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
-|`get_memory_used`  |✅ ✅|✅ ❌|✅ ✅|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
-|`get_uptime`       |✅ ✅|✅ ❌|✅ ✅|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
-|`get_terminal_size`|✅ ✅|✅ ❌|✅ ✅|✅ ❌|❌ ❌|❌ ❌|✅ ❌|
+|`get_user_name`    |✅ ✅|✅ ❌|✅ ✅|✅ ✅|❌ ❌|❌ ❌|✅ ❌|
+|`get_host_name`    |✅ ✅|✅ ❌|✅ ✅|✅ ✅|❌ ❌|❌ ❌|✅ ❌|
+|`get_shell`        |✅ ✅|✅ ❌|✅ ✅|✅ ✅|❌ ❌|❌ ❌|✅ ❌|
+|`get_model`        |✅ ✅|✅ ❌|✅ ✅|✅ ✅|❌ ❌|❌ ❌|✅ ❌|
+|`get_kernel`       |✅ ✅|✅ ❌|✅ ✅|✅ ✅|❌ ❌|❌ ❌|✅ ❌|
+|`get_os_name`      |✅ ✅|✅ ❌|✅ ✅|✅ ✅|❌ ❌|❌ ❌|✅ ✅|
+|`get_cpu`          |✅ ✅|✅ ✅|✅ ✅|✅ ✅|❌ ❌|❌ ❌|✅ ❌|
+|`get_gpu_list`     |✅ ✅|✅ ✅|✅ ✅|✅ ✅|❌ ❌|❌ ❌|✅ ✅|
+|`get_packages`     |✅ ✅|✅ ❌|✅ ✅|✅ ✅|✅ ❌|✅ ❌|❌ ❌|
+|`get_screen_width` |✅ ✅|✅ ❌| --- |✅ ✅|❌ ❌|❌ ❌|✅ ✅|
+|`get_screen_height`|✅ ✅|✅ ❌| --- |✅ ✅|❌ ❌|❌ ❌|✅ ✅|
+|`get_memory_total` |✅ ✅|✅ ❌|✅ ✅|✅ ✅|❌ ❌|❌ ❌|✅ ❌|
+|`get_memory_used`  |✅ ✅|✅ ❌|✅ ✅|✅ ✅|❌ ❌|❌ ❌|✅ ❌|
+|`get_uptime`       |✅ ✅|✅ ❌|✅ ✅|✅ ✅|❌ ❌|❌ ❌|✅ ❌|
+|`get_terminal_size`|✅ ✅|✅ ❌|✅ ✅|✅ ✅|❌ ❌|❌ ❌|✅ ❌|
 
 TODO: add list of things that work or do not work in "the frontend" (and define what "the frontend" means)
 
@@ -68,15 +68,11 @@ You can find a list of supported operating systems in [supported_systems](./supp
 
 ### Requisites
 
-- [freecolor](http://www.rkeene.org/oss/freecolor/) to get ram usage on FreeBSD.
-
 - [musl libc](https://musl.libc.org/) if you are on a non-gnu system (such as [alpine linux](https://pkgs.alpinelinux.org/package/edge/main/x86_64/musl-dev))
-
-- [xwininfo](https://github.com/freedesktop/xorg-xwininfo) to get screen resolution.
 
 - [viu](https://github.com/atanunq/viu) (optional) to use images instead of ascii art (see [How to use images](#how-to-use-images) below).
 
-- [lshw](https://github.com/lyonel/lshw) (optional) for better accuracy on GPU info.
+- [libpci](https://github.com/pciutils/pciutils) for gpu list (all unix systems, more info about installation on the github page)
 
 ### Via package manager
 

@@ -32,9 +32,13 @@
   #include <sys/sysinfo.h>
   #include <sys/utsname.h>
 #elif defined(SYSTEM_BASE_FREEBSD)
+// clang-format off
+  #include <sys/types.h> // this include needs to be before sysctl.h
   #include <sys/sysctl.h>
+  #include <pci/pci.h>
+  #include <fcntl.h>
   #include <sys/time.h>
-  #include <sys/types.h>
+// clang-format on
 #endif
 #include "logging.h"
 #include <unistd.h>
@@ -48,13 +52,14 @@ void set_libfetch_log_level(int level) {
 #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
 static struct utsname GLOBAL_UTSNAME;
 static struct sysinfo GLOBAL_SYSINFO;
-static char PROC_MEMINFO[256];
-static char PROC_CPUINFO[256];
-  #if defined(SYSTEM_BASE_LINUX)
-static char FB0_VIRTUAL_SIZE[256];
-  #endif
+static char* PROC_MEMINFO = NULL;
+static char* PROC_CPUINFO = NULL;
 #elif defined(SYSTEM_BASE_WINDOWS)
 MEMORYSTATUSEX GLOBAL_MEMORY_STATUS_EX;
+#endif
+
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_FREEBSD)
+static char* FB0_VIRTUAL_SIZE = NULL;
 #endif
 
 /* we set the first char to 0 in the init function
@@ -69,7 +74,8 @@ and that means the function failed*/
   }
 
 #define BUFFER_SIZE 1024
-#define PTR_CNT 12 // 12 strings
+#define SMALL_BUFFER_SIZE 256 // used for small buffers to hold small files' content
+#define PTR_CNT 12            // 12 strings
 struct ptr {
   void* pointer;
   bool active;
@@ -117,16 +123,18 @@ void libfetch_init(void) {
   FILE* proc_meminfo = fopen("/proc/meminfo", "r");
   if (proc_meminfo) {
     LOG_I("reading /proc/meminfo");
-    // reading only 256 bytes because every other line of the file is not really needed
-    unsigned long int len = fread(PROC_MEMINFO, 1, 256, proc_meminfo) - 1;
-    PROC_MEMINFO[len]     = '\0';
+    PROC_MEMINFO = alloc(SMALL_BUFFER_SIZE)
+        // reading only SMALL_BUFFER_SIZE (256) bytes because every other line of the file is not really needed
+        unsigned long int len = fread(PROC_MEMINFO, 1, SMALL_BUFFER_SIZE, proc_meminfo) - 1;
+    PROC_MEMINFO[len]         = '\0';
     fclose(proc_meminfo);
   }
 
   FILE* cpu_info = fopen("/proc/cpuinfo", "r");
   if (cpu_info) {
     LOG_I("reading /proc/cpuinfo");
-    unsigned long int len = fread(PROC_CPUINFO, 1, 256, cpu_info) - 1;
+    PROC_CPUINFO          = alloc(SMALL_BUFFER_SIZE);
+    unsigned long int len = fread(PROC_CPUINFO, 1, SMALL_BUFFER_SIZE, cpu_info) - 1;
     PROC_CPUINFO[len]     = '\0';
     fclose(cpu_info);
   }
@@ -134,17 +142,32 @@ void libfetch_init(void) {
   FILE* fb0_virtual_size = fopen("/sys/class/graphics/fb0/virtual_size", "r");
   if (fb0_virtual_size) {
     LOG_I("reading /sys/class/graphics/fb0/virtual_size");
-    unsigned long int len = fread(FB0_VIRTUAL_SIZE, 1, 256, fb0_virtual_size) - 1;
+    FB0_VIRTUAL_SIZE      = alloc(SMALL_BUFFER_SIZE);
+    unsigned long int len = fread(FB0_VIRTUAL_SIZE, 1, SMALL_BUFFER_SIZE, fb0_virtual_size) - 1;
     FB0_VIRTUAL_SIZE[len] = '\0';
     fclose(fb0_virtual_size);
   }
   #endif
 #elif defined(SYSTEM_BASE_FREEBSD)
-  LOG_E("Not implemented");
+  FILE* fb0_virtual_size = fopen("/var/run/dmesg.boot", "r");
+  if (fb0_virtual_size) {
+    LOG_I("reading /var/run/dmesg.boot");
+    unsigned long int len = 0;
+  #define STRING_SEARCH "VT(efifb): resolution"
+    FB0_VIRTUAL_SIZE      = alloc(BUFFER_SIZE);
+    while (fgets(FB0_VIRTUAL_SIZE, BUFFER_SIZE, fb0_virtual_size)) {
+      if (strstr(FB0_VIRTUAL_SIZE, STRING_SEARCH)) {
+        FB0_VIRTUAL_SIZE += sizeof(STRING_SEARCH);
+        break;
+      }
+    }
+
+    fclose(fb0_virtual_size);
+  }
 #elif defined(SYSTEM_BASE_OPENBSD)
-  LOG_E("Not implemented");
+  LOG_W("Not implemented (not needed)");
 #elif defined(SYSTEM_BASE_MACOS)
-  LOG_E("Not implemented");
+  LOG_W("Not implemented (not needed)");
 #elif defined(SYSTEM_BASE_WINDOWS)
   GLOBAL_MEMORY_STATUS_EX.dwLength = sizeof(GLOBAL_MEMORY_STATUS_EX);
   GlobalMemoryStatusEx(&GLOBAL_MEMORY_STATUS_EX);
@@ -468,7 +491,7 @@ char** get_gpu_list(void) {
   char** gpu_list = alloc(BUFFER_SIZE * sizeof(char*));
   memset(gpu_list, 0, BUFFER_SIZE * sizeof(char*));
   long unsigned int gpu_id = 1; // the [0] element is the "gpu count"
-#if defined(SYSTEM_BASE_LINUX)
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_FREEBSD)
   struct pci_access* pacc = pci_alloc();
   struct pci_dev* dev;
   pci_init(pacc);
@@ -510,9 +533,9 @@ char** get_gpu_list(void) {
      */
     __system_property_get("ro.hardware.egl", gpu_list[gpu_id++]);
   }
-#elif defined(SYSTEM_BASE_FREEBSD)
-  LOG_E("Not implemented");
-  return NULL;
+// #elif
+// LOG_E("Not implemented");
+// return NULL;
 #elif defined(SYSTEM_BASE_OPENBSD)
   LOG_E("Not implemented");
   return NULL;
@@ -634,7 +657,8 @@ int get_screen_width(void) {
 #elif defined(SYSTEM_BASE_ANDROID)
   LOG_W("After some research, turns out that the only way to get display size would be to use 'adb wm size' or even root access. This function will not be implemented");
 #elif defined(SYSTEM_BASE_FREEBSD)
-  LOG_E("Not implemented");
+  LOG_I("getting screen width from /var/run/dmesg.boot");
+  sscanf(FB0_VIRTUAL_SIZE, "%dx%*d", &screen_width);
 #elif defined(SYSTEM_BASE_OPENBSD)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_MACOS)
@@ -656,7 +680,8 @@ int get_screen_height(void) {
 #elif defined(SYSTEM_BASE_ANDROID)
   LOG_W("After some research, turns out that the only way to get display size would be to use 'adb wm size' or even root access. This function will not be implemented");
 #elif defined(SYSTEM_BASE_FREEBSD)
-  LOG_E("Not implemented");
+  LOG_I("getting screen height from /var/run/dmesg.boot");
+  sscanf(FB0_VIRTUAL_SIZE, "%*dx%d", &screen_height);
 #elif defined(SYSTEM_BASE_OPENBSD)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_MACOS)

@@ -18,8 +18,10 @@ else ifeq ($(PLATFORM), Darwin)
 	INC_DIR = $(USR_DIR)/include
 	PLATFORM_ABBR = macos
 else ifeq ($(PLATFORM), FreeBSD)
-	CFLAGS += -D__FREEBSD__ -D__BSD__
-	CFLAGS_DEBUG += -D__FREEBSD__ -D__BSD__
+	# TODO: fix actrie.c
+	CFLAGS += -D__FREEBSD__ -D__BSD__ -Wno-attributes
+	CFLAGS_DEBUG += -D__FREEBSD__ -D__BSD__ -Wno-attributes
+	LDFLAGS += -lpci
 	PLATFORM_ABBR = freebsd
 else ifeq ($(PLATFORM), OpenBSD)
 	CFLAGS += -D__OPENBSD__ -D__BSD__
