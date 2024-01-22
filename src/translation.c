@@ -88,52 +88,52 @@ void uwufy_all(struct info* user_info) {
   actrie_t_add_pattern(&replacer, "tuxedo", "TUWUXEDO");
   actrie_t_add_pattern(&replacer, "aura", "Uwura");
 
-  actrie_t_add_pattern(&replacer, "linux", "Linuwu");
+  actrie_t_add_pattern(&replacer, "linux", "LinUwU");
   actrie_t_add_pattern(&replacer, "alpine", "Nyalpine");
   actrie_t_add_pattern(&replacer, "amogos", "AmogOwOS");
   actrie_t_add_pattern(&replacer, "android", "Nyandroid");
-  actrie_t_add_pattern(&replacer, "arch", "Nyarch Linuwu");
+  actrie_t_add_pattern(&replacer, "arch", "Nyarch LinUwU");
 
-  actrie_t_add_pattern(&replacer, "arcolinux", "ArcOwO Linuwu");
+  actrie_t_add_pattern(&replacer, "arcolinux", "ArcOwO LinUwU");
 
-  actrie_t_add_pattern(&replacer, "artix", "Nyartix Linuwu");
+  actrie_t_add_pattern(&replacer, "artix", "Nyartix LinUwU");
   actrie_t_add_pattern(&replacer, "debian", "Debinyan");
 
   actrie_t_add_pattern(&replacer, "devuan", "Devunyan");
 
   actrie_t_add_pattern(&replacer, "deepin", "Dewepyn");
-  actrie_t_add_pattern(&replacer, "endeavouros", "endeavOwO");
+  actrie_t_add_pattern(&replacer, "endeavouros", "EndeavOwOs");
   actrie_t_add_pattern(&replacer, "fedora", "Fedowa");
-  actrie_t_add_pattern(&replacer, "femboyos", "FemboyOWOS");
+  actrie_t_add_pattern(&replacer, "femboyos", "FemboyOwOs");
   actrie_t_add_pattern(&replacer, "gentoo", "GentOwO");
-  actrie_t_add_pattern(&replacer, "gnu", "gnUwU");
-  actrie_t_add_pattern(&replacer, "guix", "gnUwU gUwUix");
-  actrie_t_add_pattern(&replacer, "linuxmint", "LinUWU Miwint");
+  actrie_t_add_pattern(&replacer, "gnu", "GnUwU");
+  actrie_t_add_pattern(&replacer, "guix", "GnUwU GUwUix");
+  actrie_t_add_pattern(&replacer, "linuxmint", "LinUwU Miwint");
   actrie_t_add_pattern(&replacer, "manjaro", "Myanjawo");
   actrie_t_add_pattern(&replacer, "manjaro-arm", "Myanjawo AWM");
   actrie_t_add_pattern(&replacer, "neon", "KDE NeOwOn");
-  actrie_t_add_pattern(&replacer, "nixos", "nixOwOs");
+  actrie_t_add_pattern(&replacer, "nixos", "NixOwOs");
   actrie_t_add_pattern(&replacer, "opensuse-leap", "OwOpenSUSE Leap");
   actrie_t_add_pattern(&replacer, "opensuse-tumbleweed", "OwOpenSUSE Tumbleweed");
-  actrie_t_add_pattern(&replacer, "pop", "PopOwOS");
+  actrie_t_add_pattern(&replacer, "pop", "PopOwOs");
   actrie_t_add_pattern(&replacer, "raspbian", "RaspNyan");
-  actrie_t_add_pattern(&replacer, "rocky", "Wocky Linuwu");
+  actrie_t_add_pattern(&replacer, "rocky", "Wocky LinUwU");
   actrie_t_add_pattern(&replacer, "slackware", "Swackwawe");
-  actrie_t_add_pattern(&replacer, "solus", "sOwOlus");
-  actrie_t_add_pattern(&replacer, "ubuntu", "Uwuntu");
+  actrie_t_add_pattern(&replacer, "solus", "SOwOlus");
+  actrie_t_add_pattern(&replacer, "ubuntu", "UwUntu");
   actrie_t_add_pattern(&replacer, "void", "OwOid");
-  actrie_t_add_pattern(&replacer, "xerolinux", "xuwulinux");
+  actrie_t_add_pattern(&replacer, "xerolinux", "xUwULinUwU");
 
   // BSD
   actrie_t_add_pattern(&replacer, "freebsd", "FweeBSD");
   actrie_t_add_pattern(&replacer, "openbsd", "OwOpenBSD");
 
   // Apple family
-  actrie_t_add_pattern(&replacer, "macos", "macOwOS");
+  actrie_t_add_pattern(&replacer, "macos", "MacOwOs");
   actrie_t_add_pattern(&replacer, "ios", "iOwOS");
 
   // Windows
-  actrie_t_add_pattern(&replacer, "windows", "WinyandOwOws");
+  actrie_t_add_pattern(&replacer, "windows", "WindOwOws");
 
   actrie_t_compute_links(&replacer);
 

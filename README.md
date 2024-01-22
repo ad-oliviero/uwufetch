@@ -11,6 +11,7 @@
 - [x] Embed static files (except images) in the executable (if performance is not impacted)
 - [x] Write a new "rendering" function
 - [x] Rewrite `ascii_debug` makefile target
+- [x] Write a new "supported distros" list
 - [ ] Make the code more secure (like by using custom `string` types that use a `len` value instead of `'\0'`)
 - [ ] New rules should be added to [CONTRIBUTING.md](/CONTRIBUTING.md)
 - [ ] Fix logging not working in some .c files
@@ -18,8 +19,8 @@
 - [ ] Create a man page for `libfetch`
 - [ ] GitHub actions for more platforms
 - [ ] Multi threading
+- [ ] Automate contributing
 - [ ] Review the `actrie.c` and `actrie.h` files
-- [ ] Write a new "supported distros" list
 - [ ] Add options to filter the log
 
 ### What does work?
@@ -59,13 +60,7 @@ All kinds of contributions are welcome, but before contributing **please** read 
 
 ## Currently supported distros
 
-### Full support (Both ASCII art + images are provided for the given distribution)
-
-AmogOwOS, Nyalpine, Nyarch Linuwu, ArcOwO, Nyartix Linuwu, Debinyan, endevaOwO, Fedowa, GentOwO, GnUwU gUwUix, Miwint, Myanjawo, OwOpenSUSE, Pop OwOs, RaspNyan, Swackwawe, sOwOlus, UwUntu, and OwOid; Plus Nyandroid.
-
-### Partial support (Either no ASCII art, or no image is provided)
-
-Dewepyn, FemboyOWOS, KDE NeOwOn, nixOwOs, xuwulinux, Wocky Linuwu; Plus FweeBSD, OwOpenBSD, macOwOS and iOwOS; Plus WinyandOwOws.
+You can find a list of supported operating systems in [supported_systems](./supported_systems.md).
 
 ## Building and installation
 
