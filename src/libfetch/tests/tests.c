@@ -68,7 +68,7 @@ TEST_COMPARE_FUNCTION(get_uptime, > 0)
 
 TEST_FUNCTION(get_terminal_size) {
   struct winsize ws = get_terminal_size();
-  return ws.ws_col > 0 && ws.ws_row > 0 && ws.ws_xpixel > 0 && ws.ws_ypixel > 0;
+  return ws.ws_col > 0 && ws.ws_row > 0 /* && ws.ws_xpixel > 0 && ws.ws_ypixel > 0 */; // these values are not currently used
 }
 
 #define STRUCT_TEST(f) \

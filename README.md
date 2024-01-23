@@ -24,23 +24,25 @@
 - [ ] Add options to filter the log
 
 ### What does work?
-| Function (libfetch) | Arch Linux | Linux (not Arch) | Android | FreeBSD | OpenBSD | MacOS | Windows |
+| Function (libfetch) | Arch Linux | Linux (not Arch)$^1$ | Android | FreeBSD | OpenBSD | MacOS | Windows |
 |---|---|---|---|---|---|---|---|
-|`get_user_name`    |✅ ✅|✅ ❌|✅ ✅|✅ ✅|✅ ✅|❌ ❌|✅ ❌|
-|`get_host_name`    |✅ ✅|✅ ❌|✅ ✅|✅ ✅|✅ ✅|❌ ❌|✅ ❌|
-|`get_shell`        |✅ ✅|✅ ❌|✅ ✅|✅ ✅|✅ ✅|❌ ❌|✅ ❌|
-|`get_model`        |✅ ✅|✅ ❌|✅ ✅|✅ ✅|✅ ✅|❌ ❌|✅ ❌|
-|`get_kernel`       |✅ ✅|✅ ❌|✅ ✅|✅ ✅|✅ ✅|❌ ❌|✅ ❌|
-|`get_os_name`      |✅ ✅|✅ ❌|✅ ✅|✅ ✅|✅ ✅|❌ ❌|✅ ✅|
+|`get_user_name`    |✅ ✅|✅ ✅|✅ ✅|✅ ✅|✅ ✅|❌ ❌|✅ ❌|
+|`get_host_name`    |✅ ✅|✅ ✅|✅ ✅|✅ ✅|✅ ✅|❌ ❌|✅ ❌|
+|`get_shell`        |✅ ✅|✅ ✅|✅ ✅|✅ ✅|✅ ✅|❌ ❌|✅ ❌|
+|`get_model`        |✅ ✅|✅ ✅|✅ ✅|✅ ✅|✅ ✅|❌ ❌|✅ ❌|
+|`get_kernel`       |✅ ✅|✅ ✅|✅ ✅|✅ ✅|✅ ✅|❌ ❌|✅ ❌|
+|`get_os_name`      |✅ ✅|✅ ✅|✅ ✅|✅ ✅|✅ ✅|❌ ❌|✅ ✅|
 |`get_cpu`          |✅ ✅|✅ ✅|✅ ✅|✅ ✅|✅ ✅|❌ ❌|✅ ❌|
 |`get_gpu_list`     |✅ ✅|✅ ✅|✅ ✅|✅ ✅|✅ ⚠️ |❌ ❌|✅ ✅|
-|`get_packages`     |✅ ✅|✅ ❌|✅ ✅|✅ ✅|✅ ✅|✅ ❌|❌ ❌|
-|`get_screen_width` |✅ ✅|✅ ❌| --- |✅ ✅| --- |❌ ❌|✅ ✅|
-|`get_screen_height`|✅ ✅|✅ ❌| --- |✅ ✅| --- |❌ ❌|✅ ✅|
-|`get_memory_total` |✅ ✅|✅ ❌|✅ ✅|✅ ✅|✅ ✅|❌ ❌|✅ ❌|
-|`get_memory_used`  |✅ ✅|✅ ❌|✅ ✅|✅ ✅|✅ ✅|❌ ❌|✅ ❌|
-|`get_uptime`       |✅ ✅|✅ ❌|✅ ✅|✅ ✅|✅ ✅|❌ ❌|✅ ❌|
-|`get_terminal_size`|✅ ✅|✅ ❌|✅ ✅|✅ ✅|✅ ✅|❌ ❌|✅ ❌|
+|`get_packages`     |✅ ✅|✅ ✅|✅ ✅|✅ ✅|✅ ✅|✅ ❌|❌ ❌|
+|`get_screen_width` |✅ ✅|✅ ✅| --- |✅ ✅| --- |❌ ❌|✅ ✅|
+|`get_screen_height`|✅ ✅|✅ ✅| --- |✅ ✅| --- |❌ ❌|✅ ✅|
+|`get_memory_total` |✅ ✅|✅ ✅|✅ ✅|✅ ✅|✅ ✅|❌ ❌|✅ ❌|
+|`get_memory_used`  |✅ ✅|✅ ✅|✅ ✅|✅ ✅|✅ ✅|❌ ❌|✅ ❌|
+|`get_uptime`       |✅ ✅|✅ ✅|✅ ✅|✅ ✅|✅ ✅|❌ ❌|✅ ❌|
+|`get_terminal_size`|✅ ✅|✅ ✅|✅ ✅|✅ ✅|✅ ✅|❌ ❌|✅ ❌|
+
+$^1$ Tested on ubuntu 18.04, nixos and fedora
 
 TODO: add list of things that work or do not work in "the frontend" (and define what "the frontend" means)
 
@@ -74,7 +76,7 @@ You can find a list of supported operating systems in [supported_systems](./supp
 
 - [viu](https://github.com/atanunq/viu) (optional) to use images instead of ascii art (see [How to use images](#how-to-use-images) below).
 
-- [libpci](https://github.com/pciutils/pciutils) for gpu list (all unix systems, more info about installation on the github page)
+- [libpci/pciutils](https://github.com/pciutils/pciutils) for gpu list (all unix systems, more info about installation on the github page)
 
 ### Via package manager
 

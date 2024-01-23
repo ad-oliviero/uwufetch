@@ -40,7 +40,7 @@ VERSION_FLAGS := $(UWUFETCH_VERSION) $(UWUFETCH_COMPILER_VERSION) $(UWUFETCH_GIT
 ifneq ($(wildcard .git),)
 ifneq ($(shell command -v git 2> /dev/null),)
 UWUFETCH_GIT_COMMIT := -DUWUFETCH_GIT_COMMIT=\""$(shell git describe --tags)"\"
-UWUFETCH_GIT_BRANCH := -DUWUFETCH_GIT_BRANCH=\""$(shell git branch --show-current)"\"
+UWUFETCH_GIT_BRANCH := -DUWUFETCH_GIT_BRANCH=\""$(shell git branch --show-current 2>/dev/null || git rev-parse --abbrev-ref HEAD)"\"
 VERSION_FLAGS += $(UWUFETCH_GIT_COMMIT) $(UWUFETCH_GIT_COMMIT)
 endif
 endif
