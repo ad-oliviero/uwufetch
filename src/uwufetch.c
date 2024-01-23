@@ -35,11 +35,11 @@
   #ifdef __BSD__
   #else // defined(__BSD__) || defined(_WIN32)
     #ifndef _WIN32
-      // #ifndef __OPENBSD__
-      //   #include <sys/sysinfo.h>
-      // #else  // __OPENBSD__
-      // #endif // __OPENBSD__
-    #else    // _WIN32
+    // #ifndef __OPENBSD__
+    //   #include <sys/sysinfo.h>
+    // #else  // __OPENBSD__
+    // #endif // __OPENBSD__
+    #else // _WIN32
       #include <sysinfoapi.h>
     #endif // _WIN32
   #endif   // defined(__BSD__) || defined(_WIN32)
@@ -49,6 +49,7 @@
   #include <sys/utsname.h>
 #endif // _WIN32
 
+#include <argp.h>
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -56,12 +57,12 @@
 #include <unistd.h>
 
 // reads the config file
-struct configuration parse_config(char* config_path) {
+void parse_config(struct configuration* configuration, char* config_path) {
   char buffer[256]; // buffer for the current line
   FILE* config = NULL;
-  // enabling all flags by default
-  struct configuration configuration;
-  memset(&configuration, true, sizeof(configuration));
+#if defined(SYSTEM_BASE_WINDOWS)
+  configuration.packages = false; // chocolatey is too slow
+#endif
 
   LOG_I("parsing config from");
 #if defined(__DEBUG__)
@@ -90,17 +91,22 @@ struct configuration parse_config(char* config_path) {
     config = fopen(config_path, "r");
     LOG_V(config_path);
   }
-  if (config == NULL) return configuration; // if config file does not exist, return the defaults
+  if (config == NULL) return; // if config file does not exist, return the defaults
 
   // reading the config file
   while (fgets(buffer, sizeof(buffer), config)) {
-    // if (sscanf(buffer, "logo=%s", configuration.logo_path) > 0) LOG_V(configuration.logo_path);
-#define FIND_CFG_VAR(name)                        \
-  if (sscanf(buffer, #name "="                    \
-                           "%[truefalse]",        \
-             buffer)) {                           \
-    configuration.name = strcmp(buffer, "false"); \
-    LOG_V(configuration.name);                    \
+    if (strstr(buffer, "logo")) {
+      size_t len               = strlen(buffer) - sizeof("logo");
+      configuration->logo_name = malloc(len);
+      memcpy(configuration->logo_name, buffer + sizeof("logo"), len - 1);
+      LOG_V(configuration->logo_name);
+    }
+#define FIND_CFG_VAR(name)                         \
+  if (sscanf(buffer, #name "="                     \
+                           "%[truefalse]",         \
+             buffer)) {                            \
+    configuration->name = strcmp(buffer, "false"); \
+    LOG_V(configuration->name);                    \
   }
     // reading other values
     FIND_CFG_VAR(user_name);
@@ -118,7 +124,7 @@ struct configuration parse_config(char* config_path) {
 #undef FIND_CFG_VAR
   }
   fclose(config);
-  return configuration;
+  return;
 }
 
 /* prints distribution list
@@ -141,55 +147,6 @@ void list(char* arg) {
 				 "      "BLUE"alpine, "PINK"femboyos, gentoo, "MAGENTA"slackware, "WHITE"solus, "GREEN"void, opensuse-leap, android, "YELLOW"gnu, guix, "BLUE"windows, "WHITE"unknown\n\n",
 				 arg); // Other/spare distributions colors
   // clang-format on
-}
-
-// prints the usage
-void show_usage(char* arg) {
-  LOG_I("printing usage");
-  // TODO: add some more info
-  printf("Usage: %s <args>\n"
-         "    -c  --config        use custom config path\n"
-         "    -d, --distro        lets you choose the logo to print\n"
-         "    -h, --help          prints this help page\n"
-#ifndef __IPHONE__
-         "    -i, --image         prints logo as image and use a custom image "
-         "if provided\n"
-         "                        %sworks in most terminals\n"
-#else
-         "    -i, --image         prints logo as image and use a custom image "
-         "if provided\n"
-         "                        %sdisabled under iOS\n"
-#endif
-         "                        read README.md for more info%s\n"
-         "    -l, --list          lists all supported distributions\n"
-         "    -V, --version       prints the current uwufetch version\n"
-#ifdef __DEBUG__
-         "    -v, --verbose       sets logging level\n"
-#endif
-         "    -w, --write-cache   writes to the cache file (~/.cache/uwufetch.cache)\n"
-         "    -r, --read-cache    reads from the cache file (~/.cache/uwufetch.cache)\n",
-         arg,
-#ifndef __IPHONE__
-         BLUE,
-#else
-         RED,
-#endif
-         NORMAL);
-}
-
-void show_version(void) {
-#ifdef UWUFETCH_VERSION
-  LOG(LEVEL_INFO, "UwUfetch version: %s", UWUFETCH_VERSION);
-#endif
-#ifdef UWUFETCH_GIT_COMMIT
-  LOG(LEVEL_INFO, "git commit: %s", UWUFETCH_GIT_COMMIT);
-#endif
-#ifdef UWUFETCH_GIT_BRANCH
-  LOG(LEVEL_INFO, "git branch: %s", UWUFETCH_GIT_BRANCH);
-#endif
-#ifdef UWUFETCH_COMPILER_VERSION
-  LOG(LEVEL_INFO, "compiled with: %s", UWUFETCH_COMPILER_VERSION);
-#endif
 }
 
 // count the number of not visible characters
@@ -268,112 +225,142 @@ void show_logo(struct info* user_info, struct configuration* configuration, size
     printf("\x1b[%luA\x1b[0G", goback);
     for (size_t i = 0; i < logo->line_count; i++)
       puts((const char*)logo->lines[i].content);
-    printf("\x1b[%luB", printed_lines - goback + 1);
+    printf("\x1b[%luB\x1b[0m", printed_lines - goback + 1);
   } else {
     LOG_E("TODO: implement image logo");
   }
 }
 
+struct cli_arguments {
+  bool cache;
+  char* config;
+  bool full;
+  bool image;
+  char* logo;
+};
+
+// Parse the command-line arguments
+static error_t parse_opt(int key, char* arg, struct argp_state* state) {
+  struct cli_arguments* arguments = state->input;
+
+  switch (key) {
+  case 'c':
+    arguments->cache = true;
+    break;
+  case 'C':
+    arguments->config = arg;
+    break;
+  case 'f':
+    arguments->full = true;
+    break;
+  case 'i':
+    arguments->image = true;
+    LOG(LEVEL_WARNING, "images are currently disabled.");
+    break;
+  case 'l':
+    arguments->logo = arg;
+    break;
+  case 'v': {
+    bool empty = true;
+#ifdef UWUFETCH_VERSION
+    printf("UwUfetch version: %s\n", UWUFETCH_VERSION);
+    empty = false;
+#endif
+#ifdef UWUFETCH_GIT_COMMIT
+    printf("on commit: %s\n", UWUFETCH_GIT_COMMIT);
+    empty = false;
+#endif
+#ifdef UWUFETCH_GIT_BRANCH
+    printf("in branch: %s\n", UWUFETCH_GIT_BRANCH);
+    empty = false;
+#endif
+#ifdef UWUFETCH_COMPILER_VERSION
+    printf("compiled with: %s\n", UWUFETCH_COMPILER_VERSION);
+    empty = false;
+#endif
+    if (empty)
+      LOG(LEVEL_WARNING, "no version information was filled at compile time");
+    exit(0);
+  }
+#ifdef LOGGING_ENABLED
+  case 'V':
+    SET_LOG_LEVEL(atoi(arg), "uwufetch");
+    char* sep = strchr(arg, ',');
+    if (sep) *(sep++) = '\0';
+    SET_LIBFETCH_LOG_LEVEL(atoi(sep ? sep : arg));
+  #ifdef UWUFETCH_VERSION
+    LOG(LEVEL_INFO, "UwUfetch version: %s", UWUFETCH_VERSION);
+  #endif
+  #ifdef UWUFETCH_GIT_COMMIT
+    LOG(LEVEL_INFO, "on commit: %s", UWUFETCH_GIT_COMMIT);
+  #endif
+  #ifdef UWUFETCH_GIT_BRANCH
+    LOG(LEVEL_INFO, "in branch: %s", UWUFETCH_GIT_BRANCH);
+  #endif
+  #ifdef UWUFETCH_COMPILER_VERSION
+    LOG(LEVEL_INFO, "compiled with: %s", UWUFETCH_COMPILER_VERSION);
+  #endif
+    break;
+#endif
+  case ARGP_KEY_ARG:
+    // Additional non-option arguments can be handled here
+    return ARGP_ERR_UNKNOWN;
+  case ARGP_KEY_END:
+    break;
+  default:
+    return ARGP_ERR_UNKNOWN;
+  }
+
+  return 0;
+}
+
 // the main function is on the bottom of the file to avoid double function declarations
 int main(int argc, char** argv) {
-  struct configuration configuration = parse_config(NULL);
+  struct configuration configuration = {0};
+  char* cache_content                = NULL;
   struct info user_info              = {0};
-  struct {
-    char* content;
-    bool read,
-        write;
-  } cache = {NULL, false, false};
 
-#ifdef _WIN32
-  // packages disabled by default because chocolatey is too slow
-  configuration.packages = 0;
-#endif
+  // enabling all flags by default
+  memset(&configuration, true, sizeof(struct configuration));
+  configuration.logo_name = NULL;
 
-  int opt                      = 0;
-  struct option long_options[] = {
-      {"config", required_argument, NULL, 'c'},
-      {"distro", required_argument, NULL, 'd'},
-      {"full", no_argument, NULL, 'f'},
-      {"help", no_argument, NULL, 'h'},
-      {"image", optional_argument, NULL, 'i'},
-      {"list", no_argument, NULL, 'l'},
-      {"read-cache", no_argument, NULL, 'r'},
-      {"version", no_argument, NULL, 'V'},
+  struct cli_arguments args           = {0};
+  static struct argp_option options[] = {
+      {"cache", 'c', 0, 0, "Use the cache", 0},
+      {"config", 'C', "FILE", 0, "Set custom config file path", 0},
+      {"full", 'f', 0, 0, "Ignore the config and show all info", 0},
+      {"image", 'i', 0, 0, "Show image instead of ascii logo", 0},
+      {"logo", 'l', "NAME", 0, "Set custom logo", 0},
+      {"version", 'v', 0, 0, "Show version info", 0},
 #ifdef LOGGING_ENABLED
-      {"verbose", optional_argument, NULL, 'v'},
+      {"verbose", 'V', "LEVEL", 0, "Enable logging", 0},
 #endif
-      {"write-cache", no_argument, NULL, 'w'},
       {0}};
-#ifdef LOGGING_ENABLED
-  #define OPT_STRING "c:d:fhi::lrVv::w"
-#else
-  #define OPT_STRING "c:d:fhi::lrVw"
-#endif
+  static struct argp argp = {
+      .options  = options,
+      .parser   = parse_opt,
+      .args_doc = 0,
+      .doc      = 0,
+  };
 
-  // reading cmdline options
-  while ((opt = getopt_long(argc, argv, OPT_STRING, long_options, NULL)) != -1) {
-    switch (opt) {
-    case 'c': // set the config directory
-      configuration = parse_config(optarg);
-      break;
-    case 'd': // set the distribution name
-      // custom_distro_name = optarg;
-      break;
-    case 'f':
-      memset(&configuration, 1, sizeof(struct configuration));
-      break;
-    case 'h':
-      show_usage(argv[0]);
-      return 0;
-    case 'i': // set ascii logo as output
-      // configuration.image = true;
-      // if (argv[optind]) custom_image_name = argv[optind];
-      break;
-    case 'l':
-      list(argv[0]);
-      return 0;
-    case 'r':
-      cache.read  = true;
-      cache.write = false;
-      break;
-    case 'V':
-      show_version();
-      return 0;
-#if defined(LOGGING_ENABLED)
-    case 'v':
-      if (argv[optind]) {
-        SET_LOG_LEVEL(atoi(argv[optind]), "uwufetch");
-        char* sep = strchr(argv[optind], ',');
-        if (sep) *(sep++) = '\0';
-        SET_LIBFETCH_LOG_LEVEL(atoi(sep ? sep : argv[optind]));
-      }
-      show_version();
-      break;
-#endif
-    case 'w':
-      cache.write = true;
-      break;
-    default:
-      return 1;
-    }
-  }
+  argp_parse(&argp, argc, argv, 0, 0, &args);
+  if (!args.full)
+    parse_config(&configuration, args.config);
+
   libfetch_init();
 
-  if (cache.read) {
-    cache.content = read_cache(&user_info);
-    // if no cache file found write to it
-    if (!cache.content) {
-      cache.read  = false;
-      cache.write = true;
-    }
+  if (args.cache) {
+    cache_content = read_cache(&user_info);
+    // if no cache file found write to it (after collecting info)
+    args.cache = (cache_content != NULL);
   }
-  if (!cache.read) {
-#define IF_ENABLED_GET(name) \
-  if (configuration.name) user_info.name = get_##name();
+  if (!args.cache) {
     if (configuration.user_name) {
       user_info.user_name = get_user_name();
       user_info.host_name = get_host_name();
     }
+#define IF_ENABLED_GET(name) \
+  if (configuration.name) user_info.name = get_##name();
     IF_ENABLED_GET(shell);
     IF_ENABLED_GET(model);
     IF_ENABLED_GET(kernel);
@@ -401,8 +388,15 @@ int main(int argc, char** argv) {
 
   // before we "uwufy" the os name, we need to calculate the jenkins hash of it
   if (user_info.os_name) {
-    if (!cache.read)
-      user_info.logo_id = str2id(user_info.os_name, (int)strlen(user_info.os_name));
+    if (!args.cache) {
+      // choose the logo name based on priority
+      // first the cli arg, then the configuration file and if none of them is available, use the os_name
+      char* logo_name = args.logo ? args.logo : configuration.logo_name ? configuration.logo_name
+                                            : user_info.os_name         ? user_info.os_name
+                                                                        : NULL;
+      if (logo_name)
+        user_info.logo_id = str2id(logo_name, (int)strlen(logo_name));
+    }
     for (size_t i = 0; i < logos_count; i++) {
       user_info.logo_idx = i;
       if (user_info.logo_id == logos[i].id) {
@@ -411,17 +405,20 @@ int main(int argc, char** argv) {
       }
     }
   }
-  if (!cache.read) uwufy_all(&user_info);
-  if (cache.write) write_cache(&user_info);
+  if (!args.cache) {
+    uwufy_all(&user_info);
+    write_cache(&user_info); // always overwrite the cache
+  }
 
   size_t printed_lines = show_info(&user_info, &configuration);
   show_logo(&user_info, &configuration, printed_lines);
 
   libfetch_cleanup();
-  if (cache.read) {
-    if (cache.content) free(cache.content);
+  if (args.cache) {
+    if (cache_content) free(cache_content);
     if (user_info.gpu_list) free(user_info.gpu_list);
   }
+  if (configuration.logo_name) free(configuration.logo_name);
   LOG_I("Execution completed successfully with %d errors", logging_error_count);
   return 0;
 }

@@ -29,6 +29,7 @@
 struct configuration {
   bool user_name, shell, model, kernel, os_name, cpu,
       gpu_list, screen, memory, packages, uptime, colors, ascii_logo; // all true by default
+  char* logo_name;
 };
 
 // info that will be printed with the logo
