@@ -211,7 +211,7 @@ void debug_logo(char* logo_name) {
 
   replace_all_colors(&logo.content);
   for (size_t i = 0; i < logo.content.len; i++)
-    putc(logo.content.str[0], stdout);
+    putc(logo.content.str[i], stdout);
 
   puts("\x1b[0m");
 
