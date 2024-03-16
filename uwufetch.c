@@ -407,6 +407,7 @@ void uwu_hw(char* hwname) {
   HW_TO_UWU("nvidia", "NyaVIDIA")
   HW_TO_UWU("mobile", "Mwobile")
   HW_TO_UWU("intel", "Inteww")
+  HW_TO_UWU("celeron", "Celewon")
   HW_TO_UWU("radeon", "Radenyan")
   HW_TO_UWU("geforce", "GeFOwOce")
   HW_TO_UWU("raspberry", "Nyasberry")
