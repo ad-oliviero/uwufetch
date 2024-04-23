@@ -1,5 +1,5 @@
 # Archive
-On 4th of April 2024, I will archive this repository. Additional details in [#257](https://github.com/TheDarkBug/uwufetch/issues/257)
+On 23th of April 2024, I archived this repository. Additional details in [#257](https://github.com/TheDarkBug/uwufetch/issues/257)
 # UwUFetch
 
 A meme system info tool for (almost) all your Linux/Unix-based systems, based on the nyan/UwU trend on r/linuxmasterrace.
