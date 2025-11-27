@@ -1,5 +1,22 @@
-# Archive
-On 23th of April 2024, I archived this repository. Additional details in [#257](https://github.com/TheDarkBug/uwufetch/issues/257)
+# Project status
+On 23rd of April 2024, I archived this repository. Additional details in [#257](https://github.com/TheDarkBug/uwufetch/issues/257)
+
+As of 27th of November 2025, I un-archived this repository.
+
+## Contributions
+> [!WARNING]
+> Please target the [development](https://github.com/ad-oliviero/uwufetch/tree/development) 
+branch for all new features. Pull Requests targeting other branches will not be accepted. 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+
+## Why
+I felt sad leaving this project unfinished, as it is the one that taught me the most.
+
+## My commitment
+I am currently busy with university, so I cannot guarantee I will be fully active. I may not be able to spend much time on this, and there may be periods where I am unavailable.
+
+However, please **do not be afraid to contribute**. I will eventually reply to you, just not as fast as before.
+
 # UwUFetch
 
 A meme system info tool for (almost) all your Linux/Unix-based systems, based on the nyan/UwU trend on r/linuxmasterrace.

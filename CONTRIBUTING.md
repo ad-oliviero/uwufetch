@@ -1,5 +1,9 @@
 # Contributing to uwufetch
 
+## The branch
+> [!WARNING]
+> All contributions must be based on the [development](https://github.com/ad-oliviero/uwufetch/tree/development) branch. Pull requests targeting other branches will be **rejected**, except for critical security fixes.
+
 ## Code
 
 To contribute to this project, you should follow some rules to keep the code consistent:
