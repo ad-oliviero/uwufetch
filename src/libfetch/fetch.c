@@ -187,12 +187,13 @@ void libfetch_cleanup(void) {
 
 char* get_user_name(void) {
   long max_user_name_len = sysconf(_SC_LOGIN_NAME_MAX);
-  char* user_name        = alloc(max_user_name_len > 0 ? (size_t)max_user_name_len : BUFFER_SIZE);
+  size_t size = max_user_name_len > 0 ? max_user_name_len : BUFFER_SIZE;
+  char* user_name        = alloc(size);
 #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_FREEBSD) || defined(SYSTEM_BASE_OPENBSD)
   char* env = getenv("USER");
   if (env) {
     LOG_I("getting user name from environment variable");
-    snprintf(user_name, BUFFER_SIZE, "%s", env);
+    snprintf(user_name, size, "%s", env);
   } else {
     FILE* pp = popen("whoami", "r");
     if (pp) {
@@ -207,7 +208,7 @@ char* get_user_name(void) {
   char* env = getenv("USERNAME");
   if (env) {
     LOG_I("getting user name from $env:USERNAME");
-    snprintf(user_name, BUFFER_SIZE, "%s", env);
+    snprintf(user_name, size, "%s", env);
   }
 #else
   LOG_E("System not supported or system base not specified");
@@ -218,6 +219,7 @@ char* get_user_name(void) {
 
 char* get_host_name(void) {
   long max_host_name_len = sysconf(_SC_HOST_NAME_MAX);
+  size_t size = max_host_name_len > 0 ? max_host_name_len : BUFFER_SIZE;
   char* host_name        = alloc(max_host_name_len > 0 ? (size_t)max_host_name_len : BUFFER_SIZE);
 #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_FREEBSD) || defined(SYSTEM_BASE_OPENBSD)
   unsigned long int len = 0;
@@ -225,23 +227,23 @@ char* get_host_name(void) {
   len = strlen(GLOBAL_UTSNAME.nodename);
   if (len > 0) {
     LOG_I("getting host name from struct utsname's nodename");
-    snprintf(host_name, BUFFER_SIZE, "%s", GLOBAL_UTSNAME.nodename);
+    snprintf(host_name, size, "%s", GLOBAL_UTSNAME.nodename);
   } else {
   #endif
     char* env = getenv("HOST");
     if (env) {
       LOG_I("getting host name from environment variable");
-      snprintf(host_name, BUFFER_SIZE, "%s", env);
+      snprintf(host_name, size, "%s", env);
     } else {
       FILE* fp = fopen("/etc/hostname", "r");
       if (fp) {
         LOG_I("reading host name from /etc/hostname");
-        len = fread(host_name, 1, BUFFER_SIZE, fp) - 1;
+        len = fread(host_name, 1, size, fp) - 1;
         fclose(fp);
         if (host_name[len] == '\n') host_name[len] = '\0';
       } else {
         LOG_I("getting host name with gethostname()");
-        gethostname(host_name, BUFFER_SIZE);
+        gethostname(host_name, size);
       }
     }
   #if !defined(SYSTEM_BASE_FREEBSD) && !defined(SYSTEM_BASE_OPENBSD)
@@ -253,12 +255,12 @@ char* get_host_name(void) {
   char* env = getenv("COMPUTERNAME");
   if (env) {
     LOG_I("getting host name from $env:COMPUTERNAME");
-    snprintf(host_name, BUFFER_SIZE, "%s", env);
+    snprintf(host_name, size, "%s", env);
   } else {
     env = getenv("USERDOMAIN");
     if (env) {
       LOG_I("getting host name from $env:USERDOMAIN");
-      snprintf(host_name, BUFFER_SIZE, "%s", env);
+      snprintf(host_name, size, "%s", env);
     }
   }
 #else
