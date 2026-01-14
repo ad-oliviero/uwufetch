@@ -220,7 +220,7 @@ char* get_user_name(void) {
 char* get_host_name(void) {
   long max_host_name_len = sysconf(_SC_HOST_NAME_MAX);
   size_t size = max_host_name_len > 0 ? max_host_name_len : BUFFER_SIZE;
-  char* host_name        = alloc(max_host_name_len > 0 ? (size_t)max_host_name_len : BUFFER_SIZE);
+  char* host_name        = alloc(size);
 #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_FREEBSD) || defined(SYSTEM_BASE_OPENBSD)
   unsigned long int len = 0;
   #if !defined(SYSTEM_BASE_FREEBSD) && !defined(SYSTEM_BASE_OPENBSD)
