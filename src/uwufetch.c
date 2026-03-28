@@ -157,16 +157,21 @@ int nvccount(const unsigned char* str, const int len) {
 }
 
 size_t show_info(struct info* user_info, struct configuration* configuration) {
+  if (user_info == NULL || configuration == NULL) {
+    LOG_E("Fatal error: got null arguments in show_info!");
+    return 0;
+  }
+
   const struct logo_embed* logo = NULL;
   size_t printed_lines          = 0;
-  if (user_info->terminal_size.ws_col <= 0) user_info->terminal_size.ws_col = 60;
-  int buf_len                   = user_info->terminal_size.ws_col * 3;
-  size_t printed_lines          = 0;
-  char* buf                     = malloc((size_t)buf_len);
-  
+  if (user_info->terminal_size.ws_col <= 0) user_info->terminal_size.ws_col = 70;
+  int buf_len = user_info->terminal_size.ws_col * 3;
+  char* buf   = malloc((size_t)buf_len);
+
   if (user_info->logo_idx)
     logo = &(logos[user_info->logo_idx]);
-  else logo = &(logos[1]); // TODO: change to unknown logo
+  else
+    logo = &(logos[0]); // TODO: change to unknown logo
   memset(buf, 0, (size_t)buf_len);
 
 #define PRINTLN_BUF(format, ...)                                                                                                                                                                            \
@@ -175,7 +180,7 @@ size_t show_info(struct info* user_info, struct configuration* configuration) {
     printf("\x1b[%luD\x1b[%luC%.*s\n", (size_t)user_info->terminal_size.ws_col, logo->width + 1, (int)(user_info->terminal_size.ws_col - logo->width) + nvccount((const unsigned char*)buf, buf_len), buf); \
     printed_lines++;                                                                                                                                                                                        \
   }
-  
+
   if (configuration->user_name) PRINTLN_BUF(BOLD "%s@%s" NORMAL, user_info->user_name, user_info->host_name);
   if (configuration->os_name) PRINTLN_BUF(BOLD "OWOS" NORMAL "     %s", user_info->os_name);
   if (configuration->model) PRINTLN_BUF(BOLD "MOWODEL" NORMAL "  %s", user_info->model);
@@ -196,16 +201,21 @@ size_t show_info(struct info* user_info, struct configuration* configuration) {
     char hours = (char)((user_info->uptime / 3600) % 24);
     long days  = user_info->uptime / 86400;
 
-    char str_secs[6]  = "";
-    char str_mins[6]  = "";
-    char str_hours[6] = "";
-    char str_days[20] = "";
+    // only print uptime if it is != 0
+    if (secs + mins + hours + days != 0) {
+      char str_secs[6]  = "";
+      char str_mins[6]  = "";
+      char str_hours[6] = "";
+      char str_days[20] = "";
 
-    sprintf(str_secs, "%is ", secs);
-    sprintf(str_mins, "%im ", mins);
-    sprintf(str_hours, "%ih ", hours);
-    sprintf(str_days, "%lid ", days);
-    PRINTLN_BUF(BOLD "UWUPTIME" NORMAL " %s%s%s%s", days > 0 ? str_days : "", hours > 0 ? str_hours : "", mins > 0 ? str_mins : "", secs > 0 ? str_secs : "");
+      sprintf(str_secs, "%is ", secs);
+      sprintf(str_mins, "%im ", mins);
+      sprintf(str_hours, "%ih ", hours);
+      sprintf(str_days, "%lid ", days);
+      PRINTLN_BUF(BOLD "UWUPTIME" NORMAL " %s%s%s%s", days > 0 ? str_days : "", hours > 0 ? str_hours : "", mins > 0 ? str_mins : "", secs > 0 ? str_secs : "");
+    } else {
+      PRINTLN_BUF(BOLD "UWUPTIME" NORMAL " unknown");
+    }
   }
 
   // clang-format off
