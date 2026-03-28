@@ -143,5 +143,5 @@ clean:
 	@rm -rvf $(BUILD_DIR)
 	@rm -rvf $(RELEASE_NAME)*
 	@rm -fv $(ASCII_EMBED_HEADER)
-	@rm -fv $(SRC)/ascii_preproc/ap
+	@$(MAKE) -C $(SRC_DIR)/ascii_preproc clean
 

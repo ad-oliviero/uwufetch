@@ -42,7 +42,7 @@ typedef struct {
 } string;
 
 #define LITERAL_STR(s) \
-  (string) { s, sizeof(s) - 1 } // -1 because we don't need '\0'
+  (string){s, sizeof(s) - 1} // -1 because we don't need '\0'
 
 struct logo_embed {
   uint32_t id;
@@ -303,8 +303,7 @@ int main(int argc, char** argv) {
     string line       = files[i].content;
     CHECK_FN_NEG_EXIT(fprintf(outf, "    {\n        .lines      = {\n"));
     for (size_t j = 0; *line.str && (size_t)(line.str - files[i].content.str) < files[i].content.len;) {
-      while (*(line.str + j++))
-        ;
+      while (*(line.str + j++));
       CHECK_FN_NEG_EXIT(fprintf(outf, "            {.length = %li, .content = {", j));
       while (*line.str)
         CHECK_ERRNO_EXIT(fprintf(outf, "0x%02x, ", (unsigned char)*line.str++));

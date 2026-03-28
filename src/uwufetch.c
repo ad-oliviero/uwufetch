@@ -376,6 +376,7 @@ int main(int argc, char** argv) {
     }
 #define IF_ENABLED_GET(name) \
   if (configuration.name) user_info.name = get_##name();
+
     IF_ENABLED_GET(shell);
     IF_ENABLED_GET(model);
     IF_ENABLED_GET(kernel);
@@ -399,6 +400,7 @@ int main(int argc, char** argv) {
   }
   IF_ENABLED_GET(uptime);
   user_info.terminal_size = get_terminal_size();
+
 #undef IF_ENABLED_GET
 
   // before we "uwufy" the os name, we need to calculate the jenkins hash of it
@@ -406,9 +408,11 @@ int main(int argc, char** argv) {
     if (!args.cache) {
       // choose the logo name based on priority
       // first the cli arg, then the configuration file and if none of them is available, use the os_name
-      char* logo_name = args.logo ? args.logo : configuration.logo_name ? configuration.logo_name
-                                            : user_info.os_name         ? user_info.os_name
-                                                                        : NULL;
+      // clang-format off
+      char* logo_name = args.logo ? args.logo :
+                        configuration.logo_name ? configuration.logo_name :
+                        user_info.os_name ? user_info.os_name : NULL;
+      // clang-format on
       if (logo_name)
         user_info.logo_id = str2id(logo_name, (int)strlen(logo_name));
     }

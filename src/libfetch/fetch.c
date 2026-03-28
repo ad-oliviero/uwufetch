@@ -187,7 +187,7 @@ void libfetch_cleanup(void) {
 
 char* get_user_name(void) {
   long max_user_name_len = sysconf(_SC_LOGIN_NAME_MAX);
-  size_t size = max_user_name_len > 0 ? max_user_name_len : BUFFER_SIZE;
+  size_t size            = max_user_name_len > 0 ? max_user_name_len : BUFFER_SIZE;
   char* user_name        = alloc(size);
 #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_FREEBSD) || defined(SYSTEM_BASE_OPENBSD)
   char* env = getenv("USER");
@@ -219,7 +219,7 @@ char* get_user_name(void) {
 
 char* get_host_name(void) {
   long max_host_name_len = sysconf(_SC_HOST_NAME_MAX);
-  size_t size = max_host_name_len > 0 ? max_host_name_len : BUFFER_SIZE;
+  size_t size            = max_host_name_len > 0 ? max_host_name_len : BUFFER_SIZE;
   char* host_name        = alloc(size);
 #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_FREEBSD) || defined(SYSTEM_BASE_OPENBSD)
   unsigned long int len = 0;
@@ -439,8 +439,7 @@ char* get_os_name(void) {
     LOG_I("reading /etc/os-release");
     while (fgets(buffer, BUFFER_SIZE, fp) &&
            !(sscanf(buffer, "\nID=\"%s\"", os_name) ||
-             sscanf(buffer, "\nID=%s", os_name)))
-      ;
+             sscanf(buffer, "\nID=%s", os_name)));
     fclose(fp);
   }
 #elif defined(SYSTEM_BASE_ANDROID)
@@ -692,7 +691,7 @@ int get_screen_width(void) {
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
-  screen_width  = GetSystemMetrics(SM_CXSCREEN);
+  screen_width = GetSystemMetrics(SM_CXSCREEN);
 #else
   LOG_E("System not supported or system base not specified");
 #endif
@@ -778,7 +777,7 @@ unsigned long long get_memory_used(void) {
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
-  memory_used  = (GLOBAL_MEMORY_STATUS_EX.ullTotalPhys - GLOBAL_MEMORY_STATUS_EX.ullAvailPhys) / (1024 * 1024);
+  memory_used = (GLOBAL_MEMORY_STATUS_EX.ullTotalPhys - GLOBAL_MEMORY_STATUS_EX.ullAvailPhys) / (1024 * 1024);
 #else
   LOG_E("System not supported or system base not specified");
 #endif

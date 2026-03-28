@@ -72,7 +72,7 @@ TEST_FUNCTION(get_terminal_size) {
 }
 
 #define STRUCT_TEST(f) \
-  { test_##f, #f }
+  {test_##f, #f}
 struct test {
   bool (*function)(void);
   const char* name;

@@ -72,7 +72,7 @@ static void escapeColors(char* buf);
               : type == LEVEL_WARNING ? "\033[33mWARNING\033[0m"  \
               : type == LEVEL_ERROR   ? "\033[31mERROR\033[0m"    \
               : type == LEVEL_VAR     ? "\033[37mVARIABLE\033[0m" \
-                                      : "",                           \
+                                      : "",                       \
               __func__, __FILE__, __LINE__, buf);                 \
     }
   #define CHECK_FUNC(fn, err_val) \
@@ -113,7 +113,7 @@ static void escapeColors(char* buf);
         LOG_E("%s failed: %s", #fn, strerror(errno)); \
       }                                               \
     }
-// exit(1);                                      
+// exit(1);
 static __attribute__((unused)) void set_logging_level(int level, char* additional_info) {
   if (level < LEVEL_DISABLE || level > LEVEL_MAX) {
     logging_level = LEVEL_ERROR;

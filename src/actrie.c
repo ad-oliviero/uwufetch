@@ -405,7 +405,7 @@ static inline size_t char_to_edge_index(char c) {
 #define constexpr_is_lower(c) ((uint32_t)(c) - 'a' <= 'z' - 'a')
 #define constexpr_to_upper(c) (char)((c) - (('a' - 'A') * constexpr_is_lower(c)))
 #define constexpr_to_lower(c) (char)((c) | (('a' - 'A') * constexpr_is_upper(c)))
-#define constexpr_char_to_edge_index(c) ((size_t)(uint8_t)(c)-ALPHABET_START)
+#define constexpr_char_to_edge_index(c) ((size_t)(uint8_t)(c) - ALPHABET_START)
 
 static_assert(constexpr_to_upper('\0') == '\0');
 static_assert(constexpr_to_upper('0') == '0');
