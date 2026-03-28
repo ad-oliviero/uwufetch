@@ -8,4 +8,4 @@ $(error This makefile must be called by the main makefile)
 endif
 
 $(TARGET):
-	$(CC) $(CFLAGS) -o $(BUILD_DIR)/$(TARGET) $(SRCS) $(LDFLAGS) $(BUILD_DIR)/libfetch.a
+	$(CC) $(CFLAGS) -o $(BUILD_DIR)/$(TARGET) $(SRCS) $(BUILD_DIR)/libfetch.a $(LDFLAGS)

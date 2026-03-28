@@ -60,7 +60,7 @@ $(BUILD_DIR):
 	@mkdir -p $(BUILD_DIR)
 
 $(BUILD_DIR)/$(TARGET): $(HEADERS) $(OBJS) $(BUILD_DIR)/libfetch.a | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(BUILD_DIR)/libfetch.a
+	$(CC) $(CFLAGS) -o $@ $(OBJS) $(BUILD_DIR)/libfetch.a $(LDFLAGS)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c -o $@ $<
