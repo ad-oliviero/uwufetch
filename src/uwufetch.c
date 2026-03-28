@@ -157,11 +157,16 @@ int nvccount(const unsigned char* str, const int len) {
 }
 
 size_t show_info(struct info* user_info, struct configuration* configuration) {
-  const struct logo_embed* logo = &(logos[user_info->logo_idx]);
+  const struct logo_embed* logo = NULL;
+  size_t printed_lines          = 0;
+  if (user_info->terminal_size.ws_col <= 0) user_info->terminal_size.ws_col = 60;
   int buf_len                   = user_info->terminal_size.ws_col * 3;
   size_t printed_lines          = 0;
   char* buf                     = malloc((size_t)buf_len);
-
+  
+  if (user_info->logo_idx)
+    logo = &(logos[user_info->logo_idx]);
+  else logo = &(logos[1]); // TODO: change to unknown logo
   memset(buf, 0, (size_t)buf_len);
 
 #define PRINTLN_BUF(format, ...)                                                                                                                                                                            \
@@ -170,7 +175,7 @@ size_t show_info(struct info* user_info, struct configuration* configuration) {
     printf("\x1b[%luD\x1b[%luC%.*s\n", (size_t)user_info->terminal_size.ws_col, logo->width + 1, (int)(user_info->terminal_size.ws_col - logo->width) + nvccount((const unsigned char*)buf, buf_len), buf); \
     printed_lines++;                                                                                                                                                                                        \
   }
-
+  
   if (configuration->user_name) PRINTLN_BUF(BOLD "%s@%s" NORMAL, user_info->user_name, user_info->host_name);
   if (configuration->os_name) PRINTLN_BUF(BOLD "OWOS" NORMAL "     %s", user_info->os_name);
   if (configuration->model) PRINTLN_BUF(BOLD "MOWODEL" NORMAL "  %s", user_info->model);
