@@ -59,6 +59,7 @@ void uwufy_all(struct info* user_info) {
   actrie_t_add_pattern(&replacer, "snap", "snyap");
   actrie_t_add_pattern(&replacer, "zypper", "zyppew");
 
+  // hardware
   actrie_t_add_pattern(&replacer, "lenovo", "LenOwO");
   actrie_t_add_pattern(&replacer, "cpu", "CPUwU");
   actrie_t_add_pattern(&replacer, "core", "Cowe");
@@ -88,20 +89,19 @@ void uwufy_all(struct info* user_info) {
   actrie_t_add_pattern(&replacer, "tuxedo", "TUWUXEDO");
   actrie_t_add_pattern(&replacer, "aura", "Uwura");
 
+  // linux
   actrie_t_add_pattern(&replacer, "linux", "LinUwU");
+
   actrie_t_add_pattern(&replacer, "alpine", "Nyalpine");
   actrie_t_add_pattern(&replacer, "amogos", "AmogOwOS");
   actrie_t_add_pattern(&replacer, "android", "Nyandroid");
   actrie_t_add_pattern(&replacer, "arch", "Nyarch LinUwU");
-
   actrie_t_add_pattern(&replacer, "arcolinux", "ArcOwO LinUwU");
-
   actrie_t_add_pattern(&replacer, "artix", "Nyartix LinUwU");
+  actrie_t_add_pattern(&replacer, "cachyos", "NyachyOwOS");
   actrie_t_add_pattern(&replacer, "debian", "Debinyan");
-
-  actrie_t_add_pattern(&replacer, "devuan", "Devunyan");
-
   actrie_t_add_pattern(&replacer, "deepin", "Dewepyn");
+  actrie_t_add_pattern(&replacer, "devuan", "Devunyan");
   actrie_t_add_pattern(&replacer, "endeavouros", "EndeavOwOs");
   actrie_t_add_pattern(&replacer, "fedora", "Fedowa");
   actrie_t_add_pattern(&replacer, "femboyos", "FemboyOwOs");
