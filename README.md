@@ -6,23 +6,26 @@
 - **NOT STABLE** This branch is work in progress and while it *does* work, it might crash.
 
 ## TODO list
+- [ ] Implement proper automated testing
+- [ ] Implement proper tests
+- [ ] Fix logging not working in some .c files
+- [ ] Add options to filter the log
+- [ ] Implement a decent algorithm to get the correct ascii logo
+- [ ] Make the code more secure (like by using custom `string` types that use a `len` value instead of `'\0'`)
+- [ ] Review the `actrie.c` and `actrie.h` files
+- [ ] New rules should be added to [CONTRIBUTING.md](/CONTRIBUTING.md)
+- [ ] Automate contributing
+- [ ] Add a pre-config argument parser function
+- [ ] Multi threading
+- [ ] Create a man page for `libfetch`
+- [ ] GitHub actions for more platforms
+
 - [x] `--full` option that overrides the config file to print everything
 - [x] Move "thing" "uwuthing" translation data to external file
 - [x] Embed static files (except images) in the executable (if performance is not impacted)
 - [x] Write a new "rendering" function
 - [x] Rewrite `ascii_debug` makefile target
 - [x] Write a new "supported distros" list
-- [ ] Make the code more secure (like by using custom `string` types that use a `len` value instead of `'\0'`)
-- [ ] Implement a decent algorithm to get the correct ascii logo
-- [ ] New rules should be added to [CONTRIBUTING.md](/CONTRIBUTING.md)
-- [ ] Fix logging not working in some .c files
-- [ ] Add a pre-config argument parser function
-- [ ] Create a man page for `libfetch`
-- [ ] GitHub actions for more platforms
-- [ ] Multi threading
-- [ ] Automate contributing
-- [ ] Review the `actrie.c` and `actrie.h` files
-- [ ] Add options to filter the log
 
 ### What does work?
 | Function (libfetch) | Arch Linux | Linux (not Arch)$^1$ | Android | FreeBSD | OpenBSD | MacOS | Windows |
