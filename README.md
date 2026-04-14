@@ -13,6 +13,7 @@
 - [x] Rewrite `ascii_debug` makefile target
 - [x] Write a new "supported distros" list
 - [ ] Make the code more secure (like by using custom `string` types that use a `len` value instead of `'\0'`)
+- [ ] Implement a decent algorithm to get the correct ascii logo
 - [ ] New rules should be added to [CONTRIBUTING.md](/CONTRIBUTING.md)
 - [ ] Fix logging not working in some .c files
 - [ ] Add a pre-config argument parser function
