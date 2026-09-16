@@ -323,9 +323,32 @@ char* get_model(void) {
       longest_model = i;
     }
   }
-  snprintf(model, BUFFER_SIZE, "%s", tmp_model[longest_model]);
-  LOG_I("getting model name from %s", model_filename[longest_model]);
-  if (model[best_len - 1] == '\n') model[best_len - 1] = '\0';
+  if (best_len > 0) {
+    snprintf(model, BUFFER_SIZE, "%s", tmp_model[longest_model]);
+    LOG_I("getting model name from %s", model_filename[longest_model]);
+  } else {
+    // No DMI on most non-x86 boards (e.g. MIPS). The kernel's own
+    // "system type" line in /proc/cpuinfo is the closest equivalent
+    // there. Also fixes model[best_len - 1] below reading model[-1]
+    // (out of bounds) when every DMI file above is missing, which was
+    // the case unconditionally on every non-DMI board before this.
+    LOG_I("no DMI info found, falling back to /proc/cpuinfo system type");
+    model_fp = fopen("/proc/cpuinfo", "r");
+    if (model_fp) {
+      char line[BUFFER_SIZE];
+      while (fgets(line, BUFFER_SIZE, model_fp)) {
+        char* value = strchr(line, ':');
+        if (strncmp(line, "system type", 11) != 0 || !value) continue;
+        value++;
+        while (*value == ' ' || *value == '\t') value++; // skip ": " padding
+        snprintf(model, BUFFER_SIZE, "%s", value);
+        best_len = (int)strlen(model);
+        break;
+      }
+      fclose(model_fp);
+    }
+  }
+  if (best_len > 0 && model[best_len - 1] == '\n') model[best_len - 1] = '\0';
   LOG_V(model);
 #elif defined(SYSTEM_BASE_ANDROID)
   LOG_I("getting model name with getprop (__system_property_get())");
