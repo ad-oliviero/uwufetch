@@ -167,6 +167,7 @@ typedef void (*FindCallback)(void* context, const char* found_word, size_t word_
 void actrie_thiscall actrie_t_run_text(const struct actrie_t* this_, const char* text, void* callback_context, FindCallback find_callback);
 
 /// @brief Replace first occurance of any pattern (defined in this ac trie) found in the given string
+///        with the longest pattern starting at the leftmost possible position
 ///        in O(length + |replacement_length - first_occurance_length|)
 /// @param c_string string where first occurance should be replaced
 /// @param length length of the string
@@ -183,7 +184,9 @@ static inline size_t actrie_thiscall actrie_t_replace_first_occurance(const stru
   return actrie_t_replace_first_occurance_len(this_, c_string, strlen(c_string));
 }
 
-/// @brief Replace all occurances of any pattern (defined in this ac trie) found in the given string
+/// @brief Replace all occurances of any pattern (defined in this ac trie) found in the given string.
+///        The longest pattern starting at the leftmost position wins, the
+///        replacements are not scanned again.
 ///        in O(length + sum( |replacement_length - occurance_length| for each pattern occurance) )
 /// @param c_string string where first occurance should be replaced
 /// @param length length of the string

@@ -311,8 +311,9 @@ static inline void actrie_thiscall vector_string_t_emplace_back2(struct vector_s
 }
 
 struct replacement_info_t {
-  uint32_t word_l_index_in_text;
-  uint32_t word_index;
+  uint32_t word_l_index_in_text; // start of the match in the text
+  uint32_t word_length;
+  uint32_t word_index; // index of the word in the Trie
 };
 
 struct vector_replacement_info_t {
@@ -341,7 +342,7 @@ static inline void actrie_thiscall vector_replacement_info_t_dtor(struct vector_
   this_->size = this_->capacity = 0;
 }
 
-static void actrie_thiscall actrie_noinline vector_replacement_info_t_emplace_back2_with_resize(struct vector_replacement_info_t* this_, uint32_t word_l_index_in_text, uint32_t word_index) {
+static void actrie_thiscall actrie_noinline vector_replacement_info_t_emplace_back3_with_resize(struct vector_replacement_info_t* this_, uint32_t word_l_index_in_text, uint32_t word_length, uint32_t word_index) {
   size_t size     = this_->size;
   size_t capacity = this_->capacity;
 
@@ -354,8 +355,9 @@ static void actrie_thiscall actrie_noinline vector_replacement_info_t_emplace_ba
     return;
   }
 
-  memcpy(new_data, this_->data, size * sizeof(struct string_t));
+  memcpy(new_data, this_->data, size * sizeof(struct replacement_info_t));
   new_data[size].word_l_index_in_text = word_l_index_in_text;
+  new_data[size].word_length          = word_length;
   new_data[size].word_index           = word_index;
 
   free(this_->data);
@@ -364,17 +366,18 @@ static void actrie_thiscall actrie_noinline vector_replacement_info_t_emplace_ba
   this_->capacity = capacity;
 }
 
-static inline void actrie_thiscall vector_replacement_info_t_emplace_back2(struct vector_replacement_info_t* this_, uint32_t word_l_index_in_text, uint32_t word_index) {
+static inline void actrie_thiscall vector_replacement_info_t_emplace_back3(struct vector_replacement_info_t* this_, uint32_t word_l_index_in_text, uint32_t word_length, uint32_t word_index) {
   size_t size = this_->size;
   if (size < this_->capacity) {
     (this_->data + size)->word_l_index_in_text = word_l_index_in_text;
+    (this_->data + size)->word_length          = word_length;
     (this_->data + size)->word_index           = word_index;
     this_->size                                = size + 1;
     return;
   }
 
   // Rare case
-  vector_replacement_info_t_emplace_back2_with_resize(this_, word_l_index_in_text, word_index);
+  vector_replacement_info_t_emplace_back3_with_resize(this_, word_l_index_in_text, word_length, word_index);
 }
 
 static inline bool is_in_alphabet(char c) {
@@ -711,18 +714,25 @@ void actrie_thiscall actrie_t_run_text(const struct actrie_t* this_, const char*
   }
 }
 
-size_t actrie_thiscall actrie_t_replace_first_occurance_len(const struct actrie_t* this_, char* c_string, size_t length) {
-  actrie_assert(actrie_t_is_ready(this_));
+// qsort comparator: by start index, the longest word first on ties
+static int replacement_info_cmp(const void* lhs, const void* rhs) {
+  const struct replacement_info_t* l = (const struct replacement_info_t*)lhs;
+  const struct replacement_info_t* r = (const struct replacement_info_t*)rhs;
+  if (l->word_l_index_in_text != r->word_l_index_in_text)
+    return l->word_l_index_in_text < r->word_l_index_in_text ? -1 : 1;
+  return l->word_length > r->word_length ? -1 : l->word_length < r->word_length ? 1 : 0;
+}
 
-  uint32_t r_index_in_current_substring = 0;
-  uint32_t word_index                   = 0;
-
-  uint32_t current_node_index         = ROOT_INDEX;
+/* Collects the longest pattern ending on each text position, then sorts the
+ * matches by (start index, longer word first) and drops the overlapping
+ * ones: the longest match starting at the leftmost position wins. */
+static void actrie_thiscall actrie_t_collect_matches(const struct actrie_t* this_, const char* c_string, struct vector_replacement_info_t* matches) {
   const struct actrie_node_t* m_nodes = this_->nodes.data;
+  const uint32_t* m_words_lengths     = this_->words_lengths.data;
+
+  uint32_t current_node_index = ROOT_INDEX;
   char c;
-  for (const char* iter = c_string;
-       (c = IS_FIND_IGNORECASE_MODE_ON ? to_lower(*iter) : *iter) != '\0';
-       ++iter) {
+  for (const char* iter = c_string; (c = IS_FIND_IGNORECASE_MODE_ON ? to_lower(*iter) : *iter) != '\0'; ++iter) {
     if (!is_in_alphabet(c)) {
       current_node_index = ROOT_INDEX;
       continue;
@@ -730,142 +740,112 @@ size_t actrie_thiscall actrie_t_replace_first_occurance_len(const struct actrie_
 
     current_node_index = m_nodes[current_node_index].edges[char_to_edge_index(c)];
     actrie_assert(current_node_index != NULL_NODE_INDEX);
-
     const struct actrie_node_t* current_node = m_nodes + current_node_index;
-    bool current_node_is_terminal            = actrie_node_t_is_terminal(current_node);
-    size_t compressed_suffix_link            = current_node->compressed_suffix_link;
 
-    if (current_node_is_terminal | (compressed_suffix_link != ROOT_INDEX)) {
-      if (current_node_is_terminal) {
-        word_index = current_node->word_index;
-      } else {
-        actrie_assert(actrie_node_t_is_terminal(&m_nodes[compressed_suffix_link]));
-        word_index = m_nodes[compressed_suffix_link].word_index;
-      }
+    uint32_t word_index = MISSING_SENTIEL;
+    if (actrie_node_t_is_terminal(current_node))
+      word_index = current_node->word_index;
+    else if (current_node->compressed_suffix_link != ROOT_INDEX)
+      word_index = m_nodes[current_node->compressed_suffix_link].word_index;
 
+    if (word_index != MISSING_SENTIEL) {
       actrie_assert(word_index < this_->words_lengths.size);
-      r_index_in_current_substring = (uint32_t)(iter - c_string);
-
-      uint32_t word_length = this_->words_lengths.data[word_index];
-
-      // Matched pattern is c_string[l; r]
-      uint32_t l                = r_index_in_current_substring + 1 - word_length;
-      size_t replacement_length = this_->words_replacement.data[word_index].size;
-
-      if (replacement_length != word_length) {
-        // In both cases: replacement_length > word_length || replacement_length < word_length code is the same
-        memmove(c_string + l + replacement_length, c_string + r_index_in_current_substring + 1, length - 1 - r_index_in_current_substring);
-        length += (replacement_length - word_length);
-        c_string[length] = '\0';
-      }
-
-      memcpy(c_string + l, this_->words_replacement.data[word_index].c_str, replacement_length);
-      break;
+      uint32_t word_length = m_words_lengths[word_index];
+      if (word_length != 0) // empty patterns never match a text scan
+        vector_replacement_info_t_emplace_back3(matches, (uint32_t)(iter - c_string) + 1 - word_length, word_length, word_index);
     }
   }
 
+  qsort(matches->data, matches->size, sizeof(struct replacement_info_t), replacement_info_cmp);
+
+  // dropping the overlapping matches (leftmost-longest selection)
+  size_t selected  = 0;
+  uint32_t last_end = 0;
+  for (size_t i = 0; i < matches->size; i++) {
+    if (matches->data[i].word_l_index_in_text >= last_end) {
+      matches->data[selected++] = matches->data[i];
+      last_end                  = matches->data[i].word_l_index_in_text + matches->data[i].word_length;
+    }
+  }
+  matches->size = selected;
+}
+
+size_t actrie_thiscall actrie_t_replace_first_occurance_len(const struct actrie_t* this_, char* c_string, size_t length) {
+  actrie_assert(actrie_t_is_ready(this_));
+
+  struct vector_replacement_info_t matches;
+  vector_replacement_info_t_ctor(&matches);
+
+  actrie_t_collect_matches(this_, c_string, &matches);
+
+  if (matches.size != 0) {
+    const struct replacement_info_t* match = &matches.data[0]; // the leftmost-longest match
+    uint32_t l                             = match->word_l_index_in_text;
+    uint32_t word_length                   = match->word_length;
+    size_t replacement_length              = this_->words_replacement.data[match->word_index].size;
+
+    if (replacement_length != word_length) {
+      // In both cases: replacement_length > word_length || replacement_length < word_length code is the same
+      memmove(c_string + l + replacement_length, c_string + l + word_length, length - (l + word_length));
+      length += (replacement_length - word_length);
+    }
+    memcpy(c_string + l, this_->words_replacement.data[match->word_index].c_str, replacement_length);
+    c_string[length] = '\0';
+  }
+
+  vector_replacement_info_t_dtor(&matches);
   return length;
 }
 
 size_t actrie_thiscall actrie_t_replace_all_occurances_len(const struct actrie_t* this_, char* c_string, size_t length) {
   actrie_assert(actrie_t_is_ready(this_));
-#if defined(__DEBUG__)
-  size_t total_copied = 0;
-#endif
 
-  struct vector_replacement_info_t queue;
-  vector_replacement_info_t_ctor(&queue);
+  struct vector_replacement_info_t matches;
+  vector_replacement_info_t_ctor(&matches);
 
-  const struct actrie_node_t* m_nodes        = this_->nodes.data;
-  const uint32_t* m_words_lengths            = this_->words_lengths.data;
+  actrie_t_collect_matches(this_, c_string, &matches);
+
   const struct string_t* m_words_replacement = this_->words_replacement.data;
 
   size_t new_length = length;
+  for (size_t i = 0; i < matches.size; i++)
+    new_length += m_words_replacement[matches.data[i].word_index].size - matches.data[i].word_length;
 
-  uint32_t current_node_index = ROOT_INDEX;
-  char c;
-  for (char *current_c_string = c_string, *iter = current_c_string;
-       (c = IS_FIND_IGNORECASE_MODE_ON ? to_lower(*iter) : *iter) != '\0';
-       ++iter) {
-    if (!is_in_alphabet(c)) {
-      current_node_index = ROOT_INDEX;
-      continue;
-    }
-
-    current_node_index = m_nodes[current_node_index].edges[char_to_edge_index(c)];
-    actrie_assert(current_node_index != NULL_NODE_INDEX);
-
-    const struct actrie_node_t* current_node = m_nodes + current_node_index;
-    bool current_node_is_terminal            = actrie_node_t_is_terminal(current_node);
-    size_t compressed_suffix_link            = current_node->compressed_suffix_link;
-
-    if (current_node_is_terminal | (compressed_suffix_link != ROOT_INDEX)) {
-      actrie_assert(current_node_is_terminal || actrie_node_t_is_terminal(&m_nodes[compressed_suffix_link]));
-      uint32_t word_index = current_node_is_terminal ? current_node->word_index : m_nodes[compressed_suffix_link].word_index;
-
-      actrie_assert(word_index < this_->words_lengths.size);
-      uint32_t r_index_in_current_substring = (uint32_t)(iter - current_c_string);
-      uint32_t word_length                  = m_words_lengths[word_index];
-      // Matched pattern is current_c_string[l; r]
-      uint32_t l_index_in_current_substring = r_index_in_current_substring + 1 - word_length;
-      size_t replacement_length             = m_words_replacement[word_index].size;
-
-      if ((queue.size == 0) & (word_length == replacement_length)) {
-        char* dst_address = current_c_string + l_index_in_current_substring;
-        actrie_assert(c_string <= dst_address && dst_address + word_length <= c_string + length);
-        memcpy(dst_address, m_words_replacement[word_index].c_str, word_length);
-#if defined(__DEBUG__)
-        total_copied += word_length;
-#endif
-      } else {
-        uint32_t word_l_index_in_text = (uint32_t)(current_c_string + l_index_in_current_substring - c_string);
-        vector_replacement_info_t_emplace_back2(&queue, word_l_index_in_text, word_index);
-        new_length += (replacement_length - word_length);
-      }
-
-      current_c_string   = iter + 1;
-      current_node_index = ROOT_INDEX;
-    }
+  // the result is assembled left to right in a temporary buffer: in place
+  // moves could overwrite parts that later moves still have to read
+  char* result = (char*)malloc(new_length > 0 ? new_length : 1);
+  if (result == NULL) {
+    out_of_memory_handler();
+    vector_replacement_info_t_dtor(&matches);
+    return length;
   }
 
-  size_t right_offset = 0;
-  for (const struct replacement_info_t *iter_end = queue.data - 1, *iter = iter_end + queue.size; iter != iter_end; --iter) {
-    uint32_t word_index           = iter->word_index;
-    uint32_t word_l_index_in_text = iter->word_l_index_in_text;
-    uint32_t word_length          = m_words_lengths[word_index];
-    size_t moved_part_length      = length - (word_l_index_in_text + word_length);
+  size_t write_index = 0; // position in the result buffer
+  size_t read_index  = 0; // position in the original text
+  for (size_t i = 0; i < matches.size; i++) {
+    const struct replacement_info_t* match = &matches.data[i];
 
-    char* dst_address       = c_string + (new_length - right_offset - moved_part_length);
-    const char* src_address = c_string + word_l_index_in_text + word_length;
+    // copying the part of the text before the match
+    memcpy(result + write_index, c_string + read_index, match->word_l_index_in_text - read_index);
+    write_index += match->word_l_index_in_text - read_index;
 
-    if (dst_address != src_address) {
-      // If pattern length != replacement length, worth checking
-      actrie_assert((c_string <= dst_address) & (dst_address + moved_part_length <= c_string + (new_length >= length ? new_length : length)));
-      actrie_assert((c_string <= src_address) & (src_address + moved_part_length <= c_string + (new_length >= length ? new_length : length)));
-      memmove(dst_address, src_address, moved_part_length);
-    }
-
-    size_t replacement_length = m_words_replacement[word_index].size;
-    dst_address -= replacement_length;
-
-    actrie_assert((c_string <= dst_address) & (dst_address + replacement_length <= c_string + (new_length >= length ? new_length : length)));
-    memcpy(dst_address, m_words_replacement[word_index].c_str, replacement_length);
-
-    length = word_l_index_in_text;
-    right_offset += moved_part_length + replacement_length;
-#if defined(__DEBUG__)
-    total_copied += moved_part_length + replacement_length;
-#endif
+    // copying the replacement
+    size_t replacement_length = m_words_replacement[match->word_index].size;
+    memcpy(result + write_index, m_words_replacement[match->word_index].c_str, replacement_length);
+    write_index += replacement_length;
+    read_index   = match->word_l_index_in_text + match->word_length;
   }
 
-  vector_replacement_info_t_dtor(&queue);
+  // copying the part of the text after the last match
+  memcpy(result + write_index, c_string + read_index, length - read_index);
+  write_index += length - read_index;
+  actrie_assert(write_index == new_length);
 
-#if defined(__DEBUG__)
-  // Check for O(length + sum( |replacement_length - occurance_length| for each pattern occurance) ) complexity
-  actrie_assert(total_copied <= new_length);
-#endif
-
+  memcpy(c_string, result, new_length);
   c_string[new_length] = '\0';
+
+  free(result);
+  vector_replacement_info_t_dtor(&matches);
   return new_length;
 }
 
