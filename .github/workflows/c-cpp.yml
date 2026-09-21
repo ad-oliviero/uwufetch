@@ -1,33 +1,49 @@
-name: Build and Run
+name: Build and Test
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   linux:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: make
-      run: make
-    - name: run
-      run: ./uwufetch
-  windows:
-    runs-on: windows-latest
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: install dependencies
+        run: sudo apt-get update && sudo apt-get install -y libpci-dev
+      - name: build
+        run: make
+      - name: unit tests
+        run: make test
+      - name: integration tests
+        run: tests/run.sh
+  # the windows and macos lanes are disabled: <argp.h> is glibc only, so the
+  # build fails there until the argument parser is replaced
+  #windows:
+  #  runs-on: windows-latest
+  #  steps:
+  #    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+  #    - name: make
+  #      run: make
+  #    - name: run
+  #      run: ./build/uwufetch
+  #mac-os:
+  #  runs-on: macos-latest
+  #  steps:
+  #    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+  #    - name: make
+  #      run: make
+  #    - name: run
+  #      run: ./build/uwufetch
+  linux-asan:
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: make
-      run: make
-    - name: run
-      run: ./uwufetch
-  mac-os:
-    runs-on: macos-latest
-    steps:
-    - uses: actions/checkout@v3
-    - name: make
-      run: make
-    - name: run
-      run: ./uwufetch
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: install dependencies
+        run: sudo apt-get update && sudo apt-get install -y libpci-dev
+      - name: unit tests and fuzz (ASan + UBSan)
+        run: make test-asan FUZZ_SECONDS=60
+      - name: integration tests (ASan + UBSan)
+        run: tests/run.sh
