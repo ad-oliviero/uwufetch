@@ -5,7 +5,6 @@ TARGET = uwufetch
 PROJECT_ROOT = $(shell pwd)
 SRC_DIR = src
 BUILD_DIR = build
-TEST_DIR = $(SRC_DIR)/libfetch/tests
 SRCS = $(wildcard $(SRC_DIR)/*.c)
 OBJS = $(patsubst $(SRC_DIR)/%,$(BUILD_DIR)/%,$(SRCS:.c=.o))
 ASCII_EMBED_HEADER = $(SRC_DIR)/ascii_embed.h
@@ -86,13 +85,6 @@ valgrind: debug # checks memory leak
 
 gdb: debug
 	gdb $(BUILD_DIR)/$(TARGET) -ex="set confirm off"
-
-test: $(BUILD_DIR)/uwutest
-	$(BUILD_DIR)/uwutest $(ARGS)
-$(BUILD_DIR)/uwutest: CFLAGS=$(CFLAGS_DEBUG)
-export
-$(BUILD_DIR)/uwutest: $(TEST_DIR)/tests.c $(BUILD_DIR)/libfetch.a
-	@$(MAKE) -C $(TEST_DIR)
 
 run: $(BUILD_DIR)/$(TARGET)
 	$(BUILD_DIR)/$(TARGET) $(ARGS)
