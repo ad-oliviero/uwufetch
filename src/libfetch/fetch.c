@@ -702,11 +702,19 @@ char* get_packages(void) {
 int get_screen_width(void) {
   int screen_width = 0;
 #if defined(SYSTEM_BASE_LINUX)
+  if (FB0_VIRTUAL_SIZE == NULL) {
+    LOG_E("Failed to get FB0_VIRTUAL_SIZE (is there a framebuffer device?)");
+    return screen_width;
+  }
   LOG_I("getting screen width from /sys/class/graphics/fb0/virtual_size");
   sscanf(FB0_VIRTUAL_SIZE, "%d,%*d", &screen_width);
 #elif defined(SYSTEM_BASE_ANDROID)
   LOG_W("After some research, turns out that the only way to get display size would be to use 'adb wm size' or even root access. This function will not be implemented");
 #elif defined(SYSTEM_BASE_FREEBSD)
+  if (FB0_VIRTUAL_SIZE == NULL) {
+    LOG_E("Failed to get FB0_VIRTUAL_SIZE (is there a dmesg.boot file?)");
+    return screen_width;
+  }
   LOG_I("getting screen width from /var/run/dmesg.boot");
   sscanf(FB0_VIRTUAL_SIZE, "%dx%*d", &screen_width);
 #elif defined(SYSTEM_BASE_OPENBSD)
@@ -725,11 +733,19 @@ int get_screen_width(void) {
 int get_screen_height(void) {
   int screen_height = 0;
 #if defined(SYSTEM_BASE_LINUX)
+  if (FB0_VIRTUAL_SIZE == NULL) {
+    LOG_E("Failed to get FB0_VIRTUAL_SIZE (is there a framebuffer device?)");
+    return screen_height;
+  }
   LOG_I("getting screen height from /sys/class/graphics/fb0/virtual_size");
   sscanf(FB0_VIRTUAL_SIZE, "%*d,%d", &screen_height);
 #elif defined(SYSTEM_BASE_ANDROID)
   LOG_W("After some research, turns out that the only way to get display size would be to use 'adb wm size' or even root access. This function will not be implemented");
 #elif defined(SYSTEM_BASE_FREEBSD)
+  if (FB0_VIRTUAL_SIZE == NULL) {
+    LOG_E("Failed to get FB0_VIRTUAL_SIZE (is there a dmesg.boot file?)");
+    return screen_height;
+  }
   LOG_I("getting screen height from /var/run/dmesg.boot");
   sscanf(FB0_VIRTUAL_SIZE, "%*dx%d", &screen_height);
 #elif defined(SYSTEM_BASE_OPENBSD)
