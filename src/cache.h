@@ -1,7 +1,10 @@
-#ifndef __CACHE_H__
-#define __CACHE_H__
+#ifndef CACHE_H
+#define CACHE_H
+
+#include "uwufetch.h"
 
 void write_cache(struct info* user_info);
+// on failure NULL is returned and errno is set
 char* read_cache(struct info* user_info);
 
-#endif // __CACHE_H__
+#endif // CACHE_H
