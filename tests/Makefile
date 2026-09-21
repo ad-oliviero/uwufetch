@@ -12,10 +12,16 @@ TEST_BINS = $(patsubst %.c,$(BUILD_DIR)/%,$(wildcard test_*.c))
 $(BUILD_DIR)/test_%: test_%.c $(TEST_OBJS) | $(BUILD_DIR)
 	$(CC) $(CFLAGS_DEBUG) -o $@ $< $(TEST_OBJS)
 
+$(BUILD_DIR)/fuzz: fuzz.c $(TEST_OBJS) | $(BUILD_DIR)
+	$(CC) $(CFLAGS_DEBUG) -o $@ $< $(TEST_OBJS)
+
+FUZZ_SECONDS ?= 5
+
 .PHONY: test
 
-test: $(TEST_BINS)
+test: $(TEST_BINS) $(BUILD_DIR)/fuzz
 	@for test in $(TEST_BINS); do \
 		echo "  TEST $$test"; \
 		$$test || exit 1; \
 	done
+	$(BUILD_DIR)/fuzz $(FUZZ_SECONDS)
