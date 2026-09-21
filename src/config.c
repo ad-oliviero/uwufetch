@@ -14,8 +14,7 @@ void parse_config(struct configuration* configuration, char* config_path) {
 
   LOG_I("parsing config from");
 #if defined(__DEBUG__)
-  if (config_path == NULL)
-    config_path = "./default.config";
+  if (config_path == NULL) config_path = "./default.config";
 #endif
   if (config_path == NULL) { // if config directory is not set, try to open the default
     if (getenv("HOME") != NULL) {
@@ -43,18 +42,21 @@ void parse_config(struct configuration* configuration, char* config_path) {
 
   // reading the config file
   while (fgets(buffer, sizeof(buffer), config)) {
-    if (strstr(buffer, "logo")) {
-      size_t len               = strlen(buffer) - sizeof("logo");
-      configuration->logo_name = malloc(len);
-      memcpy(configuration->logo_name, buffer + sizeof("logo"), len - 1);
+    if (strncmp(buffer, "logo=", sizeof("logo=") - 1) == 0) {
+      char* value = buffer + sizeof("logo=") - 1;
+      size_t len  = strlen(value);
+      while (len > 0 && (value[len - 1] == '\n' || value[len - 1] == '\r')) len--; // remove the trailing newline
+      free(configuration->logo_name);                                              // there may be more than one logo line
+      configuration->logo_name = malloc(len + 1);
+      memcpy(configuration->logo_name, value, len);
+      configuration->logo_name[len] = '\0';
       LOG_V(configuration->logo_name);
     }
-#define FIND_CFG_VAR(name)                         \
-  if (sscanf(buffer, #name "="                     \
-                           "%[truefalse]",         \
-             buffer)) {                            \
-    configuration->name = strcmp(buffer, "false"); \
-    LOG_V(configuration->name);                    \
+#define FIND_CFG_VAR(name)                                                      \
+  if (sscanf(buffer, #name "=\"%[truefalse]\"", buffer) || /* quoted value */   \
+      sscanf(buffer, #name "=%[truefalse]", buffer)) {     /* unquoted value */ \
+    configuration->name = strcmp(buffer, "false");                              \
+    LOG_V(configuration->name);                                                 \
   }
     // reading other values
     FIND_CFG_VAR(user_name);
