@@ -1,4 +1,4 @@
-.PHONY: all debug clean
+.PHONY: all debug clean test test-asan
 TARGET = uwufetch
 
 # project directories and files
@@ -79,6 +79,13 @@ $(BUILD_DIR)/libfetch.so: $(wildcard $(SRC_DIR)/libfetch/*.c)
 
 debug: CFLAGS=$(CFLAGS_DEBUG)
 debug: all
+
+test: clean debug
+	@$(MAKE) -C tests test CFLAGS_DEBUG='$(CFLAGS_DEBUG)'
+
+test-asan: CFLAGS_DEBUG += -fsanitize=address,undefined -fno-omit-frame-pointer
+test-asan: clean debug
+	@$(MAKE) -C tests test CFLAGS_DEBUG='$(CFLAGS_DEBUG)'
 
 valgrind: debug # checks memory leak
 	valgrind --leak-check=full --show-leak-kinds=all $(BUILD_DIR)/$(TARGET) $(ARGS)
