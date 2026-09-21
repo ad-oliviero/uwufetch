@@ -64,7 +64,7 @@ $(BUILD_DIR)/$(TARGET): $(HEADERS) $(OBJS) $(BUILD_DIR)/libfetch.a | $(BUILD_DIR
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-$(ASCII_EMBED_HEADER): $(BUILD_DIR)/common.o $(BUILD_DIR)/actrie.o
+$(ASCII_EMBED_HEADER): $(BUILD_DIR)/common.o $(BUILD_DIR)/actrie.o $(SRC_DIR)/ascii_preproc/ap.c $(wildcard res/ascii/*.txt)
 	@$(MAKE) -C $(SRC_DIR)/ascii_preproc run
 
 libfetch: $(BUILD_DIR)/libfetch.a $(BUILD_DIR)/libfetch.so

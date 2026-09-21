@@ -62,37 +62,43 @@ bool istxt(const char* str, size_t len) {
   return str[len - 4] == '.' && str[len - 3] == 't' && str[len - 2] == 'x' && str[len - 1] == 't';
 }
 
-/* https://github.com/lattera/freebsd/blob/master/lib/libc/string/strnstr.c */
-char* strnstr(const char* s, const char* find, size_t slen) {
-  char c, sc;
-  size_t len;
+// the color tags of the ascii files and their ansi escape replacements
+static const struct color_tag {
+  const char* tag;
+  const char* escape;
+} color_tags[] = {
+    {"{RED}", "\x1b[31m"},
+    {"{BOLD}", "\x1b[1m"},
+    {"{BLACK}", "\x1b[30m"},
+    {"{BLUE}", "\x1b[34m"},
+    {"{CYAN}", "\x1b[36m"},
+    {"{PINK}", "\x1b[38;5;201m"},
+    {"{GREEN}", "\x1b[32m"},
+    {"{WHITE}", "\x1b[37m"},
+    {"{LPINK}", "\x1b[38;5;213m"},
+    {"{BLOCK}", "▇"},
+    {"{NORMAL}", "\x1b[0m"},
+    {"{YELLOW}", "\x1b[33m"},
+    {"{MAGENTA}", "\x1b[0;35m"},
+    {"{SPRING_GREEN}", "\x1b[38;5;120m"},
+    {"{BLOCK_VERTICAL}", "▇"},
+    {"{BACKGROUND_RED}", "\x1b[0;41m"},
+    {"{BACKGROUND_GREEN}", "\x1b[0;42m"},
+    {"{BACKGROUND_WHITE}", "\x1b[0;47m"},
+};
 
-  if ((c = *find++) != '\0') {
-    len = strlen(find);
-    do {
-      do {
-        if (slen-- < 1 || (sc = *s++) == '\0')
-          return (NULL);
-      } while (sc != c);
-      if (len > slen)
-        return (NULL);
-    } while (strncmp(s, find, len) != 0);
-    s--;
+// upper bound of the content length after the color replacement: in the
+// worst case the whole file is made of the most expanding tag
+static size_t worst_color_len(size_t len) {
+  size_t max_escape = 1, min_tag = 1;
+  for (size_t i = 0; i < sizeof(color_tags) / sizeof(color_tags[0]); i++) {
+    size_t escape_len = strlen(color_tags[i].escape);
+    size_t tag_len    = strlen(color_tags[i].tag);
+    if (escape_len > max_escape) max_escape = escape_len;
+    if (tag_len < min_tag) min_tag = tag_len;
   }
-  return ((char*)s);
-}
-
-// TODO: use actrie.c instead of this function
-void replace(string* src, string* find, string* replace) {
-  long int diff = (long int)find->len - (long int)replace->len;
-  string ptr    = {src->str, src->len};
-  while ((ptr.str = strnstr(ptr.str, find->str, ptr.len))) {
-    ptr.len = src->len - (size_t)(ptr.str - src->str);
-    if (diff) memmove(ptr.str + replace->len, ptr.str + find->len, ptr.len); // making space for the replaced string
-    memcpy(ptr.str, replace->str, replace->len);
-    ptr.str += replace->len;
-    src->len += (size_t)diff;
-  }
+  size_t worst = len * max_escape / min_tag;
+  return worst > len ? worst : len;
 }
 
 void load_ascii_file(struct logo_embed* logo, char* path) {
@@ -101,102 +107,93 @@ void load_ascii_file(struct logo_embed* logo, char* path) {
   fseek(af, 0, SEEK_END);
   logo->content.len = (size_t)ftell(af);
   fseek(af, 0, SEEK_SET);
-  // TODO:
-  // CHECK_FN_NULL_EXIT((logo->content.str = malloc((logo->content.len + 1) * sizeof(char))));
-  CHECK_FN_NULL_EXIT((logo->content.str = malloc(4096 > logo->content.len + 1 ? 4096 : logo->content.len + 1)));
+  CHECK_FN_NULL_EXIT((logo->content.str = malloc(worst_color_len(logo->content.len) + 1)));
   fread(logo->content.str, sizeof(char), logo->content.len, af);
   logo->content.str[logo->content.len] = 0;
   CHECK_FN_NEG_EXIT(fclose(af));
 }
 
-void replace_all_colors(string* fcontent) {
-  replace(fcontent, &LITERAL_STR("{RED}"), &LITERAL_STR("\x1b[31m"));
-  replace(fcontent, &LITERAL_STR("{BOLD}"), &LITERAL_STR("\x1b[1m"));
-  replace(fcontent, &LITERAL_STR("{BLACK}"), &LITERAL_STR("\x1b[30m"));
-  replace(fcontent, &LITERAL_STR("{BLUE}"), &LITERAL_STR("\x1b[34m"));
-  replace(fcontent, &LITERAL_STR("{CYAN}"), &LITERAL_STR("\x1b[36m"));
-  replace(fcontent, &LITERAL_STR("{PINK}"), &LITERAL_STR("\x1b[38;5;201m"));
-  replace(fcontent, &LITERAL_STR("{GREEN}"), &LITERAL_STR("\x1b[32m"));
-  replace(fcontent, &LITERAL_STR("{WHITE}"), &LITERAL_STR("\x1b[37m"));
-  replace(fcontent, &LITERAL_STR("{LPINK}"), &LITERAL_STR("\x1b[38;5;213m"));
-  replace(fcontent, &LITERAL_STR("{BLOCK}"), &LITERAL_STR("▇"));
-  replace(fcontent, &LITERAL_STR("{NORMAL}"), &LITERAL_STR("\x1b[0m"));
-  replace(fcontent, &LITERAL_STR("{YELLOW}"), &LITERAL_STR("\x1b[33m"));
-  replace(fcontent, &LITERAL_STR("{MAGENTA}"), &LITERAL_STR("\x1b[0;35m"));
-  replace(fcontent, &LITERAL_STR("{SPRING_GREEN}"), &LITERAL_STR("\x1b[38;5;120m"));
-  replace(fcontent, &LITERAL_STR("{BLOCK_VERTICAL}"), &LITERAL_STR("▇"));
-  replace(fcontent, &LITERAL_STR("{BACKGROUND_RED}"), &LITERAL_STR("\x1b[0;41m"));
-  replace(fcontent, &LITERAL_STR("{BACKGROUND_GREEN}"), &LITERAL_STR("\x1b[0;42m"));
-  replace(fcontent, &LITERAL_STR("{BACKGROUND_WHITE}"), &LITERAL_STR("\x1b[0;47m"));
+void replace_all_colors(string* fcontent, struct actrie_t* replacer) {
+  fcontent->len = actrie_t_replace_all_occurances_len(replacer, fcontent->str, fcontent->len);
 }
 
-struct logo_embed* load_files(DIR* d, struct file_consts* consts /*, struct actrie_t* replacer*/) {
-  struct dirent* txtfs     = NULL;
+static int txt_filter(const struct dirent* entry) {
+  size_t nlen = strlen(entry->d_name);
+  return istxt(entry->d_name, nlen);
+}
+
+static int dirent_name_cmp(const void* a, const void* b) {
+  return strcmp((*(const struct dirent* const*)a)->d_name, (*(const struct dirent* const*)b)->d_name);
+}
+
+struct logo_embed* load_files(struct file_consts* consts, struct actrie_t* replacer) {
   struct logo_embed* files = NULL;
   string full_path         = {NULL, 0};
   string path_end          = {NULL, 0};
-  full_path.len            = RES_ASCII_PATH_LEN + consts->max_name_len;
-  CHECK_FN_NULL_EXIT((full_path.str = malloc(full_path.len)));
+  struct dirent** txtfs    = NULL;
 
-  // we need to count the files before doing anything else
-  while ((txtfs = readdir(d)) != NULL) {
-    size_t nlen = strlen(txtfs->d_name);
-    if (istxt(txtfs->d_name, nlen))
-      consts->file_count++;
+  int file_count = scandir(RES_ASCII_DIR_NAME, &txtfs, txt_filter, NULL);
+  if (file_count < 0) {
+    LOG_E("Failed to read " RES_ASCII_DIR_NAME);
+    exit(1);
   }
+  // the scandir order is not deterministic, the file names are sorted to make
+  // the generated header reproducible
+  qsort(txtfs, (size_t)file_count, sizeof(struct dirent*), dirent_name_cmp);
+  consts->file_count = (size_t)file_count;
   CHECK_FN_NULL_EXIT((files = malloc(consts->file_count * sizeof(struct logo_embed))));
-  rewinddir(d);
-  consts->file_count = 0;
+
+  full_path.len = RES_ASCII_PATH_LEN + consts->max_name_len;
+  CHECK_FN_NULL_EXIT((full_path.str = malloc(full_path.len)));
 
   // the initial part of the path will never change
   memcpy(full_path.str, RES_ASCII_DIR_NAME, RES_ASCII_PATH_LEN);
   path_end.str = full_path.str + RES_ASCII_PATH_LEN - 1;
   path_end.len = full_path.len - RES_ASCII_PATH_LEN;
 
-  while ((txtfs = readdir(d)) != NULL) {
-    size_t nlen = strlen(txtfs->d_name);
-    if (istxt(txtfs->d_name, nlen)) {
-      if (nlen > path_end.len) {
-        consts->max_name_len = nlen;
-        full_path.str        = realloc(full_path.str, full_path.len + (nlen - path_end.len));
-        path_end.str         = full_path.str + RES_ASCII_PATH_LEN - 1;
-        path_end.len         = full_path.len - RES_ASCII_PATH_LEN;
-      }
-
-      CHECK_ERRNO_EXIT(memcpy(path_end.str, txtfs->d_name, nlen));
-      full_path.str[RES_ASCII_PATH_LEN + nlen - 1] = 0;
-
-      files[consts->file_count].name.len = nlen;
-      CHECK_FN_NULL_EXIT((files[consts->file_count].name.str = malloc((files[consts->file_count].name.len + 1) * sizeof(char))));
-      memcpy(files[consts->file_count].name.str, txtfs->d_name, files[consts->file_count].name.len);
-      files[consts->file_count].name.str[files[consts->file_count].name.len] = 0;
-      load_ascii_file(&files[consts->file_count], full_path.str);
-
-      // files[consts->file_count].content.len = actrie_t_replace_all_occurances(replacer, (char*)files[consts->file_count].content.str);
-      replace_all_colors(&files[consts->file_count].content);
-
-      string line       = files[consts->file_count].content;
-      char* prevline    = line.str;
-      size_t line_count = 0;
-      while (*line.str++) {
-        if (*line.str == '\n') {
-          *line.str            = 0;
-          size_t newlen        = (size_t)(line.str - prevline);
-          consts->max_line_len = newlen > consts->max_line_len ? newlen : consts->max_line_len;
-          line_count++;
-          prevline = line.str++;
-        }
-      }
-      consts->max_line_count = line_count > consts->max_line_count ? line_count : consts->max_line_count;
-      consts->file_count++;
+  for (size_t i = 0; i < consts->file_count; i++) {
+    const char* name = txtfs[i]->d_name;
+    size_t nlen      = strlen(name);
+    if (nlen > path_end.len) {
+      consts->max_name_len = nlen;
+      full_path.str        = realloc(full_path.str, full_path.len + (nlen - path_end.len));
+      path_end.str         = full_path.str + RES_ASCII_PATH_LEN - 1;
+      path_end.len         = full_path.len - RES_ASCII_PATH_LEN;
     }
+
+    CHECK_ERRNO_EXIT(memcpy(path_end.str, name, nlen));
+    full_path.str[RES_ASCII_PATH_LEN + nlen - 1] = 0;
+
+    files[i].name.len = nlen;
+    CHECK_FN_NULL_EXIT((files[i].name.str = malloc((files[i].name.len + 1) * sizeof(char))));
+    memcpy(files[i].name.str, name, files[i].name.len);
+    files[i].name.str[files[i].name.len] = 0;
+    load_ascii_file(&files[i], full_path.str);
+    replace_all_colors(&files[i].content, replacer);
+
+    string line       = files[i].content;
+    char* prevline    = line.str;
+    size_t line_count = 0;
+    while (*line.str++) {
+      if (*line.str == '\n') {
+        *line.str            = 0;
+        size_t newlen        = (size_t)(line.str - prevline);
+        consts->max_line_len = newlen > consts->max_line_len ? newlen : consts->max_line_len;
+        line_count++;
+        prevline = line.str++;
+      }
+    }
+    consts->max_line_count = line_count > consts->max_line_count ? line_count : consts->max_line_count;
   }
 
+  for (size_t i = 0; i < consts->file_count; i++)
+    free(txtfs[i]);
+  free(txtfs);
   free(full_path.str);
   return files;
 }
 
-void debug_logo(char* logo_name) {
+void debug_logo(struct actrie_t* replacer, char* logo_name) {
   struct logo_embed logo = {.name = (string){logo_name, strlen(logo_name)}};
   logo.id                = str2id(logo.name.str, (int)logo.name.len);
   char* path             = malloc(RES_ASCII_PATH_LEN + logo.name.len + 6); // +2 for \0 and +4 for .txt
@@ -209,7 +206,7 @@ void debug_logo(char* logo_name) {
   LOG_V(logo.name.str);
   LOG_V(path);
 
-  replace_all_colors(&logo.content);
+  replace_all_colors(&logo.content, replacer);
   for (size_t i = 0; i < logo.content.len; i++)
     putc(logo.content.str[i], stdout);
 
@@ -221,17 +218,24 @@ void debug_logo(char* logo_name) {
 
 int main(int argc, char** argv) {
   logging_level = 4;
+
+  // setting up colors replacement
+  struct actrie_t replacer;
+  actrie_t_ctor(&replacer);
+  actrie_t_reserve_patterns(&replacer, sizeof(color_tags) / sizeof(color_tags[0]));
+  for (size_t i = 0; i < sizeof(color_tags) / sizeof(color_tags[0]); i++)
+    actrie_t_add_pattern(&replacer, color_tags[i].tag, color_tags[i].escape);
+  actrie_t_compute_links(&replacer);
+
   if (argc > 1) {
-    debug_logo(argv[1]);
+    debug_logo(&replacer, argv[1]);
     exit(0);
   }
   /*
    * ---- variable definitions ----
    */
   FILE* outf               = NULL;
-  DIR* res_ascii           = NULL;
   struct logo_embed* files = NULL;
-  // struct actrie_t replacer;
 
   /* These values are hard coded, but could change, so to *not*
    * recompile every time this program, I programmed them so
@@ -243,42 +247,16 @@ int main(int argc, char** argv) {
    */
 
   CHECK_FN_NULL_EXIT((outf = fopen(OUT_FILE_NAME, "w")));
-  CHECK_FN_NULL_EXIT((res_ascii = opendir(RES_ASCII_DIR_NAME)));
-
-  // setting up colors replacement
-  /*
-  actrie_t_ctor(&replacer);
-  actrie_t_reserve_patterns(&replacer, 18);
-  actrie_t_add_pattern(&replacer, "{RED}", "\x1b[31m");
-  actrie_t_add_pattern(&replacer, "{BOLD}", "\x1b[1m");
-  actrie_t_add_pattern(&replacer, "{BLACK}", "\x1b[30m");
-  actrie_t_add_pattern(&replacer, "{BLUE}", "\x1b[34m");
-  actrie_t_add_pattern(&replacer, "{CYAN}", "\x1b[36m");
-  actrie_t_add_pattern(&replacer, "{PINK}", "\x1b[38;5;201m");
-  actrie_t_add_pattern(&replacer, "{GREEN}", "\x1b[32m");
-  actrie_t_add_pattern(&replacer, "{WHITE}", "\x1b[37m");
-  actrie_t_add_pattern(&replacer, "{LPINK}", "\x1b[38;5;213m");
-  actrie_t_add_pattern(&replacer, "{BLOCK}", "▇");
-  actrie_t_add_pattern(&replacer, "{NORMAL}", "\x1b[0m");
-  actrie_t_add_pattern(&replacer, "{YELLOW}", "\x1b[33m");
-  actrie_t_add_pattern(&replacer, "{MAGENTA}", "\x1b[0;35m");
-  actrie_t_add_pattern(&replacer, "{SPRING_GREEN}", "\x1b[38;5;120m");
-  actrie_t_add_pattern(&replacer, "{BLOCK_VERTICAL}", "▇");
-  actrie_t_add_pattern(&replacer, "{BACKGROUND_RED}", "\x1b[0;41m");
-  actrie_t_add_pattern(&replacer, "{BACKGROUND_GREEN}", "\x1b[0;42m");
-  actrie_t_add_pattern(&replacer, "{BACKGROUND_WHITE}", "\x1b[0;47m");
-  actrie_t_compute_links(&replacer);
-  */
 
   /*
    * ---- preparing the output file ----
    */
 
-  files = load_files(res_ascii, &consts /*, &replacer*/);
-  CHECK_FN_NEG(closedir(res_ascii));
+  files = load_files(&consts, &replacer);
   CHECK_FN_NEG_EXIT(fprintf(outf,
-                            "#ifndef _ASCII_EMBED_H_\n"
-                            "#define _ASCII_EMBED_H_\n\n"
+                            "#ifndef ASCII_EMBED_H\n"
+                            "#define ASCII_EMBED_H\n\n"
+                            "#include <assert.h>\n"
                             "#include <stdint.h>\n"
                             "#include <unistd.h>\n\n"
                             "struct logo_line {\n"
@@ -325,13 +303,17 @@ int main(int argc, char** argv) {
    * ----completing output file----
    */
 
-  CHECK_ERRNO_EXIT(fprintf(outf, "};\nstatic const unsigned int logos_count __attribute__((unused)) = 35;\n#endif // _ASCII_EMBED_H_\n"));
+  CHECK_ERRNO_EXIT(fprintf(outf,
+                           "};\n"
+                           "static const unsigned int logos_count __attribute__((unused)) = sizeof(logos) / sizeof(logos[0]);\n"
+                           "static_assert(sizeof(logos) / sizeof(logos[0]) > 0, \"empty logo table\");\n"
+                           "#endif // ASCII_EMBED_H\n"));
 
   /*
    * ---- releasing resources ----
    */
 
-  // actrie_t_dtor(&replacer);
+  actrie_t_dtor(&replacer);
   CHECK_FN_NEG(fclose(outf));
   for (size_t i = 0; i < consts.file_count; i++) {
     free(files[i].content.str);
