@@ -334,24 +334,21 @@ int main(int argc, char** argv) {
 #undef IF_ENABLED_GET
 
   // before we "uwufy" the os name, we need to calculate the jenkins hash of it
-  if (user_info.os_name) {
-    if (!args.cache) {
-      // choose the logo name based on priority
-      // first the cli arg, then the configuration file and if none of them is available, use the os_name
-      // clang-format off
-      char* logo_name = args.logo ? args.logo :
-                        configuration.logo_name ? configuration.logo_name :
-                        user_info.os_name ? user_info.os_name : NULL;
-      // clang-format on
-      if (logo_name)
-        user_info.logo_id = str2id(logo_name, (int)strlen(logo_name));
-    }
-    for (size_t i = 0; i < logos_count; i++) {
+  if (!args.cache) {
+    // choose the logo name based on priority: first the cli arg, then the
+    // configuration file, then the os name and if none of them is available, "unknown"
+    // clang-format off
+    char* logo_name = args.logo ? args.logo :
+                      configuration.logo_name ? configuration.logo_name :
+                      user_info.os_name ? user_info.os_name : "unknown";
+    // clang-format on
+    user_info.logo_id = str2id(logo_name, (int)strlen(logo_name));
+  }
+  for (size_t i = 0; i < logos_count; i++) {
+    user_info.logo_idx = i;
+    if (user_info.logo_id == logos[i].id) {
       user_info.logo_idx = i;
-      if (user_info.logo_id == logos[i].id) {
-        user_info.logo_idx = i;
-        break;
-      }
+      break;
     }
   }
   if (!args.cache) {
