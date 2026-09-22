@@ -36,6 +36,9 @@ static void run_cycle(void) {
 
   #ifdef FETCH_EMPTY_MEMINFO
   CHECK(get_memory_used() == 0); // an empty meminfo must degrade to 0, not crash
+  #elif defined(FETCH_NO_TOTAL_MEMINFO)
+  // missing MemTotal must degrade to 0, not wrap around in unsigned arithmetic
+  CHECK(get_memory_used() == 0);
   #else
   CHECK(get_memory_used() == EXPECTED_MEMORY_USED);
   #endif

@@ -28,7 +28,7 @@ FIXTURE_PATH_FLAGS = -DPROC_CPUINFO_PATH='"$(FIXTURE_DIR)/cpuinfo"' \
                      -DFB0_VIRTUAL_SIZE_PATH='"$(FIXTURE_DIR)/fb0"' \
                      -DOS_RELEASE_PATH='"$(FIXTURE_DIR)/os_release"' \
                      -DHOSTNAME_PATH='"$(FIXTURE_DIR)/hostname"'
-FETCH_FIXTURE_BINS = $(BUILD_DIR)/test_fetch_fixtures $(BUILD_DIR)/test_fetch_fixtures_empty
+FETCH_FIXTURE_BINS = $(BUILD_DIR)/test_fetch_fixtures $(BUILD_DIR)/test_fetch_fixtures_empty $(BUILD_DIR)/test_fetch_fixtures_no_total
 
 $(BUILD_DIR)/fetch_fixture_full.o: $(PROJECT_ROOT)/src/libfetch/fetch.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS_DEBUG) -DPROC_MEMINFO_PATH='"$(FIXTURE_DIR)/meminfo"' $(FIXTURE_PATH_FLAGS) -c -o $@ $<
@@ -36,11 +36,17 @@ $(BUILD_DIR)/fetch_fixture_full.o: $(PROJECT_ROOT)/src/libfetch/fetch.c | $(BUIL
 $(BUILD_DIR)/fetch_fixture_empty_meminfo.o: $(PROJECT_ROOT)/src/libfetch/fetch.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS_DEBUG) -DPROC_MEMINFO_PATH='"$(FIXTURE_DIR)/meminfo_empty"' $(FIXTURE_PATH_FLAGS) -c -o $@ $<
 
+$(BUILD_DIR)/fetch_fixture_no_meminfo_total.o: $(PROJECT_ROOT)/src/libfetch/fetch.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS_DEBUG) -DPROC_MEMINFO_PATH='"$(FIXTURE_DIR)/meminfo_no_total"' $(FIXTURE_PATH_FLAGS) -c -o $@ $<
+
 $(BUILD_DIR)/test_fetch_fixtures: test_fetch_fixtures.c $(BUILD_DIR)/fetch_fixture_full.o | $(BUILD_DIR)
 	$(CC) $(CFLAGS_DEBUG) -o $@ $< $(BUILD_DIR)/fetch_fixture_full.o $(LDFLAGS)
 
 $(BUILD_DIR)/test_fetch_fixtures_empty: test_fetch_fixtures.c $(BUILD_DIR)/fetch_fixture_empty_meminfo.o | $(BUILD_DIR)
 	$(CC) $(CFLAGS_DEBUG) -DFETCH_EMPTY_MEMINFO -o $@ $< $(BUILD_DIR)/fetch_fixture_empty_meminfo.o $(LDFLAGS)
+
+$(BUILD_DIR)/test_fetch_fixtures_no_total: test_fetch_fixtures.c $(BUILD_DIR)/fetch_fixture_no_meminfo_total.o | $(BUILD_DIR)
+	$(CC) $(CFLAGS_DEBUG) -DFETCH_NO_TOTAL_MEMINFO -o $@ $< $(BUILD_DIR)/fetch_fixture_no_meminfo_total.o $(LDFLAGS)
 
 $(BUILD_DIR)/fuzz: fuzz.c $(TEST_OBJS) | $(BUILD_DIR)
 	$(CC) $(CFLAGS_DEBUG) -o $@ $< $(TEST_OBJS)

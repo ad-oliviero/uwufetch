@@ -824,7 +824,7 @@ unsigned long long get_memory_total(void) {
   unsigned long long memory_total = 0;
 #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
   LOG_I("getting memory total from struct sysinfo's totalram");
-  memory_total = GLOBAL_SYSINFO.totalram;
+  memory_total = GLOBAL_SYSINFO.totalram * GLOBAL_SYSINFO.mem_unit;
 #elif defined(SYSTEM_BASE_FREEBSD)
   unsigned long int len = sizeof(memory_total);
   LOG_I("getting total memory from sysctlbyname");
@@ -852,7 +852,9 @@ unsigned long long get_memory_used(void) {
   } else {
     unsigned long meminfo[4]; // total, free, buffers, cached
     parse_meminfo(PROC_MEMINFO, meminfo);
-    memory_used = (meminfo[0] - (meminfo[1] + meminfo[2] + meminfo[3])) / 1024;
+    unsigned long used_fields = meminfo[1] + meminfo[2] + meminfo[3];
+    // a missing MemTotal or used_fields > total would wrap around in unsigned arithmetic
+    memory_used = (meminfo[0] == 0 || used_fields > meminfo[0]) ? 0 : (meminfo[0] - used_fields) / 1024;
   }
 #elif defined(SYSTEM_BASE_FREEBSD)
   unsigned long long kmem_size        = 0;
