@@ -483,12 +483,16 @@ char* get_os_name(void) {
 char* get_cpu(void) {
   char* cpu = alloc(BUFFER_SIZE);
 #if defined(SYSTEM_BASE_LINUX)
-  char* p = PROC_CPUINFO - 1;
-  LOG_I("reading cpu model from /proc/cpuinfo");
-  do {
-    p++;
-    sscanf(p, "model name%*[ |	]: %[^\n]", cpu);
-  } while ((p = strchr(p, '\n')));
+  if (PROC_CPUINFO == NULL) {
+    LOG_E("Failed to get cpu (/proc/cpuinfo is missing)");
+  } else {
+    char* p = PROC_CPUINFO - 1;
+    LOG_I("reading cpu model from /proc/cpuinfo");
+    do {
+      p++;
+      sscanf(p, "model name%*[ |	]: %[^\n]", cpu);
+    } while ((p = strchr(p, '\n')));
+  }
 #elif defined(SYSTEM_BASE_ANDROID)
   /* The following function call does not get the full
    * cpu name, but just the product code (if available).
@@ -788,16 +792,20 @@ unsigned long long get_memory_total(void) {
 unsigned long long get_memory_used(void) {
   unsigned long long memory_used = 0;
 #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
-  unsigned long memtotal = 0, memfree = 0, buffers = 0, cached = 0;
-  char* p = PROC_MEMINFO - 1;
-  do {
-    p++;
-    sscanf(p, "MemTotal:%*[^0-9]%lu", &memtotal);
-    sscanf(p, "MemFree:%*[^0-9]%lu", &memfree);
-    sscanf(p, "Buffers:%*[^0-9]%lu", &buffers);
-    sscanf(p, "Cached:%*[^0-9]%lu", &cached);
-  } while ((p = strchr(p, '\n')));
-  memory_used = (memtotal - (memfree + buffers + cached)) / 1024;
+  if (PROC_MEMINFO == NULL) {
+    LOG_E("Failed to get memory used (/proc/meminfo is missing)");
+  } else {
+    unsigned long memtotal = 0, memfree = 0, buffers = 0, cached = 0;
+    char* p = PROC_MEMINFO - 1;
+    do {
+      p++;
+      sscanf(p, "MemTotal:%*[^0-9]%lu", &memtotal);
+      sscanf(p, "MemFree:%*[^0-9]%lu", &memfree);
+      sscanf(p, "Buffers:%*[^0-9]%lu", &buffers);
+      sscanf(p, "Cached:%*[^0-9]%lu", &cached);
+    } while ((p = strchr(p, '\n')));
+    memory_used = (memtotal - (memfree + buffers + cached)) / 1024;
+  }
 #elif defined(SYSTEM_BASE_FREEBSD)
   unsigned long long kmem_size        = 0;
   unsigned long long pagesize         = 0;
