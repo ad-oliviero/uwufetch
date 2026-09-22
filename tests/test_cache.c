@@ -33,6 +33,10 @@
 #define CPU "CPUwU uwu"
 #define SHELL "/bin/sh"
 #define PACKAGES "42 (pacman)"
+#define SCREEN_WIDTH 1920
+#define SCREEN_HEIGHT 1080
+#define LOGO_ID 0x12345678u
+#define GPU_NAME_LEN 32
 #define GPU_NAME "gpu %zu"
 
 static char home_dir[] = "/tmp/uwufetch_test_cache_XXXXXX";
@@ -64,14 +68,14 @@ static struct info make_info(size_t gpu_count) {
   user_info.cpu           = CPU;
   user_info.shell         = SHELL;
   user_info.packages      = PACKAGES;
-  user_info.screen_width  = 1920;
-  user_info.screen_height = 1080;
-  user_info.logo_id       = 0x12345678u;
+  user_info.screen_width  = SCREEN_WIDTH;
+  user_info.screen_height = SCREEN_HEIGHT;
+  user_info.logo_id       = LOGO_ID;
   user_info.gpu_list      = malloc(sizeof(char*) * (gpu_count + 1));
   user_info.gpu_list[0]   = (char*)gpu_count; // the [0] element is the "gpu count"
   for (size_t i = 1; i <= gpu_count; i++) {
-    user_info.gpu_list[i] = malloc(32);
-    snprintf(user_info.gpu_list[i], 32, GPU_NAME, i);
+    user_info.gpu_list[i] = malloc(GPU_NAME_LEN);
+    snprintf(user_info.gpu_list[i], GPU_NAME_LEN, GPU_NAME, i);
   }
   return user_info;
 }
@@ -120,11 +124,11 @@ static void test_round_trip(void) {
     CHECK(strcmp(read_back.cpu, CPU) == 0);
     CHECK(strcmp(read_back.shell, SHELL) == 0);
     CHECK(strcmp(read_back.packages, PACKAGES) == 0);
-    CHECK(read_back.screen_width == 1920);
-    CHECK(read_back.screen_height == 1080);
-    CHECK(read_back.logo_id == 0x12345678u);
+    CHECK(read_back.screen_width == SCREEN_WIDTH);
+    CHECK(read_back.screen_height == SCREEN_HEIGHT);
+    CHECK(read_back.logo_id == LOGO_ID);
     CHECK((size_t)read_back.gpu_list[0] == 2);
-    char gpu_name[32];
+    char gpu_name[GPU_NAME_LEN];
     snprintf(gpu_name, sizeof(gpu_name), GPU_NAME, 1);
     CHECK(strcmp(read_back.gpu_list[1], gpu_name) == 0);
     snprintf(gpu_name, sizeof(gpu_name), GPU_NAME, 2);
@@ -170,7 +174,7 @@ static void test_gpu_counts(void) {
     if (content != NULL) {
       CHECK((size_t)read_back.gpu_list[0] == gpu_count);
       for (size_t i = 1; i <= gpu_count; i++) {
-        char expected[32];
+        char expected[GPU_NAME_LEN];
         snprintf(expected, sizeof(expected), GPU_NAME, i);
         CHECK(strcmp(read_back.gpu_list[i], expected) == 0);
       }
