@@ -157,33 +157,32 @@ void libfetch_init(void) {
   CHECK_FN_NEG(uname(&GLOBAL_UTSNAME));
   LOG_I("calling sysinfo()");
   CHECK_FN_NEG(sysinfo(&GLOBAL_SYSINFO));
-
+#endif
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_FREEBSD)
   struct {
     const char* path;
     char** dest;
+    size_t size;
   } files[] = {
-      {PROC_MEMINFO_PATH, &PROC_MEMINFO},
-      {PROC_CPUINFO_PATH, &PROC_CPUINFO},
-  #if !defined(SYSTEM_BASE_ANDROID)
-      {FB0_VIRTUAL_SIZE_PATH, &FB0_VIRTUAL_SIZE},
+  #if defined(SYSTEM_BASE_FREEBSD)
+      {DMESG_BOOT_PATH, &FB0_VIRTUAL_SIZE, BUFFER_SIZE},
+  #else
+      {PROC_MEMINFO_PATH, &PROC_MEMINFO, SMALL_BUFFER_SIZE},
+      {PROC_CPUINFO_PATH, &PROC_CPUINFO, SMALL_BUFFER_SIZE},
+    #if !defined(SYSTEM_BASE_ANDROID)
+      {FB0_VIRTUAL_SIZE_PATH, &FB0_VIRTUAL_SIZE, SMALL_BUFFER_SIZE},
+    #endif
   #endif
   };
   for (size_t i = 0; i < sizeof(files) / sizeof(files[0]); i++) {
-    char* buf = alloc(SMALL_BUFFER_SIZE);
-    if (read_file_head(files[i].path, buf, SMALL_BUFFER_SIZE)) {
+    char* buf = alloc(files[i].size);
+    if (read_file_head(files[i].path, buf, files[i].size)) {
       LOG_I("reading %s", files[i].path);
       *files[i].dest = buf;
     } else
       dealloc(buf);
   }
-#elif defined(SYSTEM_BASE_FREEBSD)
-  char* dmesg = alloc(BUFFER_SIZE);
-  if (read_file_head(DMESG_BOOT_PATH, dmesg, BUFFER_SIZE)) {
-    LOG_I("reading " DMESG_BOOT_PATH);
-    FB0_VIRTUAL_SIZE = dmesg;
-  } else
-    dealloc(dmesg);
-#elif defined(SYSTEM_BASE_OPENBSD)
+#elif defined(SYSTEM_BASE_OPENBSD) || defined(SYSTEM_BASE_MACOS)
   LOG_W("Not implemented (not needed)");
 #elif defined(SYSTEM_BASE_MACOS)
   LOG_W("Not implemented (not needed)");
