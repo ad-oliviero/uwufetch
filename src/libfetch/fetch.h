@@ -71,12 +71,11 @@ unsigned long long get_memory_used(void);
 long get_uptime(void);
 struct winsize get_terminal_size(void);
 
-// parsing helpers, shared by the getters and testable on their own
 bool read_file_head(const char* path, char* buf, size_t size);
-void parse_meminfo(const char* buf, unsigned long meminfo[4]); // {total, free, buffers, cached} in kB
+void parse_meminfo(const char* buf, unsigned long meminfo[4]);
 bool parse_cpu_model(const char* buf, char* out, size_t out_size);
 bool parse_os_id(const char* buf, char* out, size_t out_size);
-bool parse_screen_size(const char* buf, int* width, int* height); // "W,H" (fb0) or the dmesg "VT(efifb)" line
+bool parse_screen_size(const char* buf, int* width, int* height);
 void format_kernel(const char* sysname, const char* release, const char* machine, char* out, size_t out_size);
 
 #endif // _FETCH_H_

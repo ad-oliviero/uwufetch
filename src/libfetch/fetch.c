@@ -47,7 +47,6 @@
 #include "logging.h"
 #include <unistd.h>
 
-// file paths can be overridden at compile time (the tests use this to inject fixtures)
 #ifndef PROC_MEMINFO_PATH
   #define PROC_MEMINFO_PATH "/proc/meminfo"
 #endif
@@ -159,7 +158,6 @@ void libfetch_init(void) {
   LOG_I("calling sysinfo()");
   CHECK_FN_NEG(sysinfo(&GLOBAL_SYSINFO));
 
-  // reading only SMALL_BUFFER_SIZE (256) bytes because every other line of the file is not really needed
   struct {
     const char* path;
     char** dest;
@@ -181,7 +179,7 @@ void libfetch_init(void) {
 #elif defined(SYSTEM_BASE_FREEBSD)
   char* dmesg = alloc(BUFFER_SIZE);
   if (read_file_head(DMESG_BOOT_PATH, dmesg, BUFFER_SIZE)) {
-    LOG_I("reading /var/run/dmesg.boot");
+    LOG_I("reading " DMESG_BOOT_PATH);
     FB0_VIRTUAL_SIZE = dmesg;
   } else
     dealloc(dmesg);
@@ -205,6 +203,7 @@ void libfetch_cleanup(void) {
 bool read_file_head(const char* path, char* buf, size_t size) {
   FILE* fp = fopen(path, "r");
   if (!fp) return false;
+  // only the first lines are needed, so callers pass small sizes
   size_t len = fread(buf, 1, size - 1, fp);
   buf[len]   = '\0';
   fclose(fp);
@@ -272,7 +271,6 @@ bool parse_os_id(const char* buf, char* out, size_t out_size) {
 
 bool parse_screen_size(const char* buf, int* width, int* height) {
   int w = 0, h = 0;
-  // dmesg lines look like "VT(efifb): resolution 1024x768"
   const char* dmesg = buf ? strstr(buf, "VT(efifb): resolution") : NULL;
   if ((dmesg && sscanf(dmesg, "VT(efifb): resolution %dx%d", &w, &h) == 2) ||
       (buf && sscanf(buf, "%d,%d", &w, &h) == 2)) {
@@ -351,7 +349,7 @@ char* get_host_name(void) {
       LOG_I("getting host name from environment variable");
       snprintf(host_name, size, "%s", env);
     } else if (read_file_head(HOSTNAME_PATH, host_name, size)) {
-      LOG_I("reading host name from /etc/hostname");
+      LOG_I("reading host name from " HOSTNAME_PATH);
     } else {
       LOG_I("getting host name with gethostname()");
       gethostname(host_name, size);
@@ -442,7 +440,7 @@ char* get_model(void) {
     // there. Also fixes model[best_len - 1] below reading model[-1]
     // (out of bounds) when every DMI file above is missing, which was
     // the case unconditionally on every non-DMI board before this.
-    LOG_I("no DMI info found, falling back to /proc/cpuinfo system type");
+    LOG_I("no DMI info found, falling back to " PROC_CPUINFO_PATH " system type");
     model_fp = fopen(PROC_CPUINFO_PATH, "r");
     if (model_fp) {
       char line[BUFFER_SIZE];
@@ -554,7 +552,7 @@ char* get_os_name(void) {
 #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_FREEBSD)
   char buffer[BUFFER_SIZE];
   if (read_file_head(OS_RELEASE_PATH, buffer, sizeof(buffer))) {
-    LOG_I("reading /etc/os-release");
+    LOG_I("reading " OS_RELEASE_PATH);
     parse_os_id(buffer, os_name, BUFFER_SIZE);
   }
 #elif defined(SYSTEM_BASE_ANDROID)
@@ -576,7 +574,7 @@ char* get_cpu(void) {
   char* cpu = alloc(BUFFER_SIZE);
 #if defined(SYSTEM_BASE_LINUX)
   if (PROC_CPUINFO == NULL) {
-    LOG_E("Failed to get cpu (/proc/cpuinfo is missing)");
+    LOG_E("Failed to get cpu (" PROC_CPUINFO_PATH " is missing)");
   } else
     parse_cpu_model(PROC_CPUINFO, cpu, BUFFER_SIZE);
 #elif defined(SYSTEM_BASE_ANDROID)
@@ -763,7 +761,6 @@ char* get_packages(void) {
     if (access(cmds[i].path, F_OK) != -1) {
       FILE* fp = popen(cmds[i].command, "r");
       if (fp) {
-        // fscanf returns 0 on garbage and 1 on a parsed count, never more
         if (fscanf(fp, "%lu", &cmds[i].count) == 1) {
           LOG_I("found %lu packages from %s", cmds[i].count, cmds[i].name);
           last_valid = cmds[i].count > 0 ? i : last_valid;
@@ -789,7 +786,7 @@ int get_screen_width(void) {
     LOG_E("Failed to get FB0_VIRTUAL_SIZE (is there a framebuffer device?)");
     return screen_width;
   }
-  LOG_I("getting screen width from /sys/class/graphics/fb0/virtual_size");
+  LOG_I("getting screen width from " FB0_VIRTUAL_SIZE_PATH);
   int screen_height;
   parse_screen_size(FB0_VIRTUAL_SIZE, &screen_width, &screen_height);
 #elif defined(SYSTEM_BASE_ANDROID)
@@ -799,7 +796,7 @@ int get_screen_width(void) {
     LOG_E("Failed to get FB0_VIRTUAL_SIZE (is there a dmesg.boot file?)");
     return screen_width;
   }
-  LOG_I("getting screen width from /var/run/dmesg.boot");
+  LOG_I("getting screen width from " DMESG_BOOT_PATH);
   int screen_height;
   parse_screen_size(FB0_VIRTUAL_SIZE, &screen_width, &screen_height);
 #elif defined(SYSTEM_BASE_OPENBSD)
@@ -822,7 +819,7 @@ int get_screen_height(void) {
     LOG_E("Failed to get FB0_VIRTUAL_SIZE (is there a framebuffer device?)");
     return screen_height;
   }
-  LOG_I("getting screen height from /sys/class/graphics/fb0/virtual_size");
+  LOG_I("getting screen height from " FB0_VIRTUAL_SIZE_PATH);
   int screen_width;
   parse_screen_size(FB0_VIRTUAL_SIZE, &screen_width, &screen_height);
 #elif defined(SYSTEM_BASE_ANDROID)
@@ -832,7 +829,7 @@ int get_screen_height(void) {
     LOG_E("Failed to get FB0_VIRTUAL_SIZE (is there a dmesg.boot file?)");
     return screen_height;
   }
-  LOG_I("getting screen height from /var/run/dmesg.boot");
+  LOG_I("getting screen height from " DMESG_BOOT_PATH);
   int screen_width;
   parse_screen_size(FB0_VIRTUAL_SIZE, &screen_width, &screen_height);
 #elif defined(SYSTEM_BASE_OPENBSD)
@@ -876,7 +873,7 @@ unsigned long long get_memory_used(void) {
   unsigned long long memory_used = 0;
 #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
   if (PROC_MEMINFO == NULL) {
-    LOG_E("Failed to get memory used (/proc/meminfo is missing)");
+    LOG_E("Failed to get memory used (" PROC_MEMINFO_PATH " is missing)");
   } else {
     unsigned long meminfo[4]; // total, free, buffers, cached
     parse_meminfo(PROC_MEMINFO, meminfo);
