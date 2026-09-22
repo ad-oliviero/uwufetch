@@ -237,13 +237,25 @@ bool parse_cpu_model(const char* buf, char* out, size_t out_size) {
 }
 
 bool parse_os_id(const char* buf, char* out, size_t out_size) {
-  (void)out_size; // sscanf cannot take a runtime width; callers pass BUFFER_SIZE
   out[0] = '\0';
   if (!buf) return false;
   const char* p = buf;
   do {
-    if (sscanf(p, "\nID=\"%s\"", out) == 1) return true;
-    if (sscanf(p, "\nID=%s", out) == 1) return true;
+    if (strncmp(p, "ID=", 3) != 0) continue;
+    const char* value = p + 3;
+    size_t line_len   = strcspn(value, "\n");
+    size_t len        = line_len;
+    if (*value == '"') {
+      value++;
+      line_len--;
+      const char* end = memchr(value, '"', line_len);
+      len             = end ? (size_t)(end - value) : line_len;
+    }
+    if (len == 0) continue;
+    if (len >= out_size) len = out_size - 1;
+    memcpy(out, value, len);
+    out[len] = '\0';
+    return true;
   } while ((p = strchr(p, '\n')) && *++p);
   return false;
 }

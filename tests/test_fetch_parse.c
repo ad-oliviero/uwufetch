@@ -55,12 +55,11 @@
   "NAME=\"Debian GNU/Linux\"\n"     \
   "ID=" OS_ID_UNQUOTED "\n"         \
   "HOME_URL=\"https://www.debian.org/\"\n"
-// TODO: quoted ids keep a trailing quote and truncate at the first space,
-// the fix lands in a later commit
-#define OS_ID_QUOTED_NO_SPACE "arch\"" // current: trailing quote kept
+#define OS_ID_QUOTED "arch"
 #define OS_RELEASE_QUOTED_NO_SPACE_FIXTURE "ID=\"arch\"\n"
-#define OS_ID_QUOTED_SPACES "manjaro" // current: truncated at the space
+#define OS_ID_QUOTED_SPACES "manjaro linux"
 #define OS_RELEASE_QUOTED_SPACES_FIXTURE "ID=\"manjaro linux\"\n"
+#define OS_RELEASE_QUOTED_UNTERMINATED_FIXTURE "ID=\"arch\nNAME=UwU\n"
 #define OS_RELEASE_NO_ID_FIXTURE \
   "NAME=\"UwU\"\n"               \
   "ID_LIKE=arch\n"
@@ -145,10 +144,14 @@ static void test_parse_os_id(void) {
   CHECK(strcmp(out, OS_ID_UNQUOTED) == 0);
 
   CHECK(parse_os_id(OS_RELEASE_QUOTED_NO_SPACE_FIXTURE, out, sizeof(out)) == true);
-  CHECK(strcmp(out, OS_ID_QUOTED_NO_SPACE) == 0);
+  CHECK(strcmp(out, OS_ID_QUOTED) == 0);
 
   CHECK(parse_os_id(OS_RELEASE_QUOTED_SPACES_FIXTURE, out, sizeof(out)) == true);
   CHECK(strcmp(out, OS_ID_QUOTED_SPACES) == 0);
+
+  // an unterminated quote takes the rest of the line
+  CHECK(parse_os_id(OS_RELEASE_QUOTED_UNTERMINATED_FIXTURE, out, sizeof(out)) == true);
+  CHECK(strcmp(out, OS_ID_QUOTED) == 0);
 
   CHECK(parse_os_id(OS_RELEASE_NO_ID_FIXTURE, out, sizeof(out)) == false);
 
