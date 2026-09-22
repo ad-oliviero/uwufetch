@@ -46,6 +46,41 @@
 #endif
 #include "logging.h"
 #include <unistd.h>
+
+// file paths can be overridden at compile time (the tests use this to inject fixtures)
+#ifndef PROC_MEMINFO_PATH
+  #define PROC_MEMINFO_PATH "/proc/meminfo"
+#endif
+#ifndef PROC_CPUINFO_PATH
+  #define PROC_CPUINFO_PATH "/proc/cpuinfo"
+#endif
+#ifndef FB0_VIRTUAL_SIZE_PATH
+  #define FB0_VIRTUAL_SIZE_PATH "/sys/class/graphics/fb0/virtual_size"
+#endif
+#ifndef DMESG_BOOT_PATH
+  #define DMESG_BOOT_PATH "/var/run/dmesg.boot"
+#endif
+#ifndef OS_RELEASE_PATH
+  #define OS_RELEASE_PATH "/etc/os-release"
+#endif
+#ifndef HOSTNAME_PATH
+  #define HOSTNAME_PATH "/etc/hostname"
+#endif
+#ifndef DMI_DIR
+  #define DMI_DIR "/sys/devices/virtual/dmi/id"
+#endif
+#ifndef PKGPATH
+  #if defined(SYSTEM_BASE_ANDROID)
+    #define PKGPATH "/data/data/com.termux/files/usr/bin/"
+  #elif defined(SYSTEM_BASE_MACOS)
+    #define PKGPATH "/usr/local/bin/"
+  #elif defined(SYSTEM_BASE_FREEBSD) || defined(SYSTEM_BASE_OPENBSD)
+    #define PKGPATH "/usr/sbin/"
+  #else // Linux
+    #define PKGPATH "/usr/bin/"
+  #endif
+#endif
+
 #if defined(LOGGING_ENABLED)
 void set_libfetch_log_level(int level) {
   // the logging_level variable used in logging.h is static, a new variable is not needed
@@ -129,10 +164,10 @@ void libfetch_init(void) {
     const char* path;
     char** dest;
   } files[] = {
-      {"/proc/meminfo", &PROC_MEMINFO},
-      {"/proc/cpuinfo", &PROC_CPUINFO},
+      {PROC_MEMINFO_PATH, &PROC_MEMINFO},
+      {PROC_CPUINFO_PATH, &PROC_CPUINFO},
   #if !defined(SYSTEM_BASE_ANDROID)
-      {"/sys/class/graphics/fb0/virtual_size", &FB0_VIRTUAL_SIZE},
+      {FB0_VIRTUAL_SIZE_PATH, &FB0_VIRTUAL_SIZE},
   #endif
   };
   for (size_t i = 0; i < sizeof(files) / sizeof(files[0]); i++) {
@@ -145,7 +180,7 @@ void libfetch_init(void) {
   }
 #elif defined(SYSTEM_BASE_FREEBSD)
   char* dmesg = alloc(BUFFER_SIZE);
-  if (read_file_head("/var/run/dmesg.boot", dmesg, BUFFER_SIZE)) {
+  if (read_file_head(DMESG_BOOT_PATH, dmesg, BUFFER_SIZE)) {
     LOG_I("reading /var/run/dmesg.boot");
     FB0_VIRTUAL_SIZE = dmesg;
   } else
@@ -291,7 +326,7 @@ char* get_host_name(void) {
       LOG_I("getting host name from environment variable");
       snprintf(host_name, size, "%s", env);
     } else {
-      FILE* fp = fopen("/etc/hostname", "r");
+      FILE* fp = fopen(HOSTNAME_PATH, "r");
       if (fp) {
         LOG_I("reading host name from /etc/hostname");
         len = fread(host_name, 1, size, fp) - 1;
@@ -359,9 +394,9 @@ char* get_model(void) {
 #if defined(SYSTEM_BASE_LINUX)
   FILE* model_fp          = NULL;
   char* model_filename[3] = {
-      "/sys/devices/virtual/dmi/id/product_version",
-      "/sys/devices/virtual/dmi/id/product_name",
-      "/sys/devices/virtual/dmi/id/board_name",
+      DMI_DIR "/product_version",
+      DMI_DIR "/product_name",
+      DMI_DIR "/board_name",
   };
 
   char tmp_model[3][BUFFER_SIZE] = {0}; // temporary variable to store the contents of all 3 files
@@ -389,7 +424,7 @@ char* get_model(void) {
     // (out of bounds) when every DMI file above is missing, which was
     // the case unconditionally on every non-DMI board before this.
     LOG_I("no DMI info found, falling back to /proc/cpuinfo system type");
-    model_fp = fopen("/proc/cpuinfo", "r");
+    model_fp = fopen(PROC_CPUINFO_PATH, "r");
     if (model_fp) {
       char line[BUFFER_SIZE];
       while (fgets(line, BUFFER_SIZE, model_fp)) {
@@ -499,7 +534,7 @@ char* get_os_name(void) {
   char* os_name = alloc(BUFFER_SIZE);
 #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_FREEBSD)
   char buffer[BUFFER_SIZE];
-  if (read_file_head("/etc/os-release", buffer, sizeof(buffer))) {
+  if (read_file_head(OS_RELEASE_PATH, buffer, sizeof(buffer))) {
     LOG_I("reading /etc/os-release");
     parse_os_id(buffer, os_name, BUFFER_SIZE);
   }
@@ -678,15 +713,6 @@ char** get_gpu_list(void) {
 
 char* get_packages(void) {
   char* packages = alloc(BUFFER_SIZE);
-#if defined(SYSTEM_BASE_ANDROID)
-  #define PKGPATH "/data/data/com.termux/files/usr/bin/"
-#elif defined(SYSTEM_BASE_MACOS)
-  #define PKGPATH "/usr/local/bin/"
-#elif defined(SYSTEM_BASE_FREEBSD) || defined(SYSTEM_BASE_OPENBSD)
-  #define PKGPATH "/usr/sbin/"
-#else // Linux
-  #define PKGPATH "/usr/bin/"
-#endif
   struct pkgcmd {
     char* path;
     char* command;
@@ -732,7 +758,6 @@ char* get_packages(void) {
       p += snprintf(p, BUFFER_SIZE - strlen(packages), "%lu %s%s", cmds[i].count, cmds[i].name, i == last_valid ? "" : ", ");
   CHECK_GET_SUCCESS(packages);
   return packages;
-#undef PKGPATH
 }
 
 int get_screen_width(void) {
