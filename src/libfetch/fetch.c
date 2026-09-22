@@ -44,9 +44,9 @@
   #include <sys/sysctl.h>
   #include <sys/time.h>
 #elif defined(SYSTEM_BASE_MACOS)
-  #include <CoreGraphics/CoreGraphics.h> // display resolution
-  #include <IOKit/IOKitLib.h>            // GPU model
-  #include <mach/mach.h>                 // host_statistics64
+  #include <CoreGraphics/CoreGraphics.h>
+  #include <IOKit/IOKitLib.h>
+  #include <mach/mach.h> // host_statistics64
   #include <sys/sysctl.h>
   #include <sys/time.h>
   #include <sys/utsname.h>
@@ -213,8 +213,6 @@ char* get_user_name(void) {
       pclose(pp);
     }
   }
-#elif defined(SYSTEM_BASE_MACOS)
-  LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
   char* env = getenv("USERNAME");
   if (env) {
@@ -260,8 +258,6 @@ char* get_host_name(void) {
   #if !defined(SYSTEM_BASE_FREEBSD) && !defined(SYSTEM_BASE_OPENBSD)
   }
   #endif
-#elif defined(SYSTEM_BASE_MACOS)
-  LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
   char* env = getenv("COMPUTERNAME");
   if (env) {
@@ -289,8 +285,6 @@ char* get_shell(void) {
     LOG_I("getting shell name from environment variable");
     snprintf(shell_name, BUFFER_SIZE, "%s", env);
   }
-#elif defined(SYSTEM_BASE_MACOS)
-  LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
   if (SearchPath(NULL, "pwsh.exe", NULL, MAX_PATH, shell_name, NULL) != 0) {
     LOG_I("getting shell name with SearchPath(\"pwsh.exe\", ...)");
@@ -450,8 +444,6 @@ char* get_kernel(void) {
     p += snprintf(p, BUFFER_SIZE - len, "%s ", buf);
     len = (size_t)(p - kernel_name);
   }
-#elif defined(SYSTEM_BASE_MACOS)
-  LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
   OSVERSIONINFOEX osvi;
   ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
@@ -789,8 +781,6 @@ int get_screen_width(void) {
   sscanf(FB0_VIRTUAL_SIZE, "%dx%*d", &screen_width);
 #elif defined(SYSTEM_BASE_OPENBSD)
   LOG_E("Display size in OpenBSD can only be retrieved if there is a graphical environment (x11) (at least that's what my research led me to).\nIf someone requests this feature I will implement it, but then uwufetch will depend on Xlib.");
-#elif defined(SYSTEM_BASE_MACOS)
-  LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
   screen_width = GetSystemMetrics(SM_CXSCREEN);
 #else
@@ -829,8 +819,6 @@ int get_screen_height(void) {
   sscanf(FB0_VIRTUAL_SIZE, "%*dx%d", &screen_height);
 #elif defined(SYSTEM_BASE_OPENBSD)
   LOG_E("Display size in OpenBSD can only be retrieved if there is a graphical environment (x11) (at least that's what my research led me to).\nIf someone requests this feature I will implement it, but then uwufetch will depend on Xlib.");
-#elif defined(SYSTEM_BASE_MACOS)
-  LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
   screen_height = GetSystemMetrics(SM_CYSCREEN);
 #else
@@ -969,8 +957,6 @@ struct winsize get_terminal_size(void) {
 #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_FREEBSD) || defined(SYSTEM_BASE_OPENBSD) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_MACOS)
   LOG_I("getting terminal size with ioctl");
   ioctl(STDOUT_FILENO, TIOCGWINSZ, &terminal_size);
-#elif defined(SYSTEM_BASE_MACOS)
-  LOG_E("Not implemented");
 #elif defined(SYSTEM_BASE_WINDOWS)
   HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
   CONSOLE_SCREEN_BUFFER_INFO csbi;
