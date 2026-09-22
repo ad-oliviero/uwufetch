@@ -44,7 +44,8 @@
   #include <sys/sysctl.h>
   #include <sys/time.h>
 #elif defined(SYSTEM_BASE_MACOS)
-  #include <mach/mach.h> // host_statistics64
+  #include <IOKit/IOKitLib.h> // GPU model
+  #include <mach/mach.h>      // host_statistics64
   #include <sys/sysctl.h>
   #include <sys/time.h>
   #include <sys/utsname.h>
@@ -550,6 +551,23 @@ char* get_cpu(void) {
   return cpu;
 }
 
+#if defined(SYSTEM_BASE_MACOS)
+// the GPU "model" property is a CFString on Apple Silicon and raw bytes
+// elsewhere; either way it must end up NUL-terminated in buf
+static bool gpu_model_to_buf(CFTypeRef model, char* buf, size_t buf_size) {
+  if (CFGetTypeID(model) == CFStringGetTypeID())
+    return CFStringGetCString(model, buf, (CFIndex)buf_size, kCFStringEncodingUTF8);
+  if (CFGetTypeID(model) == CFDataGetTypeID()) {
+    CFIndex len = CFDataGetLength(model);
+    if ((size_t)len >= buf_size) len = (CFIndex)buf_size - 1;
+    memcpy(buf, CFDataGetBytePtr(model), (size_t)len);
+    buf[len] = '\0';
+    return true;
+  }
+  return false;
+}
+#endif
+
 char** get_gpu_list(void) {
   char** gpu_list = alloc(BUFFER_SIZE * sizeof(char*));
   memset(gpu_list, 0, BUFFER_SIZE * sizeof(char*));
@@ -603,8 +621,31 @@ char** get_gpu_list(void) {
     __system_property_get("ro.hardware.egl", gpu_list[gpu_id++]);
   }
 #elif defined(SYSTEM_BASE_MACOS)
-  LOG_E("Not implemented");
-  return NULL;
+  io_iterator_t iterator = IO_OBJECT_NULL;
+  // the "model" property sits on the IOAccelerator service itself on Apple
+  // Silicon, on its parent device on other machines
+  if (IOServiceGetMatchingServices(kIOMainPortDefault, IOServiceMatching("IOAccelerator"), &iterator) == kIOReturnSuccess) {
+    io_registry_entry_t gpu_entry;
+    while ((gpu_entry = IOIteratorNext(iterator)) != IO_OBJECT_NULL) {
+      CFTypeRef model = IORegistryEntrySearchCFProperty(
+          gpu_entry, kIOServicePlane, CFSTR("model"), kCFAllocatorDefault,
+          kIORegistryIterateRecursively | kIORegistryIterateParents);
+      if (model) {
+        gpu_list[gpu_id] = alloc(BUFFER_SIZE);
+        if (gpu_model_to_buf(model, gpu_list[gpu_id], BUFFER_SIZE))
+          gpu_id++;
+        else {
+          dealloc(gpu_list[gpu_id]);
+          gpu_list[gpu_id] = NULL;
+        }
+        CFRelease(model);
+      }
+      IOObjectRelease(gpu_entry);
+    }
+    IOObjectRelease(iterator);
+  } else {
+    LOG_E("IOServiceGetMatchingServices failed");
+  }
 #elif defined(SYSTEM_BASE_WINDOWS)
   HKEY hKey;
   LONG result;

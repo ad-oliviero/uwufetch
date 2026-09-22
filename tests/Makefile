@@ -10,6 +10,16 @@ BUILD_DIR := $(PROJECT_ROOT)/build
 TEST_OBJS = $(filter-out $(BUILD_DIR)/uwufetch.o,$(patsubst $(PROJECT_ROOT)/src/%.c,$(BUILD_DIR)/%.o,$(wildcard $(PROJECT_ROOT)/src/*.c)))
 TEST_BINS = $(patsubst %.c,$(BUILD_DIR)/%,$(wildcard test_*.c))
 
+# test_fetch links fetch.o (get_gpu_list); libpci on linux, frameworks on macos
+ifeq ($(shell uname),Darwin)
+FETCH_TEST_LIBS = -framework CoreFoundation -framework IOKit -framework CoreGraphics
+else
+FETCH_TEST_LIBS = -lpci
+endif
+
+$(BUILD_DIR)/test_fetch: test_fetch.c $(TEST_OBJS) $(BUILD_DIR)/fetch.o | $(BUILD_DIR)
+	$(CC) $(CFLAGS_DEBUG) -o $@ $< $(TEST_OBJS) $(BUILD_DIR)/fetch.o $(FETCH_TEST_LIBS)
+
 $(BUILD_DIR)/test_%: test_%.c $(TEST_OBJS) | $(BUILD_DIR)
 	$(CC) $(CFLAGS_DEBUG) -o $@ $< $(TEST_OBJS)
 
