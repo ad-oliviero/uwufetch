@@ -1,4 +1,4 @@
-.PHONY: all debug clean test test-asan
+.PHONY: all debug clean test test-asan compile-win
 TARGET = uwufetch
 
 # project directories and files
@@ -86,6 +86,14 @@ test: clean debug
 test-asan: CFLAGS_DEBUG += -fsanitize=address,undefined -fno-omit-frame-pointer
 test-asan: clean debug
 	@$(MAKE) -C tests test CFLAGS_DEBUG='$(CFLAGS_DEBUG)'
+
+# compiles the windows branch of libfetch object-only: it is never linked or
+# run, this only keeps it from rotting (the compiler is the one used by the
+# linux4win platform in platform_fixes.mk)
+compile-win:
+	@command -v x86_64-w64-mingw32-gcc > /dev/null || { echo "x86_64-w64-mingw32-gcc not found (install gcc-mingw-w64-x86-64)"; exit 1; }
+	@mkdir -p $(BUILD_DIR)
+	x86_64-w64-mingw32-gcc -std=$(CSTD) -D_WIN32 -Wall -Wextra -c -o $(BUILD_DIR)/win_fetch.o $(SRC_DIR)/libfetch/fetch.c
 
 valgrind: debug # checks memory leak
 	valgrind --leak-check=full --show-leak-kinds=all $(BUILD_DIR)/$(TARGET) $(ARGS)
