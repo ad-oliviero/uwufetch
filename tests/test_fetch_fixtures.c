@@ -13,13 +13,26 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "../src/libfetch/fetch.h"
 #include <stdio.h>
 #include <string.h>
 
 #include "tests.h"
 
-// expected get_memory_used() for tests/fixtures/proc/meminfo:
+// fetch.c is included with the paths overridden to read tests/fixtures/proc
+#define PROC_CPUINFO_PATH "fixtures/proc/cpuinfo"
+#define FB0_VIRTUAL_SIZE_PATH "fixtures/proc/fb0"
+#define OS_RELEASE_PATH "fixtures/proc/os_release"
+#define HOSTNAME_PATH "fixtures/proc/hostname"
+#if defined(FETCH_FIXTURE_EMPTY)
+  #define PROC_MEMINFO_PATH "fixtures/proc/meminfo_empty"
+#elif defined(FETCH_FIXTURE_NO_TOTAL)
+  #define PROC_MEMINFO_PATH "fixtures/proc/meminfo_no_total"
+#else
+  #define PROC_MEMINFO_PATH "fixtures/proc/meminfo"
+#endif
+#include "../src/libfetch/fetch.c"
+
+// expected get_memory_used() for fixtures/proc/meminfo:
 // (16384000 - (4200000 + 640000 + 4600000)) / 1024
 #define EXPECTED_MEMORY_USED 6781ull
 #define SCREEN_WIDTH 1920
@@ -29,15 +42,12 @@
 
 #if defined(SYSTEM_BASE_LINUX)
 
-// the binary is linked against fetch.o compiled with the paths pointing into
-// tests/fixtures/proc; with FETCH_EMPTY_MEMINFO meminfo_empty replaces meminfo
 static void run_cycle(void) {
   libfetch_init();
 
-  #ifdef FETCH_EMPTY_MEMINFO
-  CHECK(get_memory_used() == 0); // an empty meminfo must degrade to 0, not crash
-  #elif defined(FETCH_NO_TOTAL_MEMINFO)
-  // missing MemTotal must degrade to 0, not wrap around in unsigned arithmetic
+  #ifdef FETCH_FIXTURE_EMPTY
+  CHECK(get_memory_used() == 0);
+  #elif defined(FETCH_FIXTURE_NO_TOTAL)
   CHECK(get_memory_used() == 0);
   #else
   CHECK(get_memory_used() == EXPECTED_MEMORY_USED);
