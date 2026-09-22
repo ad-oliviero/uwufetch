@@ -30,21 +30,21 @@
 ### What does work?
 | Function (libfetch) | Arch Linux | Linux (not Arch)$^1$ | Android | FreeBSD | OpenBSD | MacOS | Windows |
 |---|---|---|---|---|---|---|---|
-|`get_user_name`    |✅ ✅|✅ ❌|✅ ❌|✅ ❌|✅ ❌|❌ ❌|✅ ❌|
-|`get_host_name`    |✅ ✅|✅ ❌|✅ ❌|✅ ❌|✅ ❌|❌ ❌|✅ ❌|
-|`get_shell`        |✅ ✅|✅ ❌|✅ ❌|✅ ❌|✅ ❌|❌ ❌|✅ ❌|
-|`get_model`        |✅ ✅|✅ ❌|✅ ❌|✅ ❌|✅ ❌|❌ ❌|✅ ❌|
-|`get_kernel`       |✅ ✅|✅ ❌|✅ ❌|✅ ❌|✅ ❌|❌ ❌|✅ ❌|
-|`get_os_name`      |✅ ✅|✅ ❌|✅ ❌|✅ ❌|✅ ❌|❌ ❌|✅ ❌|
-|`get_cpu`          |✅ ✅|✅ ❌|✅ ❌|✅ ❌|✅ ❌|❌ ❌|✅ ❌|
-|`get_gpu_list`     |✅ ✅|✅ ❌|✅ ❌|✅ ❌|✅ ❌|❌ ❌|✅ ❌|
-|`get_packages`     |✅ ✅|✅ ❌|✅ ❌|✅ ❌|✅ ❌|✅ ❌|❌ ❌|
-|`get_screen_width` |✅ ❌|✅ ❌| --- |✅ ❌| --- |❌ ❌|✅ ❌|
-|`get_screen_height`|✅ ❌|✅ ❌| --- |✅ ❌| --- |❌ ❌|✅ ❌|
-|`get_memory_total` |✅ ✅|✅ ❌|✅ ❌|✅ ❌|✅ ❌|❌ ❌|✅ ❌|
-|`get_memory_used`  |✅ ✅|✅ ❌|✅ ❌|✅ ❌|✅ ❌|❌ ❌|✅ ❌|
-|`get_uptime`       |✅ ✅|✅ ❌|✅ ❌|✅ ❌|✅ ❌|❌ ❌|✅ ❌|
-|`get_terminal_size`|✅ ✅|✅ ❌|✅ ❌|✅ ❌|✅ ❌|❌ ❌|✅ ❌|
+|`get_user_name`    |✅ ✅|✅ ❌|✅ ❌|✅ ❌|✅ ❌|✅ ✅|✅ ❌|
+|`get_host_name`    |✅ ✅|✅ ❌|✅ ❌|✅ ❌|✅ ❌|✅ ✅|✅ ❌|
+|`get_shell`        |✅ ✅|✅ ❌|✅ ❌|✅ ❌|✅ ❌|✅ ✅|✅ ❌|
+|`get_model`        |✅ ✅|✅ ❌|✅ ❌|✅ ❌|✅ ❌|✅ ✅|✅ ❌|
+|`get_kernel`       |✅ ✅|✅ ❌|✅ ❌|✅ ❌|✅ ❌|✅ ✅|✅ ❌|
+|`get_os_name`      |✅ ✅|✅ ❌|✅ ❌|✅ ❌|✅ ❌|✅ ✅|✅ ❌|
+|`get_cpu`          |✅ ✅|✅ ❌|✅ ❌|✅ ❌|✅ ❌|✅ ✅|✅ ❌|
+|`get_gpu_list`     |✅ ✅|✅ ❌|✅ ❌|✅ ❌|✅ ❌|✅ ✅|✅ ❌|
+|`get_packages`     |✅ ✅|✅ ❌|✅ ❌|✅ ❌|✅ ❌|✅ ✅|❌ ❌|
+|`get_screen_width` |✅ ❌|✅ ❌| --- |✅ ❌| --- |✅ ✅|✅ ❌|
+|`get_screen_height`|✅ ❌|✅ ❌| --- |✅ ❌| --- |✅ ✅|✅ ❌|
+|`get_memory_total` |✅ ✅|✅ ❌|✅ ❌|✅ ❌|✅ ❌|✅ ✅|✅ ❌|
+|`get_memory_used`  |✅ ✅|✅ ❌|✅ ❌|✅ ❌|✅ ❌|✅ ✅|✅ ❌|
+|`get_uptime`       |✅ ✅|✅ ❌|✅ ❌|✅ ❌|✅ ❌|✅ ✅|✅ ❌|
+|`get_terminal_size`|✅ ✅|✅ ❌|✅ ❌|✅ ❌|✅ ❌|✅ ✅|✅ ❌|
 
 $^1$ Tested on ubuntu 18.04, nixos and fedora
 
