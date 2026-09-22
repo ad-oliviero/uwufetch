@@ -13,14 +13,9 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/* NOTE:
- * CLI integration tests for uwufetch. The binary must be built first (make
- * test) and its path passed as the first argument. The environment is pinned
- * by overwriting HOME, USER, HOST and SHELL: with stdout redirected to a file
- * the terminal size is unknown, so show_info defaults to 70 columns and the
- * output becomes reproducible. Machine dependent values (cpu, gpu, model,
- * memory, uptime, packages) are never asserted, only the structure of the
- * output.
+/* NOTE: CLI integration tests for uwufetch. The path to the binary (built by
+ * make test) must be passed as the first argument, only the structure of the
+ * output is asserted.
  */
 
 #include <stdbool.h>
@@ -149,12 +144,11 @@ int main(int argc, char** argv) {
   char value[256], first[OUTPUT_CAP];
   int status;
 
-  // pinning the environment (USER, HOST and SHELL are read by libfetch)
   set_env("HOME", HOME_DIR);
   set_env("USER", "uwutester");
   set_env("HOST", "uwuhost");
   set_env("SHELL", "/bin/sh");
-  mkdir(HOME_DIR, 0755); // the cache is written to $HOME/.cache
+  mkdir(HOME_DIR, 0755);
   mkdir(HOME_DIR "/.cache", 0755);
 
   printf("case 1: default config\n");

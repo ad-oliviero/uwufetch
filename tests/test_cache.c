@@ -25,6 +25,14 @@
 
 #include "tests.h"
 
+#define USER_NAME "uwu"
+#define HOST_NAME "uwuhost"
+#define OS_NAME "arch"
+#define MODEL "B450M"
+#define KERNEL "LinUwU 6.0"
+#define CPU "CPUwU uwu"
+#define SHELL "/bin/sh"
+#define PACKAGES "42 (pacman)"
 #define GPU_NAME "gpu %zu"
 
 static char home_dir[] = "/tmp/uwufetch_test_cache_XXXXXX";
@@ -48,14 +56,14 @@ static void cleanup_home(void) {
 // builds an info struct with a known gpu list ("gpu 1", "gpu 2", ...)
 static struct info make_info(size_t gpu_count) {
   struct info user_info   = {0};
-  user_info.user_name     = "uwu";
-  user_info.host_name     = "uwuhost";
-  user_info.os_name       = "arch";
-  user_info.model         = "B450M";
-  user_info.kernel        = "LinUwU 6.0";
-  user_info.cpu           = "CPUwU uwu";
-  user_info.shell         = "/bin/sh";
-  user_info.packages      = "42 (pacman)";
+  user_info.user_name     = USER_NAME;
+  user_info.host_name     = HOST_NAME;
+  user_info.os_name       = OS_NAME;
+  user_info.model         = MODEL;
+  user_info.kernel        = KERNEL;
+  user_info.cpu           = CPU;
+  user_info.shell         = SHELL;
+  user_info.packages      = PACKAGES;
   user_info.screen_width  = 1920;
   user_info.screen_height = 1080;
   user_info.logo_id       = 0x12345678u;
@@ -104,20 +112,23 @@ static void test_round_trip(void) {
   char* content         = read_cache(&read_back);
   CHECK(content != NULL);
   if (content != NULL) {
-    CHECK(strcmp(read_back.user_name, "uwu") == 0);
-    CHECK(strcmp(read_back.host_name, "uwuhost") == 0);
-    CHECK(strcmp(read_back.os_name, "arch") == 0);
-    CHECK(strcmp(read_back.model, "B450M") == 0);
-    CHECK(strcmp(read_back.kernel, "LinUwU 6.0") == 0);
-    CHECK(strcmp(read_back.cpu, "CPUwU uwu") == 0);
-    CHECK(strcmp(read_back.shell, "/bin/sh") == 0);
-    CHECK(strcmp(read_back.packages, "42 (pacman)") == 0);
+    CHECK(strcmp(read_back.user_name, USER_NAME) == 0);
+    CHECK(strcmp(read_back.host_name, HOST_NAME) == 0);
+    CHECK(strcmp(read_back.os_name, OS_NAME) == 0);
+    CHECK(strcmp(read_back.model, MODEL) == 0);
+    CHECK(strcmp(read_back.kernel, KERNEL) == 0);
+    CHECK(strcmp(read_back.cpu, CPU) == 0);
+    CHECK(strcmp(read_back.shell, SHELL) == 0);
+    CHECK(strcmp(read_back.packages, PACKAGES) == 0);
     CHECK(read_back.screen_width == 1920);
     CHECK(read_back.screen_height == 1080);
     CHECK(read_back.logo_id == 0x12345678u);
     CHECK((size_t)read_back.gpu_list[0] == 2);
-    CHECK(strcmp(read_back.gpu_list[1], "gpu 1") == 0);
-    CHECK(strcmp(read_back.gpu_list[2], "gpu 2") == 0);
+    char gpu_name[32];
+    snprintf(gpu_name, sizeof(gpu_name), GPU_NAME, 1);
+    CHECK(strcmp(read_back.gpu_list[1], gpu_name) == 0);
+    snprintf(gpu_name, sizeof(gpu_name), GPU_NAME, 2);
+    CHECK(strcmp(read_back.gpu_list[2], gpu_name) == 0);
   }
   free_read_back(&read_back, content);
   free_info(&written);
