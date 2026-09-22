@@ -11,6 +11,10 @@ ifeq ($(PLATFORM), Linux)
 		LDFLAGS += -lpci
 	endif
 else ifeq ($(PLATFORM), Darwin)
+	ARGP_PREFIX = $(shell brew --prefix argp-standalone)
+	CFLAGS += -I$(ARGP_PREFIX)/include
+	CFLAGS_DEBUG += -I$(ARGP_PREFIX)/include
+	LDFLAGS += -L$(ARGP_PREFIX)/lib -largp
 	USR_DIR = $(PREFIX_DIR)/usr/local
 	BIN_DIR = $(USR_DIR)/bin
 	LIB_DIR = $(USR_DIR)/lib
