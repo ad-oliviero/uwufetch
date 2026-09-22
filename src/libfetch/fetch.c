@@ -44,8 +44,9 @@
   #include <sys/sysctl.h>
   #include <sys/time.h>
 #elif defined(SYSTEM_BASE_MACOS)
-  #include <IOKit/IOKitLib.h> // GPU model
-  #include <mach/mach.h>      // host_statistics64
+  #include <CoreGraphics/CoreGraphics.h> // display resolution
+  #include <IOKit/IOKitLib.h>            // GPU model
+  #include <mach/mach.h>                 // host_statistics64
   #include <sys/sysctl.h>
   #include <sys/time.h>
   #include <sys/utsname.h>
@@ -768,6 +769,15 @@ int get_screen_width(void) {
   }
   LOG_I("getting screen width from /sys/class/graphics/fb0/virtual_size");
   sscanf(FB0_VIRTUAL_SIZE, "%d,%*d", &screen_width);
+#elif defined(SYSTEM_BASE_MACOS)
+  CGDisplayModeRef mode = CGDisplayCopyDisplayMode(CGMainDisplayID());
+  if (!mode) {
+    LOG_E("Failed to get the main display mode (headless?)");
+    return screen_width;
+  }
+  LOG_I("getting screen width from the main display mode");
+  screen_width = (int)CGDisplayModeGetPixelWidth(mode);
+  CGDisplayModeRelease(mode);
 #elif defined(SYSTEM_BASE_ANDROID)
   LOG_W("After some research, turns out that the only way to get display size would be to use 'adb wm size' or even root access. This function will not be implemented");
 #elif defined(SYSTEM_BASE_FREEBSD)
@@ -799,6 +809,15 @@ int get_screen_height(void) {
   }
   LOG_I("getting screen height from /sys/class/graphics/fb0/virtual_size");
   sscanf(FB0_VIRTUAL_SIZE, "%*d,%d", &screen_height);
+#elif defined(SYSTEM_BASE_MACOS)
+  CGDisplayModeRef mode = CGDisplayCopyDisplayMode(CGMainDisplayID());
+  if (!mode) {
+    LOG_E("Failed to get the main display mode (headless?)");
+    return screen_height;
+  }
+  LOG_I("getting screen height from the main display mode");
+  screen_height = (int)CGDisplayModeGetPixelHeight(mode);
+  CGDisplayModeRelease(mode);
 #elif defined(SYSTEM_BASE_ANDROID)
   LOG_W("After some research, turns out that the only way to get display size would be to use 'adb wm size' or even root access. This function will not be implemented");
 #elif defined(SYSTEM_BASE_FREEBSD)

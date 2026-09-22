@@ -16,6 +16,7 @@ else ifeq ($(PLATFORM), Darwin)
 	CFLAGS_DEBUG += -I$(ARGP_PREFIX)/include
 	LDFLAGS += -L$(ARGP_PREFIX)/lib -largp
 	LDFLAGS += -framework CoreFoundation -framework IOKit
+	LDFLAGS += -framework CoreGraphics
 	USR_DIR = $(PREFIX_DIR)/usr/local
 	BIN_DIR = $(USR_DIR)/bin
 	LIB_DIR = $(USR_DIR)/lib
