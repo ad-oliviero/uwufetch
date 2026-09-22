@@ -11,6 +11,9 @@ BUILD_DIR := $(PROJECT_ROOT)/build
 TEST_OBJS = $(filter-out $(BUILD_DIR)/uwufetch.o,$(patsubst $(PROJECT_ROOT)/src/%.c,$(BUILD_DIR)/%.o,$(wildcard $(PROJECT_ROOT)/src/*.c)))
 FETCH_OBJ = $(BUILD_DIR)/fetch.o
 TEST_BINS = $(patsubst %.c,$(BUILD_DIR)/%,$(wildcard test_*.c))
+# test_fetch_fixtures is built three times with different fixture objects, so
+# it is listed in FETCH_FIXTURE_BINS and must not run twice
+TEST_BINS := $(filter-out $(BUILD_DIR)/test_fetch_fixtures,$(TEST_BINS))
 
 $(BUILD_DIR)/test_%: test_%.c $(TEST_OBJS) | $(BUILD_DIR)
 	$(CC) $(CFLAGS_DEBUG) -o $@ $< $(TEST_OBJS)
