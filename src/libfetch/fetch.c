@@ -276,17 +276,20 @@ bool parse_screen_size(const char* buf, int* width, int* height) {
 }
 
 void format_kernel(const char* sysname, const char* release, const char* machine, char* out, size_t out_size) {
-  char* p    = out;
+  // snprintf returns the would-be length: on truncation it must not be added
+  // to len, or the next size argument underflows
   size_t len = 0;
-  if (strlen(sysname) > 0) {
-    p += snprintf(p, out_size, "%s ", sysname);
-    len = (size_t)(p - out);
+  if (sysname[0] != '\0') {
+    int written = snprintf(out, out_size, "%s ", sysname);
+    if (written < 0 || (size_t)written >= out_size) return;
+    len = (size_t)written;
   }
-  if (strlen(release) > 0) {
-    p += snprintf(p, out_size - len, "%s ", release);
-    len = (size_t)(p - out);
+  if (release[0] != '\0') {
+    int written = snprintf(out + len, out_size - len, "%s ", release);
+    if (written < 0 || (size_t)written >= out_size - len) return;
+    len += (size_t)written;
   }
-  if (strlen(machine) > 0) snprintf(p, out_size - len, "%s", machine);
+  if (machine[0] != '\0') snprintf(out + len, out_size - len, "%s", machine);
 }
 
 char* get_user_name(void) {

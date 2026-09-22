@@ -80,6 +80,9 @@
 #define KERNEL_FULL KERNEL_SYSNAME " " KERNEL_RELEASE " " KERNEL_MACHINE
 #define KERNEL_NO_RELEASE KERNEL_SYSNAME " " KERNEL_MACHINE
 #define KERNEL_NO_MACHINE KERNEL_SYSNAME " " KERNEL_RELEASE " "
+#define KERNEL_RELEASE_TRUNC "6.1.0-supercalifragilistic"
+#define KERNEL_TRUNCATED "Linux 6.1.0-sup"
+#define KERNEL_SYSNAME_LONG "Linuxium-supercalifragilistic"
 
 static char tmp_dir[] = "/tmp/uwufetch_test_fetch_XXXXXX";
 static char file_path[512];
@@ -199,6 +202,24 @@ static void test_format_kernel(void) {
   out[0] = '\0';
   format_kernel("", "", "", out, sizeof(out));
   CHECK(out[0] == '\0');
+
+  // truncation must not write past the string area: bytes after out_size are
+  // the canary (the old p += snprintf arithmetic wrote far past them)
+  char area[32];
+  memset(area, 'A', sizeof(area));
+  format_kernel(KERNEL_SYSNAME_LONG, "", KERNEL_MACHINE, area, 16);
+  CHECK(strlen(area) == 15);
+  CHECK(area[15] == '\0');
+  CHECK(area[16] == 'A' && area[31] == 'A');
+
+  // a field longer than the buffer truncates cleanly and stops there
+  char small[16];
+  char truncation_canary[CANARY_SIZE] = CANARY;
+  small[0]                            = '\0';
+  format_kernel(KERNEL_SYSNAME, KERNEL_RELEASE_TRUNC, KERNEL_MACHINE, small, sizeof(small));
+  CHECK(strcmp(small, KERNEL_TRUNCATED) == 0);
+  CHECK(strlen(small) == sizeof(small) - 1);
+  check_canary(truncation_canary);
 
   check_canary(canary);
 }
