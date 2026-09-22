@@ -73,7 +73,6 @@ static char file_path[512];
 static const char parser_alphabet[] = "abcxyz-}0:=\",1357 \nMemTotalCachFreBufdDxX";
 static const char path_alphabet[]   = "abcxyz._-0";
 
-// random patterns and replacers into the actrie, then a replace into a canary buffer
 static void fuzz_actrie(void) {
   struct actrie_t t;
   actrie_t_ctor(&t);
@@ -114,7 +113,6 @@ static void fuzz_actrie(void) {
   actrie_t_dtor(&t);
 }
 
-// random key=value (and garbage) lines into parse_config
 static void fuzz_config(void) {
   FILE* fp = fopen(config_path, "w");
   if (fp == NULL) return;
@@ -151,17 +149,22 @@ static void fuzz_config(void) {
   free(configuration.logo_name); // may have been set by a logo line
 }
 
-// random buffers into the libfetch parse helpers
 static void fuzz_parsers(void) {
   static char in[PARSER_BUF_CAP];
   static char out[PARSER_OUT_CAP];
   unsigned long meminfo[4] = {0};
   int width = 0, height = 0;
 
-  size_t len = rnd(PARSER_BUF_CAP); // 0 is included: empty input
-  size_t i   = 0;
-  for (; i < len; i++) in[i] = rnd(16) == 0 ? '\0' : parser_alphabet[rnd(sizeof(parser_alphabet) - 1)];
-  in[i] = '\0';
+  // rnd() includes 0, so empty input is generated too
+  size_t len = rnd(PARSER_BUF_CAP);
+  for (size_t i = 0; i < len; i++) {
+    if (rnd(16) == 0) {
+      in[i] = '\0';
+    } else {
+      in[i] = parser_alphabet[rnd(sizeof(parser_alphabet) - 1)];
+    }
+  }
+  in[len] = '\0';
 
   memset(out, CANARY_BYTE, sizeof(out));
   parse_meminfo(in, meminfo);
@@ -177,16 +180,13 @@ static void fuzz_parsers(void) {
   parse_screen_size(in, &width, &height);
   memset(out, CANARY_BYTE, sizeof(out));
   format_kernel(in, in, in, out, sizeof(out));
-  // out[0] still holding the canary byte means nothing was written (all
-  // three inputs empty); the canary at the end is legitimately overwritten
-  // by a full-length output, so only the NUL-termination is asserted
+  // all-empty inputs write nothing, so only NUL-termination is asserted
   if (out[0] != CANARY_BYTE && memchr(out, '\0', sizeof(out)) == NULL) {
     fprintf(stderr, "FUZZ FAIL: format_kernel did not NUL terminate\n");
     exit(1);
   }
 }
 
-// random paths (half of them just-written files with random content) into read_file_head
 static void fuzz_read_file_head(void) {
   char buf[FILE_BUF_CAP];
   memset(buf, CANARY_BYTE, sizeof(buf));
@@ -210,7 +210,6 @@ static void fuzz_read_file_head(void) {
   }
 }
 
-// random (or semi-valid) cache files into read_cache
 static void fuzz_cache(void) {
   FILE* fp = fopen(cache_path, "wb");
   if (fp == NULL) return;

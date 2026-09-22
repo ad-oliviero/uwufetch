@@ -36,7 +36,6 @@
 #define HOME_DIR "build/run_home"
 #define OUTPUT_CAP 65536
 
-// values pinned in the environment for every run (also asserted in case 8)
 #define PINNED_USER "uwutester"
 #define PINNED_HOST "uwuhost"
 #define PINNED_SHELL "/bin/sh"

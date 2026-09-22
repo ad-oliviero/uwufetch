@@ -128,7 +128,6 @@ static void test_parse_cpu_model(void) {
   CHECK(parse_cpu_model(CPUINFO_FIXTURE, out, sizeof(out)) == true);
   CHECK(strcmp(out, CPU_MODEL) == 0);
 
-  // the last "model name" line wins (one line per core, all identical in practice)
   CHECK(parse_cpu_model(CPUINFO_MULTI_FIXTURE, out, sizeof(out)) == true);
   CHECK(strcmp(out, CPU_MODEL) == 0);
 
@@ -152,7 +151,6 @@ static void test_parse_os_id(void) {
   CHECK(parse_os_id(OS_RELEASE_QUOTED_SPACES_FIXTURE, out, sizeof(out)) == true);
   CHECK(strcmp(out, OS_ID_QUOTED_SPACES) == 0);
 
-  // an unterminated quote takes the rest of the line
   CHECK(parse_os_id(OS_RELEASE_QUOTED_UNTERMINATED_FIXTURE, out, sizeof(out)) == true);
   CHECK(strcmp(out, OS_ID_QUOTED) == 0);
 
@@ -173,7 +171,6 @@ static void test_parse_screen_size(void) {
   CHECK(width == DMESG_WIDTH);
   CHECK(height == DMESG_HEIGHT);
 
-  // without the dmesg marker the "WxH" format is not recognized
   CHECK(parse_screen_size("1024x768", &width, &height) == false);
 
   CHECK(parse_screen_size("", &width, &height) == false);
@@ -186,7 +183,6 @@ static void test_format_kernel(void) {
   char out[BUF_SIZE];
   char canary[CANARY_SIZE] = CANARY;
 
-  // the getter's alloc() zeroes the buffer; format_kernel only appends
   out[0] = '\0';
   format_kernel(KERNEL_SYSNAME, KERNEL_RELEASE, KERNEL_MACHINE, out, sizeof(out));
   CHECK(strcmp(out, KERNEL_FULL) == 0);
@@ -203,8 +199,7 @@ static void test_format_kernel(void) {
   format_kernel("", "", "", out, sizeof(out));
   CHECK(out[0] == '\0');
 
-  // truncation must not write past the string area: bytes after out_size are
-  // the canary (the old p += snprintf arithmetic wrote far past them)
+  // bytes after out_size must stay intact
   char area[32];
   memset(area, 'A', sizeof(area));
   format_kernel(KERNEL_SYSNAME_LONG, "", KERNEL_MACHINE, area, 16);

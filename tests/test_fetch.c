@@ -87,7 +87,7 @@ int main(void) {
   CHECK(get_screen_width() == 0);
   CHECK(get_screen_height() == 0);
 
-  // two full cycles: the pointer registry must not exhaust across calls
+  // pointer registry must not exhaust across calls
   run_cycle();
   run_cycle();
   if (failures == 0) printf("test_fetch: all tests passed\n");
