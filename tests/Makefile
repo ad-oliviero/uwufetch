@@ -5,13 +5,21 @@
 
 PROJECT_ROOT ?= $(abspath ..)
 BUILD_DIR := $(PROJECT_ROOT)/build
-# the objects of src/*.c (uwufetch.o excluded: it holds the real main, and
-# the libfetch objects are not needed by the tests)
+# the objects of src/*.c (uwufetch.o excluded: it holds the real main);
+# the libfetch tests link fetch.o on top of it (the explicit rules below
+# override the generic pattern rule)
 TEST_OBJS = $(filter-out $(BUILD_DIR)/uwufetch.o,$(patsubst $(PROJECT_ROOT)/src/%.c,$(BUILD_DIR)/%.o,$(wildcard $(PROJECT_ROOT)/src/*.c)))
+FETCH_OBJ = $(BUILD_DIR)/fetch.o
 TEST_BINS = $(patsubst %.c,$(BUILD_DIR)/%,$(wildcard test_*.c))
 
 $(BUILD_DIR)/test_%: test_%.c $(TEST_OBJS) | $(BUILD_DIR)
 	$(CC) $(CFLAGS_DEBUG) -o $@ $< $(TEST_OBJS)
+
+$(BUILD_DIR)/test_fetch: test_fetch.c $(TEST_OBJS) $(FETCH_OBJ) | $(BUILD_DIR)
+	$(CC) $(CFLAGS_DEBUG) -o $@ $< $(TEST_OBJS) $(FETCH_OBJ) $(LDFLAGS)
+
+$(BUILD_DIR)/test_fetch_parse: test_fetch_parse.c $(TEST_OBJS) $(FETCH_OBJ) | $(BUILD_DIR)
+	$(CC) $(CFLAGS_DEBUG) -o $@ $< $(TEST_OBJS) $(FETCH_OBJ) $(LDFLAGS)
 
 $(BUILD_DIR)/fuzz: fuzz.c $(TEST_OBJS) | $(BUILD_DIR)
 	$(CC) $(CFLAGS_DEBUG) -o $@ $< $(TEST_OBJS)
