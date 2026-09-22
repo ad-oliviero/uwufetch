@@ -225,13 +225,23 @@ void parse_meminfo(const char* buf, unsigned long meminfo[4]) {
 }
 
 bool parse_cpu_model(const char* buf, char* out, size_t out_size) {
-  (void)out_size; // sscanf cannot take a runtime width; callers pass BUFFER_SIZE
   out[0] = '\0';
   if (!buf) return false;
   bool found    = false;
   const char* p = buf;
   do {
-    if (sscanf(p, "model name%*[ |\t]: %[^\n]", out) == 1) found = true;
+    // "model name" followed by optional padding, ':' and more padding
+    if (strncmp(p, "model name", 10) == 0) {
+      const char* value = p + 10 + strspn(p + 10, " \t");
+      if (*value == ':') {
+        value += strspn(value + 1, " \t") + 1;
+        size_t len = strcspn(value, "\n");
+        if (len >= out_size) len = out_size - 1;
+        memcpy(out, value, len);
+        out[len] = '\0';
+        found    = true;
+      }
+    }
   } while ((p = strchr(p, '\n')) && *++p);
   return found;
 }
