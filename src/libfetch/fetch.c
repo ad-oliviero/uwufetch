@@ -752,16 +752,19 @@ char* get_packages(void) {
   for (int i = 0; i < CMD_COUNT; i++)
     if (access(cmds[i].path, F_OK) != -1) {
       FILE* fp = popen(cmds[i].command, "r");
-      if (fscanf(fp, "%lu", &cmds[i].count) == 3)
-        continue;
-      else {
-        LOG_I("found %ld packages from %s", cmds[i].count, cmds[i].name);
-        last_valid = cmds[i].count > 0 ? i : last_valid;
-        total += cmds[i].count;
+      if (fp) {
+        // fscanf returns 0 on garbage and 1 on a parsed count, never more
+        if (fscanf(fp, "%lu", &cmds[i].count) == 1) {
+          LOG_I("found %lu packages from %s", cmds[i].count, cmds[i].name);
+          last_valid = cmds[i].count > 0 ? i : last_valid;
+          total += cmds[i].count;
+        }
+        pclose(fp);
       }
-      pclose(fp);
     }
-  char* p = packages + sprintf(packages, "%lu: ", total);
+  int prefix_len = snprintf(packages, BUFFER_SIZE, "%lu: ", total);
+  if (prefix_len < 0) prefix_len = 0;
+  char* p = packages + prefix_len;
   for (int i = 0; i < CMD_COUNT; i++)
     if (cmds[i].count > 0)
       p += snprintf(p, BUFFER_SIZE - strlen(packages), "%lu %s%s", cmds[i].count, cmds[i].name, i == last_valid ? "" : ", ");
