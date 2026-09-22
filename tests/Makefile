@@ -48,8 +48,9 @@ $(BUILD_DIR)/test_fetch_fixtures_empty: test_fetch_fixtures.c $(BUILD_DIR)/fetch
 $(BUILD_DIR)/test_fetch_fixtures_no_total: test_fetch_fixtures.c $(BUILD_DIR)/fetch_fixture_no_meminfo_total.o | $(BUILD_DIR)
 	$(CC) $(CFLAGS_DEBUG) -DFETCH_NO_TOTAL_MEMINFO -o $@ $< $(BUILD_DIR)/fetch_fixture_no_meminfo_total.o $(LDFLAGS)
 
-$(BUILD_DIR)/fuzz: fuzz.c $(TEST_OBJS) | $(BUILD_DIR)
-	$(CC) $(CFLAGS_DEBUG) -o $@ $< $(TEST_OBJS)
+# the fuzzer exercises the libfetch parse helpers too, so it links fetch.o
+$(BUILD_DIR)/fuzz: fuzz.c $(TEST_OBJS) $(FETCH_OBJ) | $(BUILD_DIR)
+	$(CC) $(CFLAGS_DEBUG) -o $@ $< $(TEST_OBJS) $(FETCH_OBJ) $(LDFLAGS)
 
 $(BUILD_DIR)/run: run.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS_DEBUG) -o $@ $<
