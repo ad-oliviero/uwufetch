@@ -908,7 +908,8 @@ unsigned long long get_memory_used(void) {
   // fall back to hw.memsize where the sysctl is not available
   if (sysctlbyname("hw.memsize_usable", &total, &len, NULL, 0) != 0)
     CHECK_FN_NEG(sysctlbyname("hw.memsize", &total, &len, NULL, 0));
-  memory_used = (total - free_pages * page_size) / (1024 * 1024);
+  if (total > free_pages * page_size) // no underflow if the sysctls failed
+    memory_used = (total - free_pages * page_size) / (1024 * 1024);
 #elif defined(SYSTEM_BASE_WINDOWS)
   memory_used = (GLOBAL_MEMORY_STATUS_EX.ullTotalPhys - GLOBAL_MEMORY_STATUS_EX.ullAvailPhys) / (1024 * 1024);
 #else
@@ -936,8 +937,8 @@ long get_uptime(void) {
   time(&current_time);
   uptime = current_time - boottime.tv_sec;
 #elif defined(SYSTEM_BASE_MACOS)
-  struct timeval boottime;
-  size_t len = sizeof(boottime);
+  struct timeval boottime = {0};
+  size_t len              = sizeof(boottime);
   LOG_I("getting uptime with sysctlbyname()");
   CHECK_FN_NEG(sysctlbyname("kern.boottime", &boottime, &len, NULL, 0));
   time_t current_time;
