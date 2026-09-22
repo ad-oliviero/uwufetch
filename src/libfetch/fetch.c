@@ -43,6 +43,12 @@
   #include <pci/pci.h>
   #include <sys/sysctl.h>
   #include <sys/time.h>
+#elif defined(SYSTEM_BASE_MACOS)
+  #include <mach/mach.h> // host_statistics64
+  #include <sys/sysctl.h>
+  #include <sys/time.h>
+  #include <sys/utsname.h>
+  #include <time.h>
 #endif
 #include "logging.h"
 #include <unistd.h>
@@ -53,8 +59,10 @@ void set_libfetch_log_level(int level) {
 }
 #endif
 
-#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_MACOS)
 static struct utsname GLOBAL_UTSNAME;
+#endif
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
 static struct sysinfo GLOBAL_SYSINFO;
 static char* PROC_MEMINFO = NULL;
 static char* PROC_CPUINFO = NULL;
@@ -171,7 +179,8 @@ void libfetch_init(void) {
 #elif defined(SYSTEM_BASE_OPENBSD)
   LOG_W("Not implemented (not needed)");
 #elif defined(SYSTEM_BASE_MACOS)
-  LOG_W("Not implemented (not needed)");
+  LOG_I("calling uname()");
+  CHECK_FN_NEG(uname(&GLOBAL_UTSNAME));
 #elif defined(SYSTEM_BASE_WINDOWS)
   GLOBAL_MEMORY_STATUS_EX.dwLength = sizeof(GLOBAL_MEMORY_STATUS_EX);
   GlobalMemoryStatusEx(&GLOBAL_MEMORY_STATUS_EX);
@@ -187,9 +196,9 @@ void libfetch_cleanup(void) {
 
 char* get_user_name(void) {
   long max_user_name_len = sysconf(_SC_LOGIN_NAME_MAX);
-  size_t size            = max_user_name_len > 0 ? max_user_name_len : BUFFER_SIZE;
+  size_t size            = max_user_name_len > 0 ? (size_t)max_user_name_len : BUFFER_SIZE;
   char* user_name        = alloc(size);
-#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_FREEBSD) || defined(SYSTEM_BASE_OPENBSD)
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_FREEBSD) || defined(SYSTEM_BASE_OPENBSD) || defined(SYSTEM_BASE_MACOS)
   char* env = getenv("USER");
   if (env) {
     LOG_I("getting user name from environment variable");
@@ -219,9 +228,9 @@ char* get_user_name(void) {
 
 char* get_host_name(void) {
   long max_host_name_len = sysconf(_SC_HOST_NAME_MAX);
-  size_t size            = max_host_name_len > 0 ? max_host_name_len : BUFFER_SIZE;
+  size_t size            = max_host_name_len > 0 ? (size_t)max_host_name_len : BUFFER_SIZE;
   char* host_name        = alloc(size);
-#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_FREEBSD) || defined(SYSTEM_BASE_OPENBSD)
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_FREEBSD) || defined(SYSTEM_BASE_OPENBSD) || defined(SYSTEM_BASE_MACOS)
   unsigned long int len = 0;
   #if !defined(SYSTEM_BASE_FREEBSD) && !defined(SYSTEM_BASE_OPENBSD)
   len = strlen(GLOBAL_UTSNAME.nodename);
@@ -272,7 +281,7 @@ char* get_host_name(void) {
 
 char* get_shell(void) {
   char* shell_name = alloc(BUFFER_SIZE);
-#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_FREEBSD) || defined(SYSTEM_BASE_OPENBSD)
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_FREEBSD) || defined(SYSTEM_BASE_OPENBSD) || defined(SYSTEM_BASE_MACOS)
   char* env = getenv("SHELL");
   if (env) {
     LOG_I("getting shell name from environment variable");
@@ -368,7 +377,9 @@ char* get_model(void) {
   CHECK_FN_NEG(sysctl(mib, 2, &buf, &len, NULL, 0));
   strcpy(model, buf);
 #elif defined(SYSTEM_BASE_MACOS)
-  LOG_E("Not implemented");
+  size_t len = BUFFER_SIZE;
+  LOG_I("getting model name with sysctlbyname()");
+  CHECK_FN_NEG(sysctlbyname("hw.model", model, &len, NULL, 0));
 #elif defined(SYSTEM_BASE_WINDOWS)
   HKEY hKey;
   char value[BUFFER_SIZE];
@@ -392,7 +403,7 @@ char* get_model(void) {
 
 char* get_kernel(void) {
   char* kernel_name = alloc(BUFFER_SIZE);
-#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_MACOS)
   char* p    = kernel_name;
   size_t len = 0;
   if (strlen(GLOBAL_UTSNAME.sysname) > 0) {
@@ -470,7 +481,7 @@ char* get_os_name(void) {
 #elif defined(SYSTEM_BASE_OPENBSD)
   sprintf(os_name, "openbsd");
 #elif defined(SYSTEM_BASE_MACOS)
-  LOG_E("Not implemented");
+  snprintf(os_name, BUFFER_SIZE, "%s", "macos");
 #elif defined(SYSTEM_BASE_WINDOWS)
   sprintf(os_name, "windows");
 #else
@@ -512,7 +523,9 @@ char* get_cpu(void) {
   CHECK_FN_NEG(sysctl(mib, 2, &buf, &len, NULL, 0));
   strcpy(cpu, buf);
 #elif defined(SYSTEM_BASE_MACOS)
-  LOG_E("Not implemented");
+  size_t len = BUFFER_SIZE;
+  LOG_I("getting cpu model with sysctlbyname()");
+  CHECK_FN_NEG(sysctlbyname("machdep.cpu.brand_string", cpu, &len, NULL, 0));
 #elif defined(SYSTEM_BASE_WINDOWS)
   HKEY hKey;
   char value[BUFFER_SIZE];
@@ -645,7 +658,13 @@ char* get_packages(void) {
 #if defined(SYSTEM_BASE_ANDROID)
   #define PKGPATH "/data/data/com.termux/files/usr/bin/"
 #elif defined(SYSTEM_BASE_MACOS)
-  #define PKGPATH "/usr/local/bin/"
+  // brew's prefix depends on the arch the build targets: /opt/homebrew on
+  // arm64, /usr/local on Intel
+  #if defined(__aarch64__)
+    #define PKGPATH "/opt/homebrew/bin/"
+  #else
+    #define PKGPATH "/usr/local/bin/"
+  #endif
 #elif defined(SYSTEM_BASE_FREEBSD) || defined(SYSTEM_BASE_OPENBSD)
   #define PKGPATH "/usr/sbin/"
 #else // Linux
@@ -774,7 +793,12 @@ unsigned long long get_memory_total(void) {
   // https://stackoverflow.com/a/9147419
   memory_total = (unsigned long long)(sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGESIZE));
 #elif defined(SYSTEM_BASE_MACOS)
-  LOG_E("Not implemented");
+  LOG_I("getting total memory with sysctlbyname()");
+  size_t len = sizeof(memory_total);
+  // hw.memsize_usable excludes the memory reserved by the firmware
+  // fall back to hw.memsize where the sysctl is not available
+  if (sysctlbyname("hw.memsize_usable", &memory_total, &len, NULL, 0) != 0)
+    CHECK_FN_NEG(sysctlbyname("hw.memsize", &memory_total, &len, NULL, 0));
 #elif defined(SYSTEM_BASE_WINDOWS)
   memory_total = GLOBAL_MEMORY_STATUS_EX.ullTotalPhys;
 #else
@@ -814,7 +838,29 @@ unsigned long long get_memory_used(void) {
   // https://stackoverflow.com/a/9147419
   memory_used = (unsigned long long)(((sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGESIZE)) - (sysconf(_SC_AVPHYS_PAGES) * sysconf(_SC_PAGESIZE))) >> 20);
 #elif defined(SYSTEM_BASE_MACOS)
-  LOG_E("Not implemented");
+  // used = total - (free + file-backed) pages, the same accounting as
+  // /usr/bin/vm_stat
+  // oversized buffer: vm_statistics64 grew on recent macOS, a
+  // HOST_VM_INFO64_COUNT-sized one from an older SDK fails with
+  // MIG_ARRAY_TOO_LARGE (psutil's workaround)
+  integer_t vmstat_buf[HOST_INFO_MAX];
+  mach_msg_type_number_t count = (mach_msg_type_number_t)HOST_INFO_MAX;
+  if (host_statistics64(mach_host_self(), HOST_VM_INFO64, (host_info64_t)vmstat_buf, &count) != KERN_SUCCESS) {
+    LOG_E("Failed to get memory statistics from host_statistics64!");
+    return memory_used;
+  }
+  vm_statistics64_data_t vmstat;
+  memcpy(&vmstat, vmstat_buf, sizeof(vmstat));
+  unsigned long long page_size = (unsigned long long)sysconf(_SC_PAGESIZE);
+  unsigned long long free_pages =
+      (unsigned long long)(vmstat.free_count - vmstat.speculative_count) + vmstat.external_page_count;
+  unsigned long long total = 0;
+  size_t len               = sizeof(total);
+  // hw.memsize_usable excludes the memory reserved by the firmware
+  // fall back to hw.memsize where the sysctl is not available
+  if (sysctlbyname("hw.memsize_usable", &total, &len, NULL, 0) != 0)
+    CHECK_FN_NEG(sysctlbyname("hw.memsize", &total, &len, NULL, 0));
+  memory_used = (total - free_pages * page_size) / (1024 * 1024);
 #elif defined(SYSTEM_BASE_WINDOWS)
   memory_used = (GLOBAL_MEMORY_STATUS_EX.ullTotalPhys - GLOBAL_MEMORY_STATUS_EX.ullAvailPhys) / (1024 * 1024);
 #else
@@ -842,7 +888,13 @@ long get_uptime(void) {
   time(&current_time);
   uptime = current_time - boottime.tv_sec;
 #elif defined(SYSTEM_BASE_MACOS)
-  LOG_E("Not implemented");
+  struct timeval boottime;
+  size_t len = sizeof(boottime);
+  LOG_I("getting uptime with sysctlbyname()");
+  CHECK_FN_NEG(sysctlbyname("kern.boottime", &boottime, &len, NULL, 0));
+  time_t current_time;
+  time(&current_time);
+  uptime = (long)(current_time - boottime.tv_sec);
 #elif defined(SYSTEM_BASE_WINDOWS)
   uptime = GetTickCount() / 1000;
 #else
@@ -854,7 +906,7 @@ long get_uptime(void) {
 
 struct winsize get_terminal_size(void) {
   struct winsize terminal_size = {0};
-#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_FREEBSD) || defined(SYSTEM_BASE_OPENBSD) || defined(SYSTEM_BASE_ANDROID)
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_FREEBSD) || defined(SYSTEM_BASE_OPENBSD) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_MACOS)
   LOG_I("getting terminal size with ioctl");
   ioctl(STDOUT_FILENO, TIOCGWINSZ, &terminal_size);
 #elif defined(SYSTEM_BASE_MACOS)
