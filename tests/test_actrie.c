@@ -13,27 +13,12 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/* NOTE:
- * unit tests for the actrie module. Built in debug mode, so
- * actrie_t_check_computed_links() (the invariant sweep) runs on every trie
- * for free.
- */
-
 #include "../src/actrie.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-static int failures;
-#define CHECK(cond)                                                   \
-  do {                                                                \
-    if (!(cond)) {                                                    \
-      fprintf(stderr, "FAIL %s:%d: %s\n", __FILE__, __LINE__, #cond); \
-      failures++;                                                     \
-    }                                                                 \
-  } while (0)
-
-// ---------- contains ----------
+#include "tests.h"
 
 static void test_contains(void) {
   struct actrie_t t;
@@ -52,8 +37,6 @@ static void test_contains(void) {
   CHECK(!actrie_t_contains_pattern(&t, "lin\xE2ux")); // 0xE2 is not in the alphabet
   actrie_t_dtor(&t);
 }
-
-// ---------- longest match (the uwufy table) ----------
 
 static void test_longest_match(void) {
   struct actrie_t t;
@@ -82,8 +65,6 @@ static void test_longest_match(void) {
 
   actrie_t_dtor(&t);
 }
-
-// ---------- replacement edge cases ----------
 
 static void test_replace_edges(void) {
   struct actrie_t t;
@@ -148,12 +129,12 @@ static void test_overlapping_patterns(void) {
   actrie_t_dtor(&t);
 }
 
-// ---------- property tests ----------
-
-// simple LCG: rand() is not portable, the tests must be reproducible
-static unsigned rng_state = 0x12345678u;
+// rand() sequences differ between libc implementations, so a tiny LCG with a
+// fixed seed is used instead: the inputs are the same on every platform and a
+// failing round can be reproduced by just running the test again
+static unsigned rng_state = 0x12345678u; // any fixed seed works
 static unsigned rnd(unsigned n) {
-  rng_state = rng_state * 1103515245u + 12345u;
+  rng_state = rng_state * 1103515245u + 12345u; // the classic ANSI C rand() constants
   return (rng_state >> 16) % n;
 }
 

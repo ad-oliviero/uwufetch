@@ -42,7 +42,12 @@ static char home_dir[] = "/tmp/uwufetch_fuzz_XXXXXX";
 static char config_path[512];
 static char cache_path[512];
 
-static const char fuzz_alphabet[]      = "abcxyz-}0\xE2"; // includes a byte outside the actrie alphabet
+// the text alphabet includes a byte outside the actrie alphabet (\xE2), to
+// exercise the match reset path
+static const char text_alphabet[] = "abcxyz-}0\xE2";
+// the patterns can only contain alphabet chars (the actrie rejects the others)
+static const char pattern_alphabet[]   = "abcxyz-}";
+static const char replacer_alphabet[]  = "xy}";
 static const char* const config_keys[] = {
     "user_name", "os_name", "model", "kernel", "cpu", "gpu_list",
     "memory", "screen", "shell", "packages", "uptime", "colors"};
@@ -53,8 +58,7 @@ static const char* const config_keys[] = {
 #define MAX_TEXT_LEN 256
 #define TEXT_BUFFER_CAP 4096
 
-// random patterns and replacers into the actrie, then a replace into a
-// canary buffer
+// random patterns and replacers into the actrie, then a replace into a canary buffer
 static void fuzz_actrie(void) {
   struct actrie_t t;
   actrie_t_ctor(&t);
@@ -65,8 +69,8 @@ static void fuzz_actrie(void) {
     char replacer[MAX_REPLACER_LEN + 1] = {0};
     size_t pattern_len                  = rnd(MAX_PATTERN_LEN + 1);
     size_t replacer_len                 = rnd(MAX_REPLACER_LEN + 1);
-    for (size_t j = 0; j < pattern_len; j++) pattern[j] = "abcxyz-}"[rnd(8)];
-    for (size_t j = 0; j < replacer_len; j++) replacer[j] = "xy}"[rnd(3)];
+    for (size_t j = 0; j < pattern_len; j++) pattern[j] = pattern_alphabet[rnd(sizeof(pattern_alphabet) - 1)];
+    for (size_t j = 0; j < replacer_len; j++) replacer[j] = replacer_alphabet[rnd(sizeof(replacer_alphabet) - 1)];
     actrie_t_add_pattern_len(&t, pattern, pattern_len, replacer, replacer_len);
   }
   actrie_t_compute_links(&t); // runs the invariant sweep in debug builds
@@ -74,7 +78,7 @@ static void fuzz_actrie(void) {
   static char buffer[TEXT_BUFFER_CAP];
   memset(buffer, 0x5A, sizeof(buffer)); // canary
   size_t text_len = rnd(MAX_TEXT_LEN + 1);
-  for (size_t i = 0; i < text_len; i++) buffer[i] = fuzz_alphabet[rnd(sizeof(fuzz_alphabet) - 1)];
+  for (size_t i = 0; i < text_len; i++) buffer[i] = text_alphabet[rnd(sizeof(text_alphabet) - 1)];
   buffer[text_len] = '\0';
 
   size_t new_len = actrie_t_replace_all_occurances_len(&t, buffer, text_len);
@@ -89,7 +93,7 @@ static void fuzz_actrie(void) {
 
   char probe[MAX_PATTERN_LEN + 1] = {0};
   size_t probe_len                = rnd(MAX_PATTERN_LEN + 1);
-  for (size_t i = 0; i < probe_len; i++) probe[i] = "abcxyz-}"[rnd(8)];
+  for (size_t i = 0; i < probe_len; i++) probe[i] = pattern_alphabet[rnd(sizeof(pattern_alphabet) - 1)];
   actrie_t_contains_pattern(&t, probe);
 
   actrie_t_dtor(&t);

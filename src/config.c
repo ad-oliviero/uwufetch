@@ -19,13 +19,13 @@ void parse_config(struct configuration* configuration, char* config_path) {
   if (config_path == NULL) { // if config directory is not set, try to open the default
     if (getenv("HOME") != NULL) {
       char homedir[512];
-      sprintf(homedir, "%s/.config/uwufetch/config", getenv("HOME"));
+      snprintf(homedir, sizeof(homedir), "%s/.config/uwufetch/config", getenv("HOME"));
       LOG_V(homedir);
       config = fopen(homedir, "r");
       if (!config) {
         if (getenv("PREFIX") != NULL) {
           char prefixed_etc[512];
-          sprintf(prefixed_etc, "%s/etc/uwufetch/config", getenv("PREFIX"));
+          snprintf(prefixed_etc, sizeof(prefixed_etc), "%s/etc/uwufetch/config", getenv("PREFIX"));
           LOG_V(prefixed_etc);
           config = fopen(prefixed_etc, "r");
         } else {

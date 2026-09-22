@@ -10,7 +10,7 @@
 void write_cache(struct info* user_info) {
   LOG_I("writing cache");
   char cache_file[512];
-  sprintf(cache_file, "%s/.cache/uwufetch.cache", getenv("HOME")); // default cache file location
+  snprintf(cache_file, sizeof(cache_file), "%s/.cache/uwufetch.cache", getenv("HOME")); // default cache file location
   LOG_V(cache_file);
   FILE* cache_fp = fopen(cache_file, "wb");
   if (cache_fp == NULL) {
@@ -132,7 +132,7 @@ static bool parse_cache(struct info* user_info, char* buffer, char* buffer_end) 
 char* read_cache(struct info* user_info) {
   LOG_I("reading cache");
   char cache_fn[512];
-  sprintf(cache_fn, "%s/.cache/uwufetch.cache", getenv("HOME"));
+  snprintf(cache_fn, sizeof(cache_fn), "%s/.cache/uwufetch.cache", getenv("HOME"));
   LOG_V(cache_fn);
   FILE* cache_fp = fopen(cache_fn, "rb");
   if (cache_fp == NULL) {

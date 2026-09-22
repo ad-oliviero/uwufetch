@@ -13,20 +13,11 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/* NOTE: unit tests for the common module */
-
 #include "../src/common.h"
 #include <stdio.h>
 #include <string.h>
 
-static int failures;
-#define CHECK(cond)                                                   \
-  do {                                                                \
-    if (!(cond)) {                                                    \
-      fprintf(stderr, "FAIL %s:%d: %s\n", __FILE__, __LINE__, #cond); \
-      failures++;                                                     \
-    }                                                                 \
-  } while (0)
+#include "tests.h"
 
 // known Jenkins one-at-a-time hash vectors
 static void test_known_vectors(void) {

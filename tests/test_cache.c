@@ -13,8 +13,6 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/* NOTE: unit tests for the cache module */
-
 #include "../src/cache.h"
 #include "../src/uwufetch.h"
 #include <errno.h>
@@ -25,14 +23,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-static int failures;
-#define CHECK(cond)                                                   \
-  do {                                                                \
-    if (!(cond)) {                                                    \
-      fprintf(stderr, "FAIL %s:%d: %s\n", __FILE__, __LINE__, #cond); \
-      failures++;                                                     \
-    }                                                                 \
-  } while (0)
+#include "tests.h"
+
+#define GPU_NAME "gpu %zu"
 
 static char home_dir[] = "/tmp/uwufetch_test_cache_XXXXXX";
 static char cache_dir[512];
@@ -70,7 +63,7 @@ static struct info make_info(size_t gpu_count) {
   user_info.gpu_list[0]   = (char*)gpu_count; // the [0] element is the "gpu count"
   for (size_t i = 1; i <= gpu_count; i++) {
     user_info.gpu_list[i] = malloc(32);
-    snprintf(user_info.gpu_list[i], 32, "gpu %zu", i);
+    snprintf(user_info.gpu_list[i], 32, GPU_NAME, i);
   }
   return user_info;
 }
@@ -167,7 +160,7 @@ static void test_gpu_counts(void) {
       CHECK((size_t)read_back.gpu_list[0] == gpu_count);
       for (size_t i = 1; i <= gpu_count; i++) {
         char expected[32];
-        snprintf(expected, sizeof(expected), "gpu %zu", i);
+        snprintf(expected, sizeof(expected), GPU_NAME, i);
         CHECK(strcmp(read_back.gpu_list[i], expected) == 0);
       }
     }

@@ -13,22 +13,13 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/* NOTE: unit tests for the config module */
-
 #include "../src/config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-static int failures;
-#define CHECK(cond)                                                   \
-  do {                                                                \
-    if (!(cond)) {                                                    \
-      fprintf(stderr, "FAIL %s:%d: %s\n", __FILE__, __LINE__, #cond); \
-      failures++;                                                     \
-    }                                                                 \
-  } while (0)
+#include "tests.h"
 
 static char tmp_dir[] = "/tmp/uwufetch_test_config_XXXXXX";
 
@@ -58,7 +49,7 @@ static void test_logo(void) {
   CHECK(c.logo_name != NULL && strcmp(c.logo_name, "arch") == 0);
   free(c.logo_name);
 
-  c = parse("logo=arch"); // no trailing newline: the last char used to be cut off
+  c = parse("logo=arch");
   CHECK(c.logo_name != NULL && strcmp(c.logo_name, "arch") == 0);
   free(c.logo_name);
 
@@ -66,11 +57,11 @@ static void test_logo(void) {
   CHECK(c.logo_name != NULL && strcmp(c.logo_name, "debian") == 0);
   free(c.logo_name);
 
-  c = parse("logo=\n"); // empty value
+  c = parse("logo=\n");
   CHECK(c.logo_name != NULL && strcmp(c.logo_name, "") == 0);
   free(c.logo_name);
 
-  c = parse("user_name=true\n"); // a "logo" substring is not a logo line
+  c = parse("user_name=true\n");
   CHECK(c.logo_name == NULL);
 }
 
@@ -80,7 +71,6 @@ static void test_booleans(void) {
   CHECK(c.user_name == true);
   CHECK(c.os_name == false);
 
-  // quoted values used to be silently ignored
   c = parse("user_name=\"true\"\nos_name=\"false\"\nmodel=\"false\"\nkernel=\"true\"\n");
   CHECK(c.user_name == true);
   CHECK(c.os_name == false);
@@ -109,7 +99,7 @@ static void test_malformed(void) {
   snprintf(content, sizeof(content), "\n\n   \n%s\n=garbage=\nlogo=ubuntu\n", oversized);
   struct configuration c = parse(content);
   CHECK(c.logo_name != NULL && strcmp(c.logo_name, "ubuntu") == 0);
-  CHECK(c.user_name == false); // untouched: the defaults are preserved
+  CHECK(c.user_name == false);
   free(c.logo_name);
 
   c = parse("this is not a config line at all\n\xff\xfe binary garbage\n");
@@ -117,13 +107,11 @@ static void test_malformed(void) {
   CHECK(c.user_name == false);
 }
 
-// a NULL config path with HOME unset must not crash (in debug builds it
-// falls back to ./default.config)
 static void test_no_home(void) {
   unsetenv("HOME");
   struct configuration c = {0};
   parse_config(&c, NULL);
-  free(c.logo_name); // may have been set by ./default.config
+  free(c.logo_name);
 }
 
 int main(void) {

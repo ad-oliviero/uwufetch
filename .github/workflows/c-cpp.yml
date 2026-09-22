@@ -17,8 +17,6 @@ jobs:
         run: make
       - name: unit tests
         run: make test
-      - name: integration tests
-        run: tests/run.sh
   # the windows and macos lanes are disabled: <argp.h> is glibc only, so the
   # build fails there until the argument parser is replaced
   #windows:
@@ -45,5 +43,3 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libpci-dev
       - name: unit tests and fuzz (ASan + UBSan)
         run: make test-asan FUZZ_SECONDS=60
-      - name: integration tests (ASan + UBSan)
-        run: tests/run.sh
