@@ -209,7 +209,12 @@ static void test_read_file_head(void) {
   write_file("normal.txt", "the content\n");
   snprintf(file_path, sizeof(file_path), "%s/normal.txt", tmp_dir);
   CHECK(read_file_head(file_path, buf, sizeof(buf)) == true);
-  CHECK(strcmp(buf, "the content\n") == 0);
+  CHECK(strcmp(buf, "the content") == 0); // one trailing newline is stripped
+
+  write_file("nonl.txt", "no newline");
+  snprintf(file_path, sizeof(file_path), "%s/nonl.txt", tmp_dir);
+  CHECK(read_file_head(file_path, buf, sizeof(buf)) == true);
+  CHECK(strcmp(buf, "no newline") == 0);
 
   write_file("empty.txt", "");
   snprintf(file_path, sizeof(file_path), "%s/empty.txt", tmp_dir);
@@ -235,6 +240,8 @@ static void test_read_file_head(void) {
   snprintf(file_path, sizeof(file_path), "%s/empty.txt", tmp_dir);
   unlink(file_path);
   snprintf(file_path, sizeof(file_path), "%s/oversize.txt", tmp_dir);
+  unlink(file_path);
+  snprintf(file_path, sizeof(file_path), "%s/nonl.txt", tmp_dir);
   unlink(file_path);
   rmdir(tmp_dir);
 }

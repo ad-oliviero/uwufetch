@@ -208,6 +208,7 @@ bool read_file_head(const char* path, char* buf, size_t size) {
   size_t len = fread(buf, 1, size - 1, fp);
   buf[len]   = '\0';
   fclose(fp);
+  if (len > 0 && buf[len - 1] == '\n') buf[len - 1] = '\0';
   return true;
 }
 
@@ -313,9 +314,8 @@ char* get_host_name(void) {
   size_t size            = max_host_name_len > 0 ? max_host_name_len : BUFFER_SIZE;
   char* host_name        = alloc(size);
 #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_FREEBSD) || defined(SYSTEM_BASE_OPENBSD)
-  unsigned long int len = 0;
   #if !defined(SYSTEM_BASE_FREEBSD) && !defined(SYSTEM_BASE_OPENBSD)
-  len = strlen(GLOBAL_UTSNAME.nodename);
+  unsigned long int len = strlen(GLOBAL_UTSNAME.nodename);
   if (len > 0) {
     LOG_I("getting host name from struct utsname's nodename");
     snprintf(host_name, size, "%s", GLOBAL_UTSNAME.nodename);
@@ -325,17 +325,11 @@ char* get_host_name(void) {
     if (env) {
       LOG_I("getting host name from environment variable");
       snprintf(host_name, size, "%s", env);
+    } else if (read_file_head(HOSTNAME_PATH, host_name, size)) {
+      LOG_I("reading host name from /etc/hostname");
     } else {
-      FILE* fp = fopen(HOSTNAME_PATH, "r");
-      if (fp) {
-        LOG_I("reading host name from /etc/hostname");
-        len = fread(host_name, 1, size, fp) - 1;
-        fclose(fp);
-        if (host_name[len] == '\n') host_name[len] = '\0';
-      } else {
-        LOG_I("getting host name with gethostname()");
-        gethostname(host_name, size);
-      }
+      LOG_I("getting host name with gethostname()");
+      gethostname(host_name, size);
     }
   #if !defined(SYSTEM_BASE_FREEBSD) && !defined(SYSTEM_BASE_OPENBSD)
   }
