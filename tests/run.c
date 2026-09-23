@@ -36,6 +36,10 @@
 #define HOME_DIR "build/run_home"
 #define OUTPUT_CAP 65536
 
+#define PINNED_USER "uwutester"
+#define PINNED_HOST "uwuhost"
+#define PINNED_SHELL "/bin/sh"
+
 static char output[OUTPUT_CAP];   // stdout of the last run
 static char stripped[OUTPUT_CAP]; // output without the ansi escape sequences
 static int failures;
@@ -145,9 +149,9 @@ int main(int argc, char** argv) {
   int status;
 
   set_env("HOME", HOME_DIR);
-  set_env("USER", "uwutester");
-  set_env("HOST", "uwuhost");
-  set_env("SHELL", "/bin/sh");
+  set_env("USER", PINNED_USER);
+  set_env("HOST", PINNED_HOST);
+  set_env("SHELL", PINNED_SHELL);
   mkdir(HOME_DIR, 0755);
   mkdir(HOME_DIR "/.cache", 0755);
 
@@ -213,6 +217,26 @@ int main(int argc, char** argv) {
   for (size_t i = 0; i < sizeof(required) / sizeof(required[0]); i++)
     if (field(stripped, required[i], value, sizeof(value))) no_labels = false;
   check("no info labels are printed", no_labels);
+
+  printf("case 8: environment-pinned field values\n");
+  status = run(binary, "");
+  read_output();
+  check("exit code is 0", status == 0);
+  // the user line is "user@host" and the host comes from uname's nodename
+  // (not from $HOST), so only the user is matched exactly
+  char host[256];
+  bool user_found = field(stripped, PINNED_USER "@", host, sizeof(host));
+  check("user field is the pinned user", user_found);
+  check("host field is not empty", user_found && host[0] != '\0');
+  bool shell_found = field(stripped, "SHEWW", value, sizeof(value));
+  check("shell field is the pinned shell", shell_found && strcmp(value, PINNED_SHELL) == 0);
+  unsigned long mem_used = 0, mem_total = 0;
+  bool mem_found  = field(stripped, "MEMOWY", value, sizeof(value));
+  bool mem_parsed = mem_found && sscanf(value, "%lu MiB/%lu MiB", &mem_used, &mem_total) == 2;
+  check("memory used is at most total", mem_parsed && mem_used <= mem_total);
+  unsigned long pkg_count = 0;
+  bool pkgs_found         = field(stripped, "PKGS", value, sizeof(value));
+  check("packages field starts with \"<digits>: \"", pkgs_found && sscanf(value, "%lu: ", &pkg_count) == 1);
 
   if (failures == 0) {
     printf("run: all tests passed\n");

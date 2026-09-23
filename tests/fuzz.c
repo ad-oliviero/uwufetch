@@ -23,6 +23,7 @@
 #include "../src/actrie.h"
 #include "../src/cache.h"
 #include "../src/config.h"
+#include "../src/libfetch/fetch.h"
 #include "../src/uwufetch.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -57,8 +58,21 @@ static const char* const config_keys[] = {
 #define MAX_REPLACER_LEN 8
 #define MAX_TEXT_LEN 256
 #define TEXT_BUFFER_CAP 4096
+#define PARSER_BUF_CAP 256
+#define PARSER_OUT_CAP 128
+#define FILE_BUF_CAP 128
+#define MAX_FILE_NAME_LEN 16
+#define MAX_FILE_SIZE 200
+#define CANARY_BYTE '\x5A'
 
-// random patterns and replacers into the actrie, then a replace into a canary buffer
+static char proc_dir[] = "/tmp/uwufetch_fuzz_files_XXXXXX";
+static char file_path[512];
+
+// bytes the libfetch parsers expect (line starts, separators, digits, quotes),
+// plus NULs injected while filling the buffer to exercise the termination paths
+static const char parser_alphabet[] = "abcxyz-}0:=\",1357 \nMemTotalCachFreBufdDxX";
+static const char path_alphabet[]   = "abcxyz._-0";
+
 static void fuzz_actrie(void) {
   struct actrie_t t;
   actrie_t_ctor(&t);
@@ -99,7 +113,6 @@ static void fuzz_actrie(void) {
   actrie_t_dtor(&t);
 }
 
-// random key=value (and garbage) lines into parse_config
 static void fuzz_config(void) {
   FILE* fp = fopen(config_path, "w");
   if (fp == NULL) return;
@@ -136,7 +149,67 @@ static void fuzz_config(void) {
   free(configuration.logo_name); // may have been set by a logo line
 }
 
-// random (or semi-valid) cache files into read_cache
+static void fuzz_parsers(void) {
+  static char in[PARSER_BUF_CAP];
+  static char out[PARSER_OUT_CAP];
+  unsigned long meminfo[4] = {0};
+  int width = 0, height = 0;
+
+  // rnd() includes 0, so empty input is generated too
+  size_t len = rnd(PARSER_BUF_CAP);
+  for (size_t i = 0; i < len; i++) {
+    if (rnd(16) == 0) {
+      in[i] = '\0';
+    } else {
+      in[i] = parser_alphabet[rnd(sizeof(parser_alphabet) - 1)];
+    }
+  }
+  in[len] = '\0';
+
+  memset(out, CANARY_BYTE, sizeof(out));
+  parse_meminfo(in, meminfo);
+  if (parse_cpu_model(in, out, sizeof(out)) && memchr(out, '\0', sizeof(out)) == NULL) {
+    fprintf(stderr, "FUZZ FAIL: parse_cpu_model did not NUL terminate\n");
+    exit(1);
+  }
+  memset(out, CANARY_BYTE, sizeof(out));
+  if (parse_os_id(in, out, sizeof(out)) && memchr(out, '\0', sizeof(out)) == NULL) {
+    fprintf(stderr, "FUZZ FAIL: parse_os_id did not NUL terminate\n");
+    exit(1);
+  }
+  parse_screen_size(in, &width, &height);
+  memset(out, CANARY_BYTE, sizeof(out));
+  format_kernel(in, in, in, out, sizeof(out));
+  // all-empty inputs write nothing, so only NUL-termination is asserted
+  if (out[0] != CANARY_BYTE && memchr(out, '\0', sizeof(out)) == NULL) {
+    fprintf(stderr, "FUZZ FAIL: format_kernel did not NUL terminate\n");
+    exit(1);
+  }
+}
+
+static void fuzz_read_file_head(void) {
+  char buf[FILE_BUF_CAP];
+  memset(buf, CANARY_BYTE, sizeof(buf));
+  if (rnd(2) == 0) { // the file exists and holds random bytes (NULs included)
+    snprintf(file_path, sizeof(file_path), "%s/f", proc_dir);
+    FILE* fp = fopen(file_path, "wb");
+    if (fp == NULL) return;
+    size_t content_len = rnd(MAX_FILE_SIZE);
+    for (size_t i = 0; i < content_len; i++) fputc((int)rnd(256), fp);
+    fclose(fp);
+  } else { // a random name in the temp dir: most likely a missing file
+    int written     = snprintf(file_path, sizeof(file_path), "%s/", proc_dir);
+    size_t name_len = 1 + rnd(MAX_FILE_NAME_LEN);
+    for (size_t i = 0; i < name_len && written > 0 && (size_t)written < sizeof(file_path) - 1; i++)
+      file_path[written++] = path_alphabet[rnd(sizeof(path_alphabet) - 1)];
+    file_path[written] = '\0';
+  }
+  if (read_file_head(file_path, buf, sizeof(buf)) && memchr(buf, '\0', sizeof(buf)) == NULL) {
+    fprintf(stderr, "FUZZ FAIL: read_file_head did not NUL terminate\n");
+    exit(1);
+  }
+}
+
 static void fuzz_cache(void) {
   FILE* fp = fopen(cache_path, "wb");
   if (fp == NULL) return;
@@ -188,6 +261,7 @@ int main(int argc, char** argv) {
   snprintf(config_path, sizeof(config_path), "%s/config", home_dir);
   snprintf(cache_path, sizeof(cache_path), "%s/uwufetch.cache", cache_dir);
   setenv("HOME", home_dir, 1);
+  if (mkdtemp(proc_dir) == NULL) return 1;
 
   printf("fuzzing for %us (seed %llu)...\n", seconds, rng_state);
   time_t deadline               = time(NULL) + seconds;
@@ -196,13 +270,18 @@ int main(int argc, char** argv) {
     fuzz_actrie();
     fuzz_config();
     fuzz_cache();
+    fuzz_parsers();
+    fuzz_read_file_head();
     iterations++;
   }
   printf("done: %llu iterations\n", iterations);
 
   unlink(cache_path);
   unlink(config_path);
+  snprintf(file_path, sizeof(file_path), "%s/f", proc_dir);
+  unlink(file_path);
   rmdir(cache_dir);
   rmdir(home_dir);
+  rmdir(proc_dir);
   return 0;
 }

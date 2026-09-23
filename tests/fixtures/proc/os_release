@@ -1,0 +1,5 @@
+NAME="Debian GNU/Linux"
+VERSION_ID="12"
+ID=debian
+HOME_URL="https://www.debian.org/"
+SUPPORT_URL="https://www.debian.org/support"
