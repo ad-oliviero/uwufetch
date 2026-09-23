@@ -14,25 +14,95 @@
  */
 
 #include "../src/libfetch/fetch.h"
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <sys/ioctl.h>
 
 #include "tests.h"
 
-int main(void) {
-#if defined(SYSTEM_BASE_MACOS)
+#define TEST_USER "uwutester"
+#define TEST_HOST "testhost"
+#define TEST_SHELL "/bin/fish"
+#define MAX_STRING_LEN 1024
+#define MAX_GPU_COUNT 64
+
+// every char* getter must return NULL or a non-empty NUL-terminated string
+static void check_string(char* s) {
+  if (s == NULL) return;
+  size_t len = strlen(s);
+  CHECK(len > 0);
+  CHECK(len < MAX_STRING_LEN);
+}
+
+static void run_cycle(void) {
+  libfetch_init();
+
+  char* user     = get_user_name();
+  char* host     = get_host_name();
+  char* shell    = get_shell();
+  char* model    = get_model();
+  char* kernel   = get_kernel();
+  char* os_name  = get_os_name();
+  char* cpu      = get_cpu();
+  char* packages = get_packages();
+  check_string(user);
+  check_string(host);
+  check_string(shell);
+  check_string(model);
+  check_string(kernel);
+  check_string(os_name);
+  check_string(cpu);
+  check_string(packages);
+#if defined(SYSTEM_BASE_LINUX)
+  // the env-honoring paths are getenv-first on Linux (HOST is not: nodename wins)
+  CHECK(user != NULL && strcmp(user, TEST_USER) == 0);
+  CHECK(shell != NULL && strcmp(shell, TEST_SHELL) == 0);
+#endif
+
+  CHECK(get_screen_width() >= 0);
+  CHECK(get_screen_height() >= 0);
+  unsigned long long memory_total = get_memory_total();
+  unsigned long long memory_used  = get_memory_used();
+  CHECK(get_uptime() >= 0);
+  if (memory_total > 0) CHECK(memory_used <= memory_total);
+
+  // make runs the tests with stdout on a pipe, so the ioctl must fail
+  struct winsize terminal_size = get_terminal_size();
+  CHECK(terminal_size.ws_col == 0);
+  CHECK(terminal_size.ws_row == 0);
+
   char** gpu_list = get_gpu_list();
+  if (gpu_list != NULL) CHECK((size_t)gpu_list[0] < MAX_GPU_COUNT);
+#if defined(SYSTEM_BASE_MACOS)
+  // every mac has a gpu: count and non-empty names are structural
   CHECK(gpu_list != NULL);
   if (gpu_list) {
     size_t gpu_count = (size_t)gpu_list[0]; // the [0] element is the "gpu count"
     CHECK(gpu_count >= 1);
-    for (size_t i = 1; i <= gpu_count; i++) {
-      CHECK(gpu_list[i] != NULL);
+    for (size_t i = 1; i <= gpu_count; i++)
       if (gpu_list[i]) CHECK(gpu_list[i][0] != '\0');
-    }
   }
-  libfetch_cleanup();
-#else
-  printf("  SKIP gpu detection (macos only)\n");
 #endif
-  return failures;
+
+  libfetch_cleanup();
+}
+
+int main(void) {
+  setenv("USER", TEST_USER, 1);
+  setenv("HOST", TEST_HOST, 1);
+  setenv("SHELL", TEST_SHELL, 1);
+
+  // without init the fb0 getters must degrade to 0, not crash (the fb0 bug class)
+  // the macOS screen getters read CoreGraphics and need no init
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_FREEBSD)
+  CHECK(get_screen_width() == 0);
+  CHECK(get_screen_height() == 0);
+#endif
+
+  // pointer registry must not exhaust across calls
+  run_cycle();
+  run_cycle();
+  if (failures == 0) printf("test_fetch: all tests passed\n");
+  return failures != 0;
 }

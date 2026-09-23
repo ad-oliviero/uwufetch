@@ -129,9 +129,9 @@ static void test_round_trip(void) {
     CHECK(read_back.logo_id == LOGO_ID);
     CHECK((size_t)read_back.gpu_list[0] == 2);
     char gpu_name[GPU_NAME_LEN];
-    snprintf(gpu_name, sizeof(gpu_name), GPU_NAME, 1);
+    snprintf(gpu_name, sizeof(gpu_name), GPU_NAME, (size_t)1);
     CHECK(strcmp(read_back.gpu_list[1], gpu_name) == 0);
-    snprintf(gpu_name, sizeof(gpu_name), GPU_NAME, 2);
+    snprintf(gpu_name, sizeof(gpu_name), GPU_NAME, (size_t)2);
     CHECK(strcmp(read_back.gpu_list[2], gpu_name) == 0);
   }
   free_read_back(&read_back, content);

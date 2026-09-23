@@ -54,6 +54,46 @@
 #endif
 #include "logging.h"
 #include <unistd.h>
+
+#ifndef PROC_MEMINFO_PATH
+  #define PROC_MEMINFO_PATH "/proc/meminfo"
+#endif
+#ifndef PROC_CPUINFO_PATH
+  #define PROC_CPUINFO_PATH "/proc/cpuinfo"
+#endif
+#ifndef FB0_VIRTUAL_SIZE_PATH
+  #define FB0_VIRTUAL_SIZE_PATH "/sys/class/graphics/fb0/virtual_size"
+#endif
+#ifndef DMESG_BOOT_PATH
+  #define DMESG_BOOT_PATH "/var/run/dmesg.boot"
+#endif
+#ifndef OS_RELEASE_PATH
+  #define OS_RELEASE_PATH "/etc/os-release"
+#endif
+#ifndef HOSTNAME_PATH
+  #define HOSTNAME_PATH "/etc/hostname"
+#endif
+#ifndef DMI_DIR
+  #define DMI_DIR "/sys/devices/virtual/dmi/id"
+#endif
+#ifndef PKGPATH
+  #if defined(SYSTEM_BASE_ANDROID)
+    #define PKGPATH "/data/data/com.termux/files/usr/bin/"
+  #elif defined(SYSTEM_BASE_MACOS)
+    // brew's prefix depends on the arch the build targets: /opt/homebrew on
+    // arm64, /usr/local on Intel
+    #if defined(__aarch64__)
+      #define PKGPATH "/opt/homebrew/bin/"
+    #else
+      #define PKGPATH "/usr/local/bin/"
+    #endif
+  #elif defined(SYSTEM_BASE_FREEBSD) || defined(SYSTEM_BASE_OPENBSD)
+    #define PKGPATH "/usr/sbin/"
+  #else // Linux
+    #define PKGPATH "/usr/bin/"
+  #endif
+#endif
+
 #if defined(LOGGING_ENABLED)
 void set_libfetch_log_level(int level) {
   // the logging_level variable used in logging.h is static, a new variable is not needed
@@ -128,61 +168,40 @@ static void* dealloc(void* ptr) {
 }
 
 void libfetch_init(void) {
-#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_MACOS)
   LOG_I("calling uname()");
   CHECK_FN_NEG(uname(&GLOBAL_UTSNAME));
+  #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
   LOG_I("calling sysinfo()");
   CHECK_FN_NEG(sysinfo(&GLOBAL_SYSINFO));
-
-  FILE* proc_meminfo = fopen("/proc/meminfo", "r");
-  if (proc_meminfo) {
-    LOG_I("reading /proc/meminfo");
-    PROC_MEMINFO = alloc(SMALL_BUFFER_SIZE);
-    // reading only SMALL_BUFFER_SIZE (256) bytes because every other line of the file is not really needed
-    unsigned long int len = fread(PROC_MEMINFO, 1, SMALL_BUFFER_SIZE, proc_meminfo) - 1;
-    PROC_MEMINFO[len]     = '\0';
-    fclose(proc_meminfo);
-  }
-
-  FILE* cpu_info = fopen("/proc/cpuinfo", "r");
-  if (cpu_info) {
-    LOG_I("reading /proc/cpuinfo");
-    PROC_CPUINFO          = alloc(SMALL_BUFFER_SIZE);
-    unsigned long int len = fread(PROC_CPUINFO, 1, SMALL_BUFFER_SIZE, cpu_info) - 1;
-    PROC_CPUINFO[len]     = '\0';
-    fclose(cpu_info);
-  }
-  #if !defined(SYSTEM_BASE_ANDROID)
-  FILE* fb0_virtual_size = fopen("/sys/class/graphics/fb0/virtual_size", "r");
-  if (fb0_virtual_size) {
-    LOG_I("reading /sys/class/graphics/fb0/virtual_size");
-    FB0_VIRTUAL_SIZE      = alloc(SMALL_BUFFER_SIZE);
-    unsigned long int len = fread(FB0_VIRTUAL_SIZE, 1, SMALL_BUFFER_SIZE, fb0_virtual_size) - 1;
-    FB0_VIRTUAL_SIZE[len] = '\0';
-    fclose(fb0_virtual_size);
-  }
   #endif
-#elif defined(SYSTEM_BASE_FREEBSD)
-  FILE* fb0_virtual_size = fopen("/var/run/dmesg.boot", "r");
-  if (fb0_virtual_size) {
-    LOG_I("reading /var/run/dmesg.boot");
-    unsigned long int len = 0;
-  #define STRING_SEARCH "VT(efifb): resolution"
-    FB0_VIRTUAL_SIZE      = alloc(BUFFER_SIZE);
-    while (fgets(FB0_VIRTUAL_SIZE, BUFFER_SIZE, fb0_virtual_size)) {
-      if (strstr(FB0_VIRTUAL_SIZE, STRING_SEARCH)) {
-        FB0_VIRTUAL_SIZE += sizeof(STRING_SEARCH);
-        break;
-      }
-    }
-
-    fclose(fb0_virtual_size);
+#endif
+#if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_FREEBSD)
+  struct {
+    const char* path;
+    char** dest;
+    size_t size;
+  } files[] = {
+  #if defined(SYSTEM_BASE_FREEBSD)
+      {DMESG_BOOT_PATH, &FB0_VIRTUAL_SIZE, BUFFER_SIZE},
+  #else
+      {PROC_MEMINFO_PATH, &PROC_MEMINFO, SMALL_BUFFER_SIZE},
+      {PROC_CPUINFO_PATH, &PROC_CPUINFO, SMALL_BUFFER_SIZE},
+    #if !defined(SYSTEM_BASE_ANDROID)
+      {FB0_VIRTUAL_SIZE_PATH, &FB0_VIRTUAL_SIZE, SMALL_BUFFER_SIZE},
+    #endif
+  #endif
+  };
+  for (size_t i = 0; i < sizeof(files) / sizeof(files[0]); i++) {
+    char* buf = alloc(files[i].size);
+    if (read_file_head(files[i].path, buf, files[i].size)) {
+      LOG_I("reading %s", files[i].path);
+      *files[i].dest = buf;
+    } else
+      dealloc(buf);
   }
 #elif defined(SYSTEM_BASE_OPENBSD)
   LOG_W("Not implemented (not needed)");
-#elif defined(SYSTEM_BASE_MACOS)
-  LOG_I("calling uname()");
-  CHECK_FN_NEG(uname(&GLOBAL_UTSNAME));
 #elif defined(SYSTEM_BASE_WINDOWS)
   GLOBAL_MEMORY_STATUS_EX.dwLength = sizeof(GLOBAL_MEMORY_STATUS_EX);
   GlobalMemoryStatusEx(&GLOBAL_MEMORY_STATUS_EX);
@@ -194,6 +213,106 @@ void libfetch_init(void) {
 void libfetch_cleanup(void) {
   for (size_t i = 0; i < PTR_CNT; i++) dealloc_id(i);
   LOG_I("libfetch cleaned up. During execution, %d errors were encountered!", logging_error_count);
+}
+
+bool read_file_head(const char* path, char* buf, size_t size) {
+  FILE* fp = fopen(path, "r");
+  if (!fp) return false;
+  // only the first lines are needed, so callers pass small sizes
+  size_t len = fread(buf, 1, size - 1, fp);
+  buf[len]   = '\0';
+  fclose(fp);
+  if (len > 0 && buf[len - 1] == '\n') buf[len - 1] = '\0';
+  return true;
+}
+
+void parse_meminfo(const char* buf, unsigned long meminfo[4]) {
+  meminfo[0] = meminfo[1] = meminfo[2] = meminfo[3] = 0;
+  if (!buf) return;
+  const char* p = buf;
+  do {
+    sscanf(p, "MemTotal:%*[^0-9]%lu", &meminfo[0]);
+    sscanf(p, "MemFree:%*[^0-9]%lu", &meminfo[1]);
+    sscanf(p, "Buffers:%*[^0-9]%lu", &meminfo[2]);
+    sscanf(p, "Cached:%*[^0-9]%lu", &meminfo[3]);
+  } while ((p = strchr(p, '\n')) && *++p);
+}
+
+bool parse_cpu_model(const char* buf, char* out, size_t out_size) {
+  out[0] = '\0';
+  if (!buf) return false;
+  bool found    = false;
+  const char* p = buf;
+  do {
+    // "model name" followed by optional padding, ':' and more padding
+    if (strncmp(p, "model name", 10) == 0) {
+      const char* value = p + 10 + strspn(p + 10, " \t");
+      if (*value == ':') {
+        value += strspn(value + 1, " \t") + 1;
+        size_t len = strcspn(value, "\n");
+        if (len >= out_size) len = out_size - 1;
+        memcpy(out, value, len);
+        out[len] = '\0';
+        found    = true;
+      }
+    }
+  } while ((p = strchr(p, '\n')) && *++p);
+  return found;
+}
+
+bool parse_os_id(const char* buf, char* out, size_t out_size) {
+  out[0] = '\0';
+  if (!buf) return false;
+  const char* p = buf;
+  do {
+    if (strncmp(p, "ID=", 3) != 0) continue;
+    const char* value = p + 3;
+    size_t line_len   = strcspn(value, "\n");
+    size_t len        = line_len;
+    if (*value == '"') {
+      value++;
+      line_len--;
+      const char* end = memchr(value, '"', line_len);
+      len             = end ? (size_t)(end - value) : line_len;
+    }
+    if (len == 0) continue;
+    if (len >= out_size) len = out_size - 1;
+    memcpy(out, value, len);
+    out[len] = '\0';
+    return true;
+  } while ((p = strchr(p, '\n')) && *++p);
+  return false;
+}
+
+bool parse_screen_size(const char* buf, int* width, int* height) {
+  int w = 0, h = 0;
+  const char* dmesg = buf ? strstr(buf, "VT(efifb): resolution") : NULL;
+  if ((dmesg && sscanf(dmesg, "VT(efifb): resolution %dx%d", &w, &h) == 2) ||
+      (buf && sscanf(buf, "%d,%d", &w, &h) == 2)) {
+    *width  = w;
+    *height = h;
+    return true;
+  }
+  *width  = 0;
+  *height = 0;
+  return false;
+}
+
+void format_kernel(const char* sysname, const char* release, const char* machine, char* out, size_t out_size) {
+  // snprintf returns the would-be length: on truncation it must not be added
+  // to len, or the next size argument underflows
+  size_t len = 0;
+  if (sysname[0] != '\0') {
+    int written = snprintf(out, out_size, "%s ", sysname);
+    if (written < 0 || (size_t)written >= out_size) return;
+    len = (size_t)written;
+  }
+  if (release[0] != '\0') {
+    int written = snprintf(out + len, out_size - len, "%s ", release);
+    if (written < 0 || (size_t)written >= out_size - len) return;
+    len += (size_t)written;
+  }
+  if (machine[0] != '\0') snprintf(out + len, out_size - len, "%s", machine);
 }
 
 char* get_user_name(void) {
@@ -231,9 +350,8 @@ char* get_host_name(void) {
   size_t size            = max_host_name_len > 0 ? (size_t)max_host_name_len : BUFFER_SIZE;
   char* host_name        = alloc(size);
 #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_FREEBSD) || defined(SYSTEM_BASE_OPENBSD) || defined(SYSTEM_BASE_MACOS)
-  unsigned long int len = 0;
   #if !defined(SYSTEM_BASE_FREEBSD) && !defined(SYSTEM_BASE_OPENBSD)
-  len = strlen(GLOBAL_UTSNAME.nodename);
+  unsigned long int len = strlen(GLOBAL_UTSNAME.nodename);
   if (len > 0) {
     LOG_I("getting host name from struct utsname's nodename");
     snprintf(host_name, size, "%s", GLOBAL_UTSNAME.nodename);
@@ -243,17 +361,11 @@ char* get_host_name(void) {
     if (env) {
       LOG_I("getting host name from environment variable");
       snprintf(host_name, size, "%s", env);
+    } else if (read_file_head(HOSTNAME_PATH, host_name, size)) {
+      LOG_I("reading host name from " HOSTNAME_PATH);
     } else {
-      FILE* fp = fopen("/etc/hostname", "r");
-      if (fp) {
-        LOG_I("reading host name from /etc/hostname");
-        len = fread(host_name, 1, size, fp) - 1;
-        fclose(fp);
-        if (host_name[len] == '\n') host_name[len] = '\0';
-      } else {
-        LOG_I("getting host name with gethostname()");
-        gethostname(host_name, size);
-      }
+      LOG_I("getting host name with gethostname()");
+      gethostname(host_name, size);
     }
   #if !defined(SYSTEM_BASE_FREEBSD) && !defined(SYSTEM_BASE_OPENBSD)
   }
@@ -308,9 +420,9 @@ char* get_model(void) {
 #if defined(SYSTEM_BASE_LINUX)
   FILE* model_fp          = NULL;
   char* model_filename[3] = {
-      "/sys/devices/virtual/dmi/id/product_version",
-      "/sys/devices/virtual/dmi/id/product_name",
-      "/sys/devices/virtual/dmi/id/board_name",
+      DMI_DIR "/product_version",
+      DMI_DIR "/product_name",
+      DMI_DIR "/board_name",
   };
 
   char tmp_model[3][BUFFER_SIZE] = {0}; // temporary variable to store the contents of all 3 files
@@ -337,8 +449,8 @@ char* get_model(void) {
     // there. Also fixes model[best_len - 1] below reading model[-1]
     // (out of bounds) when every DMI file above is missing, which was
     // the case unconditionally on every non-DMI board before this.
-    LOG_I("no DMI info found, falling back to /proc/cpuinfo system type");
-    model_fp = fopen("/proc/cpuinfo", "r");
+    LOG_I("no DMI info found, falling back to " PROC_CPUINFO_PATH " system type");
+    model_fp = fopen(PROC_CPUINFO_PATH, "r");
     if (model_fp) {
       char line[BUFFER_SIZE];
       while (fgets(line, BUFFER_SIZE, model_fp)) {
@@ -400,22 +512,8 @@ char* get_model(void) {
 char* get_kernel(void) {
   char* kernel_name = alloc(BUFFER_SIZE);
 #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID) || defined(SYSTEM_BASE_MACOS)
-  char* p    = kernel_name;
-  size_t len = 0;
-  if (strlen(GLOBAL_UTSNAME.sysname) > 0) {
-    LOG_I("getting kernel name from struct utsname's sysname");
-    p += snprintf(p, BUFFER_SIZE, "%s ", GLOBAL_UTSNAME.sysname);
-    len = (size_t)(p - kernel_name);
-  }
-  if (strlen(GLOBAL_UTSNAME.release) > 0) {
-    LOG_I("getting kernel release from struct utsname's release");
-    p += snprintf(p, BUFFER_SIZE - len, "%s ", GLOBAL_UTSNAME.release);
-    len = (size_t)(p - kernel_name);
-  }
-  if (strlen(GLOBAL_UTSNAME.machine) > 0) {
-    LOG_I("getting system architecture from struct utsname's machine")
-    p += snprintf(p, BUFFER_SIZE - len, "%s", GLOBAL_UTSNAME.machine);
-  }
+  LOG_I("formatting kernel name from struct utsname's fields");
+  format_kernel(GLOBAL_UTSNAME.sysname, GLOBAL_UTSNAME.release, GLOBAL_UTSNAME.machine, kernel_name, BUFFER_SIZE);
 #elif defined(SYSTEM_BASE_FREEBSD)
   char buf[BUFFER_SIZE] = {0};
   unsigned long int len = sizeof(buf);
@@ -462,13 +560,9 @@ char* get_os_name(void) {
   char* os_name = alloc(BUFFER_SIZE);
 #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_FREEBSD)
   char buffer[BUFFER_SIZE];
-  FILE* fp = fopen("/etc/os-release", "r");
-  if (fp) {
-    LOG_I("reading /etc/os-release");
-    while (fgets(buffer, BUFFER_SIZE, fp) &&
-           !(sscanf(buffer, "\nID=\"%s\"", os_name) ||
-             sscanf(buffer, "\nID=%s", os_name)));
-    fclose(fp);
+  if (read_file_head(OS_RELEASE_PATH, buffer, sizeof(buffer))) {
+    LOG_I("reading " OS_RELEASE_PATH);
+    parse_os_id(buffer, os_name, BUFFER_SIZE);
   }
 #elif defined(SYSTEM_BASE_ANDROID)
   sprintf(os_name, "android");
@@ -488,12 +582,10 @@ char* get_os_name(void) {
 char* get_cpu(void) {
   char* cpu = alloc(BUFFER_SIZE);
 #if defined(SYSTEM_BASE_LINUX)
-  char* p = PROC_CPUINFO - 1;
-  LOG_I("reading cpu model from /proc/cpuinfo");
-  do {
-    p++;
-    sscanf(p, "model name%*[ |	]: %[^\n]", cpu);
-  } while ((p = strchr(p, '\n')));
+  if (PROC_CPUINFO == NULL) {
+    LOG_E("Failed to get cpu (" PROC_CPUINFO_PATH " is missing)");
+  } else
+    parse_cpu_model(PROC_CPUINFO, cpu, BUFFER_SIZE);
 #elif defined(SYSTEM_BASE_ANDROID)
   /* The following function call does not get the full
    * cpu name, but just the product code (if available).
@@ -689,21 +781,6 @@ char** get_gpu_list(void) {
 
 char* get_packages(void) {
   char* packages = alloc(BUFFER_SIZE);
-#if defined(SYSTEM_BASE_ANDROID)
-  #define PKGPATH "/data/data/com.termux/files/usr/bin/"
-#elif defined(SYSTEM_BASE_MACOS)
-  // brew's prefix depends on the arch the build targets: /opt/homebrew on
-  // arm64, /usr/local on Intel
-  #if defined(__aarch64__)
-    #define PKGPATH "/opt/homebrew/bin/"
-  #else
-    #define PKGPATH "/usr/local/bin/"
-  #endif
-#elif defined(SYSTEM_BASE_FREEBSD) || defined(SYSTEM_BASE_OPENBSD)
-  #define PKGPATH "/usr/sbin/"
-#else // Linux
-  #define PKGPATH "/usr/bin/"
-#endif
   struct pkgcmd {
     char* path;
     char* command;
@@ -734,22 +811,23 @@ char* get_packages(void) {
   for (int i = 0; i < CMD_COUNT; i++)
     if (access(cmds[i].path, F_OK) != -1) {
       FILE* fp = popen(cmds[i].command, "r");
-      if (fscanf(fp, "%lu", &cmds[i].count) == 3)
-        continue;
-      else {
-        LOG_I("found %ld packages from %s", cmds[i].count, cmds[i].name);
-        last_valid = cmds[i].count > 0 ? i : last_valid;
-        total += cmds[i].count;
+      if (fp) {
+        if (fscanf(fp, "%lu", &cmds[i].count) == 1) {
+          LOG_I("found %lu packages from %s", cmds[i].count, cmds[i].name);
+          last_valid = cmds[i].count > 0 ? i : last_valid;
+          total += cmds[i].count;
+        }
+        pclose(fp);
       }
-      pclose(fp);
     }
-  char* p = packages + sprintf(packages, "%lu: ", total);
+  int prefix_len = snprintf(packages, BUFFER_SIZE, "%lu: ", total);
+  if (prefix_len < 0) prefix_len = 0;
+  char* p = packages + prefix_len;
   for (int i = 0; i < CMD_COUNT; i++)
     if (cmds[i].count > 0)
       p += snprintf(p, BUFFER_SIZE - strlen(packages), "%lu %s%s", cmds[i].count, cmds[i].name, i == last_valid ? "" : ", ");
   CHECK_GET_SUCCESS(packages);
   return packages;
-#undef PKGPATH
 }
 
 int get_screen_width(void) {
@@ -759,8 +837,9 @@ int get_screen_width(void) {
     LOG_E("Failed to get FB0_VIRTUAL_SIZE (is there a framebuffer device?)");
     return screen_width;
   }
-  LOG_I("getting screen width from /sys/class/graphics/fb0/virtual_size");
-  sscanf(FB0_VIRTUAL_SIZE, "%d,%*d", &screen_width);
+  LOG_I("getting screen width from " FB0_VIRTUAL_SIZE_PATH);
+  int screen_height;
+  parse_screen_size(FB0_VIRTUAL_SIZE, &screen_width, &screen_height);
 #elif defined(SYSTEM_BASE_MACOS)
   CGDisplayModeRef mode = CGDisplayCopyDisplayMode(CGMainDisplayID());
   if (!mode) {
@@ -777,8 +856,9 @@ int get_screen_width(void) {
     LOG_E("Failed to get FB0_VIRTUAL_SIZE (is there a dmesg.boot file?)");
     return screen_width;
   }
-  LOG_I("getting screen width from /var/run/dmesg.boot");
-  sscanf(FB0_VIRTUAL_SIZE, "%dx%*d", &screen_width);
+  LOG_I("getting screen width from " DMESG_BOOT_PATH);
+  int screen_height;
+  parse_screen_size(FB0_VIRTUAL_SIZE, &screen_width, &screen_height);
 #elif defined(SYSTEM_BASE_OPENBSD)
   LOG_E("Display size in OpenBSD can only be retrieved if there is a graphical environment (x11) (at least that's what my research led me to).\nIf someone requests this feature I will implement it, but then uwufetch will depend on Xlib.");
 #elif defined(SYSTEM_BASE_WINDOWS)
@@ -797,8 +877,9 @@ int get_screen_height(void) {
     LOG_E("Failed to get FB0_VIRTUAL_SIZE (is there a framebuffer device?)");
     return screen_height;
   }
-  LOG_I("getting screen height from /sys/class/graphics/fb0/virtual_size");
-  sscanf(FB0_VIRTUAL_SIZE, "%*d,%d", &screen_height);
+  LOG_I("getting screen height from " FB0_VIRTUAL_SIZE_PATH);
+  int screen_width;
+  parse_screen_size(FB0_VIRTUAL_SIZE, &screen_width, &screen_height);
 #elif defined(SYSTEM_BASE_MACOS)
   CGDisplayModeRef mode = CGDisplayCopyDisplayMode(CGMainDisplayID());
   if (!mode) {
@@ -815,8 +896,9 @@ int get_screen_height(void) {
     LOG_E("Failed to get FB0_VIRTUAL_SIZE (is there a dmesg.boot file?)");
     return screen_height;
   }
-  LOG_I("getting screen height from /var/run/dmesg.boot");
-  sscanf(FB0_VIRTUAL_SIZE, "%*dx%d", &screen_height);
+  LOG_I("getting screen height from " DMESG_BOOT_PATH);
+  int screen_width;
+  parse_screen_size(FB0_VIRTUAL_SIZE, &screen_width, &screen_height);
 #elif defined(SYSTEM_BASE_OPENBSD)
   LOG_E("Display size in OpenBSD can only be retrieved if there is a graphical environment (x11) (at least that's what my research led me to).\nIf someone requests this feature I will implement it, but then uwufetch will depend on Xlib.");
 #elif defined(SYSTEM_BASE_WINDOWS)
@@ -832,7 +914,7 @@ unsigned long long get_memory_total(void) {
   unsigned long long memory_total = 0;
 #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
   LOG_I("getting memory total from struct sysinfo's totalram");
-  memory_total = GLOBAL_SYSINFO.totalram;
+  memory_total = GLOBAL_SYSINFO.totalram * GLOBAL_SYSINFO.mem_unit;
 #elif defined(SYSTEM_BASE_FREEBSD)
   unsigned long int len = sizeof(memory_total);
   LOG_I("getting total memory from sysctlbyname");
@@ -860,16 +942,15 @@ unsigned long long get_memory_total(void) {
 unsigned long long get_memory_used(void) {
   unsigned long long memory_used = 0;
 #if defined(SYSTEM_BASE_LINUX) || defined(SYSTEM_BASE_ANDROID)
-  unsigned long memtotal = 0, memfree = 0, buffers = 0, cached = 0;
-  char* p = PROC_MEMINFO - 1;
-  do {
-    p++;
-    sscanf(p, "MemTotal:%*[^0-9]%lu", &memtotal);
-    sscanf(p, "MemFree:%*[^0-9]%lu", &memfree);
-    sscanf(p, "Buffers:%*[^0-9]%lu", &buffers);
-    sscanf(p, "Cached:%*[^0-9]%lu", &cached);
-  } while ((p = strchr(p, '\n')));
-  memory_used = (memtotal - (memfree + buffers + cached)) / 1024;
+  if (PROC_MEMINFO == NULL) {
+    LOG_E("Failed to get memory used (" PROC_MEMINFO_PATH " is missing)");
+  } else {
+    unsigned long meminfo[4]; // total, free, buffers, cached
+    parse_meminfo(PROC_MEMINFO, meminfo);
+    unsigned long used_fields = meminfo[1] + meminfo[2] + meminfo[3];
+    // a missing MemTotal or used_fields > total would wrap around in unsigned arithmetic
+    memory_used = (meminfo[0] == 0 || used_fields > meminfo[0]) ? 0 : (meminfo[0] - used_fields) / 1024;
+  }
 #elif defined(SYSTEM_BASE_FREEBSD)
   unsigned long long kmem_size        = 0;
   unsigned long long pagesize         = 0;
