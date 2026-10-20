@@ -68,7 +68,7 @@ void list(char* arg) {
 				 "    "BLUE"Arch linux "NORMAL"based:\n"
 				 "      "BLUE"arch, arcolinux, "MAGENTA"artix, endeavouros "GREEN"manjaro, manjaro-arm, "BLUE"xerolinux\n\n"
 				 "    "RED"Debian/"YELLOW"Ubuntu "NORMAL"based:\n"
-				 "      "RED"amogos, debian, deepin, "GREEN"linuxmint, neon, "BLUE"pop, "RED"raspbian "YELLOW"ubuntu\n\n"
+				 "      "RED"amogos, debian, deepin, "GREEN"linuxmint, neon, "YELLOW"pardus, "BLUE"pop, "RED"raspbian "YELLOW"ubuntu\n\n"
 				 "    "RED"BSD "NORMAL"based:\n"
 				 "      "RED"freebsd, "YELLOW"openbsd, "GREEN"m"YELLOW"a"RED"c"PINK"o"BLUE"s, "WHITE"ios\n\n"
 				 "    "RED"RHEL "NORMAL"based:\n"

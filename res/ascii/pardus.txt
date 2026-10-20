@@ -1,0 +1,8 @@
+  {YELLOW}.--._______.--.
+ /  \         /  \
+ \   \       /   /
+ |    {WHITE}_.   ._{YELLOW}    |
+ |      {WHITE}|_|{YELLOW}      |
+  \///  {WHITE}\_/{YELLOW}  \\\/
+  ///\   {WHITE}|{YELLOW}   /\\\
+ ///  {WHITE}\_/ω\_/{YELLOW}  \\\

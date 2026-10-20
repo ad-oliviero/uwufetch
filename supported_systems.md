@@ -30,6 +30,7 @@
 |openbsd|OwOpenBSD|<img src="./res/openbsd.png" alt="openbsd.png" width=40px>|[res/ascii/openbsd.txt](./res/ascii/openbsd.txt)|
 |opensuse-leap|OwOpenSUSE Leap|<img src="./res/opensuse-leap.png" alt="opensuse-leap.png" width=40px>|[res/ascii/opensuse-leap.txt](./res/ascii/opensuse-leap.txt)|
 |opensuse-tumbleweed|OwOpenSUSE Tumbleweed|n/a|[res/ascii/opensuse-tumbleweed.txt](./res/ascii/opensuse-tumbleweed.txt)|
+|pardus|Pawdus|n/a|[res/ascii/pardus.txt](./res/ascii/pardus.txt)|
 |pop|PopOwOs|<img src="./res/pop.png" alt="pop.png" width=40px>|[res/ascii/pop.txt](./res/ascii/pop.txt)|
 |raspbian|RaspNyan|n/a|[res/ascii/raspbian.txt](./res/ascii/raspbian.txt)|
 |rocky|Wocky LinUwU|n/a|[res/ascii/rocky.txt](./res/ascii/rocky.txt)|

@@ -43,7 +43,7 @@ void uwufy_all(struct info* user_info) {
   struct actrie_t replacer;
   actrie_t_ctor(&replacer);
 
-  const size_t PATTERNS_COUNT = 73;
+  const size_t PATTERNS_COUNT = 75;
   // Not necessary but recommended
   actrie_t_reserve_patterns(&replacer, PATTERNS_COUNT);
 
@@ -115,6 +115,7 @@ void uwufy_all(struct info* user_info) {
   actrie_t_add_pattern(&replacer, "nixos", "NixOwOs");
   actrie_t_add_pattern(&replacer, "opensuse-leap", "OwOpenSUSE Leap");
   actrie_t_add_pattern(&replacer, "opensuse-tumbleweed", "OwOpenSUSE Tumbleweed");
+  actrie_t_add_pattern(&replacer, "pardus", "Pawdus");
   actrie_t_add_pattern(&replacer, "pop", "PopOwOs");
   actrie_t_add_pattern(&replacer, "raspbian", "RaspNyan");
   actrie_t_add_pattern(&replacer, "rocky", "Wocky LinUwU");
