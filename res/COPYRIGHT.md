@@ -440,6 +440,24 @@ I am not a copyright expert, and maybe I am doing all wrong things, please corre
 -   [Reference](https://t.me/openbsd_zh/454)
 
 
+## NasinOS
+
+<img title="NyasinOwOS" src="https://raw.githubusercontent.com/ad-oliviero/uwufetch/main/res/nasinos.png" alt="image" width="100">
+
+### Base artwork:
+
+-   Copyright Holder: Trshoft
+-   License: Not specified
+-   [Reference](https://github.com/ad-oliviero/uwufetch/issues/265) (original logo)
+
+### Modifications
+
+-   Description: uwu style (cat ears and paws)
+-   Copyright Holder: Trshoft
+-   License: Not specified
+-   [Reference](https://github.com/ad-oliviero/uwufetch/issues/265) (modified logo)
+
+#
 <!--
 ## TEMPLATE
 

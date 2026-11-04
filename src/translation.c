@@ -43,7 +43,7 @@ void uwufy_all(struct info* user_info) {
   struct actrie_t replacer;
   actrie_t_ctor(&replacer);
 
-  const size_t PATTERNS_COUNT = 75;
+  const size_t PATTERNS_COUNT = 76;
   // Not necessary but recommended
   actrie_t_reserve_patterns(&replacer, PATTERNS_COUNT);
 
@@ -111,6 +111,7 @@ void uwufy_all(struct info* user_info) {
   actrie_t_add_pattern(&replacer, "linuxmint", "LinUwU Miwint");
   actrie_t_add_pattern(&replacer, "manjaro", "Myanjawo");
   actrie_t_add_pattern(&replacer, "manjaro-arm", "Myanjawo AWM");
+  actrie_t_add_pattern(&replacer, "nasinos", "NyasinOwOS");
   actrie_t_add_pattern(&replacer, "neon", "KDE NeOwOn");
   actrie_t_add_pattern(&replacer, "nixos", "NixOwOs");
   actrie_t_add_pattern(&replacer, "opensuse-leap", "OwOpenSUSE Leap");

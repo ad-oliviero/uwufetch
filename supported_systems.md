@@ -25,6 +25,7 @@
 |macos|MacOwOs|n/a|[res/ascii/macos.txt](./res/ascii/macos.txt)|
 |manjaro-arm|Myanjawo AWM|<img src="./res/manjaro-arm.png" alt="manjaro-arm.png" width=40px>|[res/ascii/manjaro-arm.txt](./res/ascii/manjaro-arm.txt)|
 |manjaro|Myanjawo|<img src="./res/manjaro.png" alt="manjaro.png" width=40px>|[res/ascii/manjaro.txt](./res/ascii/manjaro.txt)|
+|nasinos|NyasinOwOS|<img src="./res/nasinos.png" alt="nasinos.png" width=40px>|[res/ascii/nasinos.txt](./res/ascii/nasinos.txt)|
 |neon|KDW NeOwOn|<img src="./res/neon.png" alt="neon.png" width=40px>|n/a|
 |nixos|NixOwOs|<img src="./res/nixos.png" alt="nixos.png" width=40px>|n/a|
 |openbsd|OwOpenBSD|<img src="./res/openbsd.png" alt="openbsd.png" width=40px>|[res/ascii/openbsd.txt](./res/ascii/openbsd.txt)|
