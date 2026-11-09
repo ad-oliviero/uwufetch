@@ -81,7 +81,7 @@ static const struct color_tag {
     {"{YELLOW}", "\x1b[33m"},
     {"{MAGENTA}", "\x1b[0;35m"},
     {"{SPRING_GREEN}", "\x1b[38;5;120m"},
-    {"{BLOCK_VERTICAL}", "▇"},
+    {"{BLOCK_VERTICAL}", "█"},
     {"{BLOCK_HALF_TOP}", "▀"},
     {"{BLOCK_HALF_BOTTOM}", "▄"},
     {"{BACKGROUND_RED}", "\x1b[0;41m"},
