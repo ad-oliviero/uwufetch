@@ -269,10 +269,11 @@ bool parse_os_id(const char* buf, char* out, size_t out_size) {
     const char* value = p + 3;
     size_t line_len   = strcspn(value, "\n");
     size_t len        = line_len;
-    if (*value == '"') {
+    if (*value == '"' || *value == '\'') {
+      const char* pvalue = value;
       value++;
       line_len--;
-      const char* end = memchr(value, '"', line_len);
+      const char* end = memchr(value, *pvalue, line_len);
       len             = end ? (size_t)(end - value) : line_len;
     }
     if (len == 0) continue;
