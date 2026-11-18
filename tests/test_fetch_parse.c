@@ -60,6 +60,9 @@
 #define OS_ID_QUOTED_SPACES "manjaro linux"
 #define OS_RELEASE_QUOTED_SPACES_FIXTURE "ID=\"manjaro linux\"\n"
 #define OS_RELEASE_QUOTED_UNTERMINATED_FIXTURE "ID=\"arch\nNAME=UwU\n"
+#define OS_ID_SINGLE_QUOTED "gentoo"
+#define OS_RELEASE_SINGLE_QUOTED_NO_SPACE_FIXTURE "ID=\'gentoo\'\n"
+#define OS_RELEASE_SINGLE_QUOTED_UNTERMINATED_FIXTURE "ID=\'gentoo\nNAME=UwU\n"
 #define OS_RELEASE_NO_ID_FIXTURE \
   "NAME=\"UwU\"\n"               \
   "ID_LIKE=arch\n"
@@ -153,6 +156,12 @@ static void test_parse_os_id(void) {
 
   CHECK(parse_os_id(OS_RELEASE_QUOTED_UNTERMINATED_FIXTURE, out, sizeof(out)) == true);
   CHECK(strcmp(out, OS_ID_QUOTED) == 0);
+
+  CHECK(parse_os_id(OS_RELEASE_SINGLE_QUOTED_NO_SPACE_FIXTURE, out, sizeof(out)) == true);
+  CHECK(strcmp(out, OS_ID_SINGLE_QUOTED) == 0);
+
+  CHECK(parse_os_id(OS_RELEASE_SINGLE_QUOTED_UNTERMINATED_FIXTURE, out, sizeof(out)) == true);
+  CHECK(strcmp(out, OS_ID_SINGLE_QUOTED) == 0);
 
   CHECK(parse_os_id(OS_RELEASE_NO_ID_FIXTURE, out, sizeof(out)) == false);
 
